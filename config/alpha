@@ -1,6 +1,6 @@
 C++ = g++ -Wall -ansi
 CC = gcc -Wall -ansi $(OPT)
-LIB = $(LFLAGS) -lcpml -lm
+LIB = $(LFLAGS) -lm
 MAKEDEPEND = $(C++) -M -DDEPEND
 
 FFT = fftw++
