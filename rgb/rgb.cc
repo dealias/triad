@@ -277,7 +277,7 @@ void options()
 	cerr << "-h\t\t help" << endl;
 	cerr << "-i\t\t invert vertical axis (y-origin at bottom)" << endl;
 	cerr << "-m\t\t generate mpeg (.mpg) file" << endl;
-	cerr << "-o option\t option to pass to convert" << endl;
+	cerr << "-o option\t option to pass to convert or montage" << endl;
 	cerr << "-p\t\t preserve temporary output files" << endl;
 	cerr << "-r\t\t remote X-server (substitute Postscript fonts)" << endl;
 	cerr << "-v\t\t verbose output" << endl;
@@ -308,9 +308,11 @@ void options()
 		 << endl; 
 	cerr << endl;
 	cerr << "Available color palettes:" << endl;
-	cerr << "-rainbow\t rainbow [default]" << endl;
+	cerr << "-bwrainbow\t black+rainbow+white [default for identity transform]"
+		 << endl;
+	cerr << "-rainbow\t rainbow [default for all other transforms]" << endl;
 	cerr << "-brainbow\t black+rainbow" << endl;
-	cerr << "-bwrainbow\t black+rainbow+white" << endl;
+	cerr << "-wrainbow\t rainbow+white" << endl;
 	cerr << "-wheel\t\t full color wheel" << endl;
 	cerr << "-rgreyb\t\t red-grey-blue" << endl;
 	cerr << endl;
@@ -339,7 +341,7 @@ int main(int argc, char *const argv[])
 	int lower=0, upper=INT_MAX;
 	int make_mpeg=0;
 	int trans=0;
-	int palette=0;
+	int palette=NOPALETTE;
 	int nobar=0;
 	
 	int syntax=0;
@@ -384,6 +386,8 @@ int main(int argc, char *const argv[])
                {0, 0, 0, 0}
              };
 	
+	if(palette == NOPALETTE) palette=(trans == IDENTITY ? BWRAINBOW : RAINBOW);
+		
 #ifdef __GNUC__	
 	optind=0;
 #endif	
@@ -826,7 +830,7 @@ void cleanup()
 {
 	if(!preserve) {
 		strstream buf;
-		buf << "rm -r " << rgbdir << " > /dev/null 2>&1" << ends;
+		buf << "rm -r " << rgbdir << " >& /dev/null" << ends;
 		char *cmd=buf.str();
 		if(verbose) cout << cmd << endl;
 		system(cmd);
@@ -867,7 +871,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 	if(strcmp(type,"yuv3") != 0)
 #endif
 		buf << "." << type;
-	if(!verbose) buf << "> /dev/null 2>&1";
+	if(!verbose) buf << ">& /dev/null";
 	buf << ends;
 	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;
@@ -881,7 +885,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 			buf << rgbdir << fieldname << setfill('0') << setw(NDIGITS)
 				<< n << "." << format << " ";
 		}
-		if(!verbose) buf << " > /dev/null 2>&1";
+		if(!verbose) buf << " >& /dev/null";
 		buf << ends;
 		cmd=buf.str();
 		if(verbose) cout << cmd << endl;
@@ -961,12 +965,14 @@ int system (char *command) {
 		if (waitpid(pid, &status, 0) == -1) {
 			if (errno != EINTR) return -1;
 		} else {
-			if(status != 0) {
+			if(WIFEXITED(status)) return 0;
+			else {
+				status=WEXITSTATUS(status);
 				if(cleaning) return status;
 				cleaning=1; cleanup();
 				msg(ERROR,"%s\nReceived signal %d",command,status);
 			}
-			return status;
+			return 0;
 		}
 	} while(1);
 }

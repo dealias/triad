@@ -1,6 +1,6 @@
 #include "Array.h"
 
-enum Palette {RAINBOW,BRAINBOW,WRAINBOW,BWRAINBOW,WHEEL,RGreyB,
+enum Palette {NOPALETTE=-1,RAINBOW,BRAINBOW,WRAINBOW,BWRAINBOW,WHEEL,RGreyB,
 			  NPalette};
 
 enum AllColors {BLACK,WHITE,FirstColor};
