@@ -5,7 +5,7 @@ clean:
 	rm -f *.o *mon.out $(ALL)
 
 rgb: rgb.cc msg.cc new.cc
-	$(C++) $(OPT) $(INCL) -o ~/bin/rgb rgb.cc msg.cc new.cc
+	$(C++) $(OPT) $(INCL) -o $(USER)/bin/rgb rgb.cc msg.cc new.cc $(LFLAGS)
 
 %.$(D): %.cc
 	$(MAKEDEPEND) $(INCL) $(MDOPTS) $< > $@
