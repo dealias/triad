@@ -30,7 +30,7 @@ void msg(int severity, const char *file, int line, const char *format,...)
   int tty_override=0;
   char c;
   va_list vargs;
-	
+  
   cout << endl;
   if(beep_enabled) {
     if(severity == WARNING_) beep_enabled=0;
