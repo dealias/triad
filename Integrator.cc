@@ -298,6 +298,7 @@ void RK5::Predictor(double t, double, int start, int stop)
 									b52*source2[j]+b53*source3[j]+
 									b54*source4[j];
 	Problem->BackTransform(y,t+a5,a5,yi);
+	if(yi) set(yi,y,ny);
 	Source(source,y,t+a5);
 }
 
