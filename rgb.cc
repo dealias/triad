@@ -5,21 +5,16 @@
 #include "rgb.h"
 #include <errno.h>
 
-void msg(char *text)
-{
-   cout << text << "." << endl;
-   exit(FATAL);
-}
-	
 int main(int argc, char *argv[])
 {
 	int nx,ny,nz;
-	if(argc < 2) msg("File name required");
+	if(argc < 2) msg(ERROR,"File name required");
 	ixstream fin(argv[1]);
+	if(!fin) msg(ERROR,"Cannot open input file %s",argv[1]);
 	fin >> nx >> ny >> nz;
 	int mx=(argc > 2) ? atoi(argv[2]) : 1;
 	int my=(argc > 3) ? atoi(argv[3]) : mx;
-	if(fin.eof()) msg("End of file during processing");
+	if(fin.eof()) msg(ERROR,"End of file during processing");
 	
 	int nxy=nx*ny;
 	DynVector<float *> value;
@@ -31,7 +26,7 @@ int main(int argc, char *argv[])
 			for(int i=0; i < nxy; i++) {
 				float v;
 				fin >> v;
-				if(fin.eof()) msg("End of file during processing");
+				if(fin.eof()) msg(ERROR,"End of file during processing");
 				if(v < vmin) vmin=v;
 				if(v > vmax) vmax=v;
 				value[l][i]=v;
@@ -41,7 +36,7 @@ int main(int argc, char *argv[])
 		int nx0,ny0,nz0;
 		fin >> nx0 >> ny0 >> nz0;
 		if(fin.eof()) break;
-		if(nx0 != nx || ny0 != ny || nz0 != nz) msg("Inconsistent image size");
+		if(nx0 != nx || ny0 != ny || nz0 != nz) msg(ERROR,"Inconsistent image size");
 	}
 	
 	int nset=n;
@@ -49,7 +44,7 @@ int main(int argc, char *argv[])
 	int ysize=my*((ny+1)*nz+1);
 		
 	char *buf=new char[200+2*strlen(argv[1])];
-	sprintf(buf,"rm %s*.rgb >& /dev/null",argv[1]); // Delete old rgb files
+	sprintf(buf,"rm %s*.rgb > /dev/null 2>&1",argv[1]); // Delete old rgb files
 	system(buf);
 
 	char *oname=new char[20+strlen(argv[1])];
@@ -58,7 +53,7 @@ int main(int argc, char *argv[])
 	for(n=0; n < nset; n++) {
 		sprintf(oname,"%s%04d.rgb",argv[1],n);
 		ofstream fout(oname);
-		if(!fout) msg("Cannot open output file");
+		if(!fout) msg(ERROR,"Cannot open output file %s",oname);
 		for(int k=0; k < nz; k++,l++) {
 			for(int j=0; j < ny; j++)  {
 				for(int j2=0; j2 < my; j2++) {
@@ -82,7 +77,7 @@ int main(int argc, char *argv[])
 			}
 		}
 		fout.close();
-		if(!fout) msg("Cannot write to output file");
+		if(!fout) msg(ERROR,"Cannot write to output file %s",oname);
 	}
 	
 	if(argc == 5)

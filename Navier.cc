@@ -37,6 +37,9 @@ int pL=-2;
 int pH=1;
 
 int randomIC=1;
+int ngridx=0;
+int ngridy=0;
+int movie=0;
 
 NWaveVocabulary::NWaveVocabulary()
 {
@@ -77,6 +80,10 @@ NWaveVocabulary::NWaveVocabulary()
 	VOCAB(krmin,0.0,DBL_MAX);
 	VOCAB(krmax,0.0,DBL_MAX);
 	VOCAB(kthmin,0.0,twopi);
+	
+	VOCAB(ngridx,0,INT_MAX);
+	VOCAB(ngridy,0,INT_MAX);
+	VOCAB(movie,0,1);
 	
 	GeometryTable=new Table<GeometryBase>("Geometry");
 
@@ -199,7 +206,7 @@ void NWave::InitialConditions()
 	open_output(fyvt,dirsep,"yvt");
 	open_output(ft,dirsep,"t");
 	open_output(fprolog,dirsep,"prolog");
-	open_output(fpsi,dirsep,"psi");
+	if(movie) open_output(fpsi,dirsep,"psi");
 	
 	if(Nmoment) {
 		avgyre=new Avgylabel[Nmoment];
@@ -226,7 +233,6 @@ static Real Normalization(int i) {return Geometry->Normalization(i);}
 static Real nu_re(int i) {Complex nuC=nu[i]; return nuC.re;}
 static Real nu_im(int i) {Complex nuC=nu[i]; return nuC.im;}
 
-static int ngridx,ngridy;
 static Complex *xcoeff, *ycoeff;
 
 void NWave::Initialize()
@@ -248,13 +254,12 @@ void NWave::Initialize()
 	// Initialize time integrals to zero.
 	for(i=Npsi; i < ny; i++) y[i]=0.0;
 	
-	if(strcmp(method,"PS") != 0) {
-		
+	if(movie && strcmp(method,"PS") != 0) {
 		Real k0=FLT_MAX;
 		for(i=0; i < Npsi; i++) k0=min(k0,Geometry->K(i));
 	
-		ngridx=Nx*5;
-		ngridy=Ny*5;
+		if(!ngridx) ngridx=Nx;
+		if(!ngridy) ngridy=Ny;
 		xcoeff=new Complex [ngridx*Npsi];
 		ycoeff=new Complex [ngridy*Npsi];
 		Real L=twopi/k0;
@@ -316,37 +321,39 @@ void NWave::Output(int)
 		favgy.close();
 	}
 	
-	if(strcmp(method,"PS") != 0) {
-		fpsi << ngridx << ngridy << 1;
-		for(int j=ngridy-1; j >= 0; j--) {
-			Complex *q=ycoeff+j*Npsi;
-			for(int i=0; i < ngridx; i++) {
-				Complex *p=xcoeff+i*Npsi;
-				Real sum=0.0;
-				for(int m=0; m < Npsi; m++) {
-					Complex pq=p[m]*q[m];
-					sum += pq.re*y[m].re-pq.im*y[m].im;
+	if(movie) {
+		if(strcmp(method,"PS") != 0) {
+			fpsi << ngridx << ngridy << 1;
+			for(int j=ngridy-1; j >= 0; j--) {
+				Complex *q=ycoeff+j*Npsi;
+				for(int i=0; i < ngridx; i++) {
+					Complex *p=xcoeff+i*Npsi;
+					Real sum=0.0;
+					for(int m=0; m < Npsi; m++) {
+						Complex pq=p[m]*q[m];
+						sum += pq.re*y[m].re-pq.im*y[m].im;
+					}
+					fpsi << (float) sum;
 				}
-				fpsi << (float) sum;
+			}
+		} 
+		else {
+			fpsi << Nxb << Nyb << 1;
+		
+			CartesianPad(psix,y);
+			crfft2dT(psix,log2Nxb,log2Nyb,1);
+		
+			Real *psir=(Real *) psix;
+			Real ninv=1.0/(Nxb*Nyb);
+			int factor=2*(Nxb1-1);
+			for(int j=Nyb-1; j >= 0; j--) {
+				int jN=factor*(j/2)+j;
+				for(int i=0; i < Nxb; i++)
+					fpsi << (float) (psir[2*i+jN]*ninv);
 			}
 		}
-	} 
-	else {
-		fpsi << Nxb << Nyb << 1;
-		
-		CartesianPad(psix,y);
-		crfft2dT(psix,log2Nxb,log2Nyb,1);
-		
-		Real *psir=(Real *) psix;
-		Real ninv=1.0/(Nxb*Nyb);
-		int factor=2*(Nxb1-1);
-		for(int j=Nyb-1; j >= 0; j--) {
-			int jN=factor*(j/2)+j;
-			for(int i=0; i < Nxb; i++)
-				fpsi << (float) (psir[2*i+jN]*ninv);
-		}
+		fpsi.flush();
 	}
-	fpsi.flush();
 	
 	tcount++;
 	ft << t << endl;
@@ -371,5 +378,3 @@ void ForcingAt(int i, Real &force)
 	force=force_re(Polar(Geometry->K(i),Geometry->Th(i)));
 	return;
 }
-
-

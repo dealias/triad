@@ -22,8 +22,12 @@ inline void calc_error(const Var& initial, const Var& norm, const Var& pred,
 
 inline Solve_RC IntegratorBase::CheckError(double errmax)
 {
-	if(errmax > tolmax2) return UNSUCCESSFUL;
-	if(errmax < tolmin2) return ADJUST;
+	if(dynamic >= 0) {
+		if(errmax > tolmax2) return UNSUCCESSFUL;
+		if(errmax < tolmin2) return ADJUST;
+		return SUCCESSFUL;
+	}
+	if(++dynamic == 0) dynamic=1;
 	return SUCCESSFUL;
 }
 

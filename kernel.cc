@@ -66,7 +66,7 @@ VocabularyBase::VocabularyBase()
 	VOCAB(microsteps,1,INT_MAX);
 	VOCAB(tmax,0.0,DBL_MAX);
 	VOCAB(dt,0.0,DBL_MAX);
-	VOCAB(dynamic,0,1);
+	VOCAB(dynamic,-INT_MAX,1);
 	VOCAB(tolmax,0.0,DBL_MAX);
 	VOCAB(tolmin,0.0,DBL_MAX);
 	VOCAB(stepfactor,1.0,DBL_MAX);
