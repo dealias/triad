@@ -158,7 +158,6 @@ void NWave::InitialConditions()
 	NpsiR=Ntotal-Npsi;
 	ny=(average ? Nmoment+1 : 1)*Npsi;
 	y=new Var[ny];
-	moment=new Var[Npsi];
 	y2=new Real[Npsi];
 	equil=new Real[Npsi];
 	nu=new Nu[Npsi];
@@ -242,9 +241,8 @@ void NWave::Output(int)
 	fekvt.flush();
 	
 	if(average) for(n=0; n < Nmoment; n++) {
-		for(i=0; i < Npsi; i++) moment[i] = y[Npsi*(n+1)+i];
 		out_curve(favgy[n],t,"t");
-		out_curve(favgy[n],moment,"",Npsi);
+		out_curve(favgy[n],y+Npsi*(n+1),"y^n",Npsi);
 		favgy[n].flush();
 	}
 }

@@ -27,8 +27,8 @@ static final_iteration=0;
 static int total_invert_cnt=0;
 void Integrand(Var *, Var *, double);
 
-static char *pname,*rname,*iname,*rtemp,*lname;
-static ifstream fparam,fin,ftest;
+static char *pname,*rname,*iname,*ptemp,*rtemp,*lname;
+static ifstream fparam,fin;
 static ofstream fdump,fstat,fout,flock;
 
 // Kernel vocabulary declarations and default values
@@ -136,7 +136,12 @@ int main(int argc, char *argv[])
 	
 	if(run == NULL) {run="test"; testing=1; clobber=1;}
 	
+	lname=Problem->FileName(dirsep,"LOCK");
+	rname=Problem->FileName(dirsep,"restart");
+	rtemp=Problem->FileName(dirsep,"restart=");
 	pname=Problem->FileName(dirsep,"p");
+	ptemp=Problem->FileName(dirsep,"p=");
+	
 	fparam.open(pname);
 	
 	if(fparam) {
@@ -159,16 +164,13 @@ int main(int argc, char *argv[])
 	cout << endl << "PARAMETERS:" << endl << endl;
 	Problem->List(cout);
 	
-	lname=Problem->FileName(dirsep,"LOCK");
-	rname=Problem->FileName(dirsep,"restart");
-	rtemp=Problem->FileName(dirsep,"restart=");
 	
 	if(!testing) {
-		lock();
-		fdump.open(pname);
+		fdump.open(ptemp);
 		Problem->Dump(fdump);
 		fdump.close();
-		unlock();
+		if(fdump.good()) rename(ptemp,pname);
+		else msg(ERROR,"Cannot write to parameter file %s",ptemp);
 	}
 	
 	Approximation=Problem->NewApproximation(approximation);
@@ -182,15 +184,7 @@ int main(int argc, char *argv[])
 		errno=0;
 	}
 	
-	if(restart) {
-		ftest.open(lname);
-		if(ftest) {
-			msg(OVERRIDE,"Lock file %s exists.\nOutput files may be corrupted",
-				lname);
-			unlock();
-		}
-		else errno=0;
-	} 
+	if(restart) testlock();
 
 	if(!restart && initialize) {
 		char *sname=Problem->FileName(dirsep,"stat");
@@ -272,7 +266,7 @@ void read_init()
 	
 	finit.close();
 	if(!finit.good())
-		msg(ERROR,"Error reading from initialization file %s",iname);
+		msg(ERROR,"Cannot read from initialization file %s",iname);
 	if(!override_dt) dt=dt0;
 	if(restart) {t=t0; last_dump=t;}
 }
@@ -281,7 +275,7 @@ void lock()
 {
 	flock.open(lname);
 	if(!flock) {
-		msg(WARNING,"Couldn't create lock file %s",lname);
+		msg(WARNING,"Could not create lock file %s",lname);
 		errno=0;
 	} 
 }
@@ -291,8 +285,20 @@ void unlock()
 	if(flock) {
 		flock.close();
 		if(remove(lname) == -1)
-			msg(ERROR,"Couldn't remove lock file %s",lname);
+			msg(ERROR,"Could not remove lock file %s",lname);
 	}
+}
+
+void testlock()
+{
+	ifstream ftest;
+	ftest.open(lname);
+	if(ftest) {
+		msg(OVERRIDE,"Lock file %s exists.\nFiles may be corrupted",lname);
+		flock.open(lname);
+		unlock();
+	}
+	else errno=0;
 }
 
 void dump(int it, int final, double tmax) 
@@ -316,7 +322,7 @@ void dump(int it, int final, double tmax)
 		fdump.write((char *) cpu,sizeof(cpu));
 		fdump.close();
 		if(fdump.good()) rename(rtemp,rname);
-		else msg(WARNING,"Error writing to restart file %s",rtemp);
+		else msg(WARNING,"Cannot write to restart file %s",rtemp);
 	} 
 	else if(it == 0) msg(ERROR,"Dump file %s could not be opened",rtemp);
 
@@ -332,7 +338,7 @@ void dump(int it, int final, double tmax)
 			for(i=0; i < ncputime; i++) fout << cpu[i] << endl;
 			fout.close();
 		}
-		if(!fout.good()) msg(WARNING,"Error writing to output file %s",oname);
+		if(!fout.good()) msg(WARNING,"Cannot write to output file %s",oname);
 	}
 }
 

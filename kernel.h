@@ -173,6 +173,7 @@ void set_timer();
 void statistics();
 void lock();
 void unlock();
+void testlock();
 void dump(int it, int final, double tmax);
 void open_output(ofstream& fout, const char *delimiter, char *suffix,
 				 int append=restart);
