@@ -1,4 +1,4 @@
-/* Array2n.h:  A high-performance periodic multi-dimensional C++ array class
+/* Array2n.h:  
 Copyright (C) 1999 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify

@@ -27,9 +27,9 @@ public:
   void set(int flag) const {state |= flag;}
 	
   DynVector() : v(NULL), size(0), alloc(0), state(unallocated) {}
-  DynVector(const DynVector<T>& A) : v(A.v), size(A.size),
-				     alloc(A.alloc),
-				     state(A.test(temporary)) {}
+  void SetDynVector(const DynVector<T>& A) {v=A.v; size=A.size;
+                                     alloc=A.alloc; state(A.test(temporary));}
+  DynVector(const DynVector<T>& A) {SetDynVector(A);}
   DynVector(unsigned int s) {Allocate(s);}
   ~DynVector() {Deallocate();}
 
@@ -61,6 +61,11 @@ public:
     size=i;
   }
 	
+  int max(int a, int b)
+  {
+    return (a > b) ? a : b;
+  }
+
   T& operator [] (unsigned int i) {
     if (i >= alloc) Realloc(max(i+1,2*alloc));
     if (i >= size) size=i+1;
@@ -124,6 +129,28 @@ public:
     }
     os << v[size-1] << newl;
     return os;
+  }
+};
+
+template<class T>
+class StackVector : public DynVector<T> {
+public:
+  StackVector() {}
+  StackVector(const DynVector<T>& A) {DynVector<T>::SetDynVector(A);}
+  StackVector(unsigned int s) {Allocate(s);}
+  
+  T& operator [] (unsigned int i) {
+    if (i >= size) {cout << "Attempt to access past end of StackVector"
+			 << endl; exit(1);}
+    return v[i];
+  }
+	
+  StackVector<T>& operator = (T a) {Load(a); return *this;}
+  StackVector<T>& operator = (const T *a) {Load(a); return *this;}
+  StackVector<T>& operator = (const StackVector<T>& A) {
+    Load(A()); 
+    A.Purge();
+    return *this;
   }
 };
 
