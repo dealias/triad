@@ -2,6 +2,13 @@
 #include <iostream.h>
 #include <new.h>
 
+#if __i386__
+#include <fpu_control.h>
+// Setup FPU for exceptions on overflow, zero divide and NaN.
+fpu_control_t __fpu_control=
+_FPU_EXTENDED | _FPU_RC_NEAREST | _FPU_MASK_DM | _FPU_MASK_UM | _FPU_MASK_PM;
+#endif
+
 static size_t dynamic_memory=0;
 
 void my_new_handler()
