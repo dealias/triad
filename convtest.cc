@@ -1,7 +1,8 @@
-#include "utils.h"
 #include "convolution.h"
 
-// Compile with: g++ -I ~/tri convtest.cc new.cc -lfftw3
+// Compile with: g++ -I ~/tri convtest.cc fftw++.cc -lfftw3
+
+using std::cout;
 
 int main()
 {	

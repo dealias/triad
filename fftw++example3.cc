@@ -7,17 +7,17 @@ using std::cout;
 using Array::array3;
 
 int main() {
-  unsigned int n=4, m=5, p=6;
+  unsigned int nx=4, ny=5, nz=6;
   size_t align=sizeof(Complex);
   
-  array3<Complex> f(n,m,p,align);
+  array3<Complex> f(nx,ny,nz,align);
   
   fft3d Forward3(-1,f);
   fft3d Backward3(1,f);
   
-  for(unsigned int i=0; i < n; i++) 
-    for(unsigned int j=0; j < m; j++) 
-      for(unsigned int k=0; k < p; k++) 
+  for(unsigned int i=0; i < nx; i++) 
+    for(unsigned int j=0; j < ny; j++) 
+      for(unsigned int k=0; k < nz; k++) 
       f(i,j,k)=i+j+k;
 	
   cout << f << endl;

@@ -1,22 +1,22 @@
 #include "Array.h"
 #include "fftw++.h"
 
-// Compile with g++ fftw++example3.cc fftw++.cc -lfftw3
+// Compile with g++ fftw++example2.cc fftw++.cc -lfftw3
 
 using std::cout;
 using Array::array2;
 
 int main() {
-  unsigned int n=4, m=5;
+  unsigned int nx=4, ny=5;
   size_t align=sizeof(Complex);
   
-  array2<Complex> f(n,m,align);
+  array2<Complex> f(nx,ny,align);
   
   fft2d Forward2(-1,f);
   fft2d Backward2(1,f);
   
-  for(unsigned int i=0; i < n; i++) 
-    for(unsigned int j=0; j < m; j++) 
+  for(unsigned int i=0; i < nx; i++) 
+    for(unsigned int j=0; j < ny; j++) 
       f(i,j)=i+j;
 	
   cout << f << endl;
