@@ -260,10 +260,10 @@ int main(int argc, char *argv[])
   if(!restart) Problem->Initialize();
   Problem->Setup();
 	
-  Integrator->Allocate(ny);
-	
   Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,dtmin,dtmax,
 		       itmax,microsteps,verbose,dynamic);
+	
+  Integrator->Allocate(ny);
 	
   cout << newl << "INTEGRATING:" << endl;
   set_timer();
