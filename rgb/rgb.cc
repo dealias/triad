@@ -621,7 +621,7 @@ int main(int argc, char *argv[])
       break;
     case BAR:
       bar=atoi(optarg);
-      if(bar == 0) band=0
+      if(bar == 0) band=0;
       if(bar < 0) msg(ERROR,"Invalid number of pixels: %s", optarg);
       break;
     case BAND:
