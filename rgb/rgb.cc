@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.12";
+const char VERSION[]="1.13";
 
 #include "xstream.h"
 #include <iostream>
@@ -746,20 +746,19 @@ int main(int argc, char *argv[])
   const char *format=grey ? "gray" : "rgb";
   int PaletteMin=(grey || vector) ? 0 : FirstColor;
   int PaletteRange=(grey || vector) ? 255 : NColors-1;
+  int PaletteMax=PaletteMin+PaletteRange;
   if(background == Undefined) background=grey ? 255 : BLACK;
 	
   int sign,offset;
   
   if(reverse) {
     sign=-1;
-    offset=PaletteMin+PaletteRange;
+    offset=PaletteMax;
   } else {
     sign=1;
     offset=PaletteMin;
   }
 	
-  if(lower == upper && bar == 0) band=0;
-  
   char **files=new char*[nfiles];
   int mfiles=0;
   for(unsigned int f=0; f < nfiles; f++) {
@@ -784,6 +783,9 @@ int main(int argc, char *argv[])
     }
 
     
+    if(vector3) bar=0;
+    if((lower == upper || nz == 1) && bar == 0) band=0;
+  
     double *vmink,*vmaxk;
     double *vmink2=NULL,*vmaxk2=NULL;
     double *vmink3=NULL,*vmaxk3=NULL;
@@ -801,9 +803,6 @@ int main(int argc, char *argv[])
     if(kmax > upper) kmax=upper;
 		
     int mpal=bar*my;
-    int mpalsize=mpal;
-    if(vector3) mpalsize *= 3;
-    else if(vector) mpalsize *= 2;
     int msep=band*my;
 		
     if(rescale && trans != IDENTITY) 
@@ -866,6 +865,11 @@ int main(int argc, char *argv[])
 		
     if(istop <= istart || jstop <= jstart) msg(ERROR,"Image out of range");
 			
+    int mpalsize;
+    if(bar == 0) mpalsize=0;
+    else if(vector) mpalsize = (jstop-jstart)*my;
+    else mpalsize=mpal;
+    
     xsize=mx*(istop-istart);
     ysize=my*(jstop-jstart)*nz0+msep*nz0+mpalsize;
 		
@@ -1101,36 +1105,31 @@ int main(int argc, char *argv[])
       }
 			
       int Nxmx=(istop-istart)*mx;
-      int uzero=(unsigned char) 0;
       double step=((double) PaletteRange)/Nxmx;
-      for(int j2=0; j2 < mpal; j2++) { // Output palette
-	for(int i=0; i < Nxmx; i++)  {
-	  int index=((int) (i*step+0.5))*sign+offset;
-	  if(grey) fout << (unsigned char) index;
-	  else {
-	    if(vector) fout << (unsigned char) index << uzero << uzero;
-	    else fout << Red[index] << Green[index] << Blue[index];
+      
+      if(!vector3) {
+	if(vector) {
+	  int uzero=(unsigned char) 0;
+	  int Nymy=(jstop-jstart)*my;
+	  double step2=((double) PaletteRange)/Nymy;
+	  for(int j=Nymy-1; j >= 0; j--)  {
+	    unsigned char indexb=((int) (j*step2+0.5))*sign+offset;
+	    for(int i=0; i < Nxmx; i++)  {
+	      unsigned char index=((int) (i*step+0.5))*sign+offset;
+	      fout << index << uzero << indexb;
+	    }
+	  }
+	} else {
+	  for(int j2=0; j2 < mpal; j2++) { // Output palette
+	    for(int i=0; i < Nxmx; i++)  {
+	      int index=((int) (i*step+0.5))*sign+offset;
+	      if(grey) fout << (unsigned char) index;
+	      else fout << Red[index] << Green[index] << Blue[index];
 	    }
 	  }
 	}
-      if(vector3) {
-	for(int j2=0; j2 < mpal; j2++) {
-	  for(int i=0; i < Nxmx; i++) {
-	    int index=((int) (i*step+0.5))*sign+offset;
-	    fout << uzero << (unsigned char) index << uzero;
-	  }
-	}
       }
-			
-      if(vector) {
-	for(int j2=0; j2 < mpal; j2++) {
-	  for(int i=0; i < Nxmx; i++) {
-	    int index=((int) (i*step+0.5))*sign+offset;
-	    fout << uzero << uzero << (unsigned char) index;
-	  }
-	}
-      }
-			
+	  
       fout.close();
       if(!fout) {
 	cleanup();
