@@ -67,16 +67,21 @@ int nx1=1,ny1=1,nz1=1;
 int nx,ny,nz;
 int sx=1,sy=1;
 int byte=0;
+int display=0;
 int implicit=1;
 int symmetric=0;
 int invert=0;
 int reverse=0;
+int crop=0;
+int make_mpeg=0;
+int istart,istop;
+int jstart,jstop;
 
 char *extract=NULL;
 
 enum Parameters {RFACTOR=256,THETA,PHI,YXASPECT,ZXASPECT,POINTSIZE,AVGX,AVGY,\
-				 EXTRACT,NCOLORS,XMIN,XMAX,YMIN,YMAX,ZMIN,ZMAX,ALPHA,
-				 NXFINE,NYFINE,NZFINE};
+				 EXTRACT,NCOLORS,BACKGROUND,XMIN,XMAX,YMIN,YMAX,ZMIN,ZMAX,
+				 LABEL,ALPHA,CROP,NXFINE,NYFINE,NZFINE};
 
 Real Rfactor=2.0;
 Real Theta=0.9;
@@ -100,6 +105,11 @@ int Nyfine=5;
 int Nzfine=10;
 
 const int Undefined=-2;
+int background=Undefined;
+int labelcnt=0;
+DynVector<char *> Label;
+
+char *outname=NULL;
 
 void MakePalette(int palette);
 void cleanup();
@@ -256,7 +266,7 @@ void usage(char *program)
 {
 	cerr << PROGRAM << " version " << VERSION
 		 << " [(C) John C. Bowman <bowman@math.ualberta.ca> 1998]" << endl
-		 << endl << "Usage: " << program << " [options] file1 [file2 ...]"
+		 << "Usage: " << program << " [options] file1 [file2 ...]"
 		 << endl;
 }
 
@@ -266,16 +276,19 @@ void options()
 	cerr << "Options: " << endl;
 	cerr << "-b\t\t single-byte (unsigned char instead of float) input"
 		 << endl;
+	cerr << "-d\t\t display single frame with xv"
+		 << " (to obtain cropping parameters)" << endl;
 	cerr << "-f\t\t use a floating scale for each frame" << endl;
 	cerr << "-g\t\t produce grey-scale output" << endl;
 	cerr << "-h\t\t help" << endl;
 	cerr << "-i\t\t invert vertical axis (y-origin at bottom)" << endl;
 	cerr << "-m\t\t generate mpeg (.mpg) file" << endl;
-	cerr << "-o option\t option to pass to convert or montage" << endl;
 	cerr << "-p\t\t preserve temporary output files" << endl;
 	cerr << "-r\t\t remote X-server (substitute Postscript fonts)" << endl;
 	cerr << "-v\t\t verbose output" << endl;
 	cerr << "-l\t\t label frames with file names and values" << endl;
+	cerr << "-label text\t label frames with text and values" << endl;
+	cerr << "-o name\t\t output file name (prefix)" << endl;
 	cerr << "-F\t\t use a floating scale for each section" << endl;
 	cerr << "-x mag\t\t overall magnification factor" << endl;
 	cerr << "-H hmag\t\t horizontal magnification factor" << endl;
@@ -283,6 +296,7 @@ void options()
 	cerr << "-B begin\t first frame to process" << endl;
 	cerr << "-E end\t\t last frame to process" << endl;
 	cerr << "-L lower\t last section to process" << endl;
+	cerr << "-O option\t option to pass to convert or montage" << endl;
 	cerr << "-U upper\t first section to process" << endl;
 	cerr << "-S skip\t\t interval between processed frames" << endl;
 	cerr << "-X xsize\t explicit horizontal size" << endl;
@@ -298,11 +312,13 @@ void options()
 	cerr << "-nobar\t\t inhibit palette bar" << endl;
 	cerr << "-extract format\t extract individual images as tiff, gif, etc." 
 		 << endl;
+	cerr << "-crop geometry\t crop to specified geometry" << endl;
 	cerr << "-reverse\t reverse palette direction" << endl;
 	cerr << "-ncolors n\t maximum number of colors to generate (default 256)"
 		 << endl; 
+	cerr << "-background n\t background color" << endl; 
 	cerr << endl;
-	cerr << "Available color palettes:" << endl;
+	cerr << "Color Palettes:" << endl;
 	cerr << "-bwrainbow\t black+rainbow+white [default]"
 		 << endl;
 	cerr << "-rainbow\t rainbow" << endl;
@@ -311,12 +327,12 @@ void options()
 	cerr << "-wheel\t\t full color wheel" << endl;
 	cerr << "-rgreyb\t\t red-grey-blue" << endl;
 	cerr << endl;
-	cerr << "Available transforms:" << endl;
+	cerr << "Transforms:" << endl;
 	cerr << "-identity\t no transformation [default]" << endl;
 	cerr << "-circle\t\t circle" << endl;
 	cerr << "-torus\t\t projected torus (3D)" << endl;
 	cerr << endl;
-	cerr << "Available 3D options:" << endl;
+	cerr << "3D Options:" << endl;
 	cerr << "-Rfactor factor\t viewpoint distance factor [default " << Rfactor
 		 << "]" << endl;
 	cerr << "-Theta radians\t angle to rotate about X axis [default " << Theta
@@ -334,7 +350,6 @@ int main(int argc, char *const argv[])
 	int nset=0, mx=1, my=1;
 	int n, end=INT_MAX;
 	int lower=0, upper=INT_MAX;
-	int make_mpeg=0;
 	int trans=0;
 	int palette=BWRAINBOW;
 	int nobar=0;
@@ -361,7 +376,10 @@ int main(int argc, char *const argv[])
                {"nobar", 0, &nobar, 1},
                {"extract", 1, 0, EXTRACT},
                {"ncolors", 1, 0, NCOLORS},
+               {"background", 1, 0, BACKGROUND},
                {"shear", 1, 0, ALPHA},
+               {"label", 1, 0, LABEL},
+               {"crop", 1, 0, CROP},
                {"xmin", 1, 0, XMIN},
                {"xmax", 1, 0, XMAX},
                {"ymin", 1, 0, YMIN},
@@ -388,14 +406,17 @@ int main(int argc, char *const argv[])
 	errno=0;
 	while (1) {
 		int c = getopt_long_only(argc,argv,
-								 "bfghbilmprvFo:x:H:V:B:E:L:U:S:X:Y:Z:",
+								 "bdfghbilmprvFo:x:H:V:B:E:L:O:U:S:X:Y:Z:",
 								 long_options,&option_index);
 		if (c == -1) break;
 		switch (c) {
 		case 0:
 			break;
-		case 'b':
+ 		case 'b':
 			byte=1;
+			break;
+ 		case 'd':
+			display=1;
 			break;
 		case 'f':
 			floating_scale=1;
@@ -419,7 +440,7 @@ int main(int argc, char *const argv[])
 			make_mpeg=1;
 			break;
 		case 'o':
-			option << " " << optarg;
+			outname=strdup(optarg);
 			break;
 		case 'p':
 			preserve=1;
@@ -454,6 +475,9 @@ int main(int argc, char *const argv[])
 		case 'U':
 			upper=atoi(optarg);
 			break;
+		case 'O':
+			option << " " << optarg;
+			break;
 		case 'S':
 			skip=atoi(optarg);
 			if(skip <= 0) msg(ERROR,"skip value must be positive");
@@ -475,6 +499,20 @@ int main(int argc, char *const argv[])
 			break;
 		case NCOLORS:
 			NColors=atoi(optarg);
+			break;
+		case BACKGROUND:
+			background=atoi(optarg);
+			break;
+		case CROP:
+			crop=1;
+			if(sscanf(optarg,"%dx%d+%d+%d",&istop,&jstop,&istart,&jstart)
+			   != 4) msg(ERROR,"Invalid geometry: %s",optarg);
+			istop += istart;
+			jstop += jstart;
+		case LABEL:
+			label=1;
+			Label[labelcnt]=strdup(optarg);
+			labelcnt++;
 			break;
 		case ALPHA:
 			alpha=atof(optarg);
@@ -538,6 +576,7 @@ int main(int argc, char *const argv[])
 	errno=0;
 	int nfiles=argc-optind;
 	if(syntax || nfiles < 1) {
+		if(syntax) cerr << endl;
 		usage(argv[0]);
 		cerr << endl << "Type '" << argv[0]
 			 << " -h' for a descriptions of options." << endl;
@@ -548,6 +587,7 @@ int main(int argc, char *const argv[])
 	convertprog=(nfiles > 1 || label) ? "montage" : "convert";
 	
 	char *const *argf=argv+optind;
+	if(outname == NULL) outname=argf[0];
 		
 	if(!floating_scale) {
 		vminf=new double[nfiles];
@@ -573,7 +613,7 @@ int main(int argc, char *const argv[])
 	char *const format=grey ? "gray" : "rgb";
 	int PaletteMin=grey ? 0 : FirstColor;
 	int PaletteRange=grey ? 255 : NColors-1;
-	int background=grey ? 255 : BLACK;
+	if(background == Undefined) background=grey ? 255 : BLACK;
 	
 	int sign,offset;
 	if(reverse) {
@@ -636,8 +676,22 @@ int main(int argc, char *const argv[])
 			transform[trans](Index);
 			}
 		
-		xsize=mx*Nx;
-		ysize=my*Ny*nz0+msep*nz0+mpal;
+		if(!crop) {
+			istart=0;
+			istop=Nx;
+			jstart=0;
+			jstop=Ny;
+		} else {
+			if(istart < 0) istart=0;
+			if(istop > Nx) istop=Nx;
+			if(jstart < 0) jstart=0;
+			if(jstop > Ny) jstop=Ny;
+		}
+						
+		if(istop <= istart || jstop <= jstart) msg(ERROR,"Null image");
+			
+		xsize=mx*(istop-istart);
+		ysize=my*(jstop-jstart)*nz0+msep*nz0+mpal;
 		
 		Array3<float> value(nz,ny,nx);
 		double gmin=DBL_MAX, gmax=-DBL_MAX; // Global min and max
@@ -703,9 +757,9 @@ int main(int argc, char *const argv[])
 			for(int k=kmin; k <= kmax; k++) {
 				if(floating_section) {vmin=vmink[k]; vmax=vmaxk[k];}
 				double step=(vmax == vmin) ? 0.0 : PaletteRange/(vmax-vmin);
-				for(int j=0; j < Ny; j++)  {
+				for(int j=jstart; j < jstop; j++)  {
 					for(int j2=0; j2 < my; j2++) {
-						for(int i=0; i < Nx; i++)  {
+						for(int i=istart; i < istop; i++)  {
 							Ivec x;
 							if(trans) x=Index(i,j);
 							else x=Ivec(i,j,k);
@@ -776,7 +830,7 @@ int main(int argc, char *const argv[])
 					else fout << black << black << black;
 			}
 			
-			int Nxmx=Nx*mx;
+			int Nxmx=(istop-istart)*mx;
 			double step=((double) PaletteRange)/Nxmx;
 			for(int j2=0; j2 < mpal; j2++) { // Output palette
 				for(int i=0; i < Nxmx; i++)  {
@@ -806,11 +860,21 @@ int main(int argc, char *const argv[])
 	if((remote || !label) && make_mpeg) putenv("DISPLAY=");
 
 	if(nset) {
-		if(extract) {
-			for(n=0; n < nset; n++)
-				montage(nfiles,argf,n,format,extract);
+		if(extract || display) {
+			make_mpeg=0;
+			if(display) {
+					montage(nfiles,argf,0,format,"tiff");
+					strstream buf;
+					buf << "xv " << outname << begin << ".tiff"	<< "&" << ends;
+					cmd=buf.str();
+					if(verbose) cout << cmd << endl;
+					system(cmd);
+			} else {
+				for(n=0; n < nset; n++)
+					montage(nfiles,argf,n,format,extract);
+			}
 		} else {
-			if(label || make_mpeg) { 
+			if(nfiles > 1 || label || make_mpeg) { 
 				if(make_mpeg) montage(nfiles,argf,0,format,"miff");
 				for(n=0; n < nset; n++) 
 					montage(nfiles,argf,n,format,make_mpeg ? "yuv" : "miff");
@@ -852,28 +916,30 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 	int frame;
 	
 	buf << convertprog << " -size " << xsize << "x" << ysize
-		<< " -geometry " << xsize << "x" << ysize
-		<< option.str() << " -interlace none ";
+		<< " -geometry " << xsize << "x" << ysize;
+	if(make_mpeg) buf << " -crop x2800+0+0";
+	buf << option.str() << " -interlace none ";
 	if(pointsize) buf << "-pointsize " << pointsize << " ";
 	for(int f=0; f < nfiles; f++) {
 		char *fieldname=argf[f];
+		char *text=(f < labelcnt ? Label[f] : fieldname);
 		if(label) {
 			buf << " -label \"";
 			if(!(floating_scale || byte)) 
 				buf << setprecision(2) << vminf[f]
 					<< separator << setprecision(2) << vmaxf[f] << "\\n";
-			buf << fieldname << "\" ";
+			buf << text << "\" ";
 		}
 		buf << format << ":" << rgbdir << fieldname
 			<< setfill('0') << setw(NDIGITS) << n << "." << format << " ";
 	}
 	buf << "-interlace partition " << type << ":";
-	if(extract) frame=begin+n*skip;
+	if(extract || display) frame=begin+n*skip;
 	else {					
 		frame=n;
 		buf << rgbdir;
 	}
-	buf << argf[0] << frame << "." << type;
+	buf << outname << frame << "." << type;
 	if(!verbose) buf << ">& /dev/null";
 	buf << ends;
 	char *cmd=buf.str();
@@ -901,7 +967,7 @@ void identify(int, char *const argf[], int n, char *const type,
 {
 	strstream buf;
 	char *iname=".identify";
-	buf << "identify " << rgbdir << argf[0] << n << "." << type
+	buf << "identify " << rgbdir << outname << n << "." << type
 		<< " > " << iname << ends;
 	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;
@@ -914,7 +980,7 @@ void identify(int, char *const argf[], int n, char *const type,
 	fin.get(c);
 	if(c != 'x') {
 		cleanup();
-		msg(ERROR,"Parse error in reading combined image size");
+		msg(ERROR,"Parse error in reading image size");
 	}
 	fin >> ysize;
 }
@@ -924,7 +990,7 @@ void mpeg(int, char *const argf[], int n, char *const type,
 {
 	strstream buf;
 	buf << "mpeg -a 0 -b " << n << " -h " << xsize << " -v " << ysize
-		<< " -PF " << rgbdir << argf[0] << " -s " << argf[0]
+		<< " -PF " << rgbdir << outname << " -s " << outname
 		<< "." << type;
 	if(!verbose) buf << " > /dev/null";
 	buf << ends;
@@ -938,7 +1004,7 @@ void animate(int, char *const argf[], int n, char *const type,
 {
 	strstream buf;
 	buf << "animate -scene 0-" << n << " -size " << xsize << "x" << ysize
-		<< " " << type << ":" << rgbdir << argf[0] << pattern << "." << type
+		<< " " << type << ":" << rgbdir << outname << pattern << "." << type
 		<< ends;
 	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;

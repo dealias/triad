@@ -9,8 +9,11 @@ inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0,
 {
 	Real error;
 	if(pred != initial) {
-		error=dominant(abs2(corr-pred)/max(abs2(norm0),abs2(initial)));
-	    if(error > errmax) errmax=error;
+		Real denom=max(abs2(norm0),abs2(initial));
+		if(denom) {
+			error=dominant(abs2(corr-pred)/denom);
+			if(error > errmax) errmax=error;
+		}
 	}
 }
 
