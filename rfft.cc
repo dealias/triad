@@ -30,6 +30,12 @@ const int offset=1;
 const int offset=0;
 #endif	
 
+inline Complex expim1(Real phase)
+{
+	double sinyby2=sin(0.5*phase);
+	return Complex(-2.0*sinyby2*sinyby2,sin(phase));
+}
+
 void fft_init(unsigned int log2n)
 {
 	unsigned int n=1 << log2n;

@@ -249,12 +249,6 @@ inline Complex expi(Real phase)
 	return Complex(cosy,siny);
 }
 
-inline Complex expim1(Real phase)
-{
-	double sinyby2=sin(0.5*phase);
-	return Complex(-2.0*sinyby2*sinyby2,sin(phase));
-}
-
 Complex atoc(const char *s);
 	
 const int default_nperline=4;
