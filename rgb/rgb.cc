@@ -82,8 +82,10 @@ int implicit=1;
 int symmetric=0;
 int invert=0;
 
+char *extract=NULL;
+
 enum Parameters {RFACTOR=256,THETA,PHI,YXASPECT,ZXASPECT,POINTSIZE,AVGX,AVGY,\
-				 NXFINE,NYFINE,NZFINE};
+				 EXTRACT,NXFINE,NYFINE,NZFINE};
 
 Real Rfactor=2.0;
 Real Theta=0.9;
@@ -290,6 +292,8 @@ void options()
 		 << "[default " << sy << "]" << endl;
 	cerr << "-symmetric\t make color palette symmetric about zero"
 		 << " (if possible)" << endl;
+	cerr << "-extract format\t extract individual images as tiff, gif, etc." 
+		 << endl;
 	cerr << endl;
 	cerr << "Available color palettes:" << endl;
 	cerr << "-rainbow\t rainbow [default]" << endl;
@@ -341,6 +345,7 @@ int main(int argc, char *const argv[])
                {"circle", 0, &trans, CIRCLE},
                {"torus", 0, &trans, TORUS},
                {"symmetric", 0, &symmetric, 1},
+               {"extract", 1, 0, EXTRACT},
                {"avgx", 1, 0, AVGX},
                {"avgy", 1, 0, AVGY},
                {"Nxfine", 1, 0, NXFINE},
@@ -442,6 +447,9 @@ int main(int argc, char *const argv[])
 		case 'Z':
 			nz1=atoi(optarg);
 			implicit=0;
+			break;
+		case EXTRACT:
+			extract=strdup(optarg);
 			break;
 		case AVGX:
 			sx=atoi(optarg);
@@ -729,23 +737,28 @@ int main(int argc, char *const argv[])
 			set++;
 		} while (n++ < end && rc == 0);
 		nset=nset ? min(nset,set) : set;
-		if(verbose && f==0 && floating_scale)
-			cout << nset << " frames found." << endl;
+		if(nset == 1 && !extract) msg(ERROR, "More than one frame required");
+		if(verbose && f==0 && floating_scale) {
+			cout << nset << " frame";
+			if(nset > 1) cout << "s";
+			cout << " found." << endl;
+		}
 	}
-	
-	if(nset == 1) msg(ERROR, "More than one frame required");
 	
 	if((remote || !label) && make_mpeg) putenv("DISPLAY=");
 
 	if(nset) {
-		if(label || make_mpeg) { 
+		if(label || make_mpeg || extract) { 
 			if(make_mpeg) montage(nfiles,argf,0,format,"miff");
-			for(n=0; n < nset; n++) 
-				montage(nfiles,argf,n,format,make_mpeg ? yuvformat : "miff");
-			identify(nfiles,argf,0,"miff",xsize,ysize);
 			
-			if(make_mpeg) mpeg(nfiles,argf,nset-1,"mpg",xsize,ysize);
-			else animate(nfiles,argf,nset-1,"miff","%d",xsize,ysize);
+			for(n=0; n < nset; n++) 
+				montage(nfiles,argf,n,format,make_mpeg ? yuvformat : 
+						extract ? extract : "miff");
+			if(!extract) {
+				identify(nfiles,argf,0,"miff",xsize,ysize);
+				if(make_mpeg) mpeg(nfiles,argf,nset-1,"mpg",xsize,ysize);
+				else animate(nfiles,argf,nset-1,"miff","%d",xsize,ysize);
+			}
 		} else {
 			strstream buf;
 			buf << "%0" << NDIGITS << "d" << ends;
@@ -794,7 +807,9 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 		buf << format << ":" << rgbdir << fieldname
 			<< setfill('0') << setw(NDIGITS) << n << "." << format << " ";
 	}
-	buf << yuvinterlace << type << ":" << rgbdir << argf[0] << n;
+	buf << yuvinterlace << type << ":";
+	if(!extract) buf << rgbdir;
+	buf << argf[0] << n;
 #if !NEW_IMAGEMAGIK	
 	if(strcmp(type,"yuv3") != 0)
 #endif
