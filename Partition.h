@@ -43,12 +43,8 @@ public:
 	}
 };
 
-#if _CRAY
-ostream& operator << (ostream& os, const Discrete<Cartesian>& y) {
-#else
 template<class D>
 ostream& operator << (ostream& os, const Discrete<D>& y) {
-#endif
 	os << y.value << ": " << y.weight;
 	return os;
 }
@@ -82,12 +78,8 @@ public:
 	void MakeModes();
 };
 
-#if _CRAY
-ostream& operator << (ostream& os, const Bin<Polar, Cartesian>& y) {
-#else
 template<class T, class D>
 ostream& operator << (ostream& os, const Bin<T,D>& y) {
-#endif
 	os << "[" << y.min << "\t" << y.cen << "\t" << y.max << "]";
 	if(discrete) os << ": " << y.area;
 	os << endl;
@@ -399,7 +391,14 @@ template<class T, class D>
 void Partition<T,D>::List(ostream &os)
 {
 	os << "         " << Name() << " Bin Geometry:" << endl;
-	for(int i=0; i < n; i++) os << bin[i];
+	for(int i=0; i < n; i++) {
+#if _CRAY	
+	os << "[" << bin[i].min << "\t" << bin[i].cen << "\t" << bin[i].max
+	   << "]" << endl;
+#else	
+	os << bin[i];
+#endif	
+	}
 	cout << endl;
 }
 
