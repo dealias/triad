@@ -139,7 +139,7 @@ void adjust_parameters(double& dt, double& dtmax, double& tmax, int& itmax)
   }
 	
   if(tmax == 0.0) tmax=DBL_STD_MAX; 
-  else if(itmax == -1) itmax=INT_MAX;
+  if(itmax == -1) itmax=INT_MAX;
 
   if(dtmax == 0.0) dtmax=DBL_STD_MAX;
 	
