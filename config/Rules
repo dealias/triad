@@ -1,11 +1,13 @@
 .cc.o:
 	$(C++) $(OPT) $(INCL) -o $@ -c $<
 
-triad:  FORCE
-	make -f $(TRI)/config/Depend compile NAME=triad
+triad:  dependencies
+	make -f $(TRI)/config/Compile files
 
 clean:  FORCE
 	rm -rf *.o *.$(D) *mon.out $(CLEAN)
+
+dependencies: $(FILES:=.$(D))
 
 FORCE:
 

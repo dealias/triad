@@ -1,0 +1,4 @@
+include Makefile
+
+depend: dependencies
+	make -f $(TRI)/config/Compile files
