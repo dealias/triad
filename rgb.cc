@@ -192,7 +192,7 @@ int main(int argc, char *const argv[])
 	int nfiles=argc-optind;
 	if(syntax || nfiles < 1) {
 		usage(argv[0]);
-		cerr << "Use '" << argv[0] << " -h' for a descriptions of options."
+		cerr << "Type '" << argv[0] << " -h' for a descriptions of options."
 			 << endl;
 		exit(1);
 	}
