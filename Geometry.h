@@ -104,6 +104,7 @@ class Partition : public GeometryBase {
 	DynVector<Weight> weight;
 	Hash<Index_t> *hash;
 	int Nweight,Nhash;
+	Index_t nmax;
 	Bin<T> *bin; // pointer to table of bins
 public:
 	Partition() {}
@@ -161,7 +162,7 @@ void Partition<T>::GenerateWeights() {
 	Mc binaverage;
 	int k,p,q,first;
 	int lastindex=0;
-	Index_t kpq,nkpq,previous,lastkpq=0;
+	Index_t kpq,previous,lastkpq=0;
 	double realtime,lasttime=time(NULL);
 	double interval=15.0;
 	ofstream fout;
@@ -181,7 +182,6 @@ void Partition<T>::GenerateWeights() {
 	}
 	
 	cout << endl << "GENERATING WEIGHT FACTORS." << endl;
-	nkpq=WeightIndex(Nmode,Nmode,n);
 	
 	for(k=0; k < Nmode; k++) {	// Loop for k < p < q
 		for(p=k+1; p < Nmode; p++) {
@@ -204,9 +204,9 @@ void Partition<T>::GenerateWeights() {
 					realtime=time(NULL);
 					if(realtime-lasttime > interval || verbose > 2) {
 						lasttime=realtime;
-						cout << 100*(kpq+1)/nkpq << 
+						cout << 100*(kpq+1)/nmax << 
 							"% of weight factors generated (" << kpq+1 <<
-								"/" <<	nkpq << ")." << endl;
+								"/" <<	nmax << ")." << endl;
 						lastindex=out_weights(fout,weight.Base(),lastindex,
 											  Nweight);
 					}
@@ -257,8 +257,8 @@ inline Mc Partition<T>::FindWeight(int k, int p, int q) {
 	return 0.0;	// no match found.
 }
 
-int get_weights(DynVector<Weight>& weight, int *Nweight, char *filename,
-				char *filenamef);
+int get_weights(DynVector<Weight>& weight, int nmax, int *Nweight,
+				char *filename,	char *filenamef);
 void save_weights(DynVector<Weight>& w, int n, char *filename);
 void save_formatted_weights(DynVector<Weight>& w, int n, char *filename);
 
@@ -269,7 +269,8 @@ void Partition<T>::ComputeTriads() {
 	int k,p,q;
 	char *filename=WeightFileName(""),*filenamef=WeightFileName("f");
 	
-	if(!get_weights(weight,&Nweight,filename,filenamef)) {
+	nmax=WeightIndex(Nmode,Nmode,n);
+	if(!get_weights(weight,nmax,&Nweight,filename,filenamef)) {
 		GenerateWeights();
 		save_weights(weight,Nweight,filename);
 	}

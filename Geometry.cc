@@ -17,8 +17,8 @@ int GeometryKeyCompare(const void *key, const void *p, const size_t n)
 
 static int formatted;
 
-int get_weights(DynVector<Weight>& weight, int *Nweight, char *filename,
-				char *filenamef) {
+int get_weights(DynVector<Weight>& weight, int nmax, int *Nweight,
+				char *filename,	char *filenamef) {
 	ifstream fin;
 	int complete;
 	int n=0;
@@ -37,6 +37,7 @@ int get_weights(DynVector<Weight>& weight, int *Nweight, char *filename,
 		if(formatted) fin >> n;
 		else fin.read((char *) &n,sizeof(int));
 		if(fin.eof()) fin.close();
+		if(n == 0) testlock();
 	}
 	
 	complete=(n ? 1 : 0);
@@ -44,14 +45,18 @@ int get_weights(DynVector<Weight>& weight, int *Nweight, char *filename,
 	if(fin) {
 		cout << endl << "READING WEIGHT FACTORS FROM " << filename << "."
 			 << endl;
-		weight.Resize(n);
+		if(n) weight.Resize(n);
 		if(formatted) {
 			for(int i=0; i < n; i++) fin >> weight[i];
 			save_weights(weight,n,ufilename);
 		} else {
-			if(n) fin.read((char *) weight.Base(),n*sizeof(Weight));
-			else while(fin.read((char *) &weight[n],sizeof(Weight))) n++;
-			cout << "n=" << n << endl;
+			if(complete) fin.read((char *) weight.Base(),n*sizeof(Weight));
+			else {
+				while(fin.read((char *) &weight[n],sizeof(Weight))) n++;
+				if(n) cout << n << " WEIGHT FACTORS READ ("
+						   << weight[n-1].Index()+1 << "/" << nmax << ")."
+						   << endl;
+			}
 		}
 		fin.close();
 		errno=0;
