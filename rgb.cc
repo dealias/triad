@@ -1,3 +1,20 @@
+/* RGB:  A movie production utility
+Copyright (C) 1996 John C. Bowman (bowman@ipp-garching.mpg.de)
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
+
 #include "xstream.h"
 #include <iostream.h>
 #include <limits.h>
@@ -73,7 +90,6 @@ int readframe(T& fin, int nx, int ny, int nz, float **value,
 	return 0;
 }
 
-void cleanup(char *fieldname, char *type);
 void montage(int nfiles, char *const argf[], int n, char *const format,
 			 char *const type);
 void identify(int argc, char *const argf[], int n, char *const type,
@@ -96,10 +112,35 @@ extern "C" int getopt(int argc, char *const argv[], const char *optstring);
 void usage(char *program)
 {
 	cerr << "Usage: " << program
-		 << " [-bfghlmvz] [-x mag] [-H hmag] [-V vmag] [-B beg] [-E end]"
+		 << " [-bcfghlmvz] [-x mag] [-H hmag] [-V vmag] [-B beg] [-E end]"
 		 << endl 
 		 << "           [-X xsize -Y ysize [-Z zsize]] file1 [file2 ...]"
 		 << endl << endl;
+}
+
+void options()
+{
+	cerr << "Options: " << endl;
+	cerr << "-b\t\t single-byte (unsigned char instead of float) input"
+		 << endl;
+	cerr << "-c\t\t clean up temporary files on exit" << endl;
+	cerr << "-f\t\t use a floating scale for each frame" << endl;
+	cerr << "-g\t\t produce grey-scale output" << endl;
+	cerr << "-h\t\t help" << endl;
+	cerr << "-l\t\t label frames with file names and values" << endl;
+	cerr << "-m\t\t generate mpeg (.mpg) file" << endl;
+	cerr << "-v\t\t verbose output" << endl;
+	cerr << "-z\t\t make color palette symmetric about zero" <<
+		" (if possible)" << endl;
+	cerr << "-x mag\t\t overall magnification factor" << endl;
+	cerr << "-H hmag\t\t horizontal magnification factor" << endl;
+	cerr << "-V vmag\t\t vertical magnification factor" << endl;
+	cerr << "-B beg\t\t first frame to process" << endl;
+	cerr << "-E end\t\t last frame to process" << endl;
+	cerr << "-X xsize\t explicit horizontal size" << endl;
+	cerr << "-Y ysize\t explicit vertical size" << endl;
+	cerr << "-Z zsize\t explicit number of cross-sections/frame"
+		 << endl;
 }
 
 int main(int argc, char *const argv[])
@@ -107,6 +148,7 @@ int main(int argc, char *const argv[])
 	int nx=1,ny=1,nz=1;
 	int nset=0, mx=1, my=1;
 	int n,begin=0, end=INT_MAX;
+	int cleanup=0;
 	int gray=0;
 	int label=0;
 	int make_mpeg=0;
@@ -118,11 +160,14 @@ int main(int argc, char *const argv[])
 	optind=0;
 #endif	
 	while (1) {
-		char c = getopt(argc,argv,"bfghlmvzx:H:V:B:E:X:Y:Z:");
+		char c = getopt(argc,argv,"bcfghlmvzx:H:V:B:E:X:Y:Z:");
 		if (c == -1) break;
 		switch (c) {
 		case 'b':
 			byte=1;
+			break;
+		case 'c':
+			cleanup=1;
 			break;
 		case 'f':
 			floating_scale=1;
@@ -132,26 +177,7 @@ int main(int argc, char *const argv[])
 			break;
 		case 'h':
 			usage(argv[0]);
-			cerr << "Options: " << endl;
-			cerr << "-b\t\t single-byte (unsigned char instead of float) input"
-				 << endl;
-			cerr << "-f\t\t use a floating scale for each frame" << endl;
-			cerr << "-g\t\t produce grey-scale output" << endl;
-			cerr << "-h\t\t help" << endl;
-			cerr << "-l\t\t label frames with file names and values" << endl;
-			cerr << "-m\t\t generate mpeg (.mpg) file" << endl;
-			cerr << "-v\t\t verbose output" << endl;
-			cerr << "-z\t\t make color palette symmetric about zero" <<
-				" (if possible)" << endl;
-			cerr << "-x mag\t\t overall magnification factor" << endl;
-			cerr << "-H hmag\t\t horizontal magnification factor" << endl;
-			cerr << "-V vmag\t\t vertical magnification factor" << endl;
-			cerr << "-B beg\t\t first frame to process" << endl;
-			cerr << "-E end\t\t last frame to process" << endl;
-			cerr << "-X xsize\t explicit horizontal size" << endl;
-			cerr << "-Y ysize\t explicit vertical size" << endl;
-			cerr << "-Z zsize\t explicit number of cross-sections/frame"
-				 << endl;
+			options();
 			exit(0);
 		case 'l':
 			label=1;
@@ -214,14 +240,18 @@ int main(int argc, char *const argv[])
 	}
 	
 	rgbdir=getenv("RGB_DIR");
-	if(!rgbdir) {
-		rgbdirbuf << "/tmp/" << getenv("USER") << ends;
-		rgbdir=rgbdirbuf.str();
-	}
+	if(rgbdir) rgbdirbuf << rgbdir;
+	else rgbdirbuf << "/tmp/" << getenv("USER");
+	rgbdirbuf << "/rgb." << getpid();
+	strstream buf;
+	buf << "mkdirhier " << rgbdirbuf.str() << ends;
+	char *cmd=buf.str();
+	system(cmd);
+	rgbdirbuf << "/rgb." << getpid() << "/" << ends;
+	rgbdir=rgbdirbuf.str();
 	
 	char *const format=gray ? "gray" : "rgb";
 	int PaletteMax=gray ? 255 : ColorPaletteMax;
-		
 	
 	for(int f=0; f < nfiles; f++) {
 		char *fieldname=argf[f];
@@ -240,8 +270,11 @@ int main(int argc, char *const argv[])
 		double gmin=DBL_MAX, gmax=-DBL_MAX; // Global min and max
 		for(int k=0; k < nz; k++) value[k]=new float[nx*ny];
 		
-		cleanup(fieldname,gray ? "*.gray" : "*.rgb");
-		cleanup(fieldname,".*.*");
+		if(cleanup) {
+			buf << "rm -rf " << rgbdir << " > /dev/null 2>&1" << ends;
+			if(verbose) cout << cmd << endl;
+			system(cmd);
+		}
 		
 		if(!floating_scale)	{
 			n=0;
@@ -255,6 +288,7 @@ int main(int argc, char *const argv[])
 				if(vmin < gmin) gmin=vmin;
 				if(vmax > gmax) gmax=vmax;
 			} while (n++ < end && rc == 0);
+			nset=nset ? min(nset,n-begin) : n-begin;
 			
 			if(zero && gmin < 0 && gmax > 0) {
 				gmax=max(-gmin,gmax);
@@ -296,8 +330,8 @@ int main(int argc, char *const argv[])
 								for(int i2=0; i2 < mx; i2++)
 									fout << (unsigned char) index;
 							} else {
-								unsigned char
-								r=red[index], g=green[index], b=blue[index];
+								unsigned char r=red[index],
+									g=green[index], b=blue[index];
 								for(int i2=0; i2 < mx; i2++)
 									fout << r << g << b;
 							}
@@ -337,16 +371,6 @@ int main(int argc, char *const argv[])
 		animate(nfiles,argf,nset-1,format,xsize,ysize);
 }
 
-void cleanup(char *fieldname, char *type)
-{
-	strstream buf;
-// Delete old files
-	buf << "rm " << rgbdir << "/" << fieldname << type
-		<< "> /dev/null 2>&1" << ends;
-	char *cmd=buf.str();
-	system(cmd);
-}
-
 #if sun
 char *separator="_______________________________________________";
 #else
@@ -365,7 +389,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 		if(!floating_scale) 
 			buf << setprecision(2) << vminf[f]
 				<< separator << setprecision(2) << vmaxf[f] << "\\n";
-		buf << fieldname << "\" " << rgbdir << "/"
+		buf << fieldname << "\" " << rgbdir
 			<< fieldname << setfill('0') << setw(4) << n << "." << format;
 	}
 	buf << " " << type << ":" << rgbdir << "/" << argf[0];
@@ -381,7 +405,7 @@ void identify(int, char *const argf[], int n, char *const type,
 {
 	strstream buf;
 	char *iname=".identify";
-	buf << "identify " << rgbdir << "/" << argf[0] << "." << type << "." << n 
+	buf << "identify " << rgbdir << argf[0] << "." << type << "." << n 
 		<< " > " << iname  
 		<< ends;
 	char *cmd=buf.str();
@@ -402,7 +426,7 @@ void mpeg(int, char *const argf[], int n, char *const type,
 {
 	strstream buf;
 	buf << "mpeg -a 0 -b " << n << " -h " << xsize << " -v " << ysize
-		<< " -PF " << rgbdir << "/" << argf[0] << "." << " -s " << argf[0]
+		<< " -PF " << rgbdir << argf[0] << "." << " -s " << argf[0]
 		<< "." << type;
 	if(!verbose) buf << " > /dev/null";
 	buf << ends;
@@ -416,7 +440,7 @@ void animate(int, char *const argf[], int, char *const type,
 {
 	strstream buf;
 	buf << "animate -size " << xsize << "x" << ysize
-		<< " -interlace none " << rgbdir << "/" << argf[0] << "*."
+		<< " -interlace none " << rgbdir << argf[0] << "*."
 		<< type << ends;
 	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;
@@ -428,7 +452,7 @@ void manimate(int, char *const argf[], int n, char *const type,
 {
 	strstream buf;
 	buf << "animate -scene 0-" << n << " -size " << xsize << "x" << ysize <<
-		" " << type << ":" << rgbdir << "/" << argf[0] << "." << type
+		" " << type << ":" << rgbdir << argf[0] << "." << type
 		<< ".%d" << ends;
 	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;
