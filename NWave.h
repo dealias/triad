@@ -27,10 +27,11 @@ public:
 	GeometryBase *NewGeometry(char *key) {return GeometryTable->Locate(key);}
 };
 
-enum Linearity0 {STANDARD,EXPONENTIAL,CONSERVATIVE_EXPONENTIAL};
+enum Linearity {STANDARD,EXPONENTIAL,CONSERVATIVE_EXPONENTIAL};
 
 class NWave : public ProblemBase {
-	Source_t (NWave::*Linearity);
+	int lintype;
+	Source_t (NWave::*Linearity[3]);
 public:
 	void InitialConditions();
 	void Initialize();
@@ -38,28 +39,21 @@ public:
 	void Output(int it);
 	void FinalOutput();
 	
-	void LinearSrc(Var *src, Var *y, double t) {Linearity(src,y,t);}
+	void LinearSrc(Var *src, Var *y, double t) {
+		return Linearity[lintype](src,y,t);
+	}
 	
 	Source_t StandardLinearity;
 	Source_t ExponentialLinearity;
 	void ConservativeExponentialLinearity(Real *source, Real *psi, double t);
 	void ConservativeExponentialLinearity(Complex *source, Complex *psi,
 										  double t);
-	void SetLinearity(int type) {
-		switch(type) {
-		case STANDARD:
-			Linearity=StandardLinearity;
-			break;
-		case EXPONENTIAL:
-			Linearity=ExponentialLinearity;
-			break;
-		case CONSERVATIVE_EXPONENTIAL:
-			Linearity=ConservativeExponentialLinearity;
-			break;
-		}
+	void SetLinearity(int type) {lintype=type;}
+	
+	NWave() : Linearity(STANDARD,EXPONENTIAL,CONSERVATIVE_EXPONENTIAL) {
+		lintype=0;
 	}
-		
-	NWave() {SetLinearity(STANDARD);}
+private: 
 };
 
 class SR : public NWave {
