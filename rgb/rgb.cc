@@ -92,6 +92,9 @@ Real ymax=1.0;
 Real zmin=0.0;
 Real zmax=1.0;
 
+int begin=0;
+int skip=1; 
+	
 int Nxfine=4;
 int Nyfine=5;
 int Nzfine=10;
@@ -329,7 +332,7 @@ void options()
 int main(int argc, char *const argv[])
 {
 	int nset=0, mx=1, my=1;
-	int n,begin=0, skip=1, end=INT_MAX;
+	int n, end=INT_MAX;
 	int lower=0, upper=INT_MAX;
 	int make_mpeg=0;
 	int trans=0;
