@@ -43,8 +43,8 @@ template<class T>
 class Array1p : public Array1<T>, public ArrayMod {
 public:
 	Array1p() {}
-	Array1p(int nx0) {Allocate(nx0);}
-	Array1p(int nx0, T *v0) {Dimension(nx0,v0);}
+	Array1p(unsigned int nx0) {Allocate(nx0);}
+	Array1p(unsigned int nx0, T *v0) {Dimension(nx0,v0);}
 	Array1p(const Array1p<T>& A) {v=A.v; nx=A.nx; state=A.test(temporary);}
 	void Check(int& i, int n, int dim, int m) const {Mod(i,n);}
 };
@@ -53,8 +53,8 @@ template<class T>
 class Array2p : public Array2<T>, public ArrayMod {
 public:
 	Array2p() {}
-	Array2p(int nx0, int ny0) {Allocate(nx0,ny0);}
-	Array2p(int nx0, int ny0, T *v0) {Dimension(nx0,ny0,v0);}
+	Array2p(unsigned int nx0, unsigned int ny0) {Allocate(nx0,ny0);}
+	Array2p(unsigned int nx0, unsigned int ny0, T *v0) {Dimension(nx0,ny0,v0);}
 	Array1p<T> operator [] (int ix) const {
 		check(ix,nx,2,1);
 		return Array1p<T>(ny,v+ix*ny);
@@ -66,8 +66,8 @@ template<class T>
 class Array3p : public Array3<T>, public ArrayMod {
 public:	
 	Array3p() {}
-	Array3p(int nx0, int ny0, int nz0) {Allocate(nx0,ny0,nz0);}
-	Array3p(int nx0, int ny0, int nz0, T *v0) {Dimension(nx0,ny0,nz0,v0);}
+	Array3p(unsigned int nx0, unsigned int ny0, unsigned int nz0) {Allocate(nx0,ny0,nz0);}
+	Array3p(unsigned int nx0, unsigned int ny0, unsigned int nz0, T *v0) {Dimension(nx0,ny0,nz0,v0);}
 	Array2p<T> operator [] (int ix) const {
 		check(ix,nx,3,1);
 		return Array2p<T>(ny,nz,v+ix*nyz);
@@ -79,8 +79,8 @@ template<class T>
 class Array4p : public Array4<T>, public ArrayMod {
 public:	
 	Array4p() {}
-	Array4p(int nx0, int ny0, int nz0, int nw0) {Allocate(nx0,ny0,nz0,nw0);}
-	Array4p(int nx0, int ny0, int nz0, int nw0, T *v0) {
+	Array4p(unsigned int nx0, unsigned int ny0, unsigned int nz0, unsigned int nw0) {Allocate(nx0,ny0,nz0,nw0);}
+	Array4p(unsigned int nx0, unsigned int ny0, unsigned int nz0, unsigned int nw0, T *v0) {
 		Dimension(nx0,ny0,nz0,nw0,v0);
 	}
 	Array3p<T> operator [] (int ix) const {
