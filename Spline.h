@@ -25,7 +25,8 @@ unsigned int bintsearch(X key, unsigned int n, const typename array1<X>::opt x)
     if(key < x[i]) u=i;
     else l=i+1;
   }
-  exit(1); // Statement not reachable
+  ArrayExit("Statement not reachable");
+  return 0;
 }
 
 // Compute a natural cubic spline (zero second derivatives at the endpoints)
@@ -87,7 +88,7 @@ public:
 		const typename array1<X>::opt x,
 		const typename array1<Y>::opt y, X x0, unsigned int i) {
     if(x0 == x[n-1]) return y[n-1];
-    if(i >= n-1) ArrayExit("Index out of range");
+    if(i >= n-1) ArrayExit("Spline index out of range");
     X D=x[i+1]-x[i];
     X B=(x0-x[i])/D;
     X A=1.0-B;
