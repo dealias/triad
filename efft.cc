@@ -18,8 +18,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	static int TableSize=0;
 	unsigned int naux;
 	unsigned int *nTable=NULL,*nkTable=NULL,*nauxTable=NULL;
-	typedef double *aux_t[2];
-	static aux_t *aux1, *aux2;
+	static double *aux1[2], *aux2[2];
 	unsigned int n=1 << log2n;
 	isign = -isign;
 	
@@ -29,8 +28,10 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		TableSize++;
 		nTable=new(nTable,TableSize) unsigned int;
 		nkTable=new(nkTable,TableSize) unsigned int;
-		aux1=new(aux1,TableSize) aux_t;
-		aux2=new(aux2,TableSize) aux_t;
+		for(i=0; i < 2; i++) {
+			aux1[i]=new(aux1[i],TableSize) *Real;
+			aux2[i]=new(aux2[i],TableSize) *Real;
+		}
 		
 		if(n <= 2048) naux=20000;
 		else naux=20000+2.28*n;
@@ -41,17 +42,17 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	
 		for(int isign=-1; isign <= 1; isign += 2) {
 			int i=(isign == -1);
-			aux1[j][i]=new(aux1[j][i],naux) Real;
-			aux2[j][i]=new(aux2[j][i],naux) Real;
+			aux1[i][j]=new(aux1[i][j],naux) Real;
+			aux2[i][j]=new(aux2[i][j],naux) Real;
 			dcft(one,data,inc1,inc2,data,inc1,inc2,n,nk,isign,scale,
-				 aux1[j][i],naux,aux2[j][i],naux);
+				 aux1[i][j],naux,aux2[i][j],naux);
 		}
 	}
 	
 	int i=(isign == -1);
 	naux=nauxTable[j];
 	dcft(zero,data,inc1,inc2,data,inc1,inc2,n,nk,isign,scale,
-		 aux1[j][i],naux,aux2[j][i],naux);
+		 aux1[i][j],naux,aux2[i][j],naux);
 }
 
 void fft(Complex *data, unsigned int log2n, int isign, int)
