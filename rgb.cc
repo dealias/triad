@@ -27,7 +27,7 @@ void manimate(int argc, char *const argf[], int n, char *const type,
 
 int verbose=0;
 
-//extern "C" int getopt(int argc, char *const argv[], const char *optstring);
+extern "C" int getopt(int argc, char *const argv[], const char *optstring);
 
 int main(int argc, char *const argv[])
 {
@@ -39,7 +39,9 @@ int main(int argc, char *const argv[])
 	extern int optind;
 	extern char *optarg;
 	
+#ifdef __GNUC__	
 	optind=0;
+#endif	
 	while (1) {
 		c = getopt(argc,argv,"lmvx:H:V:");
 		if (c == -1) break;
