@@ -46,7 +46,7 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 		CFTFAX(m,ifax,trigs);
 	}
 
-	int P=m/1; // Request this many processors.
+	int P=m/128; // Request this many processors.
     if(P > NCPU) P=NCPU;
 	if(P < 1) P=1;
 	int lot=m/P;
