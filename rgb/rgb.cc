@@ -112,7 +112,7 @@ Real zmax=1.0;
 int begin=0;
 int skip=1; 
 	
-int nslice=20;
+int nslice=40;
 
 const int Undefined=-2;
 int background=Undefined;
@@ -308,7 +308,7 @@ void options()
 	cerr << "-v\t\t verbose output" << endl;
 	cerr << "-l\t\t label frames with file names and values" << endl;
 	cerr << "-label text\t label frames with text and values" << endl;
-	cerr << "-o name\t\t output file name (prefix)" << endl;
+	cerr << "-o name\t\t output file name (prefix only)" << endl;
 	cerr << "-F\t\t use a floating scale for each section" << endl;
 	cerr << "-x mag\t\t overall magnification factor" << endl;
 	cerr << "-H hmag\t\t horizontal magnification factor" << endl;
@@ -1304,7 +1304,7 @@ void Torus(Array2<Ivec>& Index)
 					projection += deltazPzinv;
 				}
 				if(detected) break;
-				else nsearch *= nslice;
+				else nsearch *= 10;
 			}
 			
 			if(detected) {
