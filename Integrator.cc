@@ -168,6 +168,28 @@ int PC::Corrector(double dt, double& errmax, int start, int stop)
 	return 1;
 }
 
+void LeapFrog::Predictor(double t, double dt, int start, int stop)
+{
+	if(new_y0) {
+		set(yp0,yp,ny);
+		Problem->Transform(yp0,t,dt);
+		oldhalfdt=lasthalfdt;
+	}
+	double dtprime=halfdt+oldhalfdt;
+	for(int j=start; j < stop; j++) yp[j]=yp0[j]+dtprime*source0[j];
+	Problem->BackTransform(yp,t,dt);
+	Source(source,yp,t+halfdt);
+	lasthalfdt=halfdt;
+}
+	
+int LeapFrog::Corrector(double dt, double& errmax, int start, int stop)
+{
+	for(int j=start; j < stop; j++) y[j]=y0[j]+dt*source[j];
+	if(dynamic) for(int j=start; j < stop; j++)
+		calc_error(y0[j],y[j],y0[j]+dt*source0[j],y[j],errmax);
+	return 1;
+}
+
 void RK2::TimestepDependence(double dt)
 {
 	halfdt=0.5*dt;

@@ -56,6 +56,29 @@ public:
 	}
 };
 
+class LeapFrog : public PC {
+	Var *yp,*yp0;
+	double halfdt,oldhalfdt,lasthalfdt;
+public:
+	void Allocate(int n) {
+		PC::Allocate(n); 
+		yp=new Var[n]; yp0=new Var[n]; lasthalfdt=0.0;
+	}
+	void TimestepDependence(double) {
+		if(lasthalfdt == 0.0) for(int j=0; j < ny; j++) yp[j] = y0[j];
+		halfdt=0.5*dt;
+	}
+	char *Name() {return "LeapFrog";}
+	void Predictor(double, double, int, int);
+	int Corrector(double, double&, int, int);
+	void StandardPredictor(double t, double dt, int start, int stop) {
+		LeapFrog::Predictor(t,dt,start,stop);
+	}
+	int StandardCorrector(double dt, double& errmax, int start, int stop) {
+		return LeapFrog::Corrector(dt,errmax,start,stop);
+	}
+};
+
 class RK2 : public PC {
 protected:	
 	double halfdt;

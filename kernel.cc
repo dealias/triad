@@ -95,6 +95,7 @@ VocabularyBase::VocabularyBase()
 	
 	INTEGRATOR(Exact);
 	INTEGRATOR(Euler);
+	INTEGRATOR(LeapFrog);
 	INTEGRATOR(PC);
 	INTEGRATOR(RK2);
 	INTEGRATOR(RK4);
