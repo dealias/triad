@@ -1121,8 +1121,8 @@ void identify(int, int n, const char *type, int& xsize, int& ysize)
 void mpeg(int, int n, const char *type, int xsize, int ysize)
 {
   strstream buf;
-  if(xsize % 2) xsize++; // Workaround for bug in convert.
-  if(ysize % 2) ysize++;
+//  if(xsize % 2) xsize++; // Workaround for bug in convert.
+//  if(ysize % 2) ysize++;
   buf << "mpeg -a 0 -b " << n << " -h " << xsize << " -v " << ysize
       << " -PF " << rgbdir << outname << " -s " << outname
       << "." << type;
