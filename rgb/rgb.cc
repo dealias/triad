@@ -239,8 +239,6 @@ void mpeg(int argc, char *const argf[], int n, char *const type,
 		  int xsize, int ysize);
 void animate(int argc, char *const argf[], int n, char *const type,
 			 int xsize, int ysize);
-void manimate(int argc, char *const argf[], int n, char *const type,
-			  int xsize, int ysize);
 	
 #ifdef __i386__
 extern "C" void putenv(const char *);
@@ -744,7 +742,7 @@ int main(int argc, char *const argv[])
 			identify(nfiles,argf,0,"miff",xsize,ysize);
 			
 			if(make_mpeg) mpeg(nfiles,argf,nset-1,"mpg",xsize,ysize);
-			else manimate(nfiles,argf,nset-1,"miff",xsize,ysize);
+			else animate(nfiles,argf,nset-1,"miff",xsize,ysize);
 		} else animate(nfiles,argf,nset-1,format,xsize,ysize);
 	}
 	
@@ -853,19 +851,8 @@ void mpeg(int, char *const argf[], int n, char *const type,
 	system(cmd);
 }
 
-void animate(int, char *const argf[], int, char *const type,
+void animate(int, char *const argf[], int n, char *const type,
 			 int xsize, int ysize)
-{
-	strstream buf;
-	buf << "animate -size " << xsize << "x" << ysize
-		<< " -interlace none " << rgbdir << argf[0] << "*."	<< type << ends;
-	char *cmd=buf.str();
-	if(verbose) cout << cmd << endl;
-	system(cmd);
-}
-
-void manimate(int, char *const argf[], int n, char *const type,
-			  int xsize, int ysize)
 {
 	strstream buf;
 	buf << "animate -scene 0-" << n << " -size " << xsize << "x" << ysize
