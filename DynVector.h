@@ -8,16 +8,17 @@ class DynVector
 {
 	T *v;
 	int sz;
-
+	int top;
 public:
-	void Allocate(int s) {v=new T[sz=s];}
+	void Allocate(int s) {v=new T[sz=s]; top=-1;}
 	void Deallocate() {delete [] v; sz=0;}
 	
-	DynVector() : v(NULL), sz(0) {}
+	DynVector() : v(NULL), sz(0); top(-1) {}
 	DynVector(int s) {Allocate(s);}
 	~DynVector() {Deallocate();}
 
-	int Size() const {return sz;}
+	int Capacity() const {return sz;}
+	int Size() const {return top;}
 	
 	void Resize(int i) {
  		if (i == 0 && sz > 0) delete [] v;
@@ -30,10 +31,12 @@ public:
 			}
 		}
 		sz=i;
+		if(top >= sz) top=sz-1;
 	}
 	
 	T& operator [] (int i) {
 		if (i >= sz) Resize(max(i+1,2*sz));
+		if (i > top) top=i;
 		return v[i];
 	}
 	
@@ -41,10 +44,16 @@ public:
 	T *operator () () const {return v;}
 	operator T* () const {return v;}
 	
+	void PushBack(T value) {
+		top++;
+		if (top >= sz) Resize(max(top+1,2*sz));
+		v[top]=value;
+	}
+	
 	void Expand(int i) {if (i > sz) Resize(i);}
 
 	DynVector<T> operator = (const T *A) {
-		memcpy(v,A,sz*sizeof(T));
+		memcpy(v,A,top*sizeof(T));
 		return *this;
 	}
 };
