@@ -70,37 +70,7 @@ public:
 	
 	inline int InRange(T);
 	
-	void get_values(const char *arg, T (*rtn)(const char *))
-	{
-		int i=0;
-		char *ptr;
-		T value;
-		char *optarg=strdup(arg);
-
-		do {
-			const char *optarg0=strchr(optarg,')');
-			if(!optarg0) optarg0=optarg;
-			ptr=strchr(optarg0,',');
-			if(ptr) *ptr=0;
-			else ptr=optarg;
-			if(i >= nvar && param_warn) 
-				msg(OVERRIDE_GLOBAL,"Excess initializer \"%s\" to %s",
-					optarg,name);
-			else {
-				value=(*rtn)(optarg);
-
-				if(InRange(value)) var[i++]=value;
-				else if(param_warn) {
-					strstream buf;
-					buf << "Value \"" << value << "\" for "
-						<< name << " is invalid. Limits are "
-						<< min << " to " << max << ends;
-                    msg(OVERRIDE_GLOBAL,"%s",buf.str());
-				}
-			}	
-		} while ((ptr == optarg) ? 0 : (optarg=ptr+1));
-	}
-	
+	void get_values(const char *arg, T (*rtn)(const char *));
 };
 
 template<class T>
@@ -135,4 +105,36 @@ inline int Param<const char *>::InRange(const char *) {return 1;}
 inline int Param<char *>::InRange(char *) {return 1;}
 inline int Param<Complex>::InRange(Complex) {return 1;}
 
+template<class T>
+void Param<T>::get_values(const char *arg, T (*rtn)(const char *))
+{
+	int i=0;
+	char *ptr;
+	T value;
+	char *optarg=strdup(arg);
+
+	do {
+		const char *optarg0=strchr(optarg,')');
+		if(!optarg0) optarg0=optarg;
+		ptr=strchr(optarg0,',');
+		if(ptr) *ptr=0;
+		else ptr=optarg;
+		if(i >= nvar && param_warn) 
+			msg(OVERRIDE_GLOBAL,"Excess initializer \"%s\" to %s",
+				optarg,name);
+		else {
+			value=(*rtn)(optarg);
+
+			if(InRange(value)) var[i++]=value;
+			else if(param_warn) {
+				strstream buf;
+				buf << "Value \"" << value << "\" for "
+					<< name << " is invalid. Limits are "
+					<< min << " to " << max << ends;
+				msg(OVERRIDE_GLOBAL,"%s",buf.str());
+			}
+		}	
+	} while ((ptr == optarg) ? 0 : (optarg=ptr+1));
+}
+	
 #endif

@@ -65,7 +65,7 @@ protected:
 	XDR xdrs;
 public:
 	xstream() {buf=NULL;}
-	void xopen(const char *filename, char *mode, xdr_op xop) {
+	void xopen(const char *filename, const char *mode, xdr_op xop) {
 		clear();
 		buf=fopen(filename,mode);
 		if(buf) xdrstdio_create(&xdrs, buf, xop);
