@@ -80,10 +80,9 @@ int copy(char *oldname, char *newname)
 
 extern "C" int getdomainname(char *name, size_t len);
 
-struct utsname platform;
-
-const int ndomain=65;
-char domain[ndomain];
+static struct utsname platform;
+static const int ndomain=65;
+static char domain[ndomain];
 
 char *machine()
 {

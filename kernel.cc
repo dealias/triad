@@ -1,6 +1,6 @@
 /*                          T R I A D    
 An object-oriented C++ package for integrating initial value problems.
-Copyright (C) 1997 John C. Bowman (bowman@ipp-garching.mpg.de)
+Copyright (C) 1997 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -134,6 +134,7 @@ void adjust_parameters(double& dt, double& dtmax, double& tmax, int& itmax)
 int main(int argc, char *argv[])
 {
 	int i;
+	setup_fpu();
 	cout.precision(REAL_DIG);
 	
 	cout << newl << PROGRAM << " version " << VERSION << 
