@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.10";
+const char VERSION[]="1.11";
 
 #include "xstream.h"
 #include <iostream.h>
@@ -621,6 +621,7 @@ int main(int argc, char *argv[])
       break;
     case BAR:
       bar=atoi(optarg);
+      if(bar == 0) band=0
       if(bar < 0) msg(ERROR,"Invalid number of pixels: %s", optarg);
       break;
     case BAND:
