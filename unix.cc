@@ -20,7 +20,7 @@ typedef void stack_t;
 
 #include <string.h>
 #include <strstream.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <sys/utsname.h>
 
 #if _CRAY && !_CRAYMPP
