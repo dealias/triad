@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.24
+#define __ARRAY_H_VERSION__ 1.25
 
 // Defining NDEBUG improves optimization but disables argument checking.
 // Defining __NOARRAY2OPT inhibits special optimization of Array2[].
@@ -114,11 +114,10 @@ class array1 {
   array1() : size(0), state(unallocated) {}
   array1(unsigned int nx0) : state(unallocated) {Allocate(nx0);}
   array1(unsigned int nx0, T *v0) : state(unallocated) {Dimension(nx0,v0);}
+  array1(T *v0) : state(unallocated) {Dimension(INT_MAX,v0);}
   array1(const array1<T>& A) : v(A.v), size(A.size),
     state(A.test(temporary)) {}
-  array1(T *v0) {
-    Dimension(INT_MAX,v0);
-  }
+
   virtual ~array1() {Deallocate();}
 	
   void Freeze() {state=unallocated;}
