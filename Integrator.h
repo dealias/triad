@@ -28,7 +28,7 @@ inline Solve_RC IntegratorBase::CheckError()
 class Euler : public IntegratorBase {
 public:
 	const char *Name() {return "Euler";}
-	Solve_RC Solve(double, double);
+	Solve_RC Solve(double, double&);
 };
 
 class Midpoint : public IntegratorBase {
@@ -37,7 +37,33 @@ protected:
 public:
 	void Allocate(int n) {IntegratorBase::Allocate(n); y=new Var [n];}
 	const char *Name() {return "Midpoint Rule";}
-	Solve_RC Solve(double, double);
+	Solve_RC Solve(double, double&);
+};
+
+class AdamsBashforth : public IntegratorBase {
+	Var *y;
+	Var *source0, *source1, *source2;
+	double a0,a1,a2;
+	double b0,b1,b2;
+	int init;
+public:
+	void Allocate(int n) {
+		IntegratorBase::Allocate(n);
+		y=new Var [n];
+		source0=new(n) (Var);
+		source1=new Var[n];
+		source2=source;
+		init=2;
+	}
+	const char *Name() {return "Third-Order Adams-Bashforth";}
+	Solve_RC Solve(double, double&);
+	void TimestepDependence(double dt) {
+		a0=23.0/12.0*dt;
+		a1=-4.0/3.0*dt;
+		b0=a2=5.0/12.0*dt;
+		b1=2.0/3.0*dt;
+		b2=-1.0/12.0*dt;
+	}
 };
 
 class PC : public IntegratorBase {
@@ -55,7 +81,7 @@ public:
 		pgrow=0.5/order; pshrink=0.5/(order-1);
 	}
 	const char *Name() {return "Predictor-Corrector";}
-	Solve_RC Solve(double, double);
+	Solve_RC Solve(double, double&);
 	
 	void TimestepDependence(double dt) {
 		halfdt=0.5*dt;
@@ -91,7 +117,7 @@ public:
 		if(lasthalfdt == 0.0) for(int j=0; j < ny; j++) yp[j] = y0[j];
 		halfdt=0.5*dt;
 	}
-	const char *Name() {return "LeapFrog";}
+	const char *Name() {return "Leapfrog";}
 	void Predictor(double, double, int, int);
 	int Corrector(double, int, int, int);
 	void StandardPredictor(double t, double dt, int start, int stop) { 

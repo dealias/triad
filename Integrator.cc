@@ -118,7 +118,7 @@ void IntegratorBase::Allocate(int n)
 	ny=n; yi=NULL; source=new(n) (Var);
 }
 
-Solve_RC Euler::Solve(double t, double dt)
+Solve_RC Euler::Solve(double t, double& dt)
 {
 	Source(source,y0,t);
 	Problem->Transform(y0,t,dt,yi);
@@ -128,7 +128,7 @@ Solve_RC Euler::Solve(double t, double dt)
 	return SUCCESSFUL;
 }
 
-Solve_RC PC::Solve(double t, double dt)
+Solve_RC PC::Solve(double t, double& dt)
 {
 	errmax=0.0;
 	errmask=Problem->ErrorMask();
@@ -175,14 +175,50 @@ int PC::Corrector(double dt, int dynamic, int start, int stop)
 }
 
 // *** Need to add Transform and BackTransform here...
-Solve_RC Midpoint::Solve(double t, double dt)
+
+Solve_RC AdamsBashforth::Solve(double t, double& dt)
+{
+	Var *temp;
+	switch(init) {
+	case 0:
+		temp=source2; source2=source1; source1=source0; source0=temp;
+		Source(source0,y0,t);
+		for(int j=0; j < ny; j++) 
+			y[j]=y0[j]+a0*source0[j]+a1*source1[j]+a2*source2[j];
+		Source(source,y,t);
+		for(int j=0; j < ny; j++) 
+			y0[j] += b0*source[j]+b1*source0[j]+b2*source1[j];
+		break;
+	case 1:
+		temp=source1; source1=source0; source0=temp;
+	case 2:
+		// Initialize with 2nd-order predictor corrector
+		Source(source0,y0,t);
+		for(int j=0; j < ny; j++) y[j]=y0[j]+dt*source0[j];
+		Source(source,y,t);
+		double halfdt=0.5*dt;
+		for(int j=0; j < ny; j++) 
+			y0[j] += halfdt*(source[j]+source0[j]);
+		init--;
+		break;
+	}
+ 
+	return SUCCESSFUL;
+}
+
+// *** Need to add Transform and BackTransform here...
+Solve_RC Midpoint::Solve(double t, double& dt)
 {
 	for(int j=0; j < ny; j++) y[j]=y0[j];
+	
+	if(verbose > 1) cout << endl;
 	for(int i=0; i < 10; i++) {
 		if(i > 0) for(int j=0; j < ny; j++) y0[j]=0.5*(y0[j]+y[j]);
 		Source(source,y0,t);
 		for(int j=0; j < ny; j++) y0[j]=y[j]+dt*source[j];
+		if(verbose > 1) cout << y0[0] << endl;
 	}
+	
 	Problem->Stochastic(y0,t,dt);
 	return SUCCESSFUL;
 }
