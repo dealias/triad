@@ -47,6 +47,7 @@ static int preserve=0;
 
 int implicit=1;
 int zero=0;
+int invert=0;
 
 void cleanup();
 
@@ -85,19 +86,32 @@ int readframe(T& fin, int nx, int ny, int nz, float **value,
 	double vmin=DBL_MAX, vmax=-DBL_MAX;
 	
 	errno=0;
-	int nxy=nx*ny;
 	for(int k=0; k < nz; k++) {
 		float *valuek=value[k];
-		for(int i=0; i < nxy; i++) {
-			float v=get_value(fin);
-			if(fin.eof()) {
-				if(implicit || i > 0)
-					msg(WARNING,"End of file during processing");
-				return EOF;
+		int start,stop,incr;
+		if(invert) {
+			start=ny-1;
+			stop=-1;
+			incr=-1;
+		} else {
+			start=0;
+			stop=ny;
+			incr=1;
+		}
+		
+		for(int j=start; j != stop; j += incr) {
+			int nxj=nx*j;
+			for(int i=0; i < nx; i++) {
+				float v=get_value(fin);
+				if(fin.eof()) {
+					if(implicit || i > 0)
+						msg(WARNING,"End of file during processing");
+					return EOF;
+				}
+				if(v < vmin) vmin=v;
+				if(v > vmax) vmax=v;
+				valuek[nxj+i]=v;
 			}
-			if(v < vmin) vmin=v;
-			if(v > vmax) vmax=v;
-			valuek[i]=v;
 		}
 		if(zero && vmin < 0 && vmax > 0) {
 			vmax=max(-vmin,vmax);
@@ -115,6 +129,10 @@ int readframe(T& fin, int nx, int ny, int nz, float **value,
 	}
 	
 	if(implicit) {
+		if(byte && implicit) {
+			char c;
+			fin >> c;
+		}
 		int nx0,ny0,nz0;
 		fin >> nx0 >> ny0 >> nz0;
 		if(fin.eof()) return 1;
@@ -142,8 +160,8 @@ extern "C" int getopt(int argc, char *const argv[], const char *optstring);
 void usage(char *program)
 {
 	cerr << "Usage: " << program
-		 << " [-bfFghlmpvz] [-x mag] [-H hmag] [-V vmag] "
-		<< "[-B begin] [-E end] [-S skip]" << endl 
+		 << " [-bfFghilmpvz] [-x mag] [-H hmag] [-V vmag] " << endl
+		<< "[-B begin] [-E end] [-P palette] [-S skip]" << endl 
 		 << "           [-X xsize -Y ysize [-Z zsize]] file1 [file2 ...]"
 		 << endl;
 }
@@ -154,9 +172,10 @@ void options()
 	cerr << "-b\t\t single-byte (unsigned char instead of float) input"
 		 << endl;
 	cerr << "-f\t\t use a floating scale for each frame" << endl;
-	cerr << "-F\t\t use a floating scale for each cross-section" << endl;
+	cerr << "-F\t\t use a floating scale for each section" << endl;
 	cerr << "-g\t\t produce gray-scale output" << endl;
 	cerr << "-h\t\t help" << endl;
+	cerr << "-i\t\t invert vertical axis (y-origin at bottom)" << endl;
 	cerr << "-l\t\t label frames with file names and values" << endl;
 	cerr << "-m\t\t generate mpeg (.mpg) file" << endl;
 	cerr << "-p\t\t preserve temporary output files" << endl;
@@ -166,12 +185,14 @@ void options()
 	cerr << "-x mag\t\t overall magnification factor" << endl;
 	cerr << "-H hmag\t\t horizontal magnification factor" << endl;
 	cerr << "-V vmag\t\t vertical magnification factor" << endl;
-	cerr << "-B begin\t\t first frame to process" << endl;
+	cerr << "-B begin\t first frame to process" << endl;
 	cerr << "-E end\t\t last frame to process" << endl;
+	cerr << "-P palette\t palette (integer between 0 and " << NPalette-1 <<
+		")" << endl;
 	cerr << "-S skip\t\t interval between processed frames" << endl;
 	cerr << "-X xsize\t explicit horizontal size" << endl;
 	cerr << "-Y ysize\t explicit vertical size" << endl;
-	cerr << "-Z zsize\t explicit number of cross-sections/frame" << endl;
+	cerr << "-Z zsize\t explicit number of sections/frame" << endl;
 }
 
 int main(int argc, char *const argv[])
@@ -185,13 +206,15 @@ int main(int argc, char *const argv[])
 	int syntax=0;
 	extern int optind;
 	extern char *optarg;
+	int palette=0;
+	u_char *red,*green,*blue;
 	
 #ifdef __GNUC__	
 	optind=0;
 #endif	
 	errno=0;
 	while (1) {
-		int c = getopt(argc,argv,"bfghlmpvzFx:H:V:B:E:S:X:Y:Z:");
+		int c = getopt(argc,argv,"bfghilmpvzFx:H:V:B:E:P:S:X:Y:Z:");
 		if (c == -1) break;
 		switch (c) {
 		case 'b':
@@ -212,6 +235,9 @@ int main(int argc, char *const argv[])
 			options();
 			cerr << endl;
 			exit(0);
+		case 'i':
+			invert=1;
+			break;
 		case 'l':
 			label=1;
 			break;
@@ -241,6 +267,11 @@ int main(int argc, char *const argv[])
 			break;
 		case 'E':
 			end=atoi(optarg);
+			break;
+		case 'P':
+			palette=atoi(optarg);
+			if(palette < 0 || palette >= NPalette)
+				msg(ERROR,"Invalid palette (%d)",palette);
 			break;
 		case 'S':
 			skip=atoi(optarg);
@@ -295,7 +326,11 @@ int main(int argc, char *const argv[])
 	rgbdir=rgbdirbuf.str();
 	
 	char *const format=gray ? "gray" : "rgb";
-	int PaletteMax=gray ? 255 : ColorPaletteMax;
+	int PaletteMax=gray ? 255 : ColorPaletteMax[palette];
+	
+	red=Red[palette];
+	green=Green[palette];
+	blue=Blue[palette];
 	
 	for(int f=0; f < nfiles; f++) {
 		char *fieldname=argf[f];

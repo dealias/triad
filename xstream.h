@@ -1,5 +1,5 @@
 /* C++ interface to the XDR External Data Representation I/O routines.
-   Version 1.0
+   Version 1.1
    Copyright (C) 1997 John C. Bowman (bowman@ipp-garching.mpg.de)
 
 This program is free software; you can redistribute it and/or modify
@@ -19,7 +19,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __xstream_h__
 #define __xstream_h__ 1
 
+#ifndef _ALL_SOURCE
 #define _ALL_SOURCE 1
+#endif
+
 #ifdef _POSIX_SOURCE
 #undef _POSIX_SOURCE
 #include <rpc/rpc.h>
