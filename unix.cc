@@ -31,11 +31,17 @@ void cputime(double *cpu)
 	cpu[1] = 0.0;
 	cpu[2] = ((double) jbuf.j_scputime)/CLOCKS_PER_SEC;
 #else
+#if 0	
 	struct tms buf;
 	times(&buf);
 	cpu[0] = ((double) buf.tms_utime)/CLOCKS_PER_SEC;
 	cpu[1] = ((double) buf.tms_cutime)/CLOCKS_PER_SEC;
 	cpu[2] = ((double) (buf.tms_stime+buf.tms_cstime))/CLOCKS_PER_SEC;
+#else	
+	static const double clockinv=1.0/CLOCKS_PER_SEC;
+	cpu[0]=clock()*clockinv;
+	cpu[1]=cpu[2]=0.0;
+#endif
 #endif
 }
 
