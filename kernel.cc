@@ -347,11 +347,13 @@ void dump(int it, int final, double tmax)
 				strstream rcheck;
 				if(tmpdir) rcheck << tmpdir << dirsep;
 				rcheck << rname << "." << iter-microsteps << ends;
-				if(tmpdir ? copy(rname,rcheck.str()) : 
-				   rename(rname,rcheck.str()))
+				if(tmpdir) {
+					mkdir(tmpdir,0xFFFF);
+					rename(rname,rcheck.str());
 					msg(WARNING,"Cannot rename %s to checkpoint file %s",rname,
 						rcheck.str());
-			}
+			} else copy(rname,rcheck.str())
+				  
 			if(rename(rtemp,rname))
 				msg(WARNING,"Cannot rename restart file %s",rtemp);
 		}
