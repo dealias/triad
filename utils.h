@@ -178,10 +178,7 @@ extern ExitCode exit_signal;
 
 #define __ArrayExtensions
 #define __ExternalArrayExit
-void __ArrayExit(char *x)
-{
-	msg(ERROR,x);
-} 
+void __ArrayExit(char *x);
 	
 void mailuser(const char *text);
 void remove_dir(const char *text);
