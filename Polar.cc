@@ -131,10 +131,12 @@ void Partition<Polar,Cartesian>::MakeBins()
 						m,ModeBin[Index]);
 				ModeBin[Index]=i;
 				ModeCount++;
+				if(ModeCount >= Ndiscrete) 
+					msg(ERROR, "Number of modes is greater than Nx*Ny-1");
 			}
 		}
-		if(ModeCount != Ndiscrete) 
-			msg(ERROR, "Actual and calculated number of modes disagree");
+
+			
 		for(i=0; i < Ndiscrete; i++) {
 			if(ModeBin[i] == unassigned) 
 				msg(ERROR, "Discrete mode (%d) is not contained in any bin",i);
