@@ -18,7 +18,6 @@ class xios {
 public:
     enum io_state {goodbit=0, eofbit=1, failbit=2, badbit=4};
     enum open_mode {in=1, out=2, app=8, trunc=16};
-	typedef int iostate;
 private:	
 	int _state;
 public:	
