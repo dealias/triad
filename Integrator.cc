@@ -1,7 +1,7 @@
 #include "options.h"
 #include "kernel.h"
 
-inline void IntegratorBase::ChangeTimestep(double& dt, const double dtnew,
+inline void IntegratorBase::ChangeTimestep(double& dt, double dtnew,
 										   const double t, const double sample)
 {
 	if(sample && dtnew > sample) { // New time step must be <= sample.

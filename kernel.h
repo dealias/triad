@@ -108,7 +108,7 @@ public:
 	}
 	void Integrate(Var *const y, double& t, double tmax, double& dt, 
 				   const double sample);
-	void ChangeTimestep(double& dt, const double dtnew, const double t,
+	void ChangeTimestep(double& dt, double dtnew, const double t,
 						const double sample);
 	
 	Solve_RC CheckError(double errmax);
