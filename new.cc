@@ -3,7 +3,7 @@
 #include <new.h>
 // #include <mem_test_user.h>
 
-#if define(__linux__) && defined (__i386__)
+#if defined(__linux__) && defined (__i386__)
 #include <fpu_control.h>
 // Setup FPU for exceptions on overflow, zero divide and NaN.
 fpu_control_t __fpu_control=
