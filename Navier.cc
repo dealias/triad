@@ -257,7 +257,7 @@ void NWave::InitialConditions()
 			for(m=0; m < Npsi; m++) {
 				Real DkDxinv=1.0/(Dx*Geometry->Area(m));
 				Real kx=Geometry->X(m);
-				Real norm=sqrt(Normalization(m)/Geometry->K2(m));
+				Real norm=sqrt(Geometry->Normalization(m)/Geometry->K2(m));
 				for(i=0; i < ngridx; i++) {
 					Complex *p=xcoeff+i*Npsi;
 					Real X=i*L/ngridx;
