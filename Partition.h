@@ -10,8 +10,6 @@
 #define PARTITION(key,discrete) {\
 new Entry<Partition<key,discrete>,GeometryBase>(#key,GeometryTable);}
 
-typedef unsigned int Index_t;
-
 class Triad {
 public:
 	Var *pq;
@@ -82,24 +80,70 @@ template<class T, class D>
 ostream& operator << (ostream& os, const Bin<T,D>& y) {
 	os << "[" << y.min << "\t" << y.cen << "\t" << y.max << "]";
 	if(discrete) os << ": " << y.area;
-	os << endl;
 	return os;
 }
 
+class WeightIndex {
+	int k,p,q;
+public:
+	WeightIndex() {}
+	WeightIndex(int k0, int p0, int q0) : k(k0), p(p0), q(q0) {}
+	inline operator double();
+	friend inline int operator > (const WeightIndex& a, const WeightIndex& b);
+	friend inline int operator < (const WeightIndex& a, const WeightIndex& b);
+	friend inline int operator == (const WeightIndex& a, const WeightIndex& b);
+	friend inline istream& operator >> (istream& s, WeightIndex& y);
+	friend inline ostream& operator << (ostream& s, const WeightIndex& y);
+};
+
+extern WeightIndex WeightN;
+
+inline int operator > (const WeightIndex& a, const WeightIndex& b)
+{
+	return a.k > b.k || (a.k == b.k && a.p > b.p) ||
+		(a.k == b.k && a.p == b.p && a.q > b.q);
+}
+	
+inline int operator < (const WeightIndex& a, const WeightIndex& b)
+{
+	return a.k < b.k || (a.k == b.k && a.p < b.p) ||
+		(a.k == b.k && a.p == b.p && a.q < b.q);
+}
+	
+inline int operator == (const WeightIndex& a, const WeightIndex& b)
+{
+	return (a.k == b.k && a.p == b.p && a.q == b.q);
+}
+	
+inline WeightIndex::operator double() {
+	return ((double)q)/WeightN.k/WeightN.p/WeightN.q+
+		((double)p)/WeightN.k/WeightN.p+((double)k)/WeightN.k;
+}
+	
+inline istream& operator >> (istream& s, WeightIndex& y) {
+	s >> y.k >> y.p >> y.q;
+    return s;
+}
+
+inline ostream& operator << (ostream& s, const WeightIndex& y) {
+	s << y.k << " " << y.p << " " << y.q;
+    return s;
+}
+
 class Weight {
-	Index_t index;
+	WeightIndex index;
 	McWeight value;
 public:
-	void Store(Index_t index0, Mc value0) {
+	void Store(WeightIndex index0, Mc value0) {
 		index=index0;
 		value=value0;
 	}
-	Index_t Index() const {return index;}
+	WeightIndex Index() const {return index;}
 	Mc Value() const {return value;}
 };
 
 inline istream& operator >> (istream& s, Weight& y) {
-	Index_t index;
+	WeightIndex index;
 	Mc value;
 	s >> index >> value;
 	y.Store(index,value);
@@ -114,12 +158,11 @@ inline ostream& operator << (ostream& s, const Weight& y) {
 template<class T>
 class Hash {
 	int n;
-	T first, last;
 	double factor,constant;
 	int *table;
 public:
 	virtual inline int hash(T value) {
-		return (int) (value*factor+constant);
+		return (int) (((double) value)*factor+constant);
 	}
 	virtual inline int hash_verify(T value) {
 		int h=hash(value);
@@ -130,8 +173,10 @@ public:
 	
 	Hash(int nhash, int nvalue, T value(int)) {
 		if(nvalue < 1) return;
-		n=nhash; first=value(0); last=value(nvalue-1);
-		factor=((double) n-1)/(last-first); constant=0.5-first*factor;
+		n=nhash; 
+		T first=value(0);
+		factor=(n-1)/(((double) value(nvalue-1))-(double) (first));
+		constant=0.5-((double) first)*factor;
 		table=new int[n+1];
 		int j=0;
 		for(int i=0; i < n; i++) {
@@ -147,7 +192,7 @@ public:
 };
 	
 extern Weight *weightBase;
-inline Index_t HashWeightIndex(int j)
+inline WeightIndex HashWeightIndex(int j)
 {
 	return weightBase[j].Index();
 }
@@ -155,9 +200,8 @@ inline Index_t HashWeightIndex(int j)
 template<class T, class D>
 class Partition : public GeometryBase {
 	DynVector<Weight> weight;
-	Hash<Index_t> *hash;
+	Hash<WeightIndex> *hash;
 	int Nweight,Nhash;
-	Index_t nmax;
 	Bin<T,D> *bin; // pointer to table of bins
 public:
 	char *Name();
@@ -186,10 +230,6 @@ public:
 	inline Mc Ckpq(T&, T&, T&);
 	
 	int pq(int p, int q) {return n*p-p*(p+1)/2+q;} // Index to element p <= q
-	Index_t WeightIndex(int k, int p, int q) {
-		return n*k*(n-k+2)/2+k*(k-1)*(k-2)/6+(2*n-k-p-1)*(p-k)/2+q-k-(p+1)
-			-(2*n-1)*(k+1)+k*(k+1)+n; // Index to element k < p < q
-	}
 };
 
 
@@ -200,7 +240,7 @@ void Partition<T,D>::GenerateWeights() {
 	Mc binaverage;
 	int k,p,q,first;
 	int lastindex=0;
-	Index_t kpq,previous,lastkpq=0;
+	WeightIndex kpq,previous,lastkpq=WeightIndex(0,0,0);
 	double realtime,lasttime=time(NULL);
 	double interval=15.0;
 	ofstream fout;
@@ -215,7 +255,7 @@ void Partition<T,D>::GenerateWeights() {
 		previous=weight[Nweight-1].Index();
 		first=0;
 	} else {
-		previous=0;
+		previous=WeightIndex(0,0,0);
 		first=1;
 	}
 	
@@ -226,6 +266,15 @@ void Partition<T,D>::GenerateWeights() {
 			for(q=p+1; q < n; q++) {
 				kpq=WeightIndex(k,p,q);
 				if(kpq > previous || first) {
+					realtime=time(NULL);
+					if(realtime-lasttime > interval || verbose > 2) {
+						lasttime=realtime;
+						cout << (int) (100.0*((double) kpq)+0.5) << 
+							"% of weight factors generated: (" << kpq <<
+							")/(" <<	WeightN << ")." << endl;
+						lastindex=out_weights(fout,weight.Base(),lastindex,
+											  Nweight);
+					}
 					if(!discrete && (coangular(&bin[k],&bin[p]) ||
 									 coangular(&bin[p],&bin[q]) ||
 									 coangular(&bin[q],&bin[k])))
@@ -233,21 +282,12 @@ void Partition<T,D>::GenerateWeights() {
 					else binaverage=ComputeBinAverage(&bin[k],&bin[p],&bin[q]);
 				
 					if(binaverage) {
-						if(verbose > 3) cout << k << "," << p << "," << q <<
-											": " << binaverage << endl;
+						if(verbose > 3) cout << kpq << ": " << binaverage <<
+											endl;
 						if(kpq > lastkpq || first) {
 							weight[Nweight++].Store(kpq,binaverage);
 						} else msg(ERROR,"Index is not strictly increasing");
 						lastkpq=kpq; first=0;
-					}
-					realtime=time(NULL);
-					if(realtime-lasttime > interval || verbose > 2) {
-						lasttime=realtime;
-						cout << 100*(kpq+1)/nmax << 
-							"% of weight factors generated (" << kpq+1 <<
-							"/" <<	nmax << ")." << endl;
-						lastindex=out_weights(fout,weight.Base(),lastindex,
-											  Nweight);
 					}
 				}
 			}
@@ -276,7 +316,7 @@ inline Mc Partition<T,D>::FindWeight(int k, int p, int q) {
 
 	if(p >= Nmode) {int K=k; k=p-Nmode; p=q-Nmode; q=K+Nmode; conjflag=1;}
 	
-	Index_t kpq=WeightIndex(k,p,q);
+	WeightIndex kpq=WeightIndex(k,p,q);
 	int h=hash->hash(kpq);
 	if(h < 0 || h >= Nhash) return 0.0; // no match found.
 	int l=hash->Table(h);
@@ -284,20 +324,21 @@ inline Mc Partition<T,D>::FindWeight(int k, int p, int q) {
 	
 	while(l < u) {
 		int i=(l+u)/2;
-		int cmp=kpq-weight[i].Index();
-		if(cmp == 0) {
-			Mc value=weight[i].Value();
+		Weight *w=weight+i;
+		if(kpq == w->Index()) {
+			Mc value=w->Value();
 			if(conjflag) value=conj(value);
 			return sign*value*Ckpq(bin[k0].cen,bin[p0].cen,bin[q0].cen);
+		} else {
+			if(kpq < w->Index()) u=i;
+			else l=i+1;
 		}
-		if(cmp < 0) u=i;
-		else if(cmp > 0) l=i+1;
 	}
 	return 0.0;	// no match found.
 }
 
-int get_weights(DynVector<Weight>& weight, int nmax, int *Nweight,
-				char *filename,	char *filenamef);
+int get_weights(DynVector<Weight>& weight, int *Nweight, char *filename,
+				char *filenamef);
 void save_weights(DynVector<Weight>& w, int n, char *filename);
 void save_formatted_weights(DynVector<Weight>& w, int n, char *filename);
 
@@ -313,8 +354,8 @@ void Partition<T,D>::Initialize() {
 		
 	char *filename=WeightFileName(""), *filenamef=WeightFileName("f");
 	
-	nmax=WeightIndex(Nmode,Nmode,n);
-	if(!get_weights(weight,nmax,&Nweight,filename,filenamef)) {
+	WeightN=WeightIndex(Nmode,Nmode,n);
+	if(!get_weights(weight,&Nweight,filename,filenamef)) {
 		GenerateWeights();
 		save_weights(weight,Nweight,filename);
 	}
@@ -323,7 +364,7 @@ void Partition<T,D>::Initialize() {
 	weightBase=weight.Base();
 
 	Nhash=2*Nweight;
-	hash=new Hash<Index_t>(Nhash,Nweight,HashWeightIndex);
+	hash=new Hash<WeightIndex>(Nhash,Nweight,HashWeightIndex);
 	cout << "HASH TABLE CONSTRUCTED." << endl;
 	
 	Ntriad=0;
@@ -396,7 +437,7 @@ void Partition<T,D>::List(ostream &os)
 	os << "[" << bin[i].min << "\t" << bin[i].cen << "\t" << bin[i].max
 	   << "]" << endl;
 #else	
-	os << bin[i];
+	os << bin[i] << endl;
 #endif	
 	}
 	cout << endl;

@@ -20,6 +20,7 @@ public:
 		if (i >= sz) v=new(v,sz=max(i+1,2*sz)) (T);
 		return v[i];
 	}
+	T *operator + (int i) {return v+i;}
 	
 	void Resize(int i) {v=new(v,sz=i) (T);}
 

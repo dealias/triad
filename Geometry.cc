@@ -17,8 +17,11 @@ int GeometryKeyCompare(const void *key, const void *p, const size_t n)
 
 static int formatted;
 
-int get_weights(DynVector<Weight>& weight, int nmax, int *Nweight,
-				char *filename,	char *filenamef) {
+WeightIndex WeightN;
+
+int get_weights(DynVector<Weight>& weight, int *Nweight, char *filename,
+				char *filenamef)
+{
 	ifstream fin;
 	int complete;
 	int n=0;
@@ -53,8 +56,8 @@ int get_weights(DynVector<Weight>& weight, int nmax, int *Nweight,
 			if(complete) fin.read((char *) weight.Base(),n*sizeof(Weight));
 			else {
 				while(fin.read((char *) &weight[n],sizeof(Weight))) n++;
-				if(n) cout << n << " WEIGHT FACTORS READ ("
-						   << weight[n-1].Index()+1 << "/" << nmax << ")."
+				if(n) cout << n << " WEIGHT FACTORS READ: ("
+						   << weight[n-1].Index() << ")/(" << WeightN << ")."
 						   << endl;
 			}
 		}
