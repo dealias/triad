@@ -29,12 +29,4 @@ public:
 	}
 };
 
-template<class T>
-ostream& operator << (ostream& s, DynVector<T>& A)
-{
-	int i, sz=A.Size();
-	for(i=0; i < sz; i++) s << A[i] << " ";
-	return s;
-}
-
 #endif

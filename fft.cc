@@ -28,7 +28,7 @@ void rfft_init(unsigned int log2n)
 	WTable[0]=Complex(0.0,0.5);
 	
 	Complex wp=1.0+wpTable[log2n];
-	for(int i=1; i < n4; i++) WTable[i]=WTable[i-1]*wp;
+	for(unsigned int i=1; i < n4; i++) WTable[i]=WTable[i-1]*wp;
 }
 
 void fft_br(Complex *data, unsigned int log2n)

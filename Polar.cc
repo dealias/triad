@@ -1,6 +1,8 @@
 #include "kernel.h"
 #include "Polar.h"
 
+#include <iomanip.h>
+
 // Polar vocabulary
 int Nr=3;
 int Nth=6;
@@ -129,6 +131,7 @@ void Bin<Polar,Cartesian>::MakeModes()
 		w++;
 	}
 	mode.Resize(nmode);
+	if(verbose > 3) for(int i=0; i < nmode; i++) cout << mode[i] << endl;
 }
 
 static const Real linacc=0.01;
@@ -173,9 +176,9 @@ void BinAveragedLinearity(Real& nu)
 	Real ans;
 	if(discrete) {
 		ans=0.0;
-		Cartesian *mk=b.mode.Base(), *mkstop=mk+b.nmode; 
+		Discrete<Cartesian> *mk=b.mode.Base(), *mkstop=mk+b.nmode; 
 		for(; mk < mkstop; mk++) {
-			ans += growth(Polar(mk->K(),mk->Th()));
+			ans += mk->weight*growth(Polar(mk->value.K(),mk->value.Th()));
 		}
 	} else {
 		int iflag;
@@ -193,9 +196,9 @@ void BinAveragedLinearity(Complex& nu)
 	nu=ans;
 	if(discrete) {
 		ans=0.0;
-		Cartesian *mk=b.mode.Base(), *mkstop=mk+b.nmode; 
+		Discrete<Cartesian> *mk=b.mode.Base(), *mkstop=mk+b.nmode; 
 		for(; mk < mkstop; mk++) {
-			ans += frequency(Polar(mk->K(),mk->Th()));
+			ans += mk->weight*frequency(Polar(mk->value.K(),mk->value.Th()));
 		}
 	} else {
 		if(!simpfast(ThAveragedFrequency,b.min.r,b.max.r,linacc,ans,dxmax,
@@ -220,12 +223,14 @@ ComputeBinAverage(Bin<Polar,Cartesian> *k, Bin<Polar,Cartesian> *p,
 	Real sum;
 	if(discrete) {
 		sum=0.0;
-		Cartesian *mk=k->mode.Base(), *mkstop=mk+k->nmode; 
-		Cartesian *mp=p->mode.Base(), *mpstop=mp+p->nmode; 
+		Discrete<Cartesian> *mk=k->mode.Base(), *mkstop=mk+k->nmode; 
+		Discrete<Cartesian> *mp=p->mode.Base(), *mpstop=mp+p->nmode; 
 		for(; mk < mkstop; mk++) {
 			for(; mp < mpstop; mp++) {
-				Cartesian mq=-*mk-*mp;
-				if(q->InBin(mq)) sum += Jkpq(*mk,*mp,mq);
+				Cartesian mq=-mk->value-mp->value;
+				const Real qweight=q->InBin(mq);
+				if(qweight) sum += mk->weight*mp->weight*qweight*
+								Jkpq(mk->value,mp->value,mq);
 			}
 		}
 	} else {

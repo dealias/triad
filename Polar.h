@@ -33,10 +33,33 @@ public:
 	Real Y() const {return r*sin(th);}
 };
 
-inline int InInterval(const Cartesian& x, const Polar& a, const Polar& b)
+inline Real InInterval(const Cartesian& x, const Polar& a, const Polar& b)
 {
-	Real xK2=x.K2(), xTh=x.Th();
-	return xK2 >= a.K2() && xK2 < b.K2() && xTh >= a.Th() && xTh < b.Th();
+	const Real width=1000.0;
+	const Real fuzz1=1.0-width*REAL_EPSILON;
+	const Real fuzz2=1.0+width*REAL_EPSILON;
+	const Real a1=a.K2()*fuzz1, a2=a.K2()*fuzz2;
+	const Real b1=b.K2()*fuzz1, b2=b.K2()*fuzz2;
+	
+	const Real xK2=x.K2();
+	if(xK2 < a1 || xK2 >= b2) return 0.0;
+	
+	const Real xTh=x.Th();
+	Real A1,A2,B1,B2;
+	if(a.Th() >= 0.0) {A1=a.Th()*fuzz1; A2=a.Th()*fuzz2;}
+	else {A1=a.Th()*fuzz2; A2=a.Th()*fuzz1;}
+	if(b.Th() >= 0.0) {B1=b.Th()*fuzz1, B2=b.Th()*fuzz2;}
+	else {B1=b.Th()*fuzz2, B2=b.Th()*fuzz1;}
+	
+	if(xTh < A1 || xTh >= B2) return 0.0;
+	if(xK2 >= a2 && xK2 < b1 && xTh >= A2 && xTh < B1) return 1.0;
+	
+	Real factor=1.0;
+	if(xK2 < a2 && a.K() > krmin) factor *= (xK2-a1)/(a2-a1);
+	else if(xK2 >= b1 && b.K() < krmax) factor *= (xK2-b1)/(b2-b1);
+	if(xTh < A2 && a.Th() > kthneg) factor *= (xTh-A1)/(A2-A1);
+	else if(xTh >= B1) factor *= (xTh-B1)/(B2-B1);
+	return factor;
 }
 
 inline int operator == (const Polar& x, const Polar& y)
@@ -84,7 +107,7 @@ inline ostream& operator << (ostream& os, const Polar& y) {
 
 inline Real Bin<Polar,Cartesian>::Area()
 {
-	if(discrete) return nmode;
+	if(discrete) return area;
 	else return 0.5*(max.r*max.r-min.r*min.r)*(max.th-min.th);
 }
 

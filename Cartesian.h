@@ -15,7 +15,9 @@ public:
 	Real K2() const {return x*x+y*y;}
 	Real K() const {return sqrt(K2());}
 	Real Th() const {
+#if _CRAY		
 		if(x == 0.0 && y == 0.0) return 0.0;
+#endif		
 		Real th=atan2(y,x);
 		return (th == PI) ? -PI : th;
 	}

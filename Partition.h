@@ -32,14 +32,33 @@ extern int *qStart;
 extern DynVector<Triad> triad;
 extern TriadLimits *triadLimits;
 
+template<class D>
+class Discrete
+{
+public:
+	D value;
+	Real weight;
+	Discrete() {}
+	Discrete(const D& value0, const Real weight0) {
+		value=value0; weight=weight0;
+	}
+};
+
+template<class D>
+ostream& operator << (ostream& os, const Discrete<D>& y) {
+	os << y.value << ": " << y.weight;
+	return os;
+}
+
 template<class T, class D>
 class Bin {
 public:
 	T min,max,cen;
 	int nmode;
-	DynVector<D> mode;
+	Real area;
+	DynVector<Discrete<D> > mode;
 	
-	Bin() {nmode=0;}
+	Bin() {nmode=0; area=0.0;}
 	T Delta() {return (max-min);}
 	Real Area();
 	
@@ -49,15 +68,21 @@ public:
 	Real X() {return cen.X();}
 	Real Y() {return cen.Y();}
 	
-	int InBin(const D& m) {return InInterval(m,min,max);}
-	void Count(const D& m) {if(InBin(m)) mode[nmode++]=m;}
+	Real InBin(const D& m) {return InInterval(m,min,max);}
+	void Count(const D& m) {
+		const Real weight=InBin(m); 
+		if(weight) {
+			area += weight;
+			mode[nmode++].Discrete(m,weight);
+		}
+	}
 	void MakeModes();
 };
 
 template<class T, class D>
 ostream& operator << (ostream& os, const Bin<T,D>& y) {
 	os << "[" << y.min << "\t" << y.cen << "\t" << y.max << "]";
-	if(discrete) os << ": " << y.nmode;
+	if(discrete) os << ": " << y.area;
 	os << endl;
 	return os;
 }
@@ -329,6 +354,7 @@ void Partition<T,D>::Initialize() {
 				nkpq=FindWeight(k,p,q);
 				if(nkpq != 0.0)	{
 					if(p==q) nkpq *= 0.5;
+					if(norm == 0.0) msg(ERROR,"Invalid weight factor");
 					triad[Ntriad++].Store(pq,nkpq*norm);
 				}
 			}
