@@ -208,13 +208,13 @@ public:
 	int Valid(char *s) {return strcmp(s,"SR")==0;}
 	char *WeightFileName(char *suffix);
 	void MakeBins();
-	void List(ostream &os);
+	inline void List(ostream &os);
 	Mc ComputeBinAverage(Bin<T,D> *k, Bin<T,D> *p, Bin<T,D> *q);
 	Mc FindWeight(int k, int p, int q);
 
 	void GenerateWeights();
 	void Initialize();
-	void ListTriads(ostream &os);
+	inline void ListTriads(ostream &os);
 	
 	Real Area(int k) {return bin[k].Area();}
 	Real K(int k) {return bin[k].K();}
@@ -422,7 +422,7 @@ void Partition<T,D>::Initialize() {
 }
 
 template<class T, class D>
-void Partition<T,D>::ListTriads(ostream &os) {
+inline void Partition<T,D>::ListTriads(ostream &os) {
 	int j;
 	os << newl << Ntriad << " Triads:" << endl;
 	for(j=0; j < Ntriad; j++) {
@@ -432,7 +432,7 @@ void Partition<T,D>::ListTriads(ostream &os) {
 }
 
 template<class T, class D>
-void Partition<T,D>::List(ostream &os)
+inline void Partition<T,D>::List(ostream &os)
 {
 	os << "         " << Name() << " Bin Geometry:" << endl;
 	for(int i=0; i < n; i++) {

@@ -22,8 +22,8 @@ public:
 	}
 
 	void MakeBins();
-	void List(ostream &);
-	void Initialize();
+	inline void List(ostream &);
+	inline void Initialize();
 	
 	int InGrid(T &);
 	Real Area(int) {return 1.0;}
@@ -38,19 +38,19 @@ public:
 	Real Normalization(int);
 	
 	Nu Linearity(int);
-	Real Forcing(int);
+	inline Real Forcing(int);
 };
 
-
 template<class T>
-void Basis<T>::List(ostream &os)
+inline void Basis<T>::List(ostream &os)
 {
 	os << "         " << Name() << " Mode Geometry:" << endl;
 	for(int i=0; i < n; i++) os << mode[i] << newl;
 	os << flush;
 }
+
 template<class T>
-void Basis<T>::Initialize()
+inline void Basis<T>::Initialize()
 {
 	int n2=1 << (log2n-1);
 	cout << n2 << " FFT COMPONENTS ALLOCATED." << endl;
@@ -77,7 +77,7 @@ Nu Basis<T>::Linearity(int i)
 void ForcingAt(int i, Real &force);
 
 template <class T>
-Real Basis<T>::Forcing(int i)
+inline Real Basis<T>::Forcing(int i)
 {
 	Real force;
 	ForcingAt(i,force);
