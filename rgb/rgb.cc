@@ -273,11 +273,9 @@ int readframe(ixstream& xin, int nx, int ny, int nz, Array3<float> value,
 
 void montage(int nfiles, char *const argf[], int n, char *const format,
 			 char *const type);
-void identify(int argc, char *const argf[], int n, char *const type,
-			  int& xsize, int& ysize);
-void mpeg(int argc, char *const argf[], int n, char *const type,
-		  int xsize, int ysize);
-void animate(int argc, char *const argf[], int n, char *const type,
+void identify(int argc, int n, char *const type, int& xsize, int& ysize);
+void mpeg(int argc, int n, char *const type, int xsize, int ysize);
+void animate(int argc, char *const filename, int n, char *const type,
 			 const char *pattern, int xsize, int ysize);
 	
 #ifdef __i386__
@@ -343,7 +341,7 @@ void options()
 	cerr << "-reverse\t reverse palette direction" << endl;
 	cerr << "-ncolors n\t maximum number of colors to generate (default 65536)"
 		 << endl; 
-	cerr << "-display\t display single frame with xv" << endl;
+	cerr << "-view\t view single frame with xv" << endl;
 	cerr << "-background n\t background color" << endl; 
 	cerr << "-gradient\t apply intensity gradient to spectral palettes" 
 		 << endl; 
@@ -428,7 +426,7 @@ int main(int argc, char *const argv[])
                {"reverse", 0, &reverse, 1},
                {"symmetric", 0, &symmetric, 1},
                {"rescale", 0, &rescale, 1},
-               {"display", 0, &display, 1},
+               {"view", 0, &display, 1},
                {"gradient", 0, &gradient, 1},
                {"damp", 0, &damp, 1},
                {"nobar", 0, &nobar, 1},
@@ -468,7 +466,7 @@ int main(int argc, char *const argv[])
 	errno=0;
 	while (1) {
 		int c = getopt_long_only(argc,argv,
-								 "bdfghbilmprvFo:x:H:V:B:E:L:O:U:S:X:Y:Z:",
+								 "bdfghilmprvFo:x:H:V:B:E:L:O:U:S:X:Y:Z:",
 								 long_options,&option_index);
 		if (c == -1) break;
 		int nargs;
@@ -990,13 +988,13 @@ int main(int argc, char *const argv[])
 				if(make_mpeg) montage(nfiles,argf,0,format,"miff");
 				for(n=0; n < nset; n++) 
 					montage(nfiles,argf,n,format,make_mpeg ? "yuv" : "miff");
-				identify(nfiles,argf,0,"miff",xsize,ysize);
-				if(make_mpeg) mpeg(nfiles,argf,nset-1,"mpg",xsize,ysize);
-				else animate(nfiles,argf,nset-1,"miff","%d",xsize,ysize);
+				identify(nfiles,0,"miff",xsize,ysize);
+				if(make_mpeg) mpeg(nfiles,nset-1,"mpg",xsize,ysize);
+				else animate(nfiles,outname,nset-1,"miff","%d",xsize,ysize);
 			} else {
 				strstream buf;
 				buf << "%0" << NDIGITS << "d" << ends;
-				animate(nfiles,argf,nset-1,format,buf.str(),xsize,ysize);
+				animate(nfiles,argf[0],nset-1,format,buf.str(),xsize,ysize);
 			}
 		}
 	}
@@ -1074,8 +1072,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 	}
 }
 
-void identify(int, char *const argf[], int n, char *const type,
-			  int& xsize, int& ysize)
+void identify(int, int n, char *const type, int& xsize, int& ysize)
 {
 	strstream buf;
 	char *iname=".identify";
@@ -1097,8 +1094,7 @@ void identify(int, char *const argf[], int n, char *const type,
 	fin >> ysize;
 }
 
-void mpeg(int, char *const argf[], int n, char *const type,
-		  int xsize, int ysize)
+void mpeg(int, int n, char *const type, int xsize, int ysize)
 {
 	strstream buf;
 	buf << "mpeg -a 0 -b " << n << " -h " << xsize << " -v " << ysize
@@ -1111,12 +1107,12 @@ void mpeg(int, char *const argf[], int n, char *const type,
 	system(cmd);
 }
 
-void animate(int, char *const argf[], int n, char *const type, 
+void animate(int, char *const filename, int n, char *const type, 
 			 const char *pattern, int xsize, int ysize)
 {
 	strstream buf;
 	buf << "animate -scene 0-" << n << " -size " << xsize << "x" << ysize
-		<< " " << type << ":" << rgbdir << outname << pattern << "." << type
+		<< " " << type << ":" << rgbdir << filename << pattern << "." << type
 		<< ends;
 	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;
