@@ -567,9 +567,9 @@ void GaussJordan(const Array2<T>& a, const Array2<T>& b)
   assert(&a != &b && n == a.Ny() && n == b.Nx());
 	
   // Improve to reuse work arrays here: JCB
-  Array1<T> indx_c(n);
-  Array1<T> indx_r(n);
-  Array1<T> pivot(n);
+  Array1<int> indx_c(n);
+  Array1<int> indx_r(n);
+  Array1<int> pivot(n);
 
   for(unsigned int j=0; j < n; j++) {
     pivot[j]=0;
