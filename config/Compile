@@ -4,5 +4,7 @@ files: $(FILES:=.o) $(CFILES:=.o)
 	$(C++) $(OPT) -o $(NAME) $(FILES:=.o) $(CFILES:=.o) $(LIB)
 
 include $(FILES:=.$(D))
-include $(CFILES:=.$(D))
 
+ifdef CFILES
+include $(CFILES:=.$(D))
+endif
