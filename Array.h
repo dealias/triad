@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.06	
+#define __ARRAY_H_VERSION__ 1.07	
 
 // Defining NDEBUG improves optimization but disables argument checking.
 
@@ -117,8 +117,12 @@ public:
 	}
 	
 	Array1<T>& operator = (T a) {Load(a); return *this;}
-	Array1<T>& operator = (T *a) {Load(a); return *this;}
-	Array1<T>& operator = (const Array1<T>& A) {Load(A()); return *this;}
+	Array1<T>& operator = (const T *a) {Load(a); return *this;}
+	Array1<T>& operator = (const Array1<T>& A) {
+		Load(A());
+		A.Purge();
+		return *this;
+	}
 	
 	Array1<T>& operator += (const Array1<T>& A) {
 		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] += A(i);
@@ -310,7 +314,11 @@ public:
 	
 	Array3<T>& operator = (T a) {Load(a); return *this;}
 	Array3<T>& operator = (T *a) {Load(a); return *this;}
-	Array3<T>& operator = (const Array3<T>& A) {Load(A()); return *this;}
+	Array3<T>& operator = (const Array3<T>& A) {
+		Load(A());
+		A.Purge(); 
+		return *this;
+	}
 	
 	Array3<T>& operator += (Array3<T>& A) {
 		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] += A(i);
@@ -405,7 +413,11 @@ public:
 	
 	Array4<T>& operator = (T a) {Load(a); return *this;}
 	Array4<T>& operator = (T *a) {Load(a); return *this;}
-	Array4<T>& operator = (const Array4<T>& A) {Load(A()); return *this;}
+	Array4<T>& operator = (const Array4<T>& A) {
+		Load(A());
+		A.Purge();
+		return *this;
+	}
 	
 	Array4<T>& operator += (Array4<T>& A) {
 		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] += A(i);

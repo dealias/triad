@@ -3,34 +3,56 @@
 
 #include <stdlib.h>
 
+#if __AIX
+#define CONST const
+#else
+#define mutable
+#define CONST
+#endif
+
 template<class T>
 class DynVector
 {
 	T *v;
 	unsigned int size;
 	unsigned int alloc;
-	int allocated;
+	mutable int state;
 public:
-	void Allocate(unsigned int s) {v=new T[alloc=s]; size=0; allocated=1;}
-	void Deallocate() {delete [] v; size=0; alloc=0; allocated=0;}
+    enum alloc_state {unallocated=0, allocated=1, temporary=2};
+	void Allocate(unsigned int s) {v=new T[alloc=s]; size=0; set(allocated);}
+	void Deallocate() {
+		if(test(allocated)) delete [] v;
+		size=0; alloc=0; clear(allocated);
+	}
 	
-	DynVector() : v(NULL), size(0), alloc(0), allocated(0) {}
+	int test(int flag) const {return state & flag;}
+	void clear(int flag) CONST {state &= ~flag;}
+	void set(int flag) CONST {state |= flag;}
+	
+	DynVector() : v(NULL), size(0), alloc(0), state(unallocated) {}
 	DynVector(const DynVector& A) : v(A.v), size(A.size),
-		alloc(A.alloc), allocated(0) {}
+		alloc(A.alloc), state(A.test(temporary)) {}
 	DynVector(unsigned int s) {Allocate(s);}
-	~DynVector() {if(allocated) Deallocate();}
+	~DynVector() {Deallocate();}
 
+	void Freeze() {state=unallocated;}
+	void Hold() {if(test(allocated)) {state=temporary;}}
+	void Purge() CONST {if(test(temporary)) {Deallocate(); state=unallocated;}}
+#ifdef mutable
+	void Purge() const {((DynVector<T> *) this)->Purge();}
+#endif
+	
 	unsigned int Alloc() const {return alloc;}
 	unsigned int Size() const {return size;}
 	
 	void Resize(unsigned int i) {
- 		if (i == 0 && alloc) delete [] v;
+ 		if (i == 0 && alloc && test(allocated)) delete [] v;
 		else if(i > alloc) {
 			T *v0=v;
 			v=new T[i];
-			if (alloc) {
-				for(unsigned int j=0; j < alloc; j++) v[j]=v0[j];
-				delete [] v0;
+			if (size) {
+				for(unsigned int j=0; j < size; j++) v[j]=v0[j];
+				if(test(allocated)) delete [] v0;
 			}
 		}
 		alloc=i;
@@ -58,10 +80,20 @@ public:
 
 	void Expand(unsigned int i) {if (i > alloc) Resize(i);}
 
-	DynVector<T> operator = (const T *A) {
-		memcpy(v,A,size*sizeof(T));
+	void Load(T a) const {for(unsigned int i=0; i < size; i++) v[i]=a;}
+	void Load(T *a) const {memcpy(v,a,size*sizeof(T));}
+	void Store(T *a) const {memcpy(a,v,size*sizeof(T));}
+	void Set(T *a) {v=a; clear(allocated);}
+	
+	DynVector<T>& operator = (T a) {Load(a); return *this;}
+	DynVector<T>& operator = (const T *a) {Load(a); return *this;}
+	DynVector<T>& operator = (const DynVector<T>& A) {
+		Load(A()); 
+		A.Purge();
 		return *this;
 	}
+	
 };
 
+#undef CONST
 #endif

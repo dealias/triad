@@ -43,7 +43,7 @@ inline Array2<T> Identity(unsigned int n, unsigned int m)
 {
 	Array2<T> A(n,m);
 	SetIdentity(A);
-	A.Freeze();
+	A.Hold();
 	return A;
 }
 
