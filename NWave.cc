@@ -716,7 +716,7 @@ void NWave::FinalOutput()
 		cout << endl;
 		}
 		
-		for(i=0; i < Npsi; i++) y2[i] = sqrt(y2[i]);
+		for(i=0; i < Npsi; i++) y2[i] = sqrt(y2[i].re);
 		compute_invariants(y2,Npsi,E,Z,P);
 		display_invariants(E,Z,P);
 	}
