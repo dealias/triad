@@ -51,8 +51,8 @@ int verbose=0;
 int two=0;
 int gradient=0;
 int damp=0;
-int r1,g1,b1;
-int r2,g2,b2;
+int r1=0,g1=0,b1=0;
+int r2=1,g2=0,b2=0;
 
 static int floating_scale=0;
 static int floating_section=0;
@@ -546,16 +546,19 @@ int main(int argc, char *const argv[])
 			palette=GENERAL;
 			if(sscanf(optarg,"%d,%d,%d",&r1,&g1,&b1)
 			   != 3) msg(ERROR,"Invalid color constant: %s",optarg);
+			break;
 		case RATE:
 			palette=GENERAL;
 			if(sscanf(optarg,"%d,%d,%d",&r2,&g2,&b2)
 			   != 3) msg(ERROR,"Invalid color rate: %s",optarg);
+			break;
 		case CROP:
 			crop=1;
 			if(sscanf(optarg,"%dx%d+%d+%d",&istop,&jstop,&istart,&jstart)
 			   != 4) msg(ERROR,"Invalid geometry: %s",optarg);
 			istop += istart;
 			jstop += jstart;
+			break;
 		case LABEL:
 			label=1;
 			Label[labelcnt]=strdup(optarg);
