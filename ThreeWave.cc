@@ -48,7 +48,7 @@ ofstream fout;
 
 void NWave::InitialConditions()
 {
-	int k,j;
+	int k;
 
 	nyconserve=Npsi=3; 
 	psibuffer=new Var[Npsi];
@@ -64,17 +64,20 @@ void NWave::InitialConditions()
 	nu=nu0;
 
 	Npair=3;
-	pair=new Pair[Npair];
+	pqbuffer=new Var[Npair];
 	pair[0].Store(&psibuffer[1],&psibuffer[2]);
 	pair[1].Store(&psibuffer[2],&psibuffer[0]);
 	pair[2].Store(&psibuffer[0],&psibuffer[1]);
+	pairBase=pair.Base();
 
-	j=0;
+	Triad *triadBase0=triad.Base();
 	for(k=0; k < Npsi; k++) {
-		triad[j++].Store(pair[k].Index(),Mkpq[k]);
-		triad[j++].Store(NULL,0.0);
+		triad[k].Store(pqbuffer+k,Mkpq[k]);
+		triadStop[k]=triadBase0+k+1;
 	}
+	
 	triadBase=triad.Base();
+	for(k=0; k < Npsi; k++) triadStop[k] += triadBase-triadBase0;
 	
 	for(k=0; k < Npsi; k++) y[k]=IC[k];
 	if(randomIC) {
