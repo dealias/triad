@@ -615,7 +615,8 @@ class array5 : public array1<T> {
   }
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 unsigned int nw0, unsigned int nv0) {
-    nx=nx0; ny=ny0; nz=nz0; nw=nw0; nwv=nw*nv; nzwv=nz*nwv; nyzwv=ny*nzwv;
+    nx=nx0; ny=ny0; nz=nz0; nw=nw0; nv=nv0; nwv=nw*nv; nzwv=nz*nwv;
+    nyzwv=ny*nzwv;
     size=nx*nyzwv;
   }
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
@@ -1054,7 +1055,8 @@ class Array5 : public array5<T> {
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 unsigned int nw0,  unsigned int nv0,
 		 int ox0=0, int oy0=0, int oz0=0, int ow0=0, int ov0=0) {
-    nx=nx0; ny=ny0; nz=nz0; nw=nw0; nwv=nw*nv; nzwv=nz*nwv; nyzwv=ny*nzwv;
+    nx=nx0; ny=ny0; nz=nz0; nw=nw0; nv=nv0; nwv=nw*nv; nzwv=nz*nwv;
+    nyzwv=ny*nzwv;
     size=nx*nyzwv;
     ox=ox0; oy=oy0; oz=oz0; ow=ow0; ov=ov0;
   }
