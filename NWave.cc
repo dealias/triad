@@ -699,7 +699,7 @@ void NWave::FinalOutput()
 	compute_invariants(y,Npsi,E,Z,P);
 	display_invariants(E,Z,P);
 	
-	if(Nmoment > 2 && t) {
+	if(Nmoment > 3 && t) {
 		cout << newl << "AVERAGED VALUES:" << newl << endl;
 // We overwrite y+Npsi here, since it is no longer needed.
 		Var *y2=y+3*Npsi;
