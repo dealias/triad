@@ -1,3 +1,4 @@
+#include "../Complex.h"
 #include "fftw++.h"
 
 // Compilation: g++ example0r.cc fftw++.cc -lfftw3
@@ -8,8 +9,8 @@ int main()
 {
   unsigned int n=4;
   unsigned int np=n/2+1;
-  double *f=new(FFTW) double[n];
-  Complex *g=new(FFTW) Complex[np];
+  double *f=FFTWdouble(n);
+  Complex *g=FFTWComplex(np);
   
   rcfft1d Forward(n,f,g);
   crfft1d Backward(n,g,f);
@@ -24,6 +25,6 @@ int main()
 	
   for(unsigned int i=0; i < n; i++) cout << f[i] << endl;
   
-  operator delete [] (g,FFTW,n);
-  operator delete [] (f,FFTW,n);
+  FFTWdelete(g);
+  FFTWdelete(f);
 }

@@ -131,7 +131,7 @@ class array1 {
   void Activate(size_t align=0) {
     if(align) {
       v=new(size,align) T;
-      for(unsigned int i=1; i < size; i++) new(v+i) T;
+      for(size_t i=1; i < size; i++) new(v+i) T;
       set(allocated | aligned);
     } else {
       v=new T[size];

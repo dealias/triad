@@ -6,10 +6,10 @@ using std::cout;
 
 int main()
 {
-  unsigned int n=4;
-  Complex *f=new(FFTW) Complex[n];
+  unsigned int n=4; 
+  Complex *f=FFTWComplex(n);
   
-  fft1d Forward(n,-1);
+  fft1d Forward(n,-1,f);
   
   for(unsigned int i=0; i < n; i++) f[i]=i;
 	
@@ -17,5 +17,5 @@ int main()
 	
   for(unsigned int i=0; i < n; i++) cout << f[i] << endl;
   
-  operator delete [] (f,FFTW,n);
+  FFTWdelete(f);
 }

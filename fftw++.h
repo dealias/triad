@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __fftwpp_h__
 #define __fftwpp_h__ 1
 
-#define __FFTWPP_H_VERSION__ 1.00
+#define __FFTWPP_H_VERSION__ 1.01
 
 #include <fstream>
 #include <iostream>
@@ -44,22 +44,40 @@ static array2<Complex> NULL2;
 static array3<Complex> NULL3;
 #endif
 
-static Complex FFTW;
-
-inline void *operator new [](size_t size, Complex)
+inline Complex *FFTWComplex(size_t size)
 {
-  size_t offset=sizeof(Complex)-(size % sizeof(Complex));
-  void *p=fftw_malloc(size+offset);
-  p=(char *) p+offset;
-  if(size && !p) cerr << endl << "Memory limits exceeded" << endl;
+  static const size_t offset = sizeof(size_t)/sizeof(Complex)+
+    (sizeof(size_t) % sizeof(Complex) > 0);
+  void *alloc=fftw_malloc((size+offset)*sizeof(Complex));
+  if(size && !alloc) cerr << endl << "Memory limits exceeded" << endl;
+  *(size_t *) alloc=size;
+  Complex*p=(Complex *)alloc+offset;
+  for(size_t i=0; i < size; i++) new(p+i) Complex;
   return p;
 }
 
-inline void operator delete [] (void *p, Complex, size_t size)
+inline double *FFTWdouble(size_t size)
 {
-  for(size_t i=size-1; i != (size_t) -1; i--) ((Complex *) p)[i].~Complex();
-  p=(char *) p-sizeof(Complex);
-  fftw_free(p);
+  static const size_t offset = sizeof(size_t)/sizeof(Complex)+
+    (sizeof(size_t) % sizeof(Complex) > 0);
+  void *alloc=fftw_malloc(size*sizeof(double)+offset*sizeof(Complex));
+  if(size && !alloc) cerr << endl << "Memory limits exceeded" << endl;
+  *(size_t *) alloc=size;
+  double*p=(double*)((Complex *)alloc+offset);
+  for(size_t i=0; i < size; i++) new(p+i) double;
+  return p;
+}
+
+template<class T>
+inline void FFTWdelete(T *p)
+{
+  static const size_t offset = sizeof(size_t)/sizeof(Complex)+
+    (sizeof(size_t) % sizeof(Complex) > 0);
+  void *alloc=(Complex *)p-offset;
+  size_t size=*(size_t *) alloc;
+  for(size_t i=size-1; i >= 1; i--) ((T *) p)[i].~T();
+  ((T *) p)[0].~T();
+  fftw_free(alloc);
 }
 
 inline void fftw_export_wisdom(void (*emitter)(char c, ofstream& s),
@@ -154,7 +172,7 @@ public:
   void Setup(Complex *in, Complex *out=NULL) {
     if(!Wise) LoadWisdom();
     bool alloc=!in;
-    if(alloc) in=new(FFTW) Complex[size];
+    if(alloc) in=FFTWComplex(size);
     CheckAlign(in,"constructor input");
     if(out) CheckAlign(out,"constructor output");
     else out=in;
@@ -165,7 +183,7 @@ public:
       exit(1);
     }
     
-    if(alloc) operator delete [] (in,FFTW,size);
+    if(alloc) FFTWdelete(in);
     SaveWisdom();
   }
   
