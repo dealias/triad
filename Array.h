@@ -610,6 +610,8 @@ public:
 		A.Purge();
 		return *this;
 	}
+	
+	Array2<T>& operator *= (const Array2<T>& A);
 };
 
 template<class T>

@@ -119,10 +119,14 @@ public:
 	}
 	
 	void XNeumann2(const Array1<T>& u) {
+		u[-2]=u[4];
+		
 		u[-1]=u[3];
 		u[0]=u[2];
 		u[nx+1]=u[nx-1];
 		u[nx+2]=u[nx-2];
+		
+		u[nx+3]=u[nx-3];
 	}
 	
 	void XDirichletInterpolate(const Array1<T>& u, T b0, T b1) {
@@ -147,8 +151,8 @@ public:
 	}
 	
 	void XConstant2(const Array1<T>& u) {
-		u[0]=u[-1]=u[1];
-		u[nx+2]=u[nx+1]=u[nx];
+		u[0]=u[-1]=u[-2]=u[1];
+		u[nx+3]=u[nx+2]=u[nx+1]=u[nx];
 	}
 	
 	void XMixedA(const Array1<T>& u) {
@@ -175,10 +179,14 @@ public:
 	}
 	
 	void XPeriodic2(const Array1<T>& u) {
+		u[-2]=u[nx-2];
+		
 		u[-1]=u[nx-1];
 		u[0]=u[nx];
 		u[nx+1]=u[1];
 		u[nx+2]=u[2];
+		
+		u[nx+3]=u[3];
 	}
 };
 

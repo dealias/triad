@@ -41,14 +41,17 @@ public:
 	DirichletBC2() {external += 2; ioff=-1;}
 };
 
-class NeumannBC2 : public NeumannBC {
+class NeumannBC2 : public BC {
 public:	
-	NeumannBC2() {external += 2; ioff=-1;}
+//	NeumannBC2() {external += 2; ioff=-1;}
+	int Resolution(int radix, int lvl) const {return pow(radix,lvl+1);}
+	NeumannBC2() {internal=0; external=6; ioff=-2;}
 };
 
-class PeriodicBC2 : public PeriodicBC {
+class PeriodicBC2 : public BC {
 public:	
-	PeriodicBC2() {external += 2; ioff=-1;}
+	int Resolution(int radix, int lvl) const {return pow(radix,lvl+1);}
+	PeriodicBC2() {internal=1; external=5; ioff=-2;}
 };
 
 const DirichletBC Dirichlet[1];

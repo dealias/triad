@@ -27,15 +27,15 @@ void cputime(double *cpu)
 	struct jtab jbuf;
 	getjtab(&jbuf);
 	
-	cpu[0] = ((double) jbuf.j_ucputime)/CLK_TCK;
+	cpu[0] = ((double) jbuf.j_ucputime)/CLOCKS_PER_SEC;
 	cpu[1] = 0.0;
-	cpu[2] = ((double) jbuf.j_scputime)/CLK_TCK;
+	cpu[2] = ((double) jbuf.j_scputime)/CLOCKS_PER_SEC;
 #else
 	struct tms buf;
 	times(&buf);
-	cpu[0] = ((double) buf.tms_utime)/CLK_TCK;
-	cpu[1] = ((double) buf.tms_cutime)/CLK_TCK;
-	cpu[2] = ((double) (buf.tms_stime+buf.tms_cstime))/CLK_TCK;
+	cpu[0] = ((double) buf.tms_utime)/CLOCKS_PER_SEC;
+	cpu[1] = ((double) buf.tms_cutime)/CLOCKS_PER_SEC;
+	cpu[2] = ((double) (buf.tms_stime+buf.tms_cstime))/CLOCKS_PER_SEC;
 #endif
 }
 
