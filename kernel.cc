@@ -26,7 +26,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 using namespace Array;
 
 const char PROGRAM[]="TRIAD";
-const char VERSION[]="1.21";
+const char VERSION[]="1.22";
 
 // Global variables
 double t;

@@ -18,8 +18,9 @@ inline void VocabularyBase::ParamAdd(ParamBase *p)
 #define VOCAB(var,min,max,help) Vocab(&var, #var, min, max, help, 1, 1)
 #define VOCAB_NODUMP(var,min,max,help) Vocab(&var, #var, min, max, help, 1, 0)
 
-#define VOCAB_ARRAY(var) \
-Vocab(var, #var, *var-*var, *var-*var, (int) (sizeof(var)/sizeof(*var)),1)
+#define VOCAB_ARRAY(var,help) \
+Vocab(var, #var, *var-*var, *var-*var, help, \
+(int) (sizeof(var)/sizeof(*var)), 1)
 	
 template<class T>
 class Param : public ParamBase {

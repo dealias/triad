@@ -57,9 +57,9 @@ class Table {
 				      KeyCompare,&match_type);
 	if(check_match(match_type,name,key)) break;
 	
-	cout << newl << "Recognized " << name << " values: [" << endl;
+	cout << newl << "Recognized " << name << " values:" << endl;
 	List(cout);
-	cout << "]" << newl << newl << name << "=";
+	cout << newl << name << "=";
       
 	const int blocksize=80;
 	char s[blocksize];
