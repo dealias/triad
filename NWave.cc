@@ -68,7 +68,7 @@ void SR::NonLinearSrc(Var *source, Var *psi, double)
 #pragma ivdep		
 	for(Var *k=psibuffer; k < psibufferR; k++) conjugate(*(k+Npsi),*k);
 	
-#if (_AIX || __GNUC__) && COMPLEX
+#if !_CRAY && COMPLEX
 	Var *pq=pqbuffer,*p;
 	for(p=psibuffer; p < psibufferR; p++) {
 		Real psipre=p->re, psipim=p->im;
@@ -97,7 +97,7 @@ void SR::NonLinearSrc(Var *source, Var *psi, double)
 #pragma _CRI taskloop private(i) value(source,triadLimits,Npsi)
 	for(int i=0; i < Npsi; i++) {
 		Triad *t=triadLimits[i].start, *tstop=triadLimits[i].stop;
-#if (_AIX || __GNUC__) && COMPLEX && MCREAL
+#if !_CRAY && COMPLEX && MCREAL
 		Real sumre, sumim;
 		for(sumre=sumim=0.0; t < tstop; t++) {
 			sumre += t->Mkpq * (*(t->pq)).re;
