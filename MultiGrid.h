@@ -187,7 +187,7 @@ class Grid {
       defect0=Norm(d);
     }
 		
-    while(1) {
+    for(;;) {
       for(i=0; i < nu1; i++) {Smooth(u,f); BoundaryConditions(u);}
 			
       if(!statistics || nu1) Defect(d,u,f);
@@ -799,7 +799,7 @@ void mtridiagonalp(int n, T *u, const T *f,
 {
   int jstop=m*inc2;
 		
-#if !_CRAYMVP
+#ifndef _CRAYMVP
   if(inc1 == 1) {
     for(int j=0; j < jstop; j += inc2)
       tridiagonalp(n,u+j,f+j,c+j,a+j,b+j,gamma,delta);

@@ -95,7 +95,7 @@ class Grid2 : public Grid<Array2<T>,T> {
     }
   }
 	
-  virtual inline void L0inv(const Array2<T>& u, const Array2<T>& f) {};
+  virtual inline void L0inv(const Array2<T>&, const Array2<T>&) {};
 	
   void Jacobi(const Array2<T>& u, const Array2<T>& f, Real omegah2) {
     Defect(d,u,f);
