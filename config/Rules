@@ -13,5 +13,9 @@ all: $(TRIAD:=.o)
 rgb: $(RGB:=.cc)
 	$(C++) $(OPT) -o $(HOME)/bin/rgb $(RGB:=.cc) $(LIB)
 
+ifneq ($(wildcard $(TRI)/config/$(HOSTTYPE).rules),)
+include $(TRI)/config/$(HOSTTYPE).rules
+endif
+
 include $(TRIAD:=.$(D))
 

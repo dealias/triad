@@ -5,6 +5,8 @@ POLL = poll
 
 include $(TRI)/config/Common
 
+triad:
+
 INCL = 
 
 POLAR = Polar PolarAverage simpfast
