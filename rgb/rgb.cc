@@ -1200,7 +1200,7 @@ Real Azx,Azy,Azz;
 Real twopibyny,twopibynz;
 Array2<Real> maxz;
 Array3<int> active;
-Array2<Ivec> index;
+Array2<Ivec> index0;
 
 int Project(double xi, double xj, double xk);
 void Refine(double x1, double y1, double z1, double x2, double y2, double z2);
@@ -1221,8 +1221,8 @@ void Torus(Array2<Ivec>& Index)
 		}
 	}
 	
-	index.Dimension(Nx,Ny);
-	index.Set(Index());
+	index0.Dimension(Nx,Ny);
+	index0.Set(Index());
 	
 	twopibyny=twopi/ny;
 	twopibynz=twopi/nz;
@@ -1353,7 +1353,7 @@ int Project(double xi, double xj, double xk)
 		if(u >= 0 && u < Nx && v >=0 && v < Ny
 		   && zp > maxz(u,v)) {
 			maxz(u,v)=zp;
-			index(u,v)=Ivec(xi,xj,xk);
+			index0(u,v)=Ivec(xi,xj,xk);
 			return 1;
 		}	
 	}
