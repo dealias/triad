@@ -708,7 +708,6 @@ int main(int argc, char *argv[])
     lower=upper=0;
   }	
 	
-  option;
   convertprog=(nfiles > 1 || label) ? "montage" : "convert";
 	
   char **argf=argv+optind;
