@@ -79,7 +79,7 @@ public:
 	virtual void YZGaussSeidel(const Array3<T>&, const Array3<T>&,
 							   int, int) {};
 
-	void Restrict(const Array3<T>& r, const Array3<T>& u) {
+	virtual void Restrict(const Array3<T>& r, const Array3<T>& u) {
 		if(&r != &u) {
 			XDirichlet(r,u,1);
 			YDirichlet(r,u,1);
@@ -117,7 +117,8 @@ public:
 		}
 	}
 	
-	void SubtractProlongation(const Array3<T>& u, const Array3<T>& v0) {
+	virtual void SubtractProlongation(const Array3<T>& u,
+									  const Array3<T>& v0) {
 		for(int i=sx; i <= nx1; i++) {
 			int i2=rx*i+offx;
 			Array2<T> uz=u[i2], up=u[i2+1], vz=v0[i], vp=v0[i+1];
@@ -145,6 +146,8 @@ public:
 			}
 		}
 	}
+	
+	virtual inline void L0inv(const Array3<T>& u, const Array3<T>& f) {};
 	
 	void Jacobi(const Array3<T>& u, const Array3<T>& f, Real omegah2) {
 		Defect(d,u,f);
@@ -246,7 +249,7 @@ public:
 		}
 	}
 	
-	inline virtual void BoundaryConditions(const Array3<T>& u)=0;
+	virtual inline void BoundaryConditions(const Array3<T>& u)=0;
 	
 	void XDirichlet(const Array3<T>&) {}
 	
@@ -325,7 +328,7 @@ public:
 		}
 	}
 	
-	void XMixed0(const Array3<T>& u) {
+	void XMixedA(const Array3<T>& u) {
 		Array2<T> u0=u[0], u2=u[2];
 		for(int j=0; j < nybc; j++) {
 			Array1(T) u0j=u0[j];
@@ -336,7 +339,7 @@ public:
 		}
 	}
 	
-	void XMixed1(const Array3<T>& u) {
+	void XMixedB(const Array3<T>& u) {
 		Array2<T> unxm1=u[nx-1], unx1=u[nx+1];
 		for(int j=0; j < nybc; j++) {
 			Array1(T) unxm1j=unxm1[j];

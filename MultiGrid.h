@@ -54,11 +54,12 @@ public:
 const DirichletBC Dirichlet[1];
 const NeumannBC Neumann[1];
 const PeriodicBC Periodic[1];
-const PeriodicBC Mixed1[1];
+const PeriodicBC MixedB[1];
 
 const DirichletBC2 Dirichlet2[1];
 const PeriodicBC2 Periodic2[1];
 const NeumannBC2 Neumann2[1];
+const PeriodicBC MixedB2[1];
 
 class Limits {
 public:
@@ -136,8 +137,7 @@ public:
 	virtual void Restrict(const T& r, const T& u)=0;
 	virtual void SubtractProlongation(const T& u, const T& v0)=0;
 	virtual inline void BoundaryConditions(const T&)=0;
-
-	virtual inline void L0inv(const T&, const T&) {};
+	virtual inline void L0inv(const T&, const T&)=0;
 	virtual inline void SubtractKernel(const T&, const T&) {};
 	
 	int Solve(const T& u, const T& f, int nu1=0, int gamma=1, int nu2=1,

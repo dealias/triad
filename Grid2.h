@@ -56,7 +56,7 @@ public:
 	virtual void XGaussSeidel(const Array2<T>&, const Array2<T>&, int, int) {};
 	virtual void YGaussSeidel(const Array2<T>&, const Array2<T>&, int, int)	{};
 
-	void Restrict(const Array2<T>& r, const Array2<T>& u) {
+	virtual void Restrict(const Array2<T>& r, const Array2<T>& u) {
 		if(&r != &u) {
 			XDirichlet(r,u,1);
 			YDirichlet(r,u,1);
@@ -76,7 +76,8 @@ public:
 		}
 	}
 	
-	void SubtractProlongation(const Array2<T>& u, const Array2<T>& v0) {
+	virtual void SubtractProlongation(const Array2<T>& u,
+									  const Array2<T>& v0) {
 		for(int i=sx; i <= nx1; i++) {
 			int i2=rx*i+offx;
 			Array1(T) vz=v0[i];
@@ -91,6 +92,8 @@ public:
 			}
 		}
 	}
+	
+	virtual inline void L0inv(const Array2<T>& u, const Array2<T>& f) {};
 	
 	void Jacobi(const Array2<T>& u, const Array2<T>& f, Real omegah2) {
 		Defect(d,u,f);
@@ -140,9 +143,11 @@ public:
 		}
 	}
 	
-	inline virtual void BoundaryConditions(const Array2<T>& u)=0;
+	virtual inline void BoundaryConditions(const Array2<T>& u)=0;
 	
 	void XDirichlet(const Array2<T>&) {}
+	
+	void XDirichlet2(const Array2<T>&) {}
 		
 	void XDirichlet(const Array2<T>& u, T b0, T b1) {
 		if(homogeneous) return;
@@ -151,6 +156,21 @@ public:
 		for(int j=0; j < nybc; j++) {
 			u0[j]=b0;
 			unx1[j]=b1;
+		}
+	}
+	
+	void XDirichlet2(const Array2<T>& u, T b0, T b1) {
+		if(homogeneous) return;
+		Array1(T) um1=u[-1];
+		Array1(T) u0=u[0];
+		Array1(T) unx1=u[nx+1];
+		Array1(T) unx2=u[nx+2];
+		int nybco=nybc+oy;
+		for(int j=oy; j < nybco; j++) {
+			um1[j]=b0;
+			u0[j]=b0;
+			unx1[j]=b1;
+			unx2[j]=b1;
 		}
 	}
 	
@@ -168,6 +188,27 @@ public:
 		}
 	}
 	
+	void XDirichlet2(const Array2<T>& u, const Array2<T>& b, int contract=0) {
+		int nx0,ny0bc;
+		if(contract) {nx0=nx1; ny0bc=ny1bc;} 
+		else {nx0=nx; ny0bc=nybc;} 
+		Array1(T) um1=u[-1];
+		Array1(T) u0=u[0];
+		Array1(T) unx1=u[nx0+1];
+		Array1(T) unx2=u[nx0+2];
+		Array1(T) bm1=b[-1];
+		Array1(T) b0=b[0];
+		Array1(T) bnx1=b[nx+1];
+		Array1(T) bnx2=b[nx+2];
+		int ny0bco=ny0bc+oy;
+		for(int j=oy; j < ny0bco; j++) {
+			um1[j]=bm1[j];
+			u0[j]=b0[j];
+			unx1[j]=bnx1[j];
+			unx2[j]=bnx2[j];
+		}
+	}
+	
 	void XNeumann(const Array2<T>& u) {
 		Array1(T) u0=u[0];
 		Array1(T) u2=u[2];
@@ -176,6 +217,24 @@ public:
 		for(int j=0; j < nybc; j++) {
 			u0[j]=u2[j];
 			unx1[j]=unxm1[j];
+		}
+	}
+	
+	void XNeumann2(const Array2<T>& u) {
+		Array1(T) um1=u[-1];
+		Array1(T) u0=u[0];
+		Array1(T) u2=u[2];
+		Array1(T) u3=u[3];
+		Array1(T) unxm2=u[nx-2];
+		Array1(T) unxm1=u[nx-1];
+		Array1(T) unx1=u[nx+1];
+		Array1(T) unx2=u[nx+2];
+		int nybco=nybc+oy;
+		for(int j=oy; j < nybco; j++) {
+			um1[j]=u3[j];
+			u0[j]=u2[j];
+			unx1[j]=unxm1[j];
+			unx2[j]=unxm2[j];
 		}
 	}
 	
@@ -192,6 +251,26 @@ public:
 		}
 	}
 	
+	void XDirichletInterpolate2(const Array2<T>& u, T b0, T b1) {
+		if(homogeneous) {b0=b1=0.0;}
+		else {b0 *= 2.0; b1 *= 2.0;}
+		Array1(T) um1=u[-1];
+		Array1(T) u0=u[0];
+		Array1(T) u2=u[2];
+		Array1(T) u3=u[3];
+		Array1(T) unxm2=u[nx-2];
+		Array1(T) unxm1=u[nx-1];
+		Array1(T) unx1=u[nx+1];
+		Array1(T) unx2=u[nx+2];
+		int nybco=nybc+oy;
+		for(int j=oy; j < nybco; j++) {
+			um1[j]=b0-u3[j];
+			u0[j]=b0-u2[j];
+			unx1[j]=b1-unxm1[j];
+			unx2[j]=b1-unxm2[j];
+		}
+	}
+	
 	void XConstant(const Array2<T>& u) {
 		Array1(T) u0=u[0];
 		Array1(T) u1=u[1];
@@ -203,7 +282,21 @@ public:
 		}
 	}
 	
-	void XMixed0(const Array2<T>& u) {
+	void XConstant2(const Array2<T>& u) {
+		Array1(T) um1=u[-1];
+		Array1(T) u0=u[0];
+		Array1(T) u1=u[1];
+		Array1(T) unx=u[nx];
+		Array1(T) unx1=u[nx+1];
+		Array1(T) unx2=u[nx+2];
+		int nybco=nybc+oy;
+		for(int j=oy; j < nybco; j++) {
+			u0[j]=um1[j]=u1[j];
+			unx2[j]=unx1[j]=unx[j];
+		}
+	}
+	
+	void XMixedA(const Array2<T>& u) {
 		Array1(T) u0=u[0];
 		Array1(T) u2=u[2];
 		for(int j=0; j < nybc; j++) {
@@ -211,11 +304,35 @@ public:
 		}
 	}
 	
-	void XMixed1(const Array2<T>& u) {
+	void XMixedA2(const Array2<T>& u) {
+		Array1(T) um1=u[-1];
+		Array1(T) u0=u[0];
+		Array1(T) u2=u[2];
+		Array1(T) u3=u[3];
+		int nybco=nybc+oy;
+		for(int j=oy; j < nybco; j++) {
+			um1[j]=u3[j];
+			u0[j]=u2[j];
+		}
+	}
+	
+	void XMixedB(const Array2<T>& u) {
 		Array1(T) unxm1=u[nx-1];
 		Array1(T) unx1=u[nx+1];
 		for(int j=0; j < nybc; j++) {
 			unx1[j]=unxm1[j];
+		}
+	}
+	
+	void XMixedB2(const Array2<T>& u) {
+		Array1(T) unxm2=u[nx-2];
+		Array1(T) unxm1=u[nx-1];
+		Array1(T) unx1=u[nx+1];
+		Array1(T) unx2=u[nx+2];
+		int nybco=nybc+oy;
+		for(int j=oy; j < nybco; j++) {
+			unx1[j]=unxm1[j];
+			unx2[j]=unxm2[j];
 		}
 	}
 	
@@ -230,7 +347,27 @@ public:
 		}
 	}
 	
+	void XPeriodic2(const Array2<T>& u) {
+		Array1(T) um1=u[-1];
+		Array1(T) u0=u[0];
+		Array1(T) u1=u[1];
+		Array1(T) u2=u[2];
+		Array1(T) unxm1=u[nx-1];
+		Array1(T) unx=u[nx];
+		Array1(T) unx1=u[nx+1];
+		Array1(T) unx2=u[nx+2];
+		int nybco=nybc+oy;
+		for(int j=oy; j < nybco; j++) {
+			um1[j]=unxm1[j];
+			u0[j]=unx[j];
+			unx1[j]=u1[j];
+			unx2[j]=u2[j];
+		}
+	}
+	
 	void YDirichlet(const Array2<T>&) {}
+	
+	void YDirichlet2(const Array2<T>&) {}
 	
 	void YDirichlet(const Array2<T>& u, T b0, T b1) {
 		if(homogeneous) return;
@@ -238,6 +375,18 @@ public:
 			Array1(T) ui=u[i];
 			ui[0]=b0;
 			ui[ny+1]=b1;
+		}
+	}
+	
+	void YDirichlet2(const Array2<T>& u, T b0, T b1) {
+		if(homogeneous) return;
+		int nxbco=nxbc+ox;
+		for(int i=ox; i < nxbco; i++) {
+			Array1(T) ui=u[i];
+			ui[-1]=b0;
+			ui[0]=b0;
+			ui[ny+1]=b1;
+			ui[ny+2]=b1;
 		}
 	}
 	
@@ -253,11 +402,37 @@ public:
 		}
 	}
 	
+	void YDirichlet2(const Array2<T>& u, const Array2<T>& b, int contract=0) {
+		int nx0bc,ny0;
+		if(contract) {nx0bc=nx1bc; ny0=ny1;} 
+		else {nx0bc=nxbc; ny0=ny;} 
+		int nx0bco=nx0bc+ox;
+		for(int i=ox; i < nx0bco; i++) {
+			Array1(T) ui=u[i];
+			Array1(T) bi=b[i];
+			ui[-1]=bi[-1];
+			ui[0]=bi[0];
+			ui[ny0+1]=bi[ny+1];
+			ui[ny0+2]=bi[ny+2];
+		}
+	}
+	
 	void YNeumann(const Array2<T>& u) {
 		for(int i=0; i < nxbc; i++) {
 			Array1(T) ui=u[i];
 			ui[0]=ui[2];
 			ui[ny+1]=ui[ny-1];
+		}
+	}
+	
+	void YNeumann2(const Array2<T>& u) {
+		int nxbco=nxbc+ox;
+		for(int i=ox; i < nxbco; i++) {
+			Array1(T) ui=u[i];
+			ui[-1]=ui[3];
+			ui[0]=ui[2];
+			ui[ny+1]=ui[ny-1];
+			ui[ny+2]=ui[ny-2];
 		}
 	}
 	
@@ -271,6 +446,19 @@ public:
 		}
 	}
 	
+	void YDirichletInterpolate2(const Array2<T>& u, T b0, T b1) {
+		if(homogeneous) {b0=b1=0.0;}
+		else {b0 *= 2.0; b1 *= 2.0;}
+		int nxbco=nxbc+ox;
+		for(int i=ox; i < nxbco; i++) {
+			Array1(T) ui=u[i];
+			ui[-1]=b0-ui[3];
+			ui[0]=b0-ui[2];
+			ui[ny+1]=b1-ui[ny-1];
+			ui[ny+2]=b1-ui[ny-2];
+		}
+	}
+	
 	void YConstant(const Array2<T>& u) {
 		for(int i=0; i < nxbc; i++) {
 			Array1(T) ui=u[i];
@@ -279,11 +467,31 @@ public:
 		}
 	}
 	
+	void YConstant2(const Array2<T>& u) {
+		int nxbco=nxbc+ox;
+		for(int i=ox; i < nxbco; i++) {
+			Array1(T) ui=u[i];
+			ui[0]=ui[-1]=ui[1];
+			ui[ny+2]=ui[ny+1]=ui[ny];
+		}
+	}
+	
 	void YPeriodic(const Array2<T>& u) {
 		for(int i=0; i < nxbc; i++) {
 			Array1(T) ui=u[i];
 			ui[0]=ui[ny];
 			ui[ny+1]=ui[1];
+		}
+	}
+	
+	void YPeriodic2(const Array2<T>& u) {
+		int nxbco=nxbc+ox;
+		for(int i=ox; i < nxbco; i++) {
+			Array1(T) ui=u[i];
+			ui[-1]=ui[ny-1];
+			ui[0]=ui[ny];
+			ui[ny+1]=ui[1];
+			ui[ny+2]=ui[2];
 		}
 	}
 };
