@@ -80,6 +80,7 @@ int byte=0;
 int implicit=1;
 int symmetric=0;
 int invert=0;
+int reverse=0;
 
 char *extract=NULL;
 
@@ -304,6 +305,7 @@ void options()
 	cerr << "-nobar\t\t inhibit palette bar" << endl;
 	cerr << "-extract format\t extract individual images as tiff, gif, etc." 
 		 << endl;
+	cerr << "-reverse\t reverse palette direction" << endl;
 	cerr << "-ncolors n\t maximum number of colors to generate (default 256)"
 		 << endl; 
 	cerr << endl;
@@ -361,6 +363,7 @@ int main(int argc, char *const argv[])
                {"identity", 0, &trans, IDENTITY},
                {"circle", 0, &trans, CIRCLE},
                {"torus", 0, &trans, TORUS},
+               {"reverse", 0, &reverse, 1},
                {"symmetric", 0, &symmetric, 1},
                {"nobar", 0, &nobar, 1},
                {"extract", 1, 0, EXTRACT},
@@ -581,6 +584,15 @@ int main(int argc, char *const argv[])
 	int PaletteRange=grey ? 255 : NColors-1;
 	int background=grey ? 255 : BLACK;
 	
+	int sign,offset;
+	if(reverse) {
+		sign=-1;
+		offset=PaletteMin+PaletteRange;
+	} else {
+		sign=1;
+		offset=PaletteMin;
+	}
+	
 	for(int f=0; f < nfiles; f++) {
 		char *fieldname=argf[f];
 		ixstream xin;
@@ -751,8 +763,7 @@ int main(int argc, char *const argv[])
 														(x.i-ci)*
 														value(z2,y2,x2)));
 
-
-								index=(int) ((val-vmin)*step+0.5)+PaletteMin;
+								index=((int)((val-vmin)*step+0.5))*sign+offset;
 							}
 							
 							if(grey) {
@@ -760,8 +771,8 @@ int main(int argc, char *const argv[])
 								for(int i2=0; i2 < mx; i2++)
 									fout << (unsigned char) index;
 							} else {
-								unsigned char r=Red[index],
-									g=Green[index], b=Blue[index];
+								unsigned char r=Red[index], g=Green[index],
+									b=Blue[index];
 								for(int i2=0; i2 < mx; i2++)
 									fout << r << g << b;
 							}
@@ -775,12 +786,12 @@ int main(int argc, char *const argv[])
 					else fout << black << black << black;
 			}
 			
+			int Nxmx=Nx*mx;
+			double step=PaletteRange/Nxmx;
 			for(int j2=0; j2 < mpal; j2++) { // Output palette
-				int Nxmx=Nx*mx;
-				double step=1.0/Nxmx;
 				for(int i=0; i < Nxmx; i++)  {
 					int index;
-					index=PaletteMin+(int) (PaletteRange*i*step+0.5);
+					index=((int) (i*step+0.5))*sign+offset;
 					if(grey) fout << (unsigned char) index;
 					else fout << Red[index] << Green[index] << Blue[index];
 				}

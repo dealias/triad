@@ -292,9 +292,7 @@ void read_init()
 {
 	int i,ny0;
 	double t0,dt0;
-	char *type;
-	if(restart) type="restart";
-	else type="initialization";
+	char *type=restart ? "restart" : "initialization";
 	char *ny_msg=
 		"Current value of ny (%d) disagrees with value (%d) in file\n%s";
 	
@@ -395,11 +393,11 @@ void statistics(int it)
 			}
 			last_iter=iter;
 			if(rename(rtemp,rname))
-				msg(WARNING,"Cannot rename restart file %s",rtemp);
-		}
-		else {
+				msg(ERROR,"Cannot rename restart file %s",rtemp);
+		} else {
 			errno=0;
-			msg(WARNING,"Cannot write to restart file %s",rtemp);
+			msg(SLEEP,"Cannot write to restart file %s",rtemp);
+			statistics(it); // Try again;
 		}		  
 	} else if(it == 0) msg(ERROR,"Could not open restart file %s",rtemp);
 	

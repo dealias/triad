@@ -150,14 +150,16 @@ extern int beep_enabled;
 extern int msg_override;
 extern void (*inform)(char *);
 
-enum ErrorCode {WARNING_,OVERRIDE_,ERROR_};
+enum ErrorCode {WARNING_,OVERRIDE_,SLEEP_,ERROR_};
 
 #define WARNING WARNING_,__FILE__,__LINE__
 #define OVERRIDE OVERRIDE_,__FILE__,__LINE__
+#define SLEEP SLEEP_,__FILE__,__LINE__
 #define ERROR ERROR_,__FILE__,__LINE__
 
 #define WARNING_GLOBAL WARNING_,"",0
 #define OVERRIDE_GLOBAL OVERRIDE_,"",0
+#define SLEEP_GLOBAL SLEEP_,"",0
 #define ERROR_GLOBAL ERROR_,"",0
 
 enum ExitCode {FATAL=-1,CONTINUE,COMPLETE};
@@ -306,6 +308,7 @@ inline void out_curve(oxstream& os, T *f, char *text, int n, int)
 {
 	os << n;
 	for(int i=0; i < n; i++) os << f[i];
+	if(!os) msg(WARNING,"Cannot write %s to output stream",text);
 }
 
 template<class T>
@@ -313,6 +316,7 @@ inline void out_function(oxstream& os, T (*f)(int), char *text, int n, int)
 {
 	os << n;
 	for(int i=0; i < n; i++) os << (*f)(i);
+	if(!os) msg(WARNING,"Cannot write %s to output stream",text);
 }
 
 template<class T>
@@ -326,6 +330,7 @@ inline void out_function(ostream& os, T (*f)(int), char *text, int n,
 		if(++i % nperline) os << "\t"; else os << " \\\n";
 	}
 	os << (*f)(n-1) << newl;
+	if(!os) msg(WARNING,"Cannot write %s to output stream",text);
 }
 
 template<class T>	
@@ -338,6 +343,7 @@ inline void out_curve(ostream& os, T *f, char *text, int n, int nperline)
 		if(++i % nperline) os << "\t"; else os << " \\\n";
 	}
 	os << f[n-1] << newl;
+	if(!os) msg(WARNING,"Cannot write %s to output stream",text);
 }
 
 template<class S>

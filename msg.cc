@@ -61,22 +61,24 @@ void msg(int severity, char *file, int line, char *format,...)
 		if(c != 'Y' && c !='y') severity=ERROR_;
 	}
 
-	if(severity == ERROR_ && abort_flag) {
+	if((severity == ERROR_ && abort_flag) || severity == SLEEP_) {
 		if(inform) {
 			strstream buf,vbuf;
 			va_start(vargs,format);
 			vform(format,vargs,vbuf);
 			va_end(vargs);
 			vbuf << ends;
-			buf << "terminated with error";
+			buf << ((severity == SLEEP_) ?	"paused" : "terminated")
+				<< " due to error";
 			if(*file) buf << " from \"" << file << "\":" << line;
 			buf << "." << newl << vbuf.str() << ends;
 			(*inform)(buf.str());
 		}
 		cout << endl;
-		exit(FATAL);
+		if(severity == SLEEP_) pause();
+		else exit(FATAL);
 	}
 	
-	errno=0;
 	cout << flush;
+	errno=0;
 }
