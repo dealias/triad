@@ -5,7 +5,6 @@
 #include <string.h>
 #include <strstream.h>
 #include <iomanip.h>
-#include <getopt.h>
 
 #include "DynVector.h"
 #include "rgb.h"
@@ -59,7 +58,7 @@ int main(int argc, char *const argv[])
 			my=atoi(optarg);
 			break;
 		default:
-			cout << "Usage: " << argv[0]
+			cerr << "Usage: " << argv[0]
 				 << "[-lmv -x <mag> -H <hmag> -V <vmag>] file1 file2 ..." 
 				 << endl;
 			exit(1);
