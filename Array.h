@@ -37,6 +37,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #define CONST
 #endif
 
+#ifndef __ARRAY_EXIT
+#define __ARRAY_EXIT(x) cout << newl << "ERROR: " << x << "." << endl; exit(1)
+#endif
+
 inline ostream& _newl(ostream& s) {s << '\n'; return s;}
 
 template<class T>
@@ -78,13 +82,14 @@ public:
 	
 	void Check(int i, int n, int dim, int m) const {
 		if(i < 0 || i >= n) {
-			cout << newl << "ERROR: Array" << dim << " index ";
-			if(m) cout << m << " ";
-			cout << "is out of bounds (" << i;
-			if(i < 0) cout << " < " << 0;
-			else cout << " > " << n-1;
-			cout << ")." << endl;
-			exit(1);
+			strstream buf;
+			buf << "Array" << dim << " index ";
+			if(m) buf << m << " ";
+			buf << "is out of bounds (" << i;
+			if(i < 0) buf << " < " << 0;
+			else buf << " > " << n-1;
+			buf << ")" << ends;
+			__ARRAY_EXIT(buf.str());
 		}
 	}
 	
