@@ -21,12 +21,12 @@ static const double init_time=time(NULL);
 void cputime(double *cpu)
 {
 #if _CRAY
-		struct jtab jbuf;
-		getjtab(&jbuf);
-		
-		cpu[0] = ((double) jbuf.j_ucputime)/CLK_TCK;
-		cpu[1] = 0.0;
-		cpu[2] = ((double) jbuf.j_scputime)/CLK_TCK;
+	struct jtab jbuf;
+	getjtab(&jbuf);
+	
+	cpu[0] = ((double) jbuf.j_ucputime)/CLK_TCK;
+	cpu[1] = 0.0;
+	cpu[2] = ((double) jbuf.j_scputime)/CLK_TCK;
 #else
 	struct tms buf;
 	times(&buf);
