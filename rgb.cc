@@ -111,15 +111,14 @@ int main(int argc, char *const argv[])
 	int label=0;
 	int make_mpeg=0;
 	int syntax=0;
+	char c;
 	extern int optind;
 	extern char *optarg;
 	
 #ifdef __GNUC__	
 	optind=0;
 #endif	
-	while (1) {
-		char c = getopt(argc,argv,"bfghlmvzx:H:V:B:E:X:Y:Z:");
-		if (c == -1) break;
+	while ((c=getopt(argc,argv,"bfghlmvzx:H:V:B:E:X:Y:Z:")) != -1) {
 		switch (c) {
 		case 'b':
 			byte=1;
