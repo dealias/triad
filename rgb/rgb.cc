@@ -827,7 +827,7 @@ int main(int argc, char *const argv[])
 		
 		if(begin < 0) begin += nset;
 		if(end < 0) end += nset;
-		if(display) end=begin;
+		if(display) {end=begin; mx=my=1;}
 		
 		n=0;
 		int rc;
