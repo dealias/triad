@@ -301,6 +301,20 @@ Complex atoc(const char *s);
 	
 const int default_nperline=4;
 
+template<class T>	
+inline void out_curve(oxstream& os, T *f, char *text, int n, int)
+{
+	os << n;
+	for(int i=0; i < n; i++) os << f[i];
+}
+
+template<class T>
+inline void out_function(oxstream& os, T (*f)(int), char *text, int n, int)
+{
+	os << n;
+	for(int i=0; i < n; i++) os << (*f)(i);
+}
+
 template<class T>
 inline void out_function(ostream& os, T (*f)(int), char *text, int n,
 						 int nperline)
@@ -326,27 +340,43 @@ inline void out_curve(ostream& os, T *f, char *text, int n, int nperline)
 	os << f[n-1] << newl;
 }
 
-inline void out_function(ostream& os, Real (*f)(int), char *text, int n)
+template<class S>
+inline void out_function(S& os, Real (*f)(int), char *text, int n)
 {
 	out_function(os,f,text,n,default_nperline);
 }
 	
-template<class T>
-inline void out_curve(ostream& os, T *f, char *text, int n)
+template<class S, class T>
+inline void out_curve(S& os, T *f, char *text, int n)
 {
 	out_curve(os,f,text,n,default_nperline);
 }
 
-template<class T>
-inline void out_curve(ostream& os, T f, char *text)
+template<class S, class T>
+inline void out_curve(S& os, T f, char *text)
 {
 	out_curve(os,&f,text,1,default_nperline);
 }
 
-void out_real(ostream& os, Complex *f, char *textre, char *, int n,
-					 int nperline=default_nperline);
-void out_real(ostream& os, Real *f, char *textre, char *textim, int n,
-					 int nperline=default_nperline);
+template<class S>
+void out_real(S& os, Real *f, char *textre, char *, int n,
+					 int nperline=default_nperline) 
+{
+	out_curve(os,f,textre,n,nperline);
+}
+
+extern Complex *out_base;
+Real out_re(int i);
+Real out_im(int i);
+
+template<class S>
+void out_real(S& os, Complex *f, char *textre, char *textim, int n,
+			  int nperline=default_nperline) 
+{
+	out_base=f;
+	out_function(os,out_re,textre,n,nperline);
+	out_function(os,out_im,textim,n,nperline);
+}
 
 inline double drand()
 {			  

@@ -234,20 +234,7 @@ char *output_filename(char *basename, char *suffix)
 	return filename;
 }
 
-static Complex *base;
-static Real out_re(int i) {return base[i].re;}
-static Real out_im(int i) {return base[i].im;}
+Complex *out_base;
+Real out_re(int i) {return out_base[i].re;}
+Real out_im(int i) {return out_base[i].im;}
 
-void out_real(ostream& os, Real *f, char *textre, char *, int n,
-			  int nperline)
-{
-	out_curve(os,f,textre,n,nperline);
-}
-
-void out_real(ostream& os, Complex *f, char *textre, char *textim, int n,
-			  int nperline) 
-{
-	base=f;
-	out_function(os,out_re,textre,n,nperline);
-	out_function(os,out_im,textim,n,nperline);
-}
