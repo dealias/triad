@@ -1,0 +1,12 @@
+C++ = CC -D_POSIX_SOURCE
+OPT = $(CFLAGS)
+LIB = $(LFLAGS) -lsci -lm
+MAKEDEPEND = cpp -M
+MDOPTS = -I /opt/ctl/CC/CC/include/
+
+ARCH = unix
+FFT = fft
+POLL = tremain
+
+
+

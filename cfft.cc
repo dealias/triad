@@ -1,5 +1,3 @@
-#include <sys/machd.h>
-
 #include "options.h"
 #include "fft.h"
 

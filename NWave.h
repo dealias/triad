@@ -112,7 +112,7 @@ public:
 	void Source(Var *src, Var *Y, double t) {Problem->NonLinearSrc(src,Y,t);}
 };
 
-#if _CRAY
+#if _CFRONT
 typedef NWave _dummy_;
 #endif
 

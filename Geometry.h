@@ -1,7 +1,7 @@
 #ifndef __Geometry_h__
 #define __Geometry_h__ 1
 
-#if _CRAY
+#if _CFRONT
 #include "options.h" // Work around CRAY template instantiation problem
 #endif
 #include "kernel.h"

@@ -1,4 +1,4 @@
-C++ = $(HOME)/bin/CC -D_POSIX_SOURCE
+C++ = $(HOME)/bin/CC -D_POSIX_SOURCE -D_CFRONT
 OPT = $(CFLAGS)
 LIB = $(LFLAGS) -lsci -lm
 MAKEDEPEND = /lib/cpp -M

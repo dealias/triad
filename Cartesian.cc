@@ -72,7 +72,7 @@ void set_fft_parameters()
 	xoffset=Nxb/2;
 	Nxb1=Nxb;
 	
-#if _CRAY // Avoid memory bank conflicts
+#if _CRAY; // Avoid memory bank conflicts
 	Nxb1 += 1;
 #endif	
 	nfft=Nxb1*Nyp;
@@ -110,7 +110,7 @@ void DiscretePad(Var *to, Var *from, Real *norm)
 	for(; to < tostop; to++) *to=0.0;
 }
 
-#if _CRAY
+#if _CRAYMVP
 void CartesianPad(Var *to_, Var *from)
 {
 	Var *to=to_+xoffset;

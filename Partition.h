@@ -538,7 +538,7 @@ INLINE void Partition<T,D>::List(ostream &os)
 {
 	os << "         " << Name() << " Bin Geometry:" << endl;
 	for(int i=0; i < n; i++) {
-#if _CRAY	
+#if _CFRONT	// Work around Cfront bug
 	os << "[" << bin[i].min << "\t" << bin[i].cen << "\t" << bin[i].max
 	   << "]" << newl;
 #else	
