@@ -9,8 +9,6 @@
 #include <math.h>
 #include <memory.h>
 
-#define INLINE inline
-
 #if _MAC
 #include ":arch:mac.h"
 #else // !_MAC

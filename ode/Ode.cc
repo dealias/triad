@@ -93,7 +93,6 @@ public:
 class I_Euler : public Euler, public IntegratingFactor {
 public:
 	void Allocate(int n) {Euler::Allocate(n); IntegratingFactor::Allocate(n);}
-
 	char *Name() {return "Euler w/Integrating Factor";}
 	Solve_RC Solve(double, double);
 	void TimestepDependence(double dt) {
