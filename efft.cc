@@ -28,9 +28,10 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		TableSize++;
 		nTable=new(nTable,TableSize) unsigned int;
 		nkTable=new(nkTable,TableSize) unsigned int;
-		for(i=0; i < 2; i++) {
-			aux1[i]=new(aux1[i],TableSize) *Real;
-			aux2[i]=new(aux2[i],TableSize) *Real;
+		for(int i=0; i < 2; i++) {
+			typedef double *pdouble;
+			aux1[i]=new(aux1[i],TableSize) pdouble;
+			aux2[i]=new(aux2[i],TableSize) pdouble;
 		}
 		
 		if(n <= 2048) naux=20000;
