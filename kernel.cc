@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
     string s;
     ostringstream buf;
     while(getline(fparam,s)) {
-      buf << s;
+      buf << s << " ";
     }
     Vocabulary->Parse((char *) buf.str().c_str());
     fparam.close();
