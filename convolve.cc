@@ -21,12 +21,12 @@ void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
 	unsigned int n=1 << log2n;
 	unsigned int i, n2=n/2;
 
-#pragma _CRI ivdep	
+#pragma ivdep	
 	for(i=m; i < n/2+1; i++) F[i]=0.0;
 	rfft_brinv(F,log2n-1);
 	
 	Real ninv=2.0/n2;
-#pragma _CRI ivdep	
+#pragma ivdep	
 	for(i=0; i < n2; i++) {
 		H[i].re=F[i].re*g[i].re*ninv;
 		H[i].im=F[i].im*g[i].im*ninv;
@@ -54,7 +54,7 @@ void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
 	unsigned int n=1 << log2n;
 	unsigned int i;
 
-#pragma _CRI ivdep	
+#pragma ivdep	
 	for(i=m; i < n/2+1; i++) G[i]=0.0;
 	rfft_brinv(G,log2n-1);
 	

@@ -7,4 +7,3 @@ D = u
 ARCH = unix
 FFT = efft
 #POLL = idle
-
