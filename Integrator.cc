@@ -342,7 +342,7 @@ int RK5::Corrector(double, double& errmax, int start, int stop)
 			c5*source[j].im;
 #else	
 		y[j]=y0[j]+c0*source0[j]+c2*source2[j]+c3*source3[j]+c5*source[j];
-#endif COMPLEX	
+#endif // COMPLEX
 	}
 	
 	if(dynamic) {
