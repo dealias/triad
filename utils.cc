@@ -8,6 +8,12 @@
 
 char* run=NULL;
 
+double pi=PI;
+double twopi=2.0*pi;
+double twopi2=twopi*twopi;
+
+char beep='\a';
+
 extern int sys_nerr;
 extern char *sys_errlist[];
 

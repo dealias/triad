@@ -29,11 +29,11 @@ inline int isgn(Real x)
 	return ((x) == 0.0 ? 0 : ((x) > 0.0 ? 1 : -1));
 }
 
-const double pi=PI;
-const double twopi=2.0*pi;
-const double twopi2=twopi*twopi;
+extern double pi=PI;
+extern double twopi=2.0*pi;
+extern double twopi2=twopi*twopi;
 
-const char beep='\a';
+extern char beep;
 
 template<class T>
 inline void swap(T& p, T& q) {

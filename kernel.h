@@ -36,9 +36,6 @@ extern char *run;
 extern char *integrator;
 extern char *approximation;
 
-const int no_verbose=0;
-const double no_sample=-1.0;
-
 class ParamBase {
 	int nvar;
 public:
