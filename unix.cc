@@ -71,11 +71,11 @@ void remove_dir(char *text)
 static char copy_cmd[]="cp -rf";
 
 // Copy a file or directory to a new location
-void copy(char *oldname, char *newname)
+int copy(char *oldname, char *newname)
 {
 	strstream buf;
 	buf << copy_cmd << " " << oldname << " " << newname << ends;
-	system(buf.str());
+	return system(buf.str());
 }
 
 extern "C" int getdomainname(char *name, size_t len);
