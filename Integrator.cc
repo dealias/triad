@@ -109,6 +109,7 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 	if(verbose) cout << endl;
 	if(dtorig) ChangeTimestep(dt,dtorig,t,sample);
 	if(sample >= 0.0) dump(it,final,tmax);
+	statistics(it);
 	dt *= sign;
 }	
 
