@@ -122,6 +122,15 @@ public:
 	Array2<T>& operator = (T *a) {Load(a); return *this;}
 	Array2<T>& operator = (const Array2<T>& A) {Load(A.Base()); return *this;}
 	
+	Array2<T>& operator += (Array2<T>& A) {
+		int size=Size(); for(int i=0; i < size; i++) v[i] += A(i);
+		return *this;
+	}
+	Array2<T>& operator -= (Array2<T>& A) {
+		int size=Size(); for(int i=0; i < size; i++) v[i] -= A(i);
+		return *this;
+	}
+	
 	Array2<T>& operator += (T a) {
 		int ny1=ny+1, size=Size(); for(int i=0; i < size; i += ny1) v[i] += a;
 		return *this;
@@ -189,6 +198,24 @@ public:
 	Array3<T>& operator = (T a) {Load(a); return *this;}
 	Array3<T>& operator = (T *a) {Load(a); return *this;}
 	Array3<T>& operator = (const Array3<T>& A) {Load(A.Base()); return *this;}
+	
+	Array3<T>& operator += (Array3<T>& A) {
+		int size=Size(); for(int i=0; i < size; i++) v[i] += A(i);
+		return *this;
+	}
+	Array3<T>& operator -= (Array3<T>& A) {
+		int size=Size(); for(int i=0; i < size; i++) v[i] -= A(i);
+		return *this;
+	}
+	
+	Array3<T>& operator += (T a) {
+		int ny1=ny+1, size=Size(); for(int i=0; i < size; i += ny1) v[i] += a;
+		return *this;
+	}
+	Array3<T>& operator -= (T a) {
+		int ny1=ny+1, size=Size(); for(int i=0; i < size; i += ny1) v[i] -= a;
+		return *this;
+	}
 };
 
 template<class T>
