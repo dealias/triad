@@ -45,7 +45,8 @@ public:
 	void close() {
 		if(buf) {
 			xdr_destroy(&xdrs);
-			fclose(buf); buf=NULL;
+			fclose(buf);
+			buf=NULL;
 		}
 	}
 };
