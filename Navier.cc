@@ -201,6 +201,8 @@ void NWave::InitialConditions()
 	avgyim=new Avgylabel[Nmoment];
 	for(n=0; n < Nmoment; n++) {
 		sprintf(tempbuffer,"avgy%d",n);
+		extern "C" int mkdir(const char *, mode_t); 
+
 		mkdir(Vocabulary->FileName(dirsep,tempbuffer),0xFFFF);
 		errno=0;
 		sprintf(avgyre[n],"y.re^%d",n);
