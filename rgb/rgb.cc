@@ -977,8 +977,10 @@ int main(int argc, char *argv[])
 			set++;
 		} while (n++ < end && rc == 0);
 		nset=nset ? min(nset,set) : set;
-		if(nset == 1 && !extract && !display) 
-			msg(ERROR, "More than one frame required");
+		if(nset == 1 && !extract && !display) {
+			if(make_mpeg) msg(ERROR, "More than one frame required");
+			else display=1;
+		}
 		if(verbose && f==0) {
 			cout << nset << " frame";
 			if(nset != 1) cout << "s";
