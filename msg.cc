@@ -13,9 +13,6 @@
 
 char beep='\a';
 
-extern int sys_nerr;
-extern const char *const sys_errlist[];
-
 int abort_flag=1; 	// If nonzero, abort program after a fatal error.
 int beep_enabled=1; // If nonzero, enable terminal beep for errors.
 int msg_override=0;
