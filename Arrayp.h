@@ -30,12 +30,12 @@ namespace Array {
   
 class ArrayMod {
  public:	
-  void Mod(int& i, unsigned int n) const {
-    if((unsigned int) i >= n) i -= n;
+  inline void Mod(int& i, unsigned int n) const {
+    if(i >= (int) n) i -= n;
     else if(i < 0) i += n;
 	
-    if((unsigned int) i >= n) i %= n;
-    else if(i < 0) {i=n-(-i % n); if((unsigned int) i == n) i=0;}
+    if(i >= (int) n) i %= n;
+    else if(i < 0) {i=n-(-i % n); if(i == (int) n) i=0;}
   }
 };
 
