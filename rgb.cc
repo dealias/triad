@@ -251,9 +251,10 @@ int main(int argc, char *const argv[])
 				rc=byte ? readframe(fin,nx,ny,nz,value,vmin,vmax) :
 					readframe(xin,nx,ny,nz,value,vmin,vmax);
 				if(rc == EOF) break;
+				n++;
+				if(n < begin) continue;
 				if(vmin < gmin) gmin=vmin;
 				if(vmax > gmax) gmax=vmax;
-				n++;
 			} while (rc == 0 && n < end);
 			
 			if(zero && gmin < 0 && gmax > 0) {
@@ -274,6 +275,7 @@ int main(int argc, char *const argv[])
 			rc=byte ? readframe(fin,nx,ny,nz,value,vmin,vmax) :
 				readframe(xin,nx,ny,nz,value,vmin,vmax);
 			if(rc == EOF) break;
+			n++;
 			if(n < begin) continue;
 			
 			if(!floating_scale) {vmin=gmin;	vmax=gmax;}
@@ -321,7 +323,6 @@ int main(int argc, char *const argv[])
 			
 			fout.close();
 			if(!fout) msg(ERROR,"Cannot write to output file %s",oname);
-			n++;
 		} while (rc == 0 && n < end);
 		nset=nset ? min(nset,n-begin) : n-begin;
 	}
