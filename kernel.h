@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <time.h>
 #include <string.h>
+#include <strstream.h>
 
 #include "DynVector.h"
 #include "Table.h"
@@ -149,9 +150,10 @@ public:
 	virtual char *Name()=0;
 	virtual char *Abbrev()=0;
 	virtual char *Directory() {
-		char *s=new char[strlen(Abbrev())+strlen(dirsep)+1];
-		sprintf(s,"%s%s",Abbrev(),dirsep);
-		return s;
+		strstream buf;
+		buf << Abbrev() << dirsep << ends;
+		buf.freeze();
+		return buf.str();
 	}
 
 	ProblemBase *NewProblem(char *key) {

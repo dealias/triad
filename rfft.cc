@@ -305,7 +305,7 @@ void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 
 // Return the two-dimensional Fourier transform of nx*ny real values.
 // Before calling, data must be allocated as Complex[nx*(ny/2+1)].
-// On entry: ((Real *) data)[2*i+j+(nx-1)*(j/2)*2] must contain 
+// On entry: ((Real *) data)[2*i+j+2*(nx-1)*(j/2)] must contain 
 // the (i,j)th real value, indexed by i=0,...,nx-1 and j=0,...,ny-1.
 //           log2nx contains the base-2 logarithm of nx.
 //           log2ny contains the base-2 logarithm of ny.
@@ -430,7 +430,7 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 	if(m != lastsize) {
 		if(m > lastsize) phase=new(phase,m*m) Complex;
 		lastsize=m;
-		Complex factor=exp(twopi*I/(m*m));
+		Complex factor=expi(twopi/(m*m));
 		Complex kphase=1.0;
 		for(k=0; k < m; k++) {
 			Complex *p=phase+m*k;

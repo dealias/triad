@@ -37,7 +37,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		}
 		
 		if(n <= 2048) naux=20000;
-		else naux=20000+2.28*n;
+		else naux=(int) (20000+2.28*n);
 		naux += (2*n+256)*((nk > 64) ? nk : 64);
 		nTable[j]=n;
 		nkTable[j]=nk;

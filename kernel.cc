@@ -69,7 +69,7 @@ int output=0;
 int hybrid=0;
 int override=0;
 int verbose=1;
-int discrete=0;
+int checkpoint=0;
 
 // Local vocabulary declarations and default values
 static int microsteps=1;
@@ -101,8 +101,8 @@ VocabularyBase::VocabularyBase()
 	VOCAB_NODUMP(override,0,1);
 	VOCAB_NODUMP(verbose,0,4);
 	VOCAB_NODUMP(run,"","");
+	VOCAB(checkpoint,0,INT_MAX);
 	VOCAB(output,0,1);
-	VOCAB(discrete,0,1);
 	VOCAB(method,"","");
 	VOCAB(integrator,"","");
 	
@@ -270,8 +270,7 @@ void read_init()
 	if(finit) {
 		cout << newl << "READING " << upcase(type) << " DATA FROM FILE "
 			 << rname << "." << endl; 
-		finit >> t0 >> dt0;
-		finit >> final_iteration;
+		finit >> t0 >> dt0 >> final_iteration;
 		for(i=0; i < ncputime; i++) finit >> cpu[i];
 		finit >> ny0;
 		if(ny0 != ny) msg(OVERRIDE,ny_msg,ny,ny0,rname);
@@ -330,13 +329,19 @@ void dump(int it, int final, double tmax)
 	oxstream frestart(rtemp);
 	if(frestart) {
 		int i;
-		frestart << t << newl << dt << newl;
-		frestart << iter << newl;
+		frestart << t << newl << dt << newl << iter << newl;
 		for(i=0; i < ncputime; i++) frestart << cpu[i] << newl;
 		frestart << ny << newl;
 		for(i=0; i < ny; i++) frestart << y[i] << newl;
 		frestart.close();
-		if(frestart) rename(rtemp,rname);
+		if(frestart) {
+			if(checkpoint && it > 0 && (it-1) % checkpoint == 0) {
+				strstream rcheck;
+				rcheck << rname << "." << iter-microsteps;
+				rename(rname,rcheck.str());
+			}
+			rename(rtemp,rname);
+		}
 		else {
 			errno=0;
 			msg(WARNING,"Cannot write to restart file %s",rtemp);
@@ -376,8 +381,8 @@ void statistics()
 
 char *VocabularyBase::FileName(const char* delimiter, const char *suffix)
 {
-	char *filename=new char[strlen(Directory())+strlen(run)+strlen(delimiter)+
-	strlen(suffix)+1];
-	sprintf(filename,"%s%s%s%s",Directory(),run,delimiter,suffix);
-	return filename;
+	strstream buf;
+	buf << Directory() << run << delimiter << suffix << ends;
+	buf.freeze();
+	return buf.str();
 }

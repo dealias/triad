@@ -43,8 +43,8 @@ public:
 	
 	~Complex() {}
 
-	Real real(const Complex &) const {return re;}
-	Real imag(const Complex &) const {return im;}
+	Real real() const {return re;}
+	Real imag() const {return im;}
 
 	Complex& operator = (const Complex& y);
 	

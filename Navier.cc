@@ -43,6 +43,8 @@ int pL=-2;
 int pH=1;
 
 int randomIC=1;
+int discrete=0;
+
 int ngridx=0;
 int ngridy=0;
 int movie=0;
@@ -112,9 +114,6 @@ NWaveVocabulary::NWaveVocabulary()
 	VOCAB(pL,0,0);
 	VOCAB(pH,0,0);
 	
-	VOCAB(randomIC,0,1);
-	VOCAB(Nmoment,0,INT_MAX);
-	
 	VOCAB(Nx,1,INT_MAX);
 	VOCAB(Ny,1,INT_MAX);
 	
@@ -123,6 +122,10 @@ NWaveVocabulary::NWaveVocabulary()
 	VOCAB(krmin,0.0,DBL_MAX);
 	VOCAB(krmax,0.0,DBL_MAX);
 	VOCAB(kthmin,0.0,twopi);
+	
+	VOCAB(Nmoment,0,INT_MAX);
+	VOCAB(randomIC,0,1);
+	VOCAB(discrete,0,1);
 	
 	VOCAB(ngridx,0,INT_MAX);
 	VOCAB(ngridy,0,INT_MAX);
@@ -176,8 +179,7 @@ static ofstream fparam,fevt,fyvt,ft,favgy,fprolog;
 static oxstream fpsi,fweiss;
 
 Real continuum_factor=1.0;
-typedef char Avgylabel[20];
-static Avgylabel *avgyre,*avgyim;
+static strstream *avgyre,*avgyim;
 static int tcount=0;
 static Complex *xcoeff, *ycoeff;
 static Real *norm_factor;
@@ -240,20 +242,20 @@ void NWave::InitialConditions()
 	}
 	
 	if(Nmoment) {
-		avgyre=new Avgylabel[Nmoment];
-		avgyim=new Avgylabel[Nmoment];
+		avgyre=new strstream[Nmoment];
+		avgyim=new strstream[Nmoment];
 	}
 	
 	if(!restart) remove_dir(Vocabulary->FileName(dirsep,"avgy*"));
 	for(n=0; n < Nmoment; n++) {
 		if(!restart) {
-			static char tempbuffer[30];
-			sprintf(tempbuffer,"avgy%d",n);
-			mkdir(Vocabulary->FileName(dirsep,tempbuffer),0xFFFF);
+			strstream buf;
+			buf << "avgy" << n << ends;
+			mkdir(Vocabulary->FileName(dirsep,buf.str()),0xFFFF);
 			errno=0;
 		}
-		sprintf(avgyre[n],"y.re^%d",n);
-		sprintf(avgyim[n],"y.im^%d",n);
+		avgyre[n] << "y.re^" << n << ends;
+		avgyim[n] << "y.im^" << n << ends;
 	}
 	
 	Vocabulary->GraphicsDump(fparam);
@@ -384,11 +386,11 @@ void NWave::Output(int)
 	
 	Var *yavg=y+Npsi;
 	for(n=0; n < Nmoment; n++) {
-		static char tempbuffer[30];
-		sprintf(tempbuffer,"avgy%d%st%d",n,dirsep,tcount);
-		open_output(favgy,dirsep,tempbuffer,0);
+		strstream buf;
+		buf << "avgy" << n << dirsep << "t" << tcount << ends;
+		open_output(favgy,dirsep,buf.str(),0);
 		out_curve(favgy,t,"t");
-		out_real(favgy,yavg+Npsi*n,avgyre[n],avgyim[n],Npsi);
+		out_real(favgy,yavg+Npsi*n,avgyre[n].str(),avgyim[n].str(),Npsi);
 		favgy.close();
 	}
 	

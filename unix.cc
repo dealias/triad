@@ -9,6 +9,7 @@
 #include <sys/times.h>
 #include <time.h>
 #include <string.h>
+#include <strstream.h>
 #include <malloc.h>
 #include <sys/utsname.h>
 
@@ -51,12 +52,10 @@ static char mail_cmd[]="mail";
 void mailuser(char *text)
 {
 	if(time(NULL)-init_time < longrun) return;
-	char *user=getpwuid(getuid())->pw_name;
-	char *buf=new char[50+strlen(mail_cmd)+strlen(run)+strlen(text)+
-	strlen(user)];
-	sprintf(buf,"%s -s 'Run %s %s.' %s < /dev/null > /dev/null",mail_cmd,
-			run,text,user);
-	system(buf);
+	strstream buf;
+	buf << mail_cmd << " -s 'Run " << run << " " << text << ".' "
+		<< getpwuid(getuid())->pw_name << " < /dev/null > /dev/null" << ends;
+	system(buf.str());
 }
 
 static char rmrf_cmd[]="rm -rf";
@@ -64,9 +63,9 @@ static char rmrf_cmd[]="rm -rf";
 // Recursively delete a directory and all of its contents.
 void remove_dir(char *text)
 {
-	char *buf=new char[25+strlen(rmrf_cmd)+strlen(text)];
-	sprintf(buf,"%s %s",rmrf_cmd,text);
-	system(buf);
+	strstream buf;
+	buf << rmrf_cmd << " " << text << ends;
+	system(buf.str());
 }
 
 extern "C" int getdomainname(char *name, size_t len);
@@ -81,9 +80,9 @@ char *machine()
 	uname(&platform);
 	getdomainname(domain,ndomain);
 	if(strcmp(domain,"(none)") == 0) *domain=0;
-	char *machine_name=new char[strlen(platform.nodename)+strlen(domain)+
-	strlen(platform.machine)+5];
-	sprintf(machine_name,"%s%s%s (%s)",platform.nodename,
-			(*domain) ? "." : "",domain,platform.machine);
-	return machine_name;
+	strstream buf;
+	buf << platform.nodename << ((*domain) ? "." : "") << domain << " ("
+		<< platform.machine << ")" << ends;
+	buf.freeze();
+	return buf.str();
 }

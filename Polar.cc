@@ -18,11 +18,12 @@ Real kthneg;
 char *Partition<Polar,Cartesian>::Name() {return "Polar";}
 
 char *Partition<Polar,Cartesian>::WeightFileName() {
-	char *filename=new char[strlen(Vocabulary->Abbrev())+strlen(Name())+100];
-	sprintf(filename,"%s/%s/%dx%d_%g:%g_%g%s%s",Vocabulary->Abbrev(),
-			downcase(Name()),Nr,Nth,krmin,krmax,kthmin,reality ? "R" : "",
-			discrete ? "D" : "");
-	return filename;
+	strstream buf;
+	buf << Vocabulary->Abbrev() << "/" << downcase(Name()) << "/" 
+		<< Nr << "x" << Nth << "_" << krmin << ":" << krmax << "_" << kthmin
+		<< (reality ? "R" : "") << (discrete ? "D" : "") << ends;
+	buf.freeze();
+	return buf.str();
 }
 
 void angular_grid(Bin<Polar,Cartesian> *grid, Real kthmin, Real kthmax,

@@ -15,6 +15,14 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
+#ifdef NEW_IMAGEMAGICK
+char yuvformat[]="yuv";
+char yuvinterlace[]="-interlace partition ";
+#else
+char yuvformat[]="yuv3";
+char yuvinterlace[]="";
+#endif 
+
 #include "xstream.h"
 #include <iostream.h>
 #include <limits.h>
@@ -76,16 +84,15 @@ int readframe(T& fin, int nx, int ny, int nz, float **value,
 	gmin=DBL_MAX; gmax=-DBL_MAX;
 	double vmin=DBL_MAX, vmax=-DBL_MAX;
 	
+	errno=0;
 	int nxy=nx*ny;
 	for(int k=0; k < nz; k++) {
 		float *valuek=value[k];
 		for(int i=0; i < nxy; i++) {
 			float v=get_value(fin);
 			if(fin.eof()) {
-				if(implicit || i > 0) {
-					cleanup();
+				if(implicit || i > 0)
 					msg(WARNING,"End of file during processing");
-				}
 				return EOF;
 			}
 			if(v < vmin) vmin=v;
@@ -148,7 +155,7 @@ void options()
 		 << endl;
 	cerr << "-f\t\t use a floating scale for each frame" << endl;
 	cerr << "-F\t\t use a floating scale for each cross-section" << endl;
-	cerr << "-g\t\t produce grey-scale output" << endl;
+	cerr << "-g\t\t produce gray-scale output" << endl;
 	cerr << "-h\t\t help" << endl;
 	cerr << "-l\t\t label frames with file names and values" << endl;
 	cerr << "-m\t\t generate mpeg (.mpg) file" << endl;
@@ -412,7 +419,7 @@ int main(int argc, char *const argv[])
 	if(label || make_mpeg) { 
 		if(make_mpeg) montage(nfiles,argf,0,format,"miff");
 		for(n=0; n < nset; n++) 
-			montage(nfiles,argf,n,format,make_mpeg ? "yuv" : "miff");
+			montage(nfiles,argf,n,format,make_mpeg ? yuvformat : "miff");
 		identify(nfiles,argf,0,"miff",xsize,ysize);
 		
 		if(make_mpeg) mpeg(nfiles,argf,nset-1,"mpg",xsize,ysize);
@@ -454,8 +461,12 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 		buf << fieldname << "\" " << rgbdir
 			<< fieldname << setfill('0') << setw(4) << n << "." << format;
 	}
-	buf << " -interlace partition " << type << ":" << rgbdir << argf[0] << n
-		<< "." << type << ends;
+	buf << " " << yuvinterlace << type << ":" << rgbdir << argf[0] << n;
+#ifndef NEW_IMAGEMAGIK	
+	if(strcmp(type,"yuv3") != 0)
+#endif
+		buf << "." << type;
+	buf << ends; 
 	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;
 	system(cmd);
@@ -503,8 +514,7 @@ void animate(int, char *const argf[], int, char *const type,
 {
 	strstream buf;
 	buf << "animate -size " << xsize << "x" << ysize
-		<< " -interlace none " << rgbdir << argf[0] << "*."
-		<< type << ends;
+		<< " -interlace none " << rgbdir << argf[0] << "*."	<< type << ends;
 	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;
 	system(cmd);
@@ -514,9 +524,9 @@ void manimate(int, char *const argf[], int n, char *const type,
 			  int xsize, int ysize)
 {
 	strstream buf;
-	buf << "animate -scene 0-" << n << " -size " << xsize << "x" << ysize <<
-		" " << type << ":" << rgbdir << argf[0] << "." << type
-		<< ".%d" << ends;
+	buf << "animate -scene 0-" << n << " -size " << xsize << "x" << ysize
+		<< " " << type << ":" << rgbdir << argf[0] << "." << type << ".%d" 
+		<< ends;
 	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;
 	system(cmd);

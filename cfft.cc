@@ -16,7 +16,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	int j;
 	unsigned int n=1 << log2n;
 	static int TableSize=0;
-	static unsigned int *nTable=NULL, *nkTable=NULL, *nauxTable=NULL;
+	static unsigned int *nTable=NULL, *nkTable=NULL;
 	static int **ifax;
 	static Real **trigs,**work;
 	
@@ -52,7 +52,8 @@ void fft(Complex *data, unsigned int log2n, int isign, int)
 {
 	static double *table,*work;
 	unsigned int n=1 << log2n;
-	static int nlast=0, isys[1]={0};
+	static unsigned int nlast=0; 
+	static int isys[1]={0};
 	const int zero=0;
 
 	Real scale=1.0;

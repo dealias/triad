@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <time.h>
 #include <string.h>
+#include <strstream.h>
 
 char* run="";
 Exit_code exit_signal=COMPLETE;
@@ -223,10 +224,10 @@ void msg(int fatal, char *file, int line, char *format,...)
 
 	if(fatal && abort_flag) {
 		cout << endl;
-		char *buf=new char[70+strlen(file)+strlen(format)];
-		sprintf(buf,"terminated with error from \"%s\":%d; %s",file,line,
-				format);
-		mailuser(buf);
+		strstream buf;
+		buf << "terminated with error from \"" << file << "\":" << line <<
+			"; " << format << ends;
+		mailuser(buf.str());
 		exit(FATAL);
 	}
 	cout << flush;
