@@ -27,7 +27,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		else naux=20000+2.28*n;
 		if(inc2 == 1 || n >= 252) naux += (2*n+256)*((nk > 64) ? nk : 64);
 	
-		for(int sign=-1; sign <= 1; sign += 2) {
+		for(int isign=-1; isign <= 1; isign += 2) {
 			int i=(isign == -1);
 			aux1[i]=new(aux1[i],naux) Real;
 			aux2[i]=new(aux2[i],naux) Real;
