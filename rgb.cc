@@ -112,7 +112,7 @@ extern "C" int getopt(int argc, char *const argv[], const char *optstring);
 void usage(char *program)
 {
 	cerr << "Usage: " << program
-		 << " [-bfghlmpvz] [-x mag] [-H hmag] [-V vmag] [-B beg] [-E end]"
+		 << " [-bfghlmpvz] [-x mag] [-H hmag] [-V vmag] [-B begin] [-E end]"
 		 << endl 
 		 << "           [-X xsize -Y ysize [-Z zsize]] file1 [file2 ...]"
 		 << endl;
@@ -135,7 +135,7 @@ void options()
 	cerr << "-x mag\t\t overall magnification factor" << endl;
 	cerr << "-H hmag\t\t horizontal magnification factor" << endl;
 	cerr << "-V vmag\t\t vertical magnification factor" << endl;
-	cerr << "-B beg\t\t first frame to process" << endl;
+	cerr << "-B begin\t\t first frame to process" << endl;
 	cerr << "-E end\t\t last frame to process" << endl;
 	cerr << "-X xsize\t explicit horizontal size" << endl;
 	cerr << "-Y ysize\t explicit vertical size" << endl;
