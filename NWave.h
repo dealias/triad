@@ -38,7 +38,7 @@ public:
 	void Output(int it);
 	void FinalOutput();
 	
-	void LinearSrc(Var *src, Var *y, double t) {NWaveProblem->Linearity(src,y,t);}
+	void LinearSrc(Var *src, Var *y, double t);
 	
 	Source_t StandardLinearity;
 	Source_t ExponentialLinearity;
