@@ -162,7 +162,6 @@ void PC::Predictor(double t, double dt, int start, int stop)
 {
 	for(int j=start; j < stop; j++) y1[j]=y0[j]+dt*source0[j];
 	Problem->BackTransform(y1,t+dt,dt,yi);
-	if(yi) set(yi,y1,ny);
 	Source(source,y1,t+dt);
 }
 
