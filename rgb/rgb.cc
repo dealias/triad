@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.20";
+const char VERSION[]="1.21";
 
 #include "xstream.h"
 #include <iostream>
@@ -1194,6 +1194,7 @@ int main(int argc, char *argv[])
 	    }
 	  vtoggle=!vtoggle;
 	}
+	
       }
 			
       double step=((double) PaletteRange)/xsize;
@@ -1228,7 +1229,7 @@ int main(int argc, char *argv[])
 	}
       }
 	  
-      if(yuv && !vtoggle) for(int i=0; i < xsize; i++)  fout << 16;
+      if(yuv && !vtoggle) for(int i=0; i < xsize; i++)  fout << YBlack;
       
       fout.close();
       if(yuv) {
