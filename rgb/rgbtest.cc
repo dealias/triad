@@ -4,10 +4,10 @@
 main()
 {
 	int N=255;
-	
-	fC << N << N << 1;
 
 	oxstream fout("data");
+	fout << N << N << 1;
+	
 	if(fout) 
 	  for(j=0; j < N; j++) 
 		for(i=0; i < N; i++) 
