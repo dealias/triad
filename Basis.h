@@ -37,7 +37,7 @@ public:
 // Factor which converts |y|^2 to energy:
 	Real Normalization(int);
 	
-	Nu Linearity(int);
+	inline Nu Linearity(int);
 	inline Real Forcing(int);
 };
 
@@ -67,7 +67,7 @@ inline void Basis<T>::Initialize()
 void LinearityAt(int i, Nu& nu);
 
 template <class T>
-Nu Basis<T>::Linearity(int i)
+inline Nu Basis<T>::Linearity(int i)
 {
 	Nu nu;
 	LinearityAt(i,nu);

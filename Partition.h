@@ -212,8 +212,8 @@ public:
 	Mc ComputeBinAverage(Bin<T,D> *k, Bin<T,D> *p, Bin<T,D> *q);
 	Mc FindWeight(int k, int p, int q);
 
-	void GenerateWeights();
-	void Initialize();
+	inline void GenerateWeights();
+	inline void Initialize();
 	inline void ListTriads(ostream &os);
 	
 	Real Area(int k) {return bin[k].Area();}
@@ -238,7 +238,7 @@ public:
 int out_weights(ofstream& fout, Weight* w, int lastindex, int n);
 	
 template<class T, class D>
-void Partition<T,D>::GenerateWeights() {
+inline void Partition<T,D>::GenerateWeights() {
 	Mc binaverage;
 	int k,p,q,first;
 	int lastindex=0;
@@ -298,9 +298,6 @@ void Partition<T,D>::GenerateWeights() {
 	cout << endl;
 }
 
-
-
-
 template<class T, class D>
 inline Mc Partition<T,D>::FindWeight(int k, int p, int q) {
 	if(k==p || p==q || q==k) return 0.0;
@@ -345,7 +342,7 @@ void save_weights(DynVector<Weight>& w, int n, char *filename);
 void save_formatted_weights(DynVector<Weight>& w, int n, char *filename);
 
 template<class T, class D>
-void Partition<T,D>::Initialize() {
+inline void Partition<T,D>::Initialize() {
 	Mc nkpq;
 	Real norm;
 	int k,p,q;
