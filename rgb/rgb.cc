@@ -773,8 +773,8 @@ int main(int argc, char *argv[])
     if(vector3) openfield(xin3,argf[f+2],nx,ny,nz);
     
     double *vmink,*vmaxk;
-    double *vmink2,*vmaxk2;
-    double *vmink3,*vmaxk3;
+    double *vmink2=NULL,*vmaxk2=NULL;
+    double *vmink3=NULL,*vmaxk3=NULL;
     
     vmink=new double [nz]; vmaxk=new double [nz];
     if(vector) vmink2=new double [nz]; vmaxk2=new double [nz];
@@ -994,7 +994,7 @@ int main(int argc, char *argv[])
 	    vmin3=vmink3[k]; vmax3=vmaxk3[k];
 	  }
 	}
-	double step,step2,step3;
+	double step,step2=0,step3=0;
 	step=(vmax == vmin) ? 0.0 : PaletteRange/(vmax-vmin);
 	if(vector) step2=(vmax2 == vmin2) ? 0.0 : PaletteRange/(vmax2-vmin2);
 	if(vector3) step3=(vmax3 == vmin3) ? 0.0 : PaletteRange/(vmax3-vmin3);
@@ -1002,7 +1002,7 @@ int main(int argc, char *argv[])
 	  for(int j2=0; j2 < my; j2++) {
 	    for(int i=istart; i < istop; i++)  {
 	      Ivec x;
-	      int index, indexg, indexb;
+	      int index, indexg=0, indexb=0;
 	      
 	      if(trans) {
 		x=Index(i,j);
