@@ -7,9 +7,9 @@ static double *table,*work;
 static int zero=0;
 static int nlast=0, isys[1]={0};
 
-extern "C" void CFTFAX(const int& n, int* ifax, double *trigs);
+extern "C" void CFTFAX(const int& n, int* ifax, Real *trigs);
 						
-extern "C" void CFFTMLT(double *ar, double *ai, double *work, double *trigs,
+extern "C" void CFFTMLT(Real *ar, Real *ai, Real *work, Real *trigs,
 						int *ifax , const int& inc, const int& jump,
 						const int& n, const int& lot, const int& isign);
 
@@ -21,7 +21,7 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 	unsigned int m,k,j;
 	static unsigned int lastsize=0;
 	static Complex *phase, *work;
-	static double *trigs;
+	static Real *trigs;
 	static int ifax[19];
 
 	m=1 << log4n;
@@ -32,7 +32,7 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 		if(m > lastsize) {
 			phase=new(phase,m*m) Complex;
 			work=new(work,2*m*m) Complex;
-			trigs=new(trigs,2*m) double;
+			trigs=new(trigs,2*m) Real;
 		}
 		lastsize=m;
 		Complex factor=exp(twopi*I/(m*m));
@@ -110,24 +110,16 @@ lot,isign,last)
 					inc,jump,m,last,isign);
 }
 
-extern "C" void CCFFT(const int& isign, const int& n, double& scale,
-					 Complex *x, Complex *y, double *table, double *work, 
+extern "C" void CCFFT(const int& isign, const int& n, Real& scale,
+					 Complex *x, Complex *y, Real *table, Real *work, 
 					 int* isys);
 		 
-extern "C" void SCFFT(const int& isign, const int& n, double& scale,
-					  Complex *x, Complex *y, double *table, double *work, 
-					  int* isys);
-
-extern "C" void CSFFT(const int& isign, const int& n, double& scale,
-					  Complex *x, Complex *y, double *table, double *work, 
-					  int* isys);
-
-inline void ccfft(Complex *data, unsigned int n, int isign, double scale)
+inline void ccfft(Complex *data, unsigned int n, int isign, Real scale)
 {
 	if(n != nlast) {
 		nlast=n;
-		table=new(table,100+8*n) double;
-		work=new(work,8*n) double;
+		table=new(table,100+8*n) Real;
+		work=new(work,8*n) Real;
 		CCFFT(zero,n,scale,data,data,table,work,isys);
 	}
 	CCFFT(isign,n,scale,data,data,table,work,isys);
@@ -142,6 +134,6 @@ void fft_br(Complex *data, unsigned int log2n)
 void fft_brinv(Complex *data, unsigned int log2n)
 {
 	unsigned int n=1 << log2n;
-	ccfft(data,n,-1,1.0/n);
+	ccfft(data,n,-1,1.0);
 }
 

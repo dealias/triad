@@ -1,8 +1,8 @@
-C++ = /usr/bin/CC -D_POSIX_SOURCE
+C++ = $(HOME)/bin/CC -D_POSIX_SOURCE
 OPT = $(CFLAGS)
 LIB = $(LFLAGS) -lsci -lm
 MAKEDEPEND = /lib/cpp -M
-MDOPTS = -I /usr/include/CC
+MDOPTS = -I $(HOME)/include/CC
 
 ARCH = unix
 FFT = cfft rfft
