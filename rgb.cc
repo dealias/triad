@@ -366,6 +366,7 @@ int main(int argc, char *const argv[])
 	} else animate(nfiles,argf,nset-1,format,xsize,ysize);
 	
 	if(!preserve) {
+		strstream buf;
 		buf << "rm -r " << rgbdir << " > /dev/null 2>&1" << ends;
 		char *cmd=buf.str();
 		if(verbose) cout << cmd << endl;
