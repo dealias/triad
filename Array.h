@@ -41,14 +41,14 @@ namespace Array {
   
 inline ostream& _newl(ostream& s) {s << '\n'; return s;}
 
-inline void DefaultArrayExit(char *x)
+#ifndef __ExternalArrayExit
+inline void ArrayExit(char *x)
 {
   cout << _newl << "ERROR: " << x << "." << endl;
   exit(1);
 } 
+#endif
 
-static void (*ArrayExit)(char *)=DefaultArrayExit;
-  
 template<class T>
 class array1 {
  protected:
