@@ -36,7 +36,6 @@ void Basis<Cartesian>::MakeBins()
 	
 	NRows=high.Row()+1;
 	Nevolved=high.Row()*Nx+high.Column();
-	Ndiscrete=n;
 	
 	Cartesian mode0=Cartesian(0,0);
 	for(i=0; i < n; i++) mode[i]=mode0;
