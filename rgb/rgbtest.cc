@@ -9,10 +9,10 @@ main()
 	fout << Nx << Ny << 1;
 	
 	if(fout) 
-	  for(unsigned j=Nyi; j >= 1; j--) 
+	  for(unsigned j=Ny-1; j >= 1; j--) 
 	    for(unsigned i=0; i < Nx; i++) {
 	      fout << (float) (i+Nx*j);
-	      std::cout << (float) (i+Nx*j) << endl;
+	      std::cout << (float) (i+Nx*j) << std::endl;
 	    }
 	fout.close();
 }
