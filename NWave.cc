@@ -349,8 +349,7 @@ void I_PC::TimestepDependence(double dt)
 
 void I_PC::Predictor(double t, double dt, int start, int stop)
 {
-	int j;
-	for(j=start; j < stop; j++) y1[j]=(y0[j]+dt*source0[j])*expinv[j];
+	for(int j=start; j < stop; j++) y1[j]=(y0[j]+dt*source0[j])*expinv[j];
 	Source(source,y1,t+dt);
 }
 
@@ -385,8 +384,7 @@ void CE_PC::Allocate(int n)
 
 void CE_PC::TimestepDependence(double dt)
 {
-	int j;
-	for(j=0; j < nyprimary; j++) {
+	for(int j=0; j < nyprimary; j++) {
 		onemexpinv[j]=-expm1(-real(nu[j])*dt);
 		expinv[j]=exp(-nu[j]*dt);
 		if(real(nu[j]) == 0.0) onemexpinv[j]=dt;
@@ -491,7 +489,6 @@ void I_RK4::TimestepDependence(double dt)
 void I_RK4::Predictor(double t, double dt, int start, int stop)
 {
 	int j;
-	
 	for(j=start; j < stop; j++) y[j]=(y0[j]+halfdt*source0[j])*expinv[j];
 	Source(source1,y,t+halfdt);
 	for(j=start; j < stop; j++) y[j]=y0[j]*expinv[j]+halfdt*source1[j];
@@ -502,13 +499,15 @@ void I_RK4::Predictor(double t, double dt, int start, int stop)
 
 int I_RK4::Corrector(double, double& errmax, int start, int stop)
 {
-	for(int j=start; j < stop; j++)
+	int j;
+	for(j=start; j < stop; j++) {
 		y[j]=((y0[j]+sixthdt*source0[j])*expinv[j]+
 			  thirddt*(source1[j]+source2[j]))*expinv[j]+sixthdt*source[j];
-		if(dynamic) for(int j=start; j < stop; j++)
-			calc_error(y0[j]*dtinv,source[j],source2[j]*expinv[j],source[j],
-					   errmax);
-		return 1;
+	}
+	if(dynamic) for(j=start; j < stop; j++)
+		calc_error(y0[j]*dtinv,source[j],source2[j]*expinv[j],source[j],
+				   errmax);
+	return 1;
 }
 
 void C_RK4::TimestepDependence(double dt)
