@@ -1313,14 +1313,12 @@ void Refine(double x1, double y1, double z1, double x2, double y2, double z2)
 	a18=Project(x2,yp,z2);
 	a19=Project(xp,y2,z2);
 	
-#if 0	
 	if(a1 || a2 || a3 || a6 || a7 || a9) Refine(x1,y1,z1,xp,yp,zp);
 	if(a1 || a3 || a4 || a7 || a8 || a11) Refine(xp,y1,z1,x2,yp,zp);
 	if(a2 || a3 || a5 || a9 || a12 || a13) Refine(x1,yp,z1,xp,y2,zp);
 	if(a3 || a4 || a5 || a11 || a13 || a14) Refine(xp,yp,z1,x2,y2,zp);
-#endif	
 
-//	if(a6 || a7 || a9 || a15 || a16 || a17) Refine(x1,y1,zp,xp,yp,z2);
+	if(a6 || a7 || a9 || a15 || a16 || a17) Refine(x1,y1,zp,xp,yp,z2);
 	if(a7 || a8 || a11 || a15 || a17 || a18) Refine(xp,y1,zp,x2,yp,z2);
 	if(a9 || a12 || a13 || a16 || a17 || a19) Refine(x1,yp,zp,xp,y2,z2);
 	if(a11 || a13 || a14 || a17 || a18 || a19) Refine(xp,yp,zp,x2,y2,z2);
