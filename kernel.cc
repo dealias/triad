@@ -220,7 +220,10 @@ int main(int argc, char *argv[])
 		fdump.open(ptemp);
 		Vocabulary->Dump(fdump);
 		fdump.close();
-		if(fdump) rename(ptemp,pname);
+		if(fdump) {
+			if(rename(ptemp,pname)) 
+				msg(WARNING,"Cannot rename parameter file %s",ptemp);
+		}
 		else msg(WARNING,"Cannot write to parameter file %s",ptemp);
 	}
 	
@@ -343,9 +346,12 @@ void dump(int it, int final, double tmax)
 				if(tmpdir) rcheck << tmpdir << dirsep
 								  << Vocabulary->Directory() << run; 
 				rcheck << rname << "." << iter-microsteps << ends;
-				rename(rname,rcheck.str());
+				if(!rename(rname,rcheck.str()))
+					msg(WARNING,"Cannot rename %s to checkpoint file %s",rname,
+						rcheck.str());
 			}
-			rename(rtemp,rname);
+			if(!rename(rtemp,rname))
+				msg(WARNING,"Cannot rename restart file %s",rtemp);
 		}
 		else {
 			errno=0;
