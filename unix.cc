@@ -28,6 +28,8 @@ typedef void stack_t;
 #include <sys/jtab.h>
 #endif
 
+#include "utils.h"
+
 extern char* run;
 static const double init_time=time(NULL);
 static const double ticktime=1.0/CLK_TCK;
