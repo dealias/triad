@@ -263,7 +263,7 @@ void PS::NonLinearSrc(Var *source, Var *psi, double)
 		source[i].im=psi[i].re*kx;
 	}
 	CartesianPad(psix,source);
- 	crfft2dT_sym(psix,log2Nxb,log2Nyb,1,1.0,-bitreverse);
+ 	crfft2dT(psix,log2Nxb,log2Nyb,1,1.0,-bitreverse);
 
 #pragma ivdep	
 	for(i=0; i < Nmode; i++) source[i] *= knorm2[i];
