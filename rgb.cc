@@ -2,7 +2,6 @@
 #include <iostream.h>
 #include <limits.h>
 #include <errno.h>
-#include <string.h>
 #include <strstream.h>
 #include <iomanip.h>
 #include <unistd.h>
@@ -15,6 +14,7 @@ static double *vmax;
 static char *rgbdir;
 static int xsize,ysize;
 
+void cleanup(char *fieldname);
 void montage(int argc, char *const argf[], int n, char *const type);
 void identify(int argc, char *const argf[], int n, char *const type,
 			  int& xsize, int& ysize);
@@ -141,17 +141,16 @@ int main(int argc, char *const argv[])
 		int msep=max(2,my);
 		ysize=my*ny*nz+msep*nz+mpal;
 		
-		char *buf=new char[200+2*strlen(fieldname)];
-// Delete old rgb files
-		sprintf(buf,"rm %s/%s*.rgb > /dev/null 2>&1",rgbdir,fieldname);
-		system(buf);
-
-		char *oname=new char[20+strlen(fieldname)];
+		cleanup(fieldname);
+		
 		double step=(vmaxf == vminf) ? 0.0 : 1.0/(vmaxf-vminf);
 		step *= PaletteMax;
 		l=0;
 		for(n=0; n < nset; n++) {
-			sprintf(oname,"%s/%s%04d.rgb",rgbdir,fieldname,n);
+			strstream buf;
+			buf << rgbdir << "/" << fieldname << setfill('0') << setw(4)
+				<< n << ".rgb" << ends;
+			char *oname=buf.str();
 			ofstream fout(oname);
 			if(!fout) msg(ERROR,"Cannot open output file %s",oname);
 			for(int k=0; k < nz; k++,l++) {
@@ -194,10 +193,20 @@ int main(int argc, char *const argv[])
 	}
 }
 
+void cleanup(char *fieldname)
+{
+	strstream buf;
+// Delete old files
+	buf << "rm " << rgbdir << "/" << fieldname << ".*"
+		<< "> /dev/null 2>&1" << ends;
+	char *cmd=buf.str();
+	system(cmd);
+}
+
 #if sun
-char *separator="____________";
+char *separator="_______________________________________________";
 #else
-char *separator="\t\t\t";
+char *separator="                                               ";
 #endif
 
 void montage(int nfiles, char *const argf[], int n, char *const type)
