@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.21
+#define __ARRAY_H_VERSION__ 1.22
 
 // Defining NDEBUG improves optimization but disables argument checking.
 // Defining __NOARRAY2OPT inhibits special optimization of Array2[].
@@ -408,6 +408,8 @@ class array3 : public array1<T> {
     Dimension(nx0,ny0,nz0,v0);
   }
 	
+  unsigned int Nx() const {return nx;}
+  unsigned int Ny() const {return ny;}
   unsigned int Nz() const {return nz;}
   unsigned int N3() const {return nz;}
   array2<T> operator [] (int ix) const {
@@ -518,6 +520,9 @@ class array4 : public array1<T> {
     Dimension(nx0,ny0,nz0,nw0,v0);
   }
 
+  unsigned int Nx() const {return nx;}
+  unsigned int Ny() const {return ny;}
+  unsigned int Nz() const {return ny;}
   unsigned int Nw() const {return nw;}
   unsigned int N4() const {return nw;}
   array3<T> operator [] (int ix) const {
@@ -634,6 +639,10 @@ class array5 : public array1<T> {
     Dimension(nx0,ny0,nz0,nw0,nv0,nv0);
   }
 
+  unsigned int Nx() const {return nx;}
+  unsigned int Ny() const {return ny;}
+  unsigned int Nz() const {return ny;}
+  unsigned int Nw() const {return nw;}
   unsigned int Nv() const {return nv;}
   unsigned int N5() const {return nv;}
   array4<T> operator [] (int ix) const {

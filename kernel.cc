@@ -242,16 +242,16 @@ int main(int argc, char *argv[])
   t=0.0;
   Problem->InitialConditions();
   
-  open_output(gparam,dirsep,"param",0);
-  Vocabulary->GraphicsDump(gparam);
-  gparam.close();
-	
   y=Problem->Vector();
   ny=Problem->Size();
   if(restart || initialize) read_init();
   if(restart && dynamic < 0) dynamic=1;
   if(!restart) Problem->Initialize();
   save_parameters(); // Save once more in case parameters have changed
+  
+  open_output(gparam,dirsep,"param",0);
+  Vocabulary->GraphicsDump(gparam);
+  gparam.close();
   
   Problem->Setup();
   Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,dtmin,dtmax,
