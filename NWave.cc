@@ -63,10 +63,10 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 		for(k=psibuffer; k < kstop; k++) *(q++)=conj(*k);
 	}
 	
+	pstop=pair+Npair;
 #if _CRAY		
 #pragma ivdep		
 #endif		
-	pstop=pair+Npair;
 	for(p=pair; p < pstop; p++) p->psipq=(*p->p)*(*p->q);
 	
 	PrimitiveNucleus(source, triadBase->Mkpq);
