@@ -1,4 +1,4 @@
-/* RGB:  A movie production utility
+/* RGB:  .A movie production utility
 Copyright (C) 2000 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
