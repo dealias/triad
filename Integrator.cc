@@ -307,56 +307,35 @@ void RK5::Predictor(double t, double, int start, int stop)
 
 #endif // COMPLEX
 
-inline void RK5::Correct(const Real y0, Real& y,
-						 const Real source0, const Real source2, 
-						 const Real source3, const Real,
-						 const Real source, const double)
-{
-	y=y0+c0*source0+c2*source2+c3*source3+c5*source;
-}
-
-inline void RK5::CalcError(const Real y0, Real& y,
-						   const Real source0, const Real source2, 
-						   const Real source3, const Real source4,
-						   const Real source, const double)
-{
-	y=y0+d0*source0+d2*source2+d3*source3+d4*source4+d5*source;
-}
-
-inline void RK5::Correct(const Complex y0, Complex& y,
-						 const Complex source0, const Complex source2, 
-						 const Complex source3, const Complex source4,
-						 const Complex source, const double)
-{
-	Correct(y0.re,y.re,source0.re,source2.re,source3.re,source4.re,source.re,
-			dt);
-	Correct(y0.im,y.im,source0.im,source2.im,source3.im,source4.im,source.im,
-			dt);
-}
-
-inline void RK5::CalcError(const Complex y0, Complex& y,
-						   const Complex source0, const Complex source2, 
-						   const Complex source3, const Complex source4,
-						   const Complex source, const double)
-{
-	CalcError(y0.re,y.re,source0.re,source2.re,source3.re,source4.re,
-			  source.re,dt);
-	CalcError(y0.im,y.im,source0.im,source2.im,source3.im,source4.im,
-			  source.im,dt);
-}
 
 int RK5::Corrector(double, double& errmax, int start, int stop)
 {
 	int j;
 #pragma ivdep		
-	for(j=start; j < stop; j++)
-		Correct(y0[j],y[j],source0[j],source2[j],source3[j],source4[j],
-				source[j],dt);
+	for(j=start; j < stop; j++) {
+#if COMPLEX	
+		y[j].re=y0[j].re+c0*source0[j].re+c2*source2[j].re+c3*source3[j].re+
+			c5*source[j].re;
+		y[j].im=y0[j].im+c0*source0[j].im+c2*source2[j].im+c3*source3[j].im+
+			c5*source[j].im;
+#else	
+		y[j]=y0[j]+c0*source0[j]+c2*source2[j]+c3*source3[j]+c5*source[j];
+#endif COMPLEX	
+	}
+	
 	if(dynamic) {
 #pragma ivdep		
-		for(j=start; j < stop; j++)
-			CalcError(y0[j],y3[j],source0[j],source2[j],source3[j],source4[j],
-					  source[j],dt);
+		for(j=start; j < stop; j++) {
+#if COMPLEX	
+			y3[j].re=y0[j].re+d0*source0[j].re+d2*source2[j].re+
+				d3*source3[j].re+d4*source4[j].re+d5*source[j].re;
+			y3[j].im=y0[j].im+d0*source0[j].im+d2*source2[j].im+
+				d3*source3[j].im+d4*source4[j].im+d5*source[j].im;
+#else
+			y3[j]=y0[j]+d0*source0[j]+d2*source2[j]+
+				d3*source3[j]+d4*source4[j]+d5*source[j];
+#endif
+		}
 		for(j=start; j < stop; j++)
 			calc_error(y0[j],y[j],y3[j],y[j],errmax);
 		ExtrapolateTimestep(errmax);

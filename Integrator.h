@@ -13,9 +13,9 @@ inline void calc_error(const Var& initial, const Var& norm, const Var& pred,
 					   const Var& corr, double& errmax)
 {
 	Real denom,error;
-	denom=max(abs2(norm),abs2(initial));
+	denom=max(norm2(norm),norm2(initial));
 	if(denom && (pred != initial)) {
-        error=abs2(corr-pred)/denom;
+        error=norm2(corr-pred)/denom;
 	    if(error > errmax) errmax=error;
 	}
 }
@@ -130,22 +130,6 @@ public:
 	int StandardCorrector(double dt, double& errmax, int start,int stop) {
 		return RK5::Corrector(dt,errmax,start,stop);
 	}
-	inline void Correct(const Real y0, Real& y,
-						const Real source0, const Real source2, 
-						const Real source3, const Real source4,
-						const Real source, const double dt);
-	inline void Correct(const Complex y0, Complex& y,
-						const Complex source0, const Complex source2, 
-						const Complex source3, const Complex source4,
-						const Complex source, const double dt);
-	inline void CalcError(const Real y0, Real& y,
-						  const Real source0, const Real source2, 
-						  const Real source3, const Real source4,
-						  const Real source, const double dt);
-	inline void CalcError(const Complex y0, Complex& y,
-						  const Complex source0, const Complex source2, 
-						  const Complex source3, const Complex source4,
-						  const Complex source, const double dt);
 };
 
 class Exact : public RK5 {

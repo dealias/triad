@@ -144,6 +144,16 @@ inline Real abs2(const Complex& x)
 	return x.re*x.re+x.im*x.im;
 }
 
+inline Real norm2(Real x)
+{
+	return abs2(x);
+}
+
+inline Real norm2(const Complex& x)
+{
+	return abs2(x);
+}
+
 inline Real product(Real x, Real y)
 {
 	return x*y;
