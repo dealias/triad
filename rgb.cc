@@ -497,7 +497,7 @@ int main(int argc, char *const argv[])
 
 	}
 	
-	if(!floating_scale && verbose) 
+	if(verbose && floating_scale) 
 		cout << nset << " frames found." << endl;
 
 	if(nset == 1) msg(ERROR, "More than one frame required");
