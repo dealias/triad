@@ -36,12 +36,14 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #include <strstream.h>
 #include <unistd.h>
 #include <limits.h>
+#include <stdlib.h>
 
 namespace Array {
   
 inline ostream& _newl(ostream& s) {s << '\n'; return s;}
 
 inline void ArrayExit(char *x);
+  
 #ifndef __ExternalArrayExit
 inline void ArrayExit(char *x)
 {
