@@ -3,14 +3,11 @@
 
 #define INTEGRATOR(key) {new Entry<key,IntegratorBase>(#key,IntegratorTable);}
 
-typedef void Predictor_t(Var *, double, double);
-typedef int Corrector_t(Var *, double, double&, int start, int stop);
-
-inline void IntegratorBase::Source(Var *source, Var *y, double t)
+inline void IntegratorBase::Source(Var *src, Var *y, double t)
 {
-	if(NonlinearSrc) (*NonlinearSrc)(source,y,t);
-	if(LinearSrc) (*LinearSrc)(source,y,t);
-	if(ConstantSrc) (*ConstantSrc) (source,y,t);
+	if(NonlinearSrc) (*NonlinearSrc)(src,y,t);
+	if(LinearSrc) (*LinearSrc)(src,y,t);
+	if(ConstantSrc) (*ConstantSrc) (src,y,t);
 }
 
 inline void calc_error(const Var initial, const Var norm, const Var pred,
@@ -48,12 +45,15 @@ class PC : public IntegratorBase {
 protected:
 	Var *y,*y1,*source0;
 public:
+	typedef void Predictor_t(Var *, double, double);
+	typedef int Corrector_t(Var *, double, double&, int start, int stop);
+
 	void Allocate(int n) {ny=n; source=new Var[n];
 						  y1=y=new Var [n]; source0=new Var [n];}
 	char *Name() {return "Predictor-Corrector";}
 	Solve_t Solve;
-	virtual Predictor_t Predictor;
-	virtual Corrector_t Corrector;
+	virtual void Predictor(Var *, double, double);
+	virtual int Corrector(Var *, double, double&, int start, int stop);
 	virtual int StandardCorrector(Var *y0, double dt, double& errmax,
 								  int start, int stop) {
 		return PC::Corrector(y0,dt,errmax,start,stop);
@@ -67,7 +67,7 @@ public:
 	void TimestepDependence(double);
 	Predictor_t Predictor;
 	Corrector_t Corrector;
-	virtual int StandardCorrector(Var *y0, double dt, double& errmax,
+	int StandardCorrector(Var *y0, double dt, double& errmax,
 								  int start, int stop) {
 		return RK2::Corrector(y0,dt,errmax,start,stop);
 	}
@@ -84,7 +84,7 @@ public:
 	void TimestepDependence(double);
 	Predictor_t Predictor;
 	Corrector_t Corrector;
-	virtual int StandardCorrector(Var *y0, double dt, double& errmax,
+	int StandardCorrector(Var *y0, double dt, double& errmax,
 								  int start, int stop) {
 		return RK4::Corrector(y0,dt,errmax,start,stop);
 	}
@@ -117,7 +117,7 @@ public:
 	}
 	Predictor_t Predictor;
 	Corrector_t Corrector;
-	virtual int StandardCorrector(Var *y0, double dt, double& errmax,
+	int StandardCorrector(Var *y0, double dt, double& errmax,
 								  int start, int stop) {
 		return RK5::Corrector(y0,dt,errmax,start,stop);
 	}

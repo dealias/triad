@@ -53,7 +53,6 @@ public:
 enum Solve_RC {NONINVERTIBLE=-1,UNSUCCESSFUL,SUCCESSFUL,ADJUST};
 
 typedef void Source_t(Var *, Var *, double);
-typedef Solve_RC Solve_t(Var *, double, double);
 
 extern Source_t *LinearSrc;
 extern Source_t *NonlinearSrc;
@@ -70,6 +69,7 @@ protected:
 	int itmax,microsteps;
 	int microprocess;
 	int verbose;
+	typedef void Source_t(Var *, Var *, double);
 	Source_t *LinearSrc,*NonlinearSrc,*ConstantSrc;
 
 public:	
@@ -95,11 +95,13 @@ public:
 				   Source_t *const ConstantSrc, double& dt,
 				   const double sample);
 	void ChangeTimestep(double& dt, const double dtnew, const double t);
+	
 	Solve_RC CheckError(double errmax);
 	virtual void Allocate(int)=0;
 	virtual char *Name()=0;
-	virtual Solve_t Solve=0;
-	virtual Source_t Source;
+	typedef Solve_RC Solve_t(Var *, double, double);
+	virtual Solve_RC Solve(Var *, double, double)=0;
+	virtual void Source(Var *, Var *, double);
 	virtual int Microfactor() {return 1;}
 	virtual void TimestepDependence(double) {}
 };
