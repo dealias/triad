@@ -51,6 +51,7 @@ static int preserve=0;
 int implicit=1;
 int zero=0;
 int invert=0;
+int gray=0;
 
 void cleanup();
 
@@ -205,7 +206,6 @@ int main(int argc, char *const argv[])
 	int nx=1,ny=1,nz=1;
 	int nset=0, mx=1, my=1;
 	int n,begin=0, skip=1, end=INT_MAX;
-	int gray=0;
 	int label=0;
 	int make_mpeg=0;
 	int syntax=0;
