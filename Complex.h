@@ -1,19 +1,18 @@
-// This may look like C code, but it is really -*- C++ -*-
 /* 
-Copyright (C) 1988 Free Software Foundation
-	written by Doug Lea (dl@rocky.oswego.edu)
+   Copyright (C) 1988 Free Software Foundation
+   written by Doug Lea (dl@rocky.oswego.edu)
 
-This file is part of the GNU C++ Library.  This library is free
-software; you can redistribute it and/or modify it under the terms of
-the GNU Library General Public License as published by the Free
-Software Foundation; either version 2 of the License, or (at your
-option) any later version.	This library is distributed in the hope
-that it will be useful, but WITHOUT ANY WARRANTY; without even the
-implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-PURPOSE.  See the GNU Library General Public License for more details.
-You should have received a copy of the GNU Library General Public
-License along with this library; if not, write to the Free Software
-Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+   This file is part of the GNU C++ Library.  This library is free
+   software; you can redistribute it and/or modify it under the terms of
+   the GNU Library General Public License as published by the Free
+   Software Foundation; either version 2 of the License, or (at your
+   option) any later version.	This library is distributed in the hope
+   that it will be useful, but WITHOUT ANY WARRANTY; without even the
+   implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+   PURPOSE.  See the GNU Library General Public License for more details.
+   You should have received a copy of the GNU Library General Public
+   License along with this library; if not, write to the Free Software
+   Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 #ifndef __Complex_h__
@@ -36,249 +35,283 @@ public:
 protected:
 #endif
 
-  Real		   re;
-  Real		   im;
+	Real		   re;
+	Real		   im;
 
 public:
 
-  Real		   real() const;
-  Real		   imag() const;
+	Complex() {}
+	Complex(Real r, Real i=0) :re(r), im(i) {}
+	Complex(const Complex& y) :re(y.re), im(y.im) {}
+	
+	~Complex() {}
 
-				   Complex();
-				   Complex(const Complex& y);
-				   Complex(const Real r, const Real i=0);
+	Real real(const Complex &) const {return re;}
+	Real imag(const Complex &) const {return im;}
 
-				  ~Complex();
-
-  Complex&		   operator =  (const Complex& y);
-
-  Complex&		   operator += (const Complex& y);
-  Complex&		   operator += (const Real y);
-  Complex&		   operator -= (const Complex& y);
-  Complex&		   operator -= (const Real y);
-  Complex&		   operator *= (const Complex& y);
-  Complex&		   operator *= (const Real y);
-
-  Complex&		   operator /= (const Complex& y); 
-  Complex&		   operator /= (const Real y); 
-
-  void			   error(const char* msg) const;
+	Complex& operator = (const Complex& y);
+	
+	Complex& operator += (const Complex& y);
+	Complex& operator += (Real y);
+	Complex& operator -= (const Complex& y);
+	Complex& operator -= (Real y);
+	Complex& operator *= (const Complex& y);
+	Complex& operator *= (Real y);
+	Complex& operator /= (const Complex& y); 
+	Complex& operator /= (Real y); 
+	
+	void error(char* msg) const;
 };
 
 
-inline Complex operator /  (const Complex& x, const Complex& y);
-inline Complex operator /  (const Complex& x, const Real y);
-inline Complex operator /  (const Real x, const Complex& y);
-inline Complex exp(const Complex& x);
-
 // non-inline functions
 
-Complex	  cos(const Complex& x);
-Complex	  sin(const Complex& x);
+Complex cos(const Complex& x);
+Complex sin(const Complex& x);
 
-Complex	  cosh(const Complex& x);
-Complex	  sinh(const Complex& x);
+Complex cosh(const Complex& x);
+Complex sinh(const Complex& x);
 
-Complex	  log(const Complex& x);
+Complex log(const Complex& x);
 
-Complex	  pow(const Complex& x, int p);
-Complex	  pow(const Complex& x, const Complex& p);
-Complex	  pow(const Complex& x, const Real y);
-Complex	  sqrt(const Complex& x);
+Complex pow(const Complex& x, int p);
+Complex pow(const Complex& x, const Complex& p);
+Complex pow(const Complex& x, Real y);
+Complex sqrt(const Complex& x);
    
-#ifdef __GNUC__
-#define INLINE
-#else
-#define INLINE inline
-#endif
-
-INLINE istream&  operator >> (istream& s, Complex& x);
-INLINE ostream&  operator << (ostream& s, const Complex& x);
-
 // other functions defined as inlines
 
 inline int operator == (const Complex& x, const Complex& y);
-inline int operator == (const Complex& x, const Real y);
+inline int operator == (const Complex& x, Real y);
 inline int operator != (const Complex& x, const Complex& y);
-inline int operator != (const Complex& x, const Real y);
+inline int operator != (const Complex& x, Real y);
 
 inline Complex operator - (const Complex& x);
-inline Complex conj(const Complex& x);
 inline Complex operator + (const Complex& x, const Complex& y);
-inline Complex operator + (const Complex& x, const Real y);
-inline Complex operator + (const Real x, const Complex& y);
+inline Complex operator + (const Complex& x, Real y);
+inline Complex operator + (Real x, const Complex& y);
 inline Complex operator - (const Complex& x, const Complex& y);
-inline Complex operator - (const Complex& x, const Real y);
-inline Complex operator - (const Real x, const Complex& y);
+inline Complex operator - (const Complex& x, Real y);
+inline Complex operator - (Real x, const Complex& y);
 inline Complex operator * (const Complex& x, const Complex& y);
-inline Complex operator * (const Complex& x, const Real y);
-inline Complex operator * (const Real x, const Complex& y);
+inline Complex operator * (const Complex& x, Real y);
+inline Complex operator * (Real x, const Complex& y);
+inline Complex operator / (const Complex& x, const Complex& y);
+inline Complex operator / (const Complex& x, Real y);
+inline Complex operator / (Real x, const Complex& y);
 
+inline Complex conj(const Complex& x);
 inline Real real(const Complex& x);
 inline Real imag(const Complex& x);
 inline Real abs(const Complex& x);
 inline Real norm(const Complex& x);
 inline Real arg(const Complex& x);
 
-inline Complex polar(const Real r, const Real t = 0.0);
+inline Complex polar(Real r, Real t = 0.0);
 
 
 // inline members
 
-inline Real Complex::real() const { return re; }
-inline Real Complex::imag() const { return im; }
-
-inline Complex::Complex() {}
-inline Complex::Complex(const Complex& y) :re(y.real()), im(y.imag()) {}
-inline Complex::Complex(const Real r, const Real i) :re(r), im(i) {}
-
-inline Complex::~Complex() {}
-
-inline Complex&	 Complex::operator =  (const Complex& y) 
+inline Complex& Complex::operator = (const Complex& y) 
 { 
-  re = y.real(); im = y.imag(); return *this; 
+  re = y.re; im = y.im; return *this; 
 } 
 
-inline Complex&	 Complex::operator += (const Complex& y)
+inline Complex& Complex::operator += (const Complex& y)
 { 
-  re += y.real();  im += y.imag(); return *this; 
+	re += y.re;  im += y.im; return *this; 
 }
 
-inline Complex&	 Complex::operator += (const Real y)
+inline Complex& Complex::operator += (Real y)
 { 
-  re += y; return *this; 
+	re += y; return *this; 
 }
 
-inline Complex&	 Complex::operator -= (const Complex& y)
+inline Complex& Complex::operator -= (const Complex& y)
 { 
-  re -= y.real();  im -= y.imag(); return *this; 
+	re -= y.re;  im -= y.im; return *this; 
 }
 
-inline Complex&	 Complex::operator -= (const Real y)
+inline Complex& Complex::operator -= (Real y)
 { 
-  re -= y; return *this; 
+	re -= y; return *this; 
 }
 
-inline Complex&	 Complex::operator *= (const Complex& y)
+inline Complex& Complex::operator *= (const Complex& y)
 {  
-  Real r = re * y.real() - im * y.imag();
-  im = re * y.imag() + im * y.real(); 
-  re = r; 
-  return *this; 
+	Real r = re * y.re - im * y.im;
+	im = re * y.im + im * y.re; 
+	re = r; 
+	return *this; 
 }
 
-inline Complex&	 Complex::operator *= (const Real y)
+inline Complex& Complex::operator *= (Real y)
 {  
-  re *=	 y; im *=  y; return *this; 
+	re *= y; im *= y; return *this; 
 }
 
+inline Complex& Complex::operator /= (const Complex& y)
+{
+	register double t1,t2,t3,t4;
+	t3=y.re; t4=y.im; t1=t2=1.0/(t3*t3+t4*t4);
+	t1*=t3; t2*=t4; t3=re; t4=im;
+	re*=t1;	re+=t4*t2;
+	im*=t1;	im-=t3*t2;
+	return *this;
+}
+
+inline Complex& Complex::operator /= (Real y)
+{
+	re/=y;
+	im/=y;
+	return *this;
+}
 
 //	functions
 
 inline int	operator == (const Complex& x, const Complex& y)
 {
-  return x.real() == y.real() && x.imag() == y.imag();
+	return x.re == y.re && x.im == y.im;
 }
 
-inline int	operator == (const Complex& x, const Real y)
+inline int	operator == (const Complex& x, Real y)
 {
-  return x.imag() == 0.0 && x.real() == y;
+	return x.im == 0.0 && x.re == y;
 }
 
 inline int	operator != (const Complex& x, const Complex& y)
 {
-  return x.real() != y.real() || x.imag() != y.imag();
+	return x.re != y.re || x.im != y.im;
 }
 
-inline int	operator != (const Complex& x, const Real y)
+inline int	operator != (const Complex& x, Real y)
 {
-  return x.imag() != 0.0 || x.real() != y;
+	return x.im != 0.0 || x.re != y;
 }
 
-inline Complex	operator - (const Complex& x)
+inline Complex operator - (const Complex& x)
 {
-  return Complex(-x.real(), -x.imag());
+	return Complex(-x.re, -x.im);
 }
 
-inline Complex	conj(const Complex& x)
+inline Complex conj(const Complex& x)
 {
-  return Complex(x.real(), -x.imag());
+	return Complex(x.re, -x.im);
 }
 
-inline Complex	operator + (const Complex& x, const Complex& y)
+inline Complex operator + (const Complex& x, const Complex& y)
 {
-  return Complex(x.real() + y.real(), x.imag() + y.imag());
+	return Complex(x.re + y.re, x.im + y.im);
 }
 
-inline Complex	operator + (const Complex& x, const Real y)
+inline Complex operator + (const Complex& x, Real y)
 {
-  return Complex(x.real() + y, x.imag());
+	return Complex(x.re + y, x.im);
 }
 
-inline Complex	operator + (const Real x, const Complex& y)
+inline Complex operator + (Real x, const Complex& y)
 {
-  return Complex(x + y.real(), y.imag());
+	return Complex(x + y.re, y.im);
 }
 
-inline Complex	operator - (const Complex& x, const Complex& y)
+inline Complex operator - (const Complex& x, const Complex& y)
 {
-  return Complex(x.real() - y.real(), x.imag() - y.imag());
+	return Complex(x.re - y.re, x.im - y.im);
 }
 
-inline Complex	operator - (const Complex& x, const Real y)
+inline Complex operator - (const Complex& x, Real y)
 {
-  return Complex(x.real() - y, x.imag());
+	return Complex(x.re - y, x.im);
 }
 
-inline Complex	operator - (const Real x, const Complex& y)
+inline Complex operator - (Real x, const Complex& y)
 {
-  return Complex(x - y.real(), -y.imag());
+	return Complex(x - y.re, -y.im);
 }
 
-inline Complex	operator * (const Complex& x, const Complex& y)
+inline Complex operator * (const Complex& x, const Complex& y)
 {
-  return Complex(x.real() * y.real() - x.imag() * y.imag(), 
-				 x.real() * y.imag() + x.imag() * y.real());
+	return Complex(x.re * y.re - x.im * y.im, 
+				   x.re * y.im + x.im * y.re);
 }
 
-inline Complex	operator * (const Complex& x, const Real y)
+inline Complex operator * (const Complex& x, Real y)
 {
-  return Complex(x.real() * y, x.imag() * y);
+	return Complex(x.re * y, x.im * y);
 }
 
-inline Complex	operator * (const Real x, const Complex& y)
+inline Complex operator * (Real x, const Complex& y)
 {
-  return Complex(x * y.real(), x * y.imag());
+	return Complex(x * y.re, x * y.im);
 }
 
-inline Real  real(const Complex& x)
+inline Complex operator / (const Complex& x, const Complex& y)
 {
-  return x.real();
+	register double t1,t2,t3,t4;
+	t3=y.re; t4=y.im; t1=t2=1.0/(t3*t3+t4*t4);
+	t1*=t3; t2*=t4; t3=x.re; t4=x.im;
+	return Complex(t4*t2+t3*t1,t4*t1-t3*t2);
 }
 
-inline Real  imag(const Complex& x)
+inline Complex operator / (const Complex& x, Real y)
 {
-  return x.imag();
+	return Complex(x.re/y,x.im/y);
 }
 
-inline Real  norm(const Complex& x)
+inline Complex operator / (Real x, const Complex& y)
 {
-  return (x.real() * x.real() + x.imag() * x.imag());
+	register double factor;
+	factor=1.0/(y.re*y.re+y.im*y.im);
+	return Complex(x*y.re*factor,-x*y.im*factor);
 }
 
-inline Real  abs(const Complex& x)
+inline Real real(const Complex& x)
 {
-  return sqrt(norm(x));
+	return x.re;
 }
 
-inline Real  arg(const Complex& x)
+inline Real imag(const Complex& x)
 {
-  return atan2(x.imag(), x.real());
+	return x.im;
 }
 
-inline Complex	polar(const Real r, const Real t)
+inline Real norm(const Complex& x)
 {
-  return Complex(r * cos(t), r * sin(t));
+	return (x.re * x.re + x.im * x.im);
 }
+
+inline Real abs(const Complex& x)
+{
+	return sqrt(norm(x));
+}
+
+inline Real arg(const Complex& x)
+{
+	return atan2(x.im, x.re);
+}
+
+inline Complex polar(Real r, Real t)
+{
+	return Complex(r * cos(t), r * sin(t));
+}
+
+#ifdef __GNUC__
+istream&  operator >> (istream& s, Complex& x);
+ostream&  operator << (ostream& s, const Complex& x);
+#else
+inline istream& operator >> (istream& s, Complex& y)
+{
+	Real re,im;
+	s >> "(" >> re >> "," >> im >> ")";
+	y=Complex(re,im);
+	return s;
+}
+
+inline ostream& operator << (ostream& s, const Complex& y)
+{
+	s << "(" << y.re << ", " << y.im << ")";
+	return s;
+}
+#endif
 
 #endif

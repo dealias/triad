@@ -10,8 +10,8 @@ inline void IntegratorBase::Source(Var *src, Var *y, double t)
 	if(ConstantSrc) (*ConstantSrc) (src,y,t);
 }
 
-inline void calc_error(const Var initial, const Var norm, const Var pred,
-					   const Var corr, double& errmax)
+inline void calc_error(const Var& initial, const Var& norm, const Var& pred,
+					   const Var& corr, double& errmax)
 {
 	Real denom,error;
 	denom=max(abs2(norm),abs2(initial));
@@ -29,8 +29,14 @@ inline Solve_RC IntegratorBase::CheckError(double errmax)
 }
 
 template<class T> 
-inline void set(T *to, T *from, int n) {
+#if _CRAY	
+inline void set(T * restrict to, const T * restrict from, int n) {
+	T * kstop=to+n;
+	for(T *k=to; k < kstop; k++) *k=*(from++);
+#else	
+inline void set(T *to, const T * from, int n) {
 	memcpy(to,from,sizeof(*from)*n);
+#endif	
 }
 
 class Euler : public IntegratorBase {

@@ -234,7 +234,8 @@ void RK5::TimestepDependence(double dt)
 	d4=277.0/14336.0*dt; d5=0.25*dt;
 }
 
-#if _CRAY && COMPLEX
+#if COMPLEX
+
 void RK5::Predictor(Var *y0, double t, double)
 {
 	int j;
@@ -277,7 +278,7 @@ void RK5::Predictor(Var *y0, double t, double)
 	Source(source,y5,t+a5);
 }
 	
-#else // !_CRAY && COMPLEX
+#else // COMPLEX
 	
 void RK5::Predictor(Var *y0, double t, double)
 {
@@ -303,7 +304,7 @@ void RK5::Predictor(Var *y0, double t, double)
 	Source(source,y5,t+a5);
 }
 
-#endif // _CRAY && COMPLEX
+#endif // COMPLEX
 
 int RK5::Corrector(Var *y0, double, double& errmax, int start, int stop)
 {

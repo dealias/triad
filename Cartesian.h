@@ -11,11 +11,11 @@ public:
 	int x,y;	// wavenumber components
 	
 	Cartesian(int column=0, int row=0) : x(column), y(row) {}
-	Real K2() {return x*x+y*y;}
-	Real K() {return sqrt(this->K2());}
-	Real Th() {return atan2(y,x);}
-	Real Kx() {return x;}
-	Real Ky() {return y;}
+	Real K2() const {return x*x+y*y;}
+	Real K() const {return sqrt(this->K2());}
+	Real Th() const {return atan2(y,x);}
+	Real Kx() const {return x;}
+	Real Ky() const {return y;}
 	
 	int Column() {return x;}
 	int Row() {return y;}
@@ -74,6 +74,36 @@ inline int Basis<Cartesian>::InGrid(Cartesian& m)
 		(low.Column() <= m.Column() && m.Column() <= high.Column()) &&
 		(low.Row() <= m.Row() && m.Row() <= high.Row());
 }
+
+extern int NRows,NPad;
+extern int *RowBoundary;
+extern Var *ZeroBuffer; 
+
+#if _CRAY
+int CartesianPad(Var *to, Var *from);
+void CartesianUnPad(Var *to, Var *from);
+#else
+inline int CartesianPad(Var *to, const Var *from)
+{
+	for(int i=0; i < NRows; i++) {
+		int ncol=RowBoundary[i+1]-RowBoundary[i];
+		set(to,from,ncol);
+		to += ncol; from +=ncol;
+		set(to,ZeroBuffer,NPad);
+		to += NPad;
+	}
+	return to-psibuffer;
+}
+
+inline void CartesianUnPad(Var *to, const Var *from)
+{
+	for(int i=0; i < NRows; i++) {
+		int ncol=RowBoundary[i+1]-RowBoundary[i];
+		set(to,from,ncol);
+		to += ncol; from += ncol+NPad;
+	}
+}
+#endif
 
 // For Navier-Stokes turbulence (stream function normalization):
 

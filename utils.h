@@ -111,33 +111,33 @@ void cputime(double *cpu);
 char *output_filename(char *basename, char *suffix);
 
 #if !_AIX
-inline Real abs(const Real x)
+inline Real abs(Real x)
 {
 	return fabs(x);
 }
 #endif
 
-inline Real abs2(const Real x)
+inline Real abs2(Real x)
 {
 	return x*x;
 }
 
 inline Real abs2(const Complex& x)
 {
-	return x.real()*x.real()+x.imag()*x.imag();
+	return x.re*x.re+x.im*x.im;
 }
 
-inline Real product(const Real x, const Real y)
+inline Real product(Real x, Real y)
 {
 	return x*y;
 }
 
 inline Complex product(const Complex& x, const Complex& y)
 {
-	return Complex(x.real()*y.real(),x.imag()*y.imag());
+	return Complex(x.re*y.re,x.im*y.im);
 }
 
-inline void conjugate(Real& x, const Real y)
+inline void conjugate(Real& x, Real y)
 {
 	x=y;
 }
@@ -148,32 +148,19 @@ inline void conjugate(Complex& x, const Complex& y)
 	x.im=-y.im;
 }
 
-inline Real conj(const Real x)
+inline Real conj(Real x)
 {
 	return x;
 }
 
-inline Real real(const Real x)
+inline Real real(Real x)
 {
 	return x;
 }
 
-inline Real imag(const Real)
+inline Real imag(Real)
 {
 	return 0.0;
-}
-
-inline Complex expi(const Real phase)
-{
-	double cosy,siny;
-	sincos(phase,&siny,&cosy);
-	return Complex(cosy,siny);
-}
-
-inline Complex expim1(const Real phase)
-{
-	double sinyby2=sin(0.5*phase);
-	return Complex(-2.0*sinyby2*sinyby2,sin(phase));
 }
 
 inline Complex exp(const Complex& z)
@@ -204,60 +191,20 @@ inline Complex expm1(const Complex& z)
 	return w;
 }
 
-inline Complex operator / (const Complex& x, const Complex& y)
+inline Complex expi(Real phase)
 {
-	register double t1,t2,t3,t4;
-	t3=y.re; t4=y.im; t1=t2=1.0/(t3*t3+t4*t4);
-	t1*=t3; t2*=t4; t3=x.re; t4=x.im;
-	return Complex(t4*t2+t3*t1,t4*t1-t3*t2);
+	double cosy,siny;
+	sincos(phase,&siny,&cosy);
+	return Complex(cosy,siny);
 }
 
-inline Complex operator / (const Complex& x, const Real y)
+inline Complex expim1(Real phase)
 {
-	return Complex(x.re/y,x.im/y);
-}
-
-inline Complex operator / (const Real x, const Complex& y)
-{
-	register double factor;
-	factor=1.0/(y.re*y.re+y.im*y.im);
-	return Complex(x*y.re*factor,-x*y.im*factor);
-}
-
-inline Complex& Complex::operator /= (const Complex& y)
-{
-	register double t1,t2,t3,t4;
-	t3=y.re; t4=y.im; t1=t2=1.0/(t3*t3+t4*t4);
-	t1*=t3; t2*=t4; t3=re; t4=im;
-	re*=t1;	re+=t4*t2;
-	im*=t1;	im-=t3*t2;
-	return *this;
-}
-
-inline Complex& Complex::operator /= (const Real y)
-{
-	re/=y;
-	im/=y;
-	return *this;
+	double sinyby2=sin(0.5*phase);
+	return Complex(-2.0*sinyby2*sinyby2,sin(phase));
 }
 
 Complex atoc(const char *s);
-
-#ifndef __GNUC__
-inline ostream& operator << (ostream& s, const Complex& y)
-{
-	s << "(" << y.real() << ", " << y.imag() << ")";
-	return s;
-}
-
-inline istream& operator >> (istream& s, Complex& y)
-{
-	Real re,im;
-	s >> "(" >> re >> "," >> im >> ")";
-	y=Complex(re,im);
-	return s;
-}
-#endif
 
 void out_curve(ostream& os, Real (*f)(int), char *text, int n);
 void out_curve(ostream& os, Complex (*f)(int), char *text, int n);

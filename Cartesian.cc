@@ -53,3 +53,29 @@ void Basis<Cartesian>::MakeBins()
 
 	return;
 }
+
+#if _CRAY
+int CartesianPad(Var * restrict to_, Var * restrict from)
+{
+	Var * to=to_;
+    for(int i=0; i < NRows; i++) {
+        Var *tostop=to+RowBoundary[i+1]-RowBoundary[i];
+        for(; to < tostop; to++) *to=*(from++);
+        tostop += NPad;
+        Var * restrict zero=ZeroBuffer;
+        for(; to < tostop; to++) *to=*(zero++);
+    }
+    return to-psibuffer;
+}
+
+void CartesianUnPad(Var * restrict to_, Var * restrict from)
+{
+	Var * to=to_;
+    for(int i=0; i < NRows; i++) {
+        int ncol=RowBoundary[i+1]-RowBoundary[i];
+        Var *tostop=to+ncol;
+        for(; to < tostop; to++) *to=*(from++);
+        from += NPad;
+    }
+}
+#endif

@@ -167,38 +167,6 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 }
 
 	
-extern int NRows,NPad;
-extern int *RowBoundary;
-extern Var *ZeroBuffer; 
-
-int CartesianPad(Var *to, Var *from)
-{
-	Var *k=to;
-	for(int i=0; i < NRows; i++) {
-		Var *kstop=k+RowBoundary[i+1]-RowBoundary[i];
-#pragma ivdep
-		for(; k < kstop; k++) *k=*(from++);
-		kstop += NPad;
-		Var *zero=ZeroBuffer;
-#pragma ivdep
-		for(; k < kstop; k++) *k=*(zero++);
-	}
-	return k-psibuffer;
-}
-
-void CartesianUnPad(Var *to, Var *from)
-{
-	Var *k=to;
-	for(int i=0; i < NRows; i++) {
-		int ncol=RowBoundary[i+1]-RowBoundary[i];
-		Var *kstop=k+ncol;
-#pragma ivdep
-		for(; k < kstop; k++) *k=*(from++);
-		from += NPad;
-	}
-}
-
-void convolve_direct(Complex *H, Complex *F, Complex *G, unsigned int m);
 void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
 			  int log2n);
 void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
@@ -212,24 +180,21 @@ void PrimitiveNonlinearityFFT(Var *source, Var *psi, double)
 	*psibuffer0=0.0;
 	int Npsibuffer=CartesianPad(psibuffer,psi);
 	
-#pragma ivdep		
-	for(i=0; i < Npsi; i++)
-		psitemp[i]=psi[i]*CartesianMode[i].K2();
-#pragma ivdep		
-	for(i=0; i < Npsi; i++)
-		psitemp[i] *= I*CartesianMode[i].Ky();
+#pragma ivdep	
+	for(i=0; i < Npsi; i++) {
+		source[i]=psi[i]*I*CartesianMode[i].K2();
+		psitemp[i]=source[i]*CartesianMode[i].Ky();
+	}
+
 	*convolution0=0.0;
 	CartesianPad(convolution,psitemp);
 	
 	convolve(convolution0,convolution0,psibuffer0,Npsibuffer+1,log2n);
+#pragma ivdep	
+	for(i=0; i < Npsi; i++)
+		psitemp[i]=source[i]*CartesianMode[i].Kx();
 	CartesianUnPad(source,convolution);
-							
-#pragma ivdep		
-	for(i=0; i < Npsi; i++)
-		psitemp[i]=psi[i]*CartesianMode[i].K2();
-#pragma ivdep		
-	for(i=0; i < Npsi; i++)
-		psitemp[i] *= I*CartesianMode[i].Kx();
+	
 	*convolution0=0.0;
 	CartesianPad(convolution,psitemp);
 	
@@ -238,11 +203,12 @@ void PrimitiveNonlinearityFFT(Var *source, Var *psi, double)
 	CartesianUnPad(psibuffer,convolution);
 	
 #pragma ivdep		
-	for(i=0; i < Npsi; i++)
-		source[i] *= CartesianMode[i].Kx();
-#pragma ivdep		
-	for(i=0; i < Npsi; i++)
-		source[i] = I*kinv2[i]*(CartesianMode[i].Ky()*psibuffer[i]-source[i]);
+	for(i=0; i < Npsi; i++) {
+		source[i].re=-kinv2[i]*(CartesianMode[i].Ky()*psibuffer[i].im-
+								CartesianMode[i].Kx()*source[i].im);
+		source[i].im=kinv2[i]*(CartesianMode[i].Ky()*psibuffer[i].re-
+							   CartesianMode[i].Kx()*source[i].re);
+	}
 	
 	// Compute moments
 	if(average && Nmoment > 0) {
@@ -672,45 +638,60 @@ int C_RK4::Corrector(Var *y0, double dt, double& errmax, int start, int stop)
 }
 
 
-inline int C_RK5::Correct(const Real y0, const Real y2, const Real y3,
-						  const Real y4, const Real y5, Real& y,
-						  const Real source0, const Real source2, 
-						  const Real source3, const Real source4,
-						  const Real source, const double,
-						  double& errmax)
+inline void C_RK5::Correct(const Real y0, Real& y2, Real& y3,
+						   const Real y4, const Real y5, Real& y,
+						   const Real source0, const Real source2, 
+						   const Real source3, const Real source4,
+						   const Real source, const double, int& invertible)
 {
 	Real discr=y0*y0+2.0*(c0*y0*source0+c2*y2*source2+c3*y3*source3+
 						  c5*y5*source);
-	if(discr < 0.0) return 0;
-	Var pred=y0*y0+2.0*(d0*y0*source0+d2*y2*source2+d3*y3*source3+
-						d4*y4*source4+d5*y5*source);
-	y=sgn(y0+c0*source0+c2*source2+c3*source3+c5*source)*sqrt(discr);
-	calc_error(y0*y0,discr,pred,discr,errmax);
-	return 1;
+	if(discr < 0.0) invertible=0;
+	else {
+// Put discr in y2, pred in y3 for deferred error analysis
+		y3=y0*y0+2.0*(d0*y0*source0+d2*y2*source2+d3*y3*source3+
+					  d4*y4*source4+d5*y5*source);
+		y2=discr;
+		y=sgn(y0+c0*source0+c2*source2+c3*source3+c5*source)*sqrt(discr);
+	}
 }
 
-inline int C_RK5::Correct(const Complex y0, const Complex y2, const Complex y3,
+inline void C_RK5::Correct(const Complex y0, Complex& y2, Complex& y3,
 						  const Complex y4, const Complex y5, Complex& y,
 						  const Complex source0, const Complex source2, 
 						  const Complex source3, const Complex source4,
 						  const Complex source, const double dt,
-						  double& errmax)
+						  int& invertible)
 {
-	if(!Correct(y0.re,y2.re,y3.re,y4.re,y5.re,y.re,source0.re,source2.re,
-				source3.re,source4.re,source.re,dt,errmax)) return 0;
-	if(!Correct(y0.im,y2.im,y3.im,y4.im,y5.im,y.im,source0.im,source2.im,
-				source3.im,source4.im,source.im,dt,errmax)) return 0;
-	return 1;
+	Correct(y0.re,y2.re,y3.re,y4.re,y5.re,y.re,source0.re,source2.re,
+			source3.re,source4.re,source.re,dt,invertible);
+#ifndef _CRAY		
+	if(!invertible) return;
+#endif			
+	Correct(y0.im,y2.im,y3.im,y4.im,y5.im,y.im,source0.im,source2.im,
+			source3.im,source4.im,source.im,dt,invertible);
 }
 
 int C_RK5::Corrector(Var *y0, double, double& errmax, int start, int stop)
 {
-	for(int j=start; j < stop; j++) {
-		if(!Correct(y0[j],y2[j],y3[j],y4[j],y5[j],y[j],source0[j],
-					source2[j],source3[j],source4[j],source[j],dt,errmax))
-			return 0;
+	int j,invertible=1;
+#pragma ivdep
+	for(j=start; j < stop; j++) {
+#ifndef _CRAY		
+		if(!invertible) return 0;
+#endif			
+		Correct(y0[j],y2[j],y3[j],y4[j],y5[j],y[j],source0[j],source2[j],
+				source3[j],source4[j],source[j],dt,invertible);
 	}
-	if(dynamic) ExtrapolateTimestep(errmax);
+#if _CRAY
+    if(!invertible) return 0;
+#endif
+	
+	if(dynamic) {
+		for(j=start; j < stop; j++) 
+			calc_error(y0[j]*y0[j],y2[j],y3[j],y2[j],errmax);
+		ExtrapolateTimestep(errmax);
+	}
 	return 1;
 }
 

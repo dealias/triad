@@ -160,16 +160,21 @@ public:
 	if(hybrid) y5=new Var[n];}
 	char *Name() {return "Conservative Fifth-Order Runge-Kutta";}
 	int Corrector(Var *, double, double&, int, int);
-	int Correct(const Real y0, const Real y2, const Real y3,
-				const Real y4, const Real y5, Real& y,
-				const Real source0, const Real source2, 
-				const Real source3, const Real source4,
-				const Real source, const double dt, double& errmax);
-	int Correct(const Complex y0, const Complex y2, const Complex y3,
-				const Complex y4, const Complex y5, Complex& y,
-				const Complex source0, const Complex source2, 
-				const Complex source3, const Complex source4,
-				const Complex source, const double dt, double& errmax);
+	void Correct(const Real y0, Real& y2, Real &y3,
+				 const Real y4, const Real y5, Real& y,
+				 const Real source0, const Real source2, 
+				 const Real source3, const Real source4,
+				 const Real source, const double dt, int& invertible);
+	void Correct(const Complex y0, Complex& y2, Complex &y3,
+				 const Complex y4, const Complex y5, Complex& y,
+				 const Complex source0, const Complex source2, 
+				 const Complex source3, const Complex source4,
+				 const Complex source, const double dt, int& invertible);
 };
 
 #endif
+
+
+
+
+
