@@ -27,8 +27,6 @@ public:
 	GeometryBase *NewGeometry(char *key) {return GeometryTable->Locate(key);}
 };
 
-enum Linearity {STANDARD,EXPONENTIAL,CONSERVATIVE_EXPONENTIAL};
-
 class NWave : public ProblemBase {
 	static Source_t *Linearity;
 public:
@@ -40,7 +38,7 @@ public:
 	
 	void LinearSrc(Var *src, Var *y, double t);
 	
-	static Source_t StandardLinearity;
+	Source_t StandardLinearity;
 	static Source_t ExponentialLinearity;
 	static void ConservativeExponentialLinearity(Real *, Real *, double );
 	static void ConservativeExponentialLinearity(Complex *, Complex *, double);

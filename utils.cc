@@ -304,8 +304,6 @@ void out_real(ostream& os, Complex *f, char *textre, char *textim, int n,
 			  int nperline) 
 {
 	base=f;
-	out_function(os,out_re,textre,n);
-	out_function(os,out_im,textim,n);
-//	out_function(os,out_re,textre,n,nperline);
-//	out_function(os,out_im,textim,n,nperline);
+	out_function(os,out_re,textre,n,nperline);
+	out_function(os,out_im,textim,n,nperline);
 }
