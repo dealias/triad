@@ -204,8 +204,7 @@ int E_PC::Corrector()
     }
     ExtrapolateTimestep();
   } else for(unsigned int j=0; j < ny; j++) {
-    source[j]=0.5*(source0[j]+source[j]);
-    y[j]=expinv[j]*y0[j]+onemexpinv[j]*source[j];
+    y[j]=expinv[j]*y0[j]+onemexpinv[j]*0.5*(source0[j]+source[j]);
   }
   return 1;
 }

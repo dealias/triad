@@ -1207,6 +1207,12 @@ inline void Dimension1(array1<T>& A, const array1<T>& B)
 }
 
 template<class T>
+inline void Dimension1(Array1<T>& A, unsigned int n, const array1<T>& B, int o)
+{
+  A.Dimension(n,B,o);
+}
+
+template<class T>
 inline void Dimension1(Array1<T>& A, unsigned int n, T *v, int o)
 {
   A.Dimension(n,v,o);
