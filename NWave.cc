@@ -737,7 +737,8 @@ void E_RK5::Predictor(Var *y0, double t, double)
 	
 #pragma ivdep		
 	for(j=0; j < Npsi; j++)
-		y[j]=expinv1[j]*y0[j]+onemexpinv1[j]*B10*source0[j];
+		y[j]=(expinv[j]*y0[j]+(nu[j] ? onemexpinv[j]: dt)*
+		B10*source0[j])/(expinv[j]+a*onemexpinv[j]);
 	for(j=Npsi; j < ny; j++) y[j]=y0[j]+b10*source0[j];
 	Source(source,y,t+a1);
 #pragma ivdep		
