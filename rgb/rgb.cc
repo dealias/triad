@@ -1195,7 +1195,7 @@ int main(int argc, char *argv[])
   if(outname == NULL) outname=files[0];
   convertprog=(mfiles > 1 || label) ? "montage" : "convert";
 	
-  if((remote || !label) && make_mpeg) putenv("DISPLAY=");
+  if((remote || !label) && make_mpeg) putenv(strdup("DISPLAY="));
 
   if(nset) {
     if(extract || display) {
