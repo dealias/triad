@@ -75,6 +75,10 @@ protected:
   static ifstream ifWisdom;
   static ofstream ofWisdom;
   
+  unsigned int Dist(unsigned int n, unsigned int stride, unsigned int dist) {
+    return dist ? dist : ((stride == 1) ? n : 1);
+  }
+  
   unsigned int realsize(unsigned int n, Complex *in, Complex *out) {
     return n/2+(!out || in == out);
   }
@@ -187,27 +191,27 @@ public:
 //
 // Out-of-place usage: 
 //
-//   fft Forward(n,-1,in,out);
+//   fft1d Forward(n,-1,in,out);
 //   Forward.fft(in,out);
 //
-//   fft Backward(n,1,out,in);
+//   fft1d Backward(n,1,out,in);
 //   Backward.fft(out,in);
 //
-//   fft Backward(n,1,out,in);
+//   fft1d Backward(n,1,out,in);
 //   Backward.fftNormalized(out,in); // True inverse of Forward.fft(in,out);
 //
 // In-place usage:
 //
-//   fft Forward(n,-1);
+//   fft1d Forward(n,-1);
 //   Forward.fft(in);
 //
-//   fft Backward(n,1);
+//   fft1d Backward(n,1);
 //   Backward.fft(in);
 //
-class fft : public fftw {
+class fft1d : public fftw {
   unsigned int nx;
 public:  
-  fft(unsigned int nx, int sign, Complex *in=NULL, Complex *out=NULL) 
+  fft1d(unsigned int nx, int sign, Complex *in=NULL, Complex *out=NULL) 
     : fftw(nx,sign), nx(nx) {Setup(in,out);} 
   
   void Plan(Complex *in, Complex *out) {
@@ -223,12 +227,12 @@ public:
 //
 // Out-of-place usage: 
 //
-//   mfft Forward(n,-1,m,stride,dist,in,out);
+//   mfft1d Forward(n,-1,m,stride,dist,in,out);
 //   Forward.fft(in,out);
 //
 // In-place usage:
 //
-//   mfft Forward(n,-1,m,stride,dist);
+//   mfft1d Forward(n,-1,m,stride,dist);
 //   Forward.fft(in);
 //
 // Notes:
@@ -236,16 +240,17 @@ public:
 //   dist is the spacing between the first elements of the vectors;
 //
 //
-class mfft : public fftw {
+class mfft1d : public fftw {
   unsigned int nx;
   unsigned int m;
   unsigned int stride;
   unsigned int dist;
 public:  
-  mfft(unsigned int nx, int sign, unsigned int m=1, unsigned int stride=1,
-	 unsigned int dist=1, Complex *in=NULL, Complex *out=NULL) 
-    : fftw((nx-1)*stride+(m-1)*dist+1,sign,nx), nx(nx), m(m),
-      stride(stride), dist(dist) {Setup(in,out);} 
+  mfft1d(unsigned int nx, int sign, unsigned int m=1, unsigned int stride=1,
+	 unsigned int dist=0, Complex *in=NULL, Complex *out=NULL) 
+    : fftw((nx-1)*stride+(m-1)*Dist(nx,stride,dist)+1,sign,nx),
+      nx(nx), m(m), stride(stride), dist(Dist(nx,stride,dist))
+  {Setup(in,out);} 
   
   void Plan(Complex *in, Complex *out) {
     int n[1]={nx};
@@ -267,22 +272,22 @@ public:
 //
 // Out-of-place usage: 
 //
-//   rcfft Forward(n,in,out);
+//   rcfft1d Forward(n,in,out);
 //   Forward.fft(in,out);
 //
 // In-place usage:
 //
-//   rcfft Forward(n);
+//   rcfft1d Forward(n);
 //   Forward.fft(out);
 // 
 // Notes:
 //   in contains the n real values stored as a Complex array;
 //   out contains the first n/2+1 Complex Fourier values.
 //
-class rcfft : public fftw {
+class rcfft1d : public fftw {
   unsigned int nx;
 public:  
-  rcfft(unsigned int nx, Complex *in=NULL, Complex *out=NULL) 
+  rcfft1d(unsigned int nx, Complex *in=NULL, Complex *out=NULL) 
     : fftw(nx/2+1,-1,nx), nx(nx) {Setup(in,out);} 
   
   void Plan(Complex *in, Complex *out) {
@@ -303,22 +308,22 @@ public:
 //
 // Out-of-place usage: 
 //
-//   crfft Backward(n,in,out);
+//   crfft1d Backward(n,in,out);
 //   Backward.fft(in,out);
 //
 // In-place usage:
 //
-//   crfft Backward(n);
+//   crfft1d Backward(n);
 //   Backward.fft(in);
 // 
 // Notes:
 //   in contains the first n/2+1 Complex Fourier values.
 //   out contains the n real values stored as a Complex array;
 //
-class crfft : public fftw {
+class crfft1d : public fftw {
   unsigned int nx;
 public:  
-  crfft(unsigned int nx, Complex *in=NULL, Complex *out=NULL) 
+  crfft1d(unsigned int nx, Complex *in=NULL, Complex *out=NULL) 
     : fftw(realsize(nx,in,out),1,nx), nx(nx) {Setup(in,out);} 
   
   void Plan(Complex *in, Complex *out) {
@@ -338,12 +343,12 @@ public:
 //
 // Out-of-place usage: 
 //
-//   mrcfft Forward(n,m,stride,dist,in,out);
+//   mrcfft1d Forward(n,m,stride,dist,in,out);
 //   Forward.fft(in,out);
 //
 // In-place usage:
 //
-//   mrcfft Forward(n,m,stride,dist);
+//   mrcfft1d Forward(n,m,stride,dist);
 //   Forward.fft(out);
 // 
 // Notes:
@@ -352,16 +357,16 @@ public:
 //   in contains the n real values stored as a Complex array;
 //   out contains the first n/2+1 Complex Fourier values.
 //
-class mrcfft : public fftw {
+class mrcfft1d : public fftw {
   unsigned int nx;
   unsigned int m;
   unsigned int stride;
   unsigned int dist;
 public:  
-  mrcfft(unsigned int nx, unsigned int m=1, unsigned int stride=1,
-	 unsigned int dist=1, Complex *in=NULL, Complex *out=NULL) 
-    : fftw(nx/2*stride+(m-1)*dist+1,-1,nx), nx(nx), m(m),
-      stride(stride), dist(dist) {Setup(in,out);} 
+  mrcfft1d(unsigned int nx, unsigned int m=1, unsigned int stride=1,
+	 unsigned int dist=0, Complex *in=NULL, Complex *out=NULL) 
+    : fftw(nx/2*stride+(m-1)*Dist(nx,stride,dist)+1,-1,nx), nx(nx), m(m),
+      stride(stride), dist(Dist(nx,stride,dist)) {Setup(in,out);} 
   
   void Plan(Complex *in, Complex *out) {
     const int n[1]={nx};
@@ -389,12 +394,12 @@ public:
 //
 // Out-of-place usage: 
 //
-//   mcrfft Backward(n,m,stride,dist,in,out);
+//   mcrfft1d Backward(n,m,stride,dist,in,out);
 //   Backward.fft(in,out);
 //
 // In-place usage:
 //
-//   mcrfft Backward(n,m,stride,dist);
+//   mcrfft1d Backward(n,m,stride,dist);
 //   Backward.fft(out);
 // 
 // Notes:
@@ -403,16 +408,16 @@ public:
 //   in contains the first n/2+1 Complex Fourier values.
 //   out contains the n real values stored as a Complex array;
 //
-class mcrfft : public fftw {
+class mcrfft1d : public fftw {
   unsigned int nx;
   unsigned int m;
   unsigned int stride;
   unsigned int dist;
 public:
-  mcrfft(unsigned int nx, unsigned int m=1, unsigned int stride=1,
-	 unsigned int dist=1, Complex *in=NULL, Complex *out=NULL) 
-    : fftw((realsize(nx,in,out)-1)*stride+(m-1)*dist+1,1,nx), nx(nx), m(m),
-      stride(stride), dist(dist) {Setup(in,out);}
+  mcrfft1d(unsigned int nx, unsigned int m=1, unsigned int stride=1,
+	 unsigned int dist=0, Complex *in=NULL, Complex *out=NULL) 
+    : fftw((realsize(nx,in,out)-1)*stride+(m-1)*Dist(nx,stride,dist)+1,1,nx),
+      nx(nx), m(m), stride(stride), dist(Dist(nx,stride,dist)) {Setup(in,out);}
   
   void Plan(Complex *in, Complex *out) {
     const int n[1]={nx};
