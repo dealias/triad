@@ -210,18 +210,14 @@ inline Mc Partition<T>::FindWeight(int k, int p, int q) {
 	Index_t kpq=WeightIndex(k,p,q);
 	hash->Limits(kpq,&l,&u);
 	
-	if(u-l != 1) {
-		int i;
-		for(i=l; i < u; i++) {
-			if(kpq == weight[i].Index()) break;
+	for(int i=l; i < u; i++) {
+		if(kpq == weight[i].Index()) {
+			Mc value=weight[i].Value();
+			if(conjflag) value=conj(value);
+			return sign*value*Ckpq(bin[k0].cen,bin[p0].cen,bin[q0].cen);
 		}
-		if(i==u) return 0.0; // no match found.
-		l=i;
 	}
-	
-	Mc value=weight[l].Value();
-	if(conjflag) value=conj(value);
-	return sign*value*Ckpq(bin[k0].cen,bin[p0].cen,bin[q0].cen);
+	return 0.0; // no match found.
 }
 
 template<class T>
