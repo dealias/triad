@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.03";
+const char VERSION[]="1.03J";
 
 #define NEW_IMAGEMAGICK 1
 
@@ -41,6 +41,13 @@ char yuvinterlace[]="";
 #include "DynVector.h"
 #include "rgb.h"
 
+#ifndef PI
+#define PI 3.14159265358979323846264338327950288
+#endif
+
+const double pi=PI;
+const double twopi=2.0*PI;
+
 static double *vminf, *vmaxf;
 static char *rgbdir;
 static strstream rgbdirbuf;
@@ -55,7 +62,10 @@ static int pointsize=0;
 static int gray=0;
 static char *convertprog;
 static strstream option;
+static int Nx,Ny;
+static int R0,R;
 
+int nx=1,ny=1,nz=1;
 int byte=0;
 int implicit=1;
 int zero=0;
@@ -63,6 +73,20 @@ int invert=0;
 
 void cleanup();
 int system (char *command);
+
+class Ivec {
+public:
+	int i;
+	int j;
+	Ivec(int i0, int j0) : i(i0), j(j0) {}
+};
+
+typedef Ivec Ivec_fcn(Ivec);
+Ivec_fcn linear,circle;
+
+Ivec_fcn *transform;
+Ivec_fcn *Transform[]={linear,circle};
+unsigned int NTransform=sizeof(Transform)/sizeof(Ivec_fcn *);
 
 template<class T>
 void openfield(T& fin, char *fieldname, int& nx, int& ny, int& nz)
@@ -181,7 +205,7 @@ void usage(char *program)
 		 << " [-bfFghimprvz] [-l pointsize] [-x mag] [-H hmag] [-V vmag] " 
 		 << endl
 		 << "           [-B begin] [-E end] [-L lower] [-U upper]" << endl
-         << "           [-P palette] [-S skip]" << endl
+         << "           [-P palette] [-S skip] [-T transform]" << endl
 		 << "           [-X xsize -Y ysize [-Z zsize]]" << endl
          << "           [-o option] file1 [file2 ...]"
 		 << endl;
@@ -201,8 +225,8 @@ void options()
 	cerr << "-p\t\t preserve temporary output files" << endl;
 	cerr << "-r\t\t remote X-server (substitute Postscript fonts)" << endl;
 	cerr << "-v\t\t verbose output" << endl;
-	cerr << "-z\t\t make color palette symmetric about zero" <<
-		" (if possible)" << endl;
+	cerr << "-z\t\t make color palette symmetric about zero"
+		 << " (if possible)" << endl;
 	cerr << "-l pointsize\t label frames with file names and values" << endl;
 	cerr << "-x mag\t\t overall magnification factor" << endl;
 	cerr << "-H hmag\t\t horizontal magnification factor" << endl;
@@ -211,9 +235,11 @@ void options()
 	cerr << "-E end\t\t last frame to process" << endl;
 	cerr << "-L lower\t last section to process" << endl;
 	cerr << "-U upper\t first section to process" << endl;
-	cerr << "-P palette\t palette (integer between 0 and " << NPalette-1 <<
-		")" << endl;
+	cerr << "-P palette\t palette (integer between 0 and " << NPalette-1
+		 << ")" << endl;
 	cerr << "-S skip\t\t interval between processed frames" << endl;
+	cerr << "-T transform\t\t 2D transformation (integer between 0 and " 
+		 << NTransform-1 << ")" << endl;
 	cerr << "-X xsize\t explicit horizontal size" << endl;
 	cerr << "-Y ysize\t explicit vertical size" << endl;
 	cerr << "-Z zsize\t explicit number of sections/frame" << endl;
@@ -222,7 +248,6 @@ void options()
 
 int main(int argc, char *const argv[])
 {
-	int nx=1,ny=1,nz=1;
 	int nset=0, mx=1, my=1;
 	int n,begin=0, skip=1, end=INT_MAX;
 	int lower=0, upper=INT_MAX;
@@ -232,13 +257,14 @@ int main(int argc, char *const argv[])
 	extern char *optarg;
 	int palette=0;
 	u_char *red,*green,*blue;
+	unsigned int trans=0;
 	
 #ifdef __GNUC__	
 	optind=0;
 #endif	
 	errno=0;
 	while (1) {
-		int c = getopt(argc,argv,"bfghimprvzFl:o:x:H:V:B:E:L:U:P:S:X:Y:Z:");
+		int c = getopt(argc,argv,"bfghimprvzFl:o:x:H:V:B:E:L:U:P:S:T:X:Y:Z:");
 		if (c == -1) break;
 		switch (c) {
 		case 'b':
@@ -312,6 +338,11 @@ int main(int argc, char *const argv[])
 		case 'S':
 			skip=atoi(optarg);
 			if(skip <= 0) msg(ERROR,"skip value must be positive");
+			break;
+		case 'T':
+			trans=atoi(optarg);
+			if(trans >= NTransform)
+				msg(ERROR, "Invalid transform (%d)", trans);
 			break;
 		case 'X':
 			nx=atoi(optarg);
@@ -392,8 +423,22 @@ int main(int argc, char *const argv[])
 		
 		int mpal=max(5,my);
 		int msep=max(2,my);
-		xsize=mx*nx;
-		ysize=my*ny*nz0+msep*nz0+mpal;
+		
+		transform=Transform[trans];
+		
+		switch(trans) {
+		case 0: 
+			Nx=nx; Ny=ny;
+			break;
+		case 1: 
+			R0=(int) (ceil(ny/twopi)+0.5);
+			R=(R0+nx);
+			Nx=Ny=2*R+1;
+			break;
+		}
+		
+		xsize=mx*Nx;
+		ysize=my*Ny*nz0+msep*nz0+mpal;
 		
 		float **value=new float* [nz];
 		double gmin=DBL_MAX, gmax=-DBL_MAX; // Global min and max
@@ -459,11 +504,15 @@ int main(int argc, char *const argv[])
 			for(int k=kmin; k <= kmax; k++) {
 				if(floating_section) {vmin=vmink[k]; vmax=vmaxk[k];}
 				double step=(vmax == vmin) ? 0.0 : PaletteRange/(vmax-vmin);
-				for(int j=0; j < ny; j++)  {
+				for(int j=0; j < Ny; j++)  {
 					for(int j2=0; j2 < my; j2++) {
-						for(int i=0; i < nx; i++)  {
-							int index=(step == 0.0) ? PaletteRange/2 : 
-								(int) ((value[k][i+nx*j]-vmin)*step+0.5);
+						for(int i=0; i < Nx; i++)  {
+							Ivec x=transform(Ivec(i,j));
+							int index=(step == 0.0 || 
+									   x.i < 0 || x.i >= nx ||
+									   x.j < 0 || x.j >= ny) ? 
+								PaletteRange/2 :
+								(int) ((value[k][x.i+nx*x.j]-vmin)*step+0.5);
 							index += PaletteMin;
 							if(gray) {
 								for(int i2=0; i2 < mx; i2++)
@@ -485,9 +534,9 @@ int main(int argc, char *const argv[])
 			}
 			
 			for(int j2=0; j2 < mpal; j2++) { // Output palette
-				int nxmx=nx*mx;
-				double step=1.0/nxmx;
-				for(int i=0; i < nxmx; i++)  {
+				int Nxmx=Nx*mx;
+				double step=1.0/Nxmx;
+				for(int i=0; i < Nxmx; i++)  {
 					int index;
 					index=PaletteMin+(int) (PaletteRange*i*step+0.5);
 					if(gray) fout << (unsigned char) index;
@@ -669,3 +718,17 @@ int system (char *command) {
 	} while(1);
 }
 
+Ivec linear(Ivec x)
+{
+	return Ivec(x.i,x.j);
+}
+
+Ivec circle(Ivec x)
+{
+	int i=x.i-R;
+	int j=x.j-R;
+	int ip=int(sqrt(i*i+j*j)-R0+0.5);
+    int jp=int((atan2(j,i)+pi)*ny/twopi+0.5);
+	if(jp == ny) jp=0;
+	return Ivec(ip,jp);
+}
