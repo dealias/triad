@@ -41,6 +41,8 @@ const double twopi=2.0*PI;
 const int NDIGITS=4;
 
 static double *vminf, *vmaxf;
+static double *vminf2, *vmaxf2;
+static double *vminf3, *vmaxf3;
 static const char *rgbdir;
 static ostringstream rgbdirbuf;
 static int xsize,ysize;
@@ -76,6 +78,8 @@ int symmetric=0;
 int rescale=0;
 int invert=0;
 int reverse=0;
+int vector=0;
+int vector3=0;
 int crop=0;
 int make_mpeg=0;
 
@@ -336,6 +340,8 @@ void options()
   cerr << "-xrange x1,x2\t limit x-range to [x1,x2]" << endl; 
   cerr << "-yrange y1,y2\t limit y-range to [y1,y2]" << endl; 
   cerr << "-zrange z1,z2\t limit z-range to [z1,z1]" << endl; 
+  cerr << "-vector\t\t plot 2 components as red--blue values" << endl; 
+  cerr << "-vector3\t\t plot 3 components as red--green--blue values" << endl; 
   cerr << "-reverse\t reverse palette direction" << endl;
   cerr << "-ncolors n\t maximum number of colors to generate (default 65536)"
        << endl; 
@@ -428,6 +434,8 @@ int main(int argc, char *argv[])
     {"circle", 0, &trans, CIRCLE},
     {"torus", 0, &trans, TORUS},
     {"reverse", 0, &reverse, 1},
+    {"vector", 0, &vector, 1},
+    {"vector3", 0, &vector3, 1},
     {"symmetric", 0, &symmetric, 1},
     {"rescale", 0, &rescale, 1},
     {"view", 0, &display, 1},
@@ -691,6 +699,7 @@ int main(int argc, char *argv[])
 	
   errno=0;
   unsigned int nfiles=argc-optind;
+
   if(syntax || nfiles < 1) {
     if(syntax) cerr << endl;
     usage(argv[0]);
@@ -704,14 +713,16 @@ int main(int argc, char *argv[])
     lower=upper=0;
   }	
 	
-  convertprog=(nfiles > 1 || label) ? "montage" : "convert";
-	
   char **argf=argv+optind;
   if(outname == NULL) outname=argf[0];
 		
   if(!floating_scale) {
     vminf=new double[nfiles];
     vmaxf=new double[nfiles];
+    vminf2=new double[nfiles];
+    vmaxf2=new double[nfiles];
+    vminf3=new double[nfiles];
+    vmaxf3=new double[nfiles];
   }
 	
   ostringstream dirbuf;
@@ -730,12 +741,15 @@ int main(int argc, char *argv[])
 	
   if(!grey) MakePalette(palette);
 	
+  if(vector3) vector=1;
+  
   const char *format=grey ? "gray" : "rgb";
-  int PaletteMin=grey ? 0 : FirstColor;
-  int PaletteRange=grey ? 255 : NColors-1;
+  int PaletteMin=(grey || vector) ? 0 : FirstColor;
+  int PaletteRange=(grey || vector) ? 255 : NColors-1;
   if(background == Undefined) background=grey ? 255 : BLACK;
 	
   int sign,offset;
+  
   if(reverse) {
     sign=-1;
     offset=PaletteMin+PaletteRange;
@@ -746,12 +760,25 @@ int main(int argc, char *argv[])
 	
   if(lower == upper && bar == 0) band=0;
   
+  char *files[nfiles];
+  int mfiles=0;
   for(unsigned int f=0; f < nfiles; f++) {
     const char *fieldname=argf[f];
-    ixstream xin;
+    ixstream xin,xin2,xin3;
     openfield(xin,fieldname,nx,ny,nz);
+    files[mfiles]=argf[f];
+    mfiles++;
     
-    double *vmink=new double [nz], *vmaxk=new double [nz];
+    if(vector) openfield(xin2,argf[f+1],nx,ny,nz);
+    if(vector3) openfield(xin3,argf[f+2],nx,ny,nz);
+    
+    double *vmink,*vmaxk;
+    double *vmink2,*vmaxk2;
+    double *vmink3,*vmaxk3;
+    
+    vmink=new double [nz]; vmaxk=new double [nz];
+    if(vector) vmink2=new double [nz]; vmaxk2=new double [nz];
+    if(vector3) vmink3=new double [nz]; vmaxk3=new double [nz];
 		
     kmin=0;
     kmax=nz-1;
@@ -762,6 +789,9 @@ int main(int argc, char *argv[])
     if(kmax > upper) kmax=upper;
 		
     int mpal=bar*my;
+    int mpalsize=mpal;
+    if(vector3) mpalsize *= 3;
+    else if(vector) mpalsize *= 2;
     int msep=band*my;
 		
     if(rescale && trans != IDENTITY) 
@@ -825,10 +855,16 @@ int main(int argc, char *argv[])
     if(istop <= istart || jstop <= jstart) msg(ERROR,"Image out of range");
 			
     xsize=mx*(istop-istart);
-    ysize=my*(jstop-jstart)*nz0+msep*nz0+mpal;
+    ysize=my*(jstop-jstart)*nz0+msep*nz0+mpalsize;
 		
-    Array3<float> value(nz,ny,nx);
+    Array3<float> value,value2,value3;
+    value.Allocate(nz,ny,nx);
+    if(vector) value2.Allocate(nz,ny,nx);
+    if(vector3) value3.Allocate(nz,ny,nx);
+    
     double gmin=DBL_MAX, gmax=-DBL_MAX; // Global min and max
+    double gmin2=DBL_MAX, gmax2=-DBL_MAX;
+    double gmin3=DBL_MAX, gmax3=-DBL_MAX;
 		
     if(display) floating_scale=1;
 		
@@ -841,25 +877,68 @@ int main(int argc, char *argv[])
 	double vmin,vmax;
 	rc=readframe(xin,nx,ny,nz,value,vmin,vmax,vmink,vmaxk);
 	if(rc == EOF) break;
+	
+	double vmin2,vmax2;
+	if(vector) {
+	  rc=readframe(xin2,nx,ny,nz,value2,vmin2,vmax2,vmink2,vmaxk2);
+	  if(rc == EOF) break;
+	}
+	
+	double vmin3,vmax3;
+	if(vector3) {
+	  rc=readframe(xin3,nx,ny,nz,value3,vmin3,vmax3,vmink3,vmaxk3);
+	  if(rc == EOF) break;
+	}
+	
 	if(n < begin) continue;
 	if(--s) continue;
 	s=skip;
 	if(vmin < gmin) gmin=vmin;
 	if(vmax > gmax) gmax=vmax;
+	if(vector) {
+	  if(vmin2 < gmin2) gmin2=vmin2;
+	  if(vmax2 > gmax2) gmax2=vmax2;
+	}
+	if(vector3) {
+	  if(vmin3 < gmin3) gmin3=vmin3;
+	  if(vmax3 > gmax3) gmax3=vmax3;
+	}
 	set++;
       } while ((n++ < end || end < 0) && rc == 0);
       nset=nset ? min(nset,set) : set;
 			
       if(!floating_scale) {
-	if(symmetric && gmin < 0 && gmax > 0) {
+ 	if(symmetric && gmin < 0 && gmax > 0) {
 	  gmax=max(-gmin,gmax);
 	  gmin=-gmax;
 	}
 	vminf[f]=gmin;
 	vmaxf[f]=gmax;
+	
+ 	if(symmetric && gmin2 < 0 && gmax2 > 0) {
+	  gmax2=max(-gmin2,gmax2);
+	  gmin2=-gmax2;
+	}
+	vminf2[f]=gmin2;
+	vmaxf2[f]=gmax2;
+
+ 	if(symmetric && gmin3 < 0 && gmax3 > 0) {
+	  gmax3=max(-gmin3,gmax3);
+	  gmin3=-gmax3;
+	}
+	vminf3[f]=gmin3;
+	vmaxf3[f]=gmax3;
       }
-    xin.close();
-    openfield(xin,fieldname,nx,ny,nz);
+      xin.close();
+      openfield(xin,fieldname,nx,ny,nz);
+      if(vector) {
+	xin2.close();
+	openfield(xin2,argf[f+1],nx,ny,nz);
+      }
+      if(vector3) {
+	xin3.close();
+	openfield(xin3,argf[f+2],nx,ny,nz);
+      }
     }
 		
     if(begin < 0) begin += nset;
@@ -874,11 +953,26 @@ int main(int argc, char *argv[])
       double vmin,vmax;
       rc=readframe(xin,nx,ny,nz,value,vmin,vmax,vmink,vmaxk);
       if(rc == EOF) break;
+      
+      double vmin2,vmax2;
+      if(vector) {
+	rc=readframe(xin2,nx,ny,nz,value2,vmin2,vmax2,vmink2,vmaxk2);
+	if(rc == EOF) break;
+      }
+      
+      double vmin3,vmax3;
+      if(vector3) {
+	rc=readframe(xin3,nx,ny,nz,value3,vmin3,vmax3,vmink3,vmaxk3);
+	if(rc == EOF) break;
+      }
+      
       if(n < begin) continue;
       if(--s) continue;
       s=skip;
 			
       if(!floating_scale) {vmin=gmin; vmax=gmax;}
+      if(!floating_scale) {vmin2=gmin2; vmax2=gmax2;}
+      if(!floating_scale) {vmin3=gmin3; vmax3=gmax3;}
 			
       ostringstream buf;
       buf << rgbdir << fieldname << setfill('0') << setw(NDIGITS)
@@ -891,13 +985,24 @@ int main(int argc, char *argv[])
       }
 			
       for(int k=kmin; k <= kmax; k++) {
-	if(floating_section) {vmin=vmink[k]; vmax=vmaxk[k];}
-	double step=(vmax == vmin) ? 0.0 : PaletteRange/(vmax-vmin);
+	if(floating_section) {
+	  vmin=vmink[k]; vmax=vmaxk[k];
+	  if(vector) {
+	    vmin2=vmink2[k]; vmax2=vmaxk2[k];
+	  }
+	  if(vector3) {
+	    vmin3=vmink3[k]; vmax3=vmaxk3[k];
+	  }
+	}
+	double step,step2,step3;
+	step=(vmax == vmin) ? 0.0 : PaletteRange/(vmax-vmin);
+	if(vector) step2=(vmax2 == vmin2) ? 0.0 : PaletteRange/(vmax2-vmin2);
+	if(vector3) step3=(vmax3 == vmin3) ? 0.0 : PaletteRange/(vmax3-vmin3);
 	for(int j=jstart; j < jstop; j++)  {
 	  for(int j2=0; j2 < my; j2++) {
 	    for(int i=istart; i < istop; i++)  {
 	      Ivec x;
-	      int index;
+	      int index, indexg, indexb;
 	      
 	      if(trans) {
 		x=Index(i,j);
@@ -951,14 +1056,26 @@ int main(int argc, char *argv[])
 		}
 	      } else {
 		index=((int)((value(k,j,i)-vmin)*step+0.5))*sign+offset;
+		if(vector)
+		  indexb=((int)((value2(k,j,i)-vmin2)*step2+0.5))*sign+offset;
+		if(vector3) {
+		  indexg=indexb;
+		  indexb=((int)((value3(k,j,i)-vmin3)*step3+0.5))*sign+offset;
+		}
 	      }
 							
 	      if(grey) {
 		for(int i2=0; i2 < mx; i2++)
 		  fout << (unsigned char) index;
 	      } else {
-		unsigned char r=Red[index], g=Green[index],
-		  b=Blue[index];
+		unsigned char r,g,b;
+		if(vector3) {
+		  r=index; g=indexg; b=indexb;
+		} else if(vector) {
+		  r=index; g=0; b=indexb;
+		} else {
+		  r=Red[index]; g=Green[index]; b=Blue[index];
+		}
 		for(int i2=0; i2 < mx; i2++)
 		  fout << r << g << b;
 	      }
@@ -972,12 +1089,33 @@ int main(int argc, char *argv[])
       }
 			
       int Nxmx=(istop-istart)*mx;
+      int uzero=(unsigned char) 0;
       double step=((double) PaletteRange)/Nxmx;
       for(int j2=0; j2 < mpal; j2++) { // Output palette
 	for(int i=0; i < Nxmx; i++)  {
 	  int index=((int) (i*step+0.5))*sign+offset;
 	  if(grey) fout << (unsigned char) index;
-	  else fout << Red[index] << Green[index] << Blue[index];
+	  else {
+	    if(vector) fout << (unsigned char) index << uzero << uzero;
+	    else fout << Red[index] << Green[index] << Blue[index];
+	    }
+	  }
+	}
+      if(vector3) {
+	for(int j2=0; j2 < mpal; j2++) {
+	  for(int i=0; i < Nxmx; i++) {
+	    int index=((int) (i*step+0.5))*sign+offset;
+	    fout << uzero << (unsigned char) index << uzero;
+	  }
+	}
+      }
+			
+      if(vector) {
+	for(int j2=0; j2 < mpal; j2++) {
+	  for(int i=0; i < Nxmx; i++) {
+	    int index=((int) (i*step+0.5))*sign+offset;
+	    fout << uzero << uzero << (unsigned char) index;
+	  }
 	}
       }
 			
@@ -999,7 +1137,11 @@ int main(int argc, char *argv[])
       if(nset != 1) cout << "s";
       cout << " found." << endl;
     }
+    if(vector) f++;
+    if(vector3) f++;
   }
+	
+  convertprog=(mfiles > 1 || label) ? "montage" : "convert";
 	
   if((remote || !label) && make_mpeg) putenv("DISPLAY=");
 
@@ -1007,7 +1149,7 @@ int main(int argc, char *argv[])
     if(extract || display) {
       make_mpeg=0;
       if(display) {
-	montage(nfiles,argf,0,format,"tiff");
+	montage(mfiles,files,0,format,"tiff");
 	ostringstream buf;
 	buf << "xv " << outname << begin << ".tiff";
 	cmd=strdup(buf.str().c_str());
@@ -1015,20 +1157,20 @@ int main(int argc, char *argv[])
 	system(cmd);
       } else {
 	for(n=0; n < nset; n++)
-	  montage(nfiles,argf,n,format,extract);
+	  montage(mfiles,files,n,format,extract);
       }
     } else {
       if(nfiles > 1 || label || make_mpeg) { 
-	if(make_mpeg) montage(nfiles,argf,0,format,"miff");
+	if(make_mpeg) montage(mfiles,files,0,format,"miff");
 	for(n=0; n < nset; n++) 
-	  montage(nfiles,argf,n,format,make_mpeg ? "yuv" : "miff");
-	identify(nfiles,0,"miff",xsize,ysize);
-	if(make_mpeg) mpeg(nfiles,nset-1,"mpg",xsize,ysize);
-	else animate(nfiles,outname,nset-1,"miff","%d",xsize,ysize);
+	  montage(mfiles,files,n,format,make_mpeg ? "yuv" : "miff");
+	identify(mfiles,0,"miff",xsize,ysize);
+	if(make_mpeg) mpeg(mfiles,nset-1,"mpg",xsize,ysize);
+	else animate(mfiles,outname,nset-1,"miff","%d",xsize,ysize);
       } else {
 	ostringstream buf;
 	buf << "%0" << NDIGITS << "d";
-	animate(nfiles,argf[0],nset-1,format,strdup(buf.str().c_str()),
+	animate(mfiles,files[0],nset-1,format,strdup(buf.str().c_str()),
 		xsize,ysize); 
       }
     }
