@@ -7,7 +7,8 @@ using std::cerr;
 using std::endl;
 
 bool newton(Real &x, Real (*f)(Real x), Real (*dfdx)(Real x),
-	    bool verbose=false, unsigned int MaxIterations=100) {
+	    bool verbose=false, unsigned int MaxIterations=100)
+{
   unsigned int i=0;
   if(verbose) {
     cerr.precision(16);
