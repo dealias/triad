@@ -106,7 +106,7 @@ public:
 };
 
 #if _CRAY
-extern NWave NWaveProblem;
+typedef NWave _dummy_;
 #endif
 
 class E_PC : public PC {

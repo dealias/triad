@@ -336,10 +336,6 @@ void E_PC::Predictor(double t, double, int start, int stop)
 	Source(source,y1,t+dt);
 }
 
-#if _CRAY
-NWave NWaveProblem;
-#endif
-
 int E_PC::Corrector(double, double& errmax, int start, int stop)
 {
 	int j;
