@@ -67,8 +67,9 @@ void Lotka::InitialConditions()
 	
 	Mu[0]=1.0;
 	Mu[1]=mu;
+	
+	dynamic=0;
 	open_output(fout,dirsep,downcase(undashify(Integrator->Abbrev())));
-
 }
 
 void Lotka::Output(int it)
@@ -93,13 +94,15 @@ void LotkaSource(Var *source, Var *y, double)
 
 int C_PC::Corrector(double dt, double&, int, int)
 {
-	Real DE,f,diff,lastdiff,old;
-	Real xi[2];
+	Real xi[2],lastdiff;
 	int j;
 	
-	for(j=0; j < ny; j++) xi[j]=Mu[j]*(y0[j]-log(y0[j]));
+	for(j=0; j < ny; j++) {
+		if(y0[j] <= 0.0) return 0;
+		xi[j]=Mu[j]*(y0[j]-log(y0[j]));
+	}
 	
-	DE=0.5*dt*mu*((y0[X]-1.0)*(y0[Y]-1.0)+(y[X]-1.0)*(y[Y]-1.0));
+	Real DE=0.5*dt*mu*((y0[X]-1.0)*(y0[Y]-1.0)+(y[X]-1.0)*(y[Y]-1.0));
 
 	xi[0] += DE;
 	xi[1] -= DE;
@@ -108,11 +111,12 @@ int C_PC::Corrector(double dt, double&, int, int)
 	
 	for(j=0; j < ny; j++) {
 		int i=0;
-		diff=DBL_MAX;
+		Real diff=DBL_MAX;
 		do {
-			old=y[j];
-			f=Mu[j]*(y[j]-log(y[j]))-xi[j];
-			y[j] -= f/(Mu[j]-Mu[j]/y[j]);
+			Real old=y[j];
+			if(old <= 0.0) return 0;
+			Real f=Mu[j]*(y[j]-log(old))-xi[j];
+			y[j] -= f/(Mu[j]-Mu[j]/old);
 			lastdiff=diff;
 			diff=fabs(y[j]-old);
 			if(++i == 100) msg(ERROR,"Iteration did not converge");

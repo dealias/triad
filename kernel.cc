@@ -29,7 +29,7 @@ static ifstream fparam,fin;
 static ofstream fdump,fstat,fout,flock;
 
 // Global vocabulary declarations and default values
-int itmax=100;
+int itmax=0;
 double tmax=0.0;
 double dt=0.0;
 int Nmoment=0;
@@ -104,12 +104,14 @@ ProblemBase::ProblemBase()
 void adjust_parameters(double& dt, double& dtmax, double& tmax, int& itmax)
 {
 	if(dt == 0.0) {
-		if(tmax == 0.0 || itmax == 0) dt=0.01;
-		else dt=abs(tmax/itmax);
+		if(tmax == 0.0) tmax=1.0;
+		if(itmax == 0) itmax=100;
+		dt=abs(tmax/itmax);
 	}
 	
-	if(tmax == 0.0) tmax=DBL_MAX;
-	else itmax=INT_MAX;
+	if(tmax == 0.0) tmax=DBL_MAX; 
+	else if(itmax == 0) itmax=INT_MAX;
+
 	if(dtmax == 0.0) dtmax=DBL_MAX;
 }	
 
@@ -211,8 +213,8 @@ int main(int argc, char *argv[])
 	cout << newl << "INTEGRATING:" << endl;
 	set_timer();
 	
-	Integrator->Integrate(y,t,tmax,LinearSrc,NonlinearSrc,ConstantSrc,
-						  dt,sample);
+	Integrator->Integrate(y,t,tmax,LinearSrc,NonlinearSrc,ConstantSrc,dt,
+						  sample);
 	
 	cputime(cpu);
 	for(i=0; i < ncputime; i++) cpu[i] -= cpu0[i];

@@ -31,7 +31,6 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 {
 	double dtold=0.0, dtorig=0.0;
 	int it,itx,cont;
-	int invert_flag=0;
 	int nout=0;
 	const int forwards=(tmax >= t);
 	const double sign=(forwards ? 1.0 : -1.0);
@@ -91,12 +90,11 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 					cont=0;	break;
 				case SUCCESSFUL:
 					t += dt;
-					if(invert_flag) {
-						ChangeTimestep(dt,dtold,t); invert_flag=0;
-					}   
+					if(dtold) {ChangeTimestep(dt,dtold,t); dtold=0.0;}   
 					cont=0;	break;
 				case NONINVERTIBLE:
-					dtold=dt; invert_flag=1; invert_cnt++;
+					if(!dtold) dtold=dt;
+					invert_cnt++;
 					ChangeTimestep(dt,dt*stepnoninverse,t); break;
 				case UNSUCCESSFUL:
 					ChangeTimestep(dt,dt*stepinverse,t);
