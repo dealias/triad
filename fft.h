@@ -5,6 +5,7 @@
 #define FFTW_NOPROTO
 #include "fftw.h"
 #include "fstream.h"
+#include "utils.h"
 
 extern "C" fftw_plan fftw_create_plan(int n, int dir, int flags);
 extern "C" void fftw(fftw_plan plan, int howmany, Complex *in, int istride,
