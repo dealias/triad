@@ -1,6 +1,6 @@
 D = d
 LIB = $(LFLAGS) -lm
-xOPT = -g $(CFLAGS)
+OPT = -g $(CFLAGS)
 INCL = -I . -I $(TRI) -I-
 
 vpath %.cc $(TRI)
