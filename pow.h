@@ -1,6 +1,6 @@
 /* Inline C++ integer exponentiation routines 
-   Version 1.0
-   Copyright (C) 1999 John C. Bowman <bowman@math.ualberta.ca>
+   Version 1.01
+   Copyright (C) 1999-2004 John C. Bowman <bowman@math.ualberta.ca>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __pow_h__
 #define __pow_h__ 1
 
-#include <cmath>
-#include <climits>
 #include <cassert>
 
 inline double pow(double x, int p)
@@ -30,7 +28,21 @@ inline double pow(double x, int p)
   if(p < 0) {p=-p; x=1/x;}
 	
   double r = 1.0;
-  if(p > 0 && p < INT_MAX) for(;;) {
+  for(;;) {
+    if(p & 1) r *= x;
+    if((p >>= 1) == 0)	return r;
+    x *= x;
+  }
+  return 0;
+}
+
+inline double pow(double x, unsigned int p)
+{
+  if(p == 0) return 1.0;
+  if(x == 0.0) return 0.0;
+	
+  double r = 1.0;
+  for(;;) {
     if(p & 1) r *= x;
     if((p >>= 1) == 0)	return r;
     x *= x;
@@ -42,10 +54,24 @@ inline int pow(int x, int p)
 {
   if(p == 0) return 1;
   if(x == 0 && p > 0) return 0;
-  if(p < 0) {p=-p; assert(x == 1 || x == -1); return (p % 2) ? x : 1;}
+  if(p < 0) {assert(x == 1 || x == -1); return (-p % 2) ? x : 1;}
 	
   int r = 1;
-  if(p > 0 && p < INT_MAX) for(;;) {
+  for(;;) {
+    if(p & 1) r *= x;
+    if((p >>= 1) == 0)	return r;
+    x *= x;
+  }
+  return 0;
+}
+
+inline unsigned int pow(unsigned int x, unsigned int p)
+{
+  if(p == 0) return 1;
+  if(x == 0) return 0;
+	
+  unsigned int r = 1;
+  for(;;) {
     if(p & 1) r *= x;
     if((p >>= 1) == 0)	return r;
     x *= x;

@@ -162,6 +162,12 @@ inline void Vocab(T *var, const char *s, T min, T max, const char *help, int n,
   (void) new Param<T>(var,s,n,min,max,help,dump);
 }
 
+inline void Vocab(unsigned int *var, const char *s, int min, int max,
+		  const char *help, int n, int dump)
+{
+  (void) new Param<unsigned int>(var,s,n,(unsigned int) min,(unsigned int) max,
+				 help,dump);
+}
 
 inline const char *atosc(const char *s)
 {

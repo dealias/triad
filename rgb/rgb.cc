@@ -1392,13 +1392,11 @@ int System(char *command) {
     if (waitpid(pid, &status, 0) == -1) {
       if (errno != EINTR) return -1;
     } else {
-      if(WIFEXITED(status)) return 0;
-      else {
-	status=WEXITSTATUS(status);
-	if(cleaning) return status;
-	cleaning=1; cleanup();
-	msg(ERROR,"%s\nReceived signal %d",command,status);
-      }
+      if(WIFEXITED(status)) status=WEXITSTATUS(status);
+      else return -1;
+      if(cleaning) return status;
+      cleaning=1; cleanup();
+      msg(ERROR,"%s\nReceived signal %d",command,status);
     }
   }
 }
