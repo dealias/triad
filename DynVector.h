@@ -12,7 +12,7 @@ class DynVector
 public:
 	DynVector() {v=NULL; sz=0;}
 	DynVector(int s) {v=new T[sz=s];}
-	~DynVector() {delete [] v; sz=0;}
+	void ~DynVector() {delete [] v; sz=0;}
 
 	int Size() const {return sz;}
 	T *Base() const {return v;}
