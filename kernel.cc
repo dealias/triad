@@ -41,7 +41,7 @@ static Var *y;
 static int ny;
 static int explicit_dt=0;
 static int testing=0;
-static double cpu[ncputime],cpu0[ncputime];
+static double cpu[ncputime],cpu0[ncputime],cpu_restart[ncputime];
 static int final_iteration=0;
 static int total_invert_cnt=0;
 
@@ -265,9 +265,6 @@ int main(int argc, char *argv[])
 	
 	Integrator->Integrate(y,t,tmax,dt,sample);
 	
-	cputime(cpu);
-	for(i=0; i < ncputime; i++) cpu[i] -= cpu0[i];
-
 	Problem->FinalOutput();
 	
 	cout << newl;
@@ -303,7 +300,7 @@ void read_init()
 		cout << newl << "READING " << upcase(type) << " DATA FROM FILE "
 			 << rname << "." << endl; 
 		finit >> t0 >> dt0 >> final_iteration;
-		for(i=0; i < ncputime; i++) finit >> cpu[i];
+		for(i=0; i < ncputime; i++) finit >> cpu_restart[i];
 		finit >> ny0;
 		if(ny0 != ny) msg(OVERRIDE_GLOBAL,ny_msg,ny,ny0,rname);
 		for(i=0; i < min(ny,ny0); i++) finit >> y[i];
@@ -361,14 +358,16 @@ void set_timer()
 	e=digits+5;
 	open_output(fstats,dirsep,"stat");
 	cputime(cpu0);
-	if(restart) for(int i=0; i < ncputime; i++) cpu0[i] -= cpu[i];
-	else fstats << setw(w) << "iteration"
-				<< " " << setw(e) << "t"
-				<< " " << setw(e) << "dt"
-				<< " " << setw(w) << "invert_cnt"
-				<< " " << setw(w) << "CPU"
-				<< " " << setw(w) << "CHILD"
-				<< " " << setw(w) << "SYS" << endl;
+	if(!restart) {
+		for(int i=0; i < ncputime; i++) cpu_restart[i]=0.0;
+		fstats << setw(w) << "iteration"
+			   << " " << setw(e) << "t"
+			   << " " << setw(e) << "dt"
+			   << " " << setw(w) << "invert_cnt"
+			   << " " << setw(w) << "CPU"
+			   << " " << setw(w) << "CHILD"
+			   << " " << setw(w) << "SYS" << endl;
+	}
 }
 
 void statistics(int it)
@@ -386,7 +385,7 @@ void statistics(int it)
 	if(frestart) {
 		int i;
 		frestart << t << newl << dt << newl << iter << newl;
-		for(i=0; i < ncputime; i++) frestart << cpu[i] << newl;
+		for(i=0; i < ncputime; i++) frestart << cpu_restart[i]+cpu[i] << newl;
 		frestart << ny << newl;
 		for(i=0; i < ny; i++) frestart << y[i] << newl;
 		frestart.close();
@@ -421,7 +420,7 @@ void statistics(int it)
 	invert_cnt=0;
 	
 	for(i=0; i < ncputime; i++) {
-		fstats << setw(w) << cpu[i] << " ";
+		fstats << setw(w) << cpu_restart[i]+cpu[i] << " ";
 	}
 	fstats << endl;
 	if(!fstats) msg(WARNING,"Cannot write to statistics file");
