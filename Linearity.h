@@ -1,6 +1,8 @@
 #ifndef __Linearity_h__
 #define __Linearity_h__ 1
 
+#include "Mode.h"
+
 #define LINEARITY(key) {new Entry<key,LinearityBase>(#key,LinearityTable);}
 
 class LinearityBase {

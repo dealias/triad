@@ -1,8 +1,16 @@
 #include "options.h"
 #include "NWave.h"
 
-char *NWaveVocabulary::Name() {return "Three-Wave";}
-char *NWaveVocabulary::Abbrev() {return "w3";}
+class ThreeWaveVocabulary : public VocabularyBase {
+public:
+	char *Name() {return "Three-Wave";}
+	char *Abbrev() {return "w3";}
+	ThreeWaveVocabulary();
+	Table<LinearityBase> *LinearityTable;
+	LinearityBase *NewLinearity(char *& key) {
+		return LinearityTable->Locate(key);
+	}
+};
 
 char *method="SR";
 char *integrator="PC";
@@ -19,10 +27,9 @@ static Nu nu0[]={0.0,0.0,0.0};
 static Var IC[]={sqrt(1.5),0.0,sqrt(1.5)};
 static Real *K;
 
-NWaveVocabulary::NWaveVocabulary()
+ThreeWaveVocabulary::ThreeWaveVocabulary()
 {
 	Vocabulary=this;
-	reality=0;
 	
 	VOCAB(randomIC,0,1);
 	VOCAB(Nmoment,0,INT_MAX);
@@ -46,7 +53,7 @@ NWaveVocabulary::NWaveVocabulary()
 	INTEGRATOR(C_RK5);
 }
 
-NWaveVocabulary NWave_Vocabulary;
+ThreeWaveVocabulary ThreeWave;
 
 ofstream fout;
 
@@ -54,14 +61,14 @@ void NWave::InitialConditions()
 {
 	int k,p;
 
-	Npsi=Ntotal=3;
-	ny=Npsi*(1+Nmoment);
-	NpsiR=Ntotal-Npsi;
-	psibuffer=psibufferR=new Var[Npsi];
-	psibufferStop=psibuffer+Npsi;
+	Nmode=Ntotal=3;
+	ny=Nmode*(1+Nmoment);
+	NmodeR=Ntotal-Nmode;
+	psibuffer=psibufferR=new Var[Nmode];
+	psibufferStop=psibuffer+Nmode;
 	y=new Var[ny];
-	K=new Real [Npsi];
-	forcing=new Real[Npsi];
+	K=new Real [Nmode];
+	forcing=new Real[Nmode];
 		
 	K[0]=sqrt(3.0);
 	K[1]=sqrt(9.0);
@@ -69,34 +76,34 @@ void NWave::InitialConditions()
 	
 	nu=nu0;
 
-	pqbuffer=new Var[Npsi*(Npsi+1)/2];
-	pqIndex=new Var*[Npsi];
-	qStart=new int[Npsi];
-	triadLimits=new TriadLimits[Npsi];
+	pqbuffer=new Var[Nmode*(Nmode+1)/2];
+	pqIndex=new Var*[Nmode];
+	qStart=new int[Nmode];
+	triadLimits=new TriadLimits[Nmode];
 	
 	Var *pq=pqbuffer;
-	for(p=0; p < Npsi; p++) {
+	for(p=0; p < Nmode; p++) {
 			pqIndex[p]=pq-p;
-			pq += Npsi-p;
+			pq += Nmode-p;
 	}
-	for(p=0; p < Npsi; p++) qStart[p]=p;
+	for(p=0; p < Nmode; p++) qStart[p]=p;
 	
 	triad[0].Store(pqbuffer+4,Mk[0]);
 	triad[1].Store(pqbuffer+2,Mk[1]);
 	triad[2].Store(pqbuffer+1,Mk[2]);
 
 	triadLimits[0].start=triad.Base();
-	for(k=0; k < Npsi-1; k++) {
+	for(k=0; k < Nmode-1; k++) {
 		triadLimits[k+1].start=triadLimits[k].stop=triad.Base()+k+1;
 	}
-	triadLimits[Npsi-1].stop=triad.Base()+Npsi;
+	triadLimits[Nmode-1].stop=triad.Base()+Nmode;
 	
-	for(k=0; k < Npsi; k++) {
+	for(k=0; k < Nmode; k++) {
 		y[k]=IC[k];
 		forcing[k]=0.0;
 	}
 	if(randomIC) {
-		for(int i=0; i < Npsi; i++) {
+		for(int i=0; i < Nmode; i++) {
 			Var w;
 			crand_gauss(&w);
 			y[i] *= w;
@@ -111,14 +118,14 @@ void NWave::Initialize()
 	int i;
 
 	// Initialize time integrals to zero.
-	for(i=Npsi; i < ny; i++) y[i]=0.0;
+	for(i=Nmode; i < ny; i++) y[i]=0.0;
 }
 
-void compute_invariants(Var *y, int Npsi, Real& E, Real& Z, Real& P)
+void NWave::ComputeInvariants(Var *y, int Nmode, Real& E, Real& Z, Real& P)
 {
 	Real Ek,Zk,Pk,k2;
 	E=Z=P=0.0;
-	for(int i=0; i < Npsi; i++) {
+	for(int i=0; i < Nmode; i++) {
 		k2=K[i]*K[i];
 		Ek=abs2(y[i]);
 		Zk=k2*Ek;
@@ -128,7 +135,7 @@ void compute_invariants(Var *y, int Npsi, Real& E, Real& Z, Real& P)
 		P += Pk;
 	}
 	
-	Real factor=(reality ? 1.0: 0.5);
+	Real factor=0.5;
 	E *= factor;
 	Z *= factor;
 	P *= factor;
@@ -139,7 +146,7 @@ void NWave::Output(int)
 	int i;
 	
 	fout << t << "\t";
-	for(i=0; i < Npsi-1; i++) fout << y[i] << "\t";
+	for(i=0; i < Nmode-1; i++) fout << y[i] << "\t";
 	fout << y[i] << endl;
 }
 

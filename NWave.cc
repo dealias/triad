@@ -1,24 +1,21 @@
 #include "options.h"
 #include "NWave.h"
-#include "Cartesian.h"
-#include "fft.h"
+#include "Triad.h"
 
-int Npsi;
-int NpsiR;
+int Nmode;
+int NmodeR;
 int Ntotal;
 
-// (0 => evolve all modes, 1 => evolve only half of the modes).
-int reality=1; // Reality condition flag 
-
-Var *psibuffer,*psibufferR,*psibufferStop,*pqbuffer;
+Var *psibuffer,*psibufferR,*psibufferStop;
 Var *psix,*psiy,*vort;
-
-Var **pqIndex;
-int *qStart;
 
 int Ntriad;
 DynVector<Triad> triad;
 TriadLimits *triadLimits;
+
+Var *pqbuffer;
+Var **pqIndex;
+int *qStart;
 
 Real *knorm2,*kfactor;
 
@@ -30,23 +27,23 @@ extern Real tauforce;
 static Var random_factor=0.0;
 static Real last_t=-REAL_MAX;
 
-void ConstantForcing(Var *source, double t)
+void NWave::ConstantForcing(Var *source, double t)
 {
 	if(t-last_t > tauforce) {last_t=t; crand_gauss(&random_factor);}
 #pragma ivdep
-	for(int k=0; k < Npsi; k++) source[k] += forcing[k]*random_factor;
+	for(int k=0; k < Nmode; k++) source[k] += forcing[k]*random_factor;
 }
 
-void ComputeMoments(Var *source, Var *psi)
+void NWave::ComputeMoments(Var *source, Var *psi)
 {
-	Var *k, *q=source+Npsi, *kstop=psi+Npsi;
+	Var *k, *q=source+Nmode, *kstop=psi+Nmode;
 #pragma ivdep
 	for(k=psi; k < kstop; k++, q++) {
 #if COMPLEX		
-		(*q).re=realproduct(*(q-Npsi),*k); // S_k*psi_k
+		(*q).re=realproduct(*(q-Nmode),*k); // S_k*psi_k
 		(*q).im=realproduct(random_factor,*k); // w_k*psi_k
 #else
-		*q=realproduct(*(q-Npsi),*k); // S_k*psi_k
+		*q=realproduct(*(q-Nmode),*k); // S_k*psi_k
 #endif		
 	}
 	if(Nmoment > 1) {
@@ -54,18 +51,18 @@ void ComputeMoments(Var *source, Var *psi)
 		for(k=psi; k < kstop; k++, q++) *q=*k; // psi_k
 		for(int n=2; n < Nmoment; n++) { // psi_k^n
 #pragma ivdep
-			for(k=psi; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);
+			for(k=psi; k < kstop; k++, q++) *q=product(*(q-Nmode),*k);
 		}
 	}
 }
 
 void SR::NonLinearSrc(Var *source, Var *psi, double)
 {
-	set(psibuffer,psi,Npsi);
+	set(psibuffer,psi,Nmode);
 	
 	// Compute reflected psi's
 #pragma ivdep		
-	for(Var *k=psibuffer; k < psibufferR; k++) conjugate(*(k+Npsi),*k);
+	for(Var *k=psibuffer; k < psibufferR; k++) conjugate(*(k+Nmode),*k);
 	
 #if !_CRAYMVP && COMPLEX
 	Var *pq=pqbuffer,*p;
@@ -96,9 +93,9 @@ void SR::NonLinearSrc(Var *source, Var *psi, double)
 #endif		
 	
 #if _CRAYMVP
-#pragma _CRI taskloop private(i) value(source,triadLimits,Npsi)
+#pragma _CRI taskloop private(i) value(source,triadLimits,Nmode)
 #endif	
-	for(int i=0; i < Npsi; i++) {
+	for(int i=0; i < Nmode; i++) {
 		Triad *t=triadLimits[i].start, *tstop=triadLimits[i].stop;
 #if !_CRAYMVP && COMPLEX && MCREAL
 		Real sumre, sumim;
@@ -118,163 +115,29 @@ void SR::NonLinearSrc(Var *source, Var *psi, double)
 	ConstantForcing(source,t);
 }
 
-void Convolution::NonLinearSrc(Var *source, Var *psi, double)
-{
-	int i;
-	set(psibuffer,psi,Npsi);
-	
-	// Compute reflected psi's
-#pragma ivdep		
-	for(Var *p=psibuffer; p < psibufferR; p++) conjugate(*(p+Npsi),*p);
-	
-	for(i=0; i < Npsi; i++) source[i]=0.0;
-		
-	int q=0, nn=2*Npsi;
-	for(int k=0; k < Npsi; k++) {
-		Real kx=CartesianMode[k].X();
-		Real ky=CartesianMode[k].Y();
-		for(int p=0; p < nn; p++)	{
-			Real px=CartesianMode[p].X();
-			Real py=CartesianMode[p].Y();
-			Cartesian mq = CartesianMode[k]-CartesianMode[p];
-			if(q < nn-1 && CartesianMode[q+1] == mq) q++;
-			else if(q > 1 && CartesianMode[q-1] == mq) q--;
-			else for(q=0; q < nn && CartesianMode[q] != mq; q++);
-			if(q < nn) source[k] += (kx*py-ky*px)*(px*px+py*py)*
-				psibuffer[p]*psibuffer[q];
-		}
-	}
-
-#pragma ivdep	
-	for(i=0; i < Npsi; i++) source[i] *= kfactor[i];
-	if(Nmoment) ComputeMoments(source,psi);
-	ConstantForcing(source,t);
-}
-
-
-void PS::NonLinearSrc(Var *source, Var *psi, double)
-{
-#if COMPLEX
-	int i;
-	
-#pragma ivdep	
-	for(i=0; i < Npsi; i++) {
-		Real kx=CartesianMode[i].X();
-		source[i].re=-psi[i].im*kx;
-		source[i].im=psi[i].re*kx;
-	}
-	CartesianPad(psix,source);
-	crfft2dT(psix,log2Nxb,log2Nyb,1);
-
-#pragma ivdep	
-	for(i=0; i < Npsi; i++)	source[i] *= knorm2[i];
-	CartesianPad(vort,source);
-	crfft2dT(vort,log2Nxb,log2Nyb,1);
-
-#pragma ivdep	
-	for(i=0; i < Npsi; i++) {
-		Real ky=CartesianMode[i].Y();
-		source[i].re=-psi[i].im*ky;
-		source[i].im=psi[i].re*ky;
-	}
-	CartesianPad(psiy,source);
-	crfft2dT(psiy,log2Nxb,log2Nyb,1);
-
-#if 0 // Compute x-space velocity increments
-	Real *v2;
-	// Strictly speaking, v2 should be divided by (Nxb*Nyb)^2 afterwards
-	Real psix0=psix[0].re;
-	Real psiy0=psiy[0].re;
-	for(int j=0; j < Nyb; j++) {
-		int jN=Nxb1*j;
-#pragma ivdep	
-		for(i=0; i < Nxb; i++) {
-			Real vx1=psiy0-psiy[i+jN].re;
-			Real vy1=psix[i+jN].re-psix0;
-			*(v2++)=vx1*vx1+vy1*vy1;
-			vx1=psiy0-psiy[i+jN].im;
-			vy1=psix[i+jN].im-psix0;
-			*(v2++)=vx1*vx1+vy1*vy1;
-		}
-	}
-#endif	
-
-#pragma ivdep	
-	for(i=0; i < nfft; i++) {
-		psiy[i].re *= vort[i].re;
-		psiy[i].im *= vort[i].im;
-	}
-
-#pragma ivdep	
-	for(i=0; i < Npsi; i++)	source[i] *= knorm2[i];
-	CartesianPad(vort,source);
-	crfft2dT(vort,log2Nxb,log2Nyb,1);
-
-#pragma ivdep	
-	for(i=0; i < nfft; i++) {
-		psiy[i].re -= psix[i].re*vort[i].re;
-		psiy[i].im -= psix[i].im*vort[i].im;
-	}
-
-	rcfft2dT(psiy,log2Nxb,log2Nyb,-1);
-	CartesianUnPad(source,psiy);
-	
-#pragma ivdep	
-	for(i=0; i < Npsi; i++) source[i] *= kfactor[i];
-	if(Nmoment) ComputeMoments(source,psi);
-	ConstantForcing(source,t);
-#else	
-	msg(ERROR,"Pseudospectral approximation requires COMPLEX=1");
-#endif
-}
-	
-void Basis<Cartesian>::Initialize()
-{
-	knorm2=new Real[Nmode];
-	kfactor=new Real[Nmode];
-	
-	if(strcmp(Problem->Abbrev(),"PS") == 0) {
-		cout << endl << "ALLOCATING FFT BUFFERS (" << Nxb << " x " << Nyp
-			 << ")." << endl;
-		psix=new Var[nfft];
-		psiy=new Var[nfft];
-		vort=new Var[nfft];
-		Real scale=Nxb*Nyb;
-		for(int k=0; k < Nmode; k++) {
-			knorm2[k]=mode[k].K2();
-			kfactor[k]=1.0/(scale*Normalization(k));
-		}
-	} else {
-		psibuffer=new Var[n];
-		psibufferR=(reality ? psibuffer+Nmode : psibuffer);
-		for(int k=0; k < Nmode; k++) 
-			kfactor[k]=1.0/Normalization(k);
-	}
-}
-
 void NWave::LinearSrc(Var *source, Var *psi, double)
 {
 #pragma ivdep
-	for(int k=0; k < Npsi; k++) source[k] -= nu[k]*psi[k];
+	for(int k=0; k < Nmode; k++) source[k] -= nu[k]*psi[k];
 }
 
 void NWave::ExponentialLinearity(Var *source, Var *, double)
 {
 #pragma ivdep
-	for(int k=0; k < Npsi; k++) source[k] *= nu_inv[k];
+	for(int k=0; k < Nmode; k++) source[k] *= nu_inv[k];
 }
 
 void NWave::ConservativeExponentialLinearity(Real *source, Real *, double)
 {
 #pragma ivdep
-	for(int k=0; k < Npsi; k++) source[k] *= nuR_inv[k];
+	for(int k=0; k < Nmode; k++) source[k] *= nuR_inv[k];
 }
 
 void NWave::ConservativeExponentialLinearity(Complex *source, Complex *psi,
 											 double)
 {
 #pragma ivdep
-	for(int k=0; k < Npsi; k++) {
+	for(int k=0; k < Nmode; k++) {
 		source[k].re += imag(nu[k])*imag(psi[k]);
 		source[k].im -= imag(nu[k])*real(psi[k]);
 		source[k] *= nuR_inv[k];
@@ -820,7 +683,7 @@ int C_RK5::Corrector(double, int dynamic, int start, int stop)
 	return 1;
 }
 
-void display_invariants(Real E, Real Z, Real P)
+void NWave::DisplayInvariants(Real E, Real Z, Real P)
 {
 	cout << "Energy = " << E << newl;
 	cout << "Enstrophy = " << Z << newl;
@@ -834,30 +697,30 @@ void NWave::FinalOutput()
 	const int Nlimit=128;
 	
 	cout << newl << "FINAL VALUES:" << newl << endl;
-	if(Npsi <= Nlimit || verbose > 1) {
-		for(i=0; i < Npsi; i++) cout << "psi[" << i << "] = " << y[i] << newl;
+	if(Nmode <= Nlimit || verbose > 1) {
+		for(i=0; i < Nmode; i++) cout << "psi[" << i << "] = " << y[i] << newl;
 		cout << endl;
 	}
 	
-	compute_invariants(y,Npsi,E,Z,P);
-	display_invariants(E,Z,P);
+	ComputeInvariants(y,Nmode,E,Z,P);
+	DisplayInvariants(E,Z,P);
 	
 	if(Nmoment > 2 && t) {
 		cout << newl << "AVERAGED VALUES:" << newl << endl;
-// We overwrite y+3*Npsi here, since it is no longer needed.
-		Var *y2=y+3*Npsi;
-		for(i=0; i < Npsi; i++) y2[i] = (real(y2[i])+imag(y2[i]))/t;
+// We overwrite y+3*Nmode here, since it is no longer needed.
+		Var *y2=y+3*Nmode;
+		for(i=0; i < Nmode; i++) y2[i] = (real(y2[i])+imag(y2[i]))/t;
 		
-		if(Npsi <= Nlimit || verbose > 1) {
-			for(i=0; i < Npsi; i++) {
+		if(Nmode <= Nlimit || verbose > 1) {
+			for(i=0; i < Nmode; i++) {
 				Real y2avg=real(y2[i]);
 				cout << "|psi|^2 [" << i << "] = " << y2avg << newl;
 			}
 			cout << endl;
 		}
 		
-		for(i=0; i < Npsi; i++) y2[i] = sqrt(real(y2[i]));
-		compute_invariants(y2,Npsi,E,Z,P);
-		display_invariants(E,Z,P);
+		for(i=0; i < Nmode; i++) y2[i] = sqrt(real(y2[i]));
+		ComputeInvariants(y2,Nmode,E,Z,P);
+		DisplayInvariants(E,Z,P);
 	}
 }

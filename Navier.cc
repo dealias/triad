@@ -1,5 +1,8 @@
 #include "options.h"
 #include "NWave.h"
+#include "Geometry.h"
+#include "Partition.h"
+#include "Basis.h"
 #include "Polar.h"
 #include "PolarBin.h"
 #include "Cartesian.h"
@@ -8,14 +11,27 @@
 #include <sys/stat.h> // On the sun this must come after xstream.h
 
 LinearityBase *Linearity;
-
-char *NWaveVocabulary::Name() {return "N-Wave";}
-char *NWaveVocabulary::Abbrev() {return "nw";}
+GeometryBase *Geometry;
 
 char *method="PS";
 char *geometry="Cartesian";
 char *integrator="PC";
 char *linearity="BandLimited";
+
+class NWaveVocabulary : public VocabularyBase {
+public:
+	char *Name() {return "N-Wave";}
+	char *Abbrev() {return "nw";}
+	NWaveVocabulary();
+	Table<LinearityBase> *LinearityTable;
+	Table<GeometryBase> *GeometryTable;
+	GeometryBase *NewGeometry(char *& key) {
+		return GeometryTable->Locate(key);
+	}
+	LinearityBase *NewLinearity(char *& key) {
+		return LinearityTable->Locate(key);
+	}
+};
 
 // Global variables
 Real alpha=1.0;
@@ -51,7 +67,14 @@ int movie=0;
 int truefield=0;
 int weiss=0;
 
+// (0 => evolve all modes, 1 => evolve only half of the modes).
+int reality=1; // Reality condition flag 
+
 Real mode_density;
+Weight *weightBase;
+WeightIndex WeightN;
+
+const int maxbins=65536;
 
 class Diamagnetic : public LinearityBase {
 public:
@@ -95,6 +118,22 @@ class FrequencyK : public BandLimited {
 public:
 	char *Name() {return "FrequencyK";}
 	Real Frequency(const Mode& v) {return vd*v.K();}
+};
+
+class Convolution : public NWave {
+public:
+	Convolution() {}
+	char *Name() {return "Convolution";}
+	void NonLinearSrc(Var *source, Var *psi, double);
+};
+
+class PS : public NWave {
+public:
+	PS() {
+		if(!reality) msg(ERROR,"Pseudospectral approximation needs reality=1");
+	}
+	char *Name() {return "Pseudospectral";}
+	void NonLinearSrc(Var *source, Var *psi, double);
 };
 
 NWaveVocabulary::NWaveVocabulary()
@@ -177,6 +216,140 @@ NWaveVocabulary::NWaveVocabulary()
 
 NWaveVocabulary NWave_Vocabulary;
 
+void Convolution::NonLinearSrc(Var *source, Var *psi, double)
+{
+	int i;
+	set(psibuffer,psi,Nmode);
+	
+	// Compute reflected psi's
+#pragma ivdep		
+	for(Var *p=psibuffer; p < psibufferR; p++) conjugate(*(p+Nmode),*p);
+	
+	for(i=0; i < Nmode; i++) source[i]=0.0;
+		
+	int q=0, nn=2*Nmode;
+	for(int k=0; k < Nmode; k++) {
+		Real kx=CartesianMode[k].X();
+		Real ky=CartesianMode[k].Y();
+		for(int p=0; p < nn; p++)	{
+			Real px=CartesianMode[p].X();
+			Real py=CartesianMode[p].Y();
+			Cartesian mq = CartesianMode[k]-CartesianMode[p];
+			if(q < nn-1 && CartesianMode[q+1] == mq) q++;
+			else if(q > 1 && CartesianMode[q-1] == mq) q--;
+			else for(q=0; q < nn && CartesianMode[q] != mq; q++);
+			if(q < nn) source[k] += (kx*py-ky*px)*(px*px+py*py)*
+				psibuffer[p]*psibuffer[q];
+		}
+	}
+
+#pragma ivdep	
+	for(i=0; i < Nmode; i++) source[i] *= kfactor[i];
+	if(Nmoment) ComputeMoments(source,psi);
+	ConstantForcing(source,t);
+}
+
+
+void PS::NonLinearSrc(Var *source, Var *psi, double)
+{
+#if COMPLEX
+	int i;
+	
+#pragma ivdep	
+	for(i=0; i < Nmode; i++) {
+		Real kx=CartesianMode[i].X();
+		source[i].re=-psi[i].im*kx;
+		source[i].im=psi[i].re*kx;
+	}
+	CartesianPad(psix,source);
+	crfft2dT(psix,log2Nxb,log2Nyb,1);
+
+#pragma ivdep	
+	for(i=0; i < Nmode; i++)	source[i] *= knorm2[i];
+	CartesianPad(vort,source);
+	crfft2dT(vort,log2Nxb,log2Nyb,1);
+
+#pragma ivdep	
+	for(i=0; i < Nmode; i++) {
+		Real ky=CartesianMode[i].Y();
+		source[i].re=-psi[i].im*ky;
+		source[i].im=psi[i].re*ky;
+	}
+	CartesianPad(psiy,source);
+	crfft2dT(psiy,log2Nxb,log2Nyb,1);
+
+#if 0 // Compute x-space velocity increments
+	Real *v2;
+	// Strictly speaking, v2 should be divided by (Nxb*Nyb)^2 afterwards
+	Real psix0=psix[0].re;
+	Real psiy0=psiy[0].re;
+	for(int j=0; j < Nyb; j++) {
+		int jN=Nxb1*j;
+#pragma ivdep	
+		for(i=0; i < Nxb; i++) {
+			Real vx1=psiy0-psiy[i+jN].re;
+			Real vy1=psix[i+jN].re-psix0;
+			*(v2++)=vx1*vx1+vy1*vy1;
+			vx1=psiy0-psiy[i+jN].im;
+			vy1=psix[i+jN].im-psix0;
+			*(v2++)=vx1*vx1+vy1*vy1;
+		}
+	}
+#endif	
+
+#pragma ivdep	
+	for(i=0; i < nfft; i++) {
+		psiy[i].re *= vort[i].re;
+		psiy[i].im *= vort[i].im;
+	}
+
+#pragma ivdep	
+	for(i=0; i < Nmode; i++)	source[i] *= knorm2[i];
+	CartesianPad(vort,source);
+	crfft2dT(vort,log2Nxb,log2Nyb,1);
+
+#pragma ivdep	
+	for(i=0; i < nfft; i++) {
+		psiy[i].re -= psix[i].re*vort[i].re;
+		psiy[i].im -= psix[i].im*vort[i].im;
+	}
+
+	rcfft2dT(psiy,log2Nxb,log2Nyb,-1);
+	CartesianUnPad(source,psiy);
+	
+#pragma ivdep	
+	for(i=0; i < Nmode; i++) source[i] *= kfactor[i];
+	if(Nmoment) ComputeMoments(source,psi);
+	ConstantForcing(source,t);
+#else	
+	msg(ERROR,"Pseudospectral approximation requires COMPLEX=1");
+#endif
+}
+	
+void Basis<Cartesian>::Initialize()
+{
+	knorm2=new Real[Nmode];
+	kfactor=new Real[Nmode];
+	
+	if(strcmp(Problem->Abbrev(),"PS") == 0) {
+		cout << endl << "ALLOCATING FFT BUFFERS (" << Nxb << " x " << Nyp
+			 << ")." << endl;
+		psix=new Var[nfft];
+		psiy=new Var[nfft];
+		vort=new Var[nfft];
+		Real scale=Nxb*Nyb;
+		for(int k=0; k < Nmode; k++) {
+			knorm2[k]=mode[k].K2();
+			kfactor[k]=1.0/(scale*Normalization(k));
+		}
+	} else {
+		psibuffer=new Var[n];
+		psibufferR=(reality ? psibuffer+Nmode : psibuffer);
+		for(int k=0; k < Nmode; k++) 
+			kfactor[k]=1.0/Normalization(k);
+	}
+}
+
 Real force_re(const Mode& v) 
 {
 	Real k=v.K();
@@ -211,15 +384,15 @@ void NWave::InitialConditions()
 		msg(ERROR,"Geometry \"%s\" is incompatible with method \"%s\"",
 			Geometry->Name(),Problem->Abbrev());
 	Linearity=NWave_Vocabulary.NewLinearity(linearity);
-	Npsi=Geometry->Create();
-	ny=Npsi*(1+Nmoment);
+	Nmode=Geometry->Create();
+	ny=Nmode*(1+Nmoment);
 	Ntotal=Geometry->TotalNumber();
-	NpsiR=Ntotal-Npsi;
+	NmodeR=Ntotal-Nmode;
 	y=new Var[ny];
-	nu=new Nu[Npsi];
-	forcing=new Real[Npsi];
+	nu=new Nu[Nmode];
+	forcing=new Real[Nmode];
 	
-	for(i=0; i < Npsi; i++) {
+	for(i=0; i < Nmode; i++) {
 		Real norm=1.0/sqrt(Geometry->Normalization(i));
 		nu[i]=Geometry->Linear(i);
 		y[i]=sqrt(2.0*equilibrium(i))*norm;
@@ -239,7 +412,7 @@ void NWave::InitialConditions()
 	// If reality condition is not explicitly enforced and the number of
 	// angular bins is even, force the initial conditions to respect reality. 
 #pragma ivdep		
-	for(i=nindependent; i < Npsi; i++) y[i]=conj(y[i-nindependent]);
+	for(i=nindependent; i < Nmode; i++) y[i]=conj(y[i-nindependent]);
 	
 	if(restart) {
 		Real t0;
@@ -282,8 +455,8 @@ void NWave::InitialConditions()
 		if(discrete && truefield) {
 			set_fft_parameters();
 			psix=new Var[nfft];
-			norm_factor=new Real[Npsi];
-			for(int m=0; m < Npsi; m++) {
+			norm_factor=new Real[Nmode];
+			for(int m=0; m < Nmode; m++) {
 				norm_factor[m]=sqrt(Geometry->Normalization(m)/Linearity->
 									Denominator(Geometry->ModeOf(m)));
 			}
@@ -291,7 +464,7 @@ void NWave::InitialConditions()
 			int m;
 			Real k0=REAL_MAX;
 			Real Dk0=REAL_MAX;
-			for(i=0; i < Npsi; i++) {
+			for(i=0; i < Nmode; i++) {
 				Real k=Geometry->K(i);
 				if(k < k0) {
 					k0=k;
@@ -302,26 +475,26 @@ void NWave::InitialConditions()
 			if(!ngridy) ngridy=Ny;
 			Real L=twopi/(k0*Dk0);
 			
-			xcoeff=new Complex [ngridx*Npsi];
-			for(m=0; m < Npsi; m++) {
+			xcoeff=new Complex [ngridx*Nmode];
+			for(m=0; m < Nmode; m++) {
 				Real Dkinv=1.0/Geometry->Area(m);
 				Real kx=Geometry->X(m);
 				Real norm=sqrt(Geometry->Normalization(m)/
 							   Linearity->Denominator(Geometry->ModeOf(m)));
 
 				for(i=0; i < ngridx; i++) {
-					Complex *p=xcoeff+i*Npsi;
+					Complex *p=xcoeff+i*Nmode;
 					Real X=i*L/ngridx;
 					p[m]=expi(kx*X*Dkinv)*norm;
 				}				
 			}
 			
-			ycoeff=new Complex [ngridy*Npsi];
-			for(m=0; m < Npsi; m++) {
+			ycoeff=new Complex [ngridy*Nmode];
+			for(m=0; m < Nmode; m++) {
 				Real ky=Geometry->Y(m);
 				Real Dkinv=1.0/Geometry->Area(m);
 				for(int j=0; j < ngridy; j++) {
-					Complex *q=ycoeff+j*Npsi;
+					Complex *q=ycoeff+j*Nmode;
 					Real Y=j*L/ngridy;
 					q[m]=expi(ky*Y*Dkinv);
 				}
@@ -341,27 +514,27 @@ void NWave::Initialize()
 {
 	int i;
 	
-	out_function(fprolog,K,"K",Npsi);
-	out_function(fprolog,Th,"Th",Npsi);
-	out_function(fprolog,Area,"Area",Npsi);
-	out_function(fprolog,nu_re,"nu.re",Npsi);
-	out_function(fprolog,nu_im,"nu.im",Npsi);
-	out_curve(fprolog,forcing,"f",Npsi);
-	out_function(fprolog,equilibrium,"equil",Npsi);
-	out_function(fprolog,Normalization,"normalization",Npsi);
+	out_function(fprolog,K,"K",Nmode);
+	out_function(fprolog,Th,"Th",Nmode);
+	out_function(fprolog,Area,"Area",Nmode);
+	out_function(fprolog,nu_re,"nu.re",Nmode);
+	out_function(fprolog,nu_im,"nu.im",Nmode);
+	out_curve(fprolog,forcing,"f",Nmode);
+	out_function(fprolog,equilibrium,"equil",Nmode);
+	out_function(fprolog,Normalization,"normalization",Nmode);
 	fprolog.flush();
 
 	fevt << "#   t\t\t E\t\t Z\t\t P" << endl;
 
 	// Initialize time integrals to zero.
-	for(i=Npsi; i < ny; i++) y[i]=0.0;
+	for(i=Nmode; i < ny; i++) y[i]=0.0;
 }
 
-void compute_invariants(Var *y, int Npsi, Real& E, Real& Z, Real& P)
+void NWave::ComputeInvariants(Var *y, int Nmode, Real& E, Real& Z, Real& P)
 {
 	Real Ek,Zk,Pk,k2;
 	E=Z=P=0.0;
-	for(int i=0; i < Npsi; i++) {
+	for(int i=0; i < Nmode; i++) {
 		k2=Geometry->K2(i);
 		Ek=Geometry->Normalization(i)*abs2(y[i])*Geometry->Area(i);
 		Zk=k2*Ek;
@@ -394,20 +567,20 @@ void NWave::Output(int)
 	Real E,Z,P;
 	int n;
 	
-	compute_invariants(y,Npsi,E,Z,P);
+	ComputeInvariants(y,Nmode,E,Z,P);
 	
 	fevt << t << "\t" << E << "\t" << Z << "\t" << P << endl;
 	
-	out_real(fyvt,y,"y.re","y.im",Npsi);
+	out_real(fyvt,y,"y.re","y.im",Nmode);
 	fyvt.flush();
 	
-	Var *yavg=y+Npsi;
+	Var *yavg=y+Nmode;
 	for(n=0; n < Nmoment; n++) {
 		strstream buf;
 		buf << "avgy" << n << dirsep << "t" << tcount << ends;
 		open_output(favgy,dirsep,buf.str(),0);
 		out_curve(favgy,t,"t");
-		out_real(favgy,yavg+Npsi*n,avgyre[n].str(),avgyim[n].str(),Npsi);
+		out_real(favgy,yavg+Nmode*n,avgyre[n].str(),avgyim[n].str(),Nmode);
 		favgy.close();
 	}
 	
@@ -415,11 +588,11 @@ void NWave::Output(int)
 		if(strcmp(method,"SR") == 0 && !(discrete && truefield)) {
 			fpsi << ngridx << ngridy << 1;
 			for(int j=ngridy-1; j >= 0; j--) {
-				Complex *q=ycoeff+j*Npsi;
+				Complex *q=ycoeff+j*Nmode;
 				for(int i=0; i < ngridx; i++) {
-					Complex *p=xcoeff+i*Npsi;
+					Complex *p=xcoeff+i*Nmode;
 					Real sum=0.0;
-					for(int m=0; m < Npsi; m++) {
+					for(int m=0; m < Nmode; m++) {
 						Complex pq=p[m]*q[m];
 						sum += pq.re*y[m].re-pq.im*y[m].im;
 					}
@@ -441,14 +614,14 @@ void NWave::Output(int)
 	
 		if(weiss && !discrete) {
 			int i;
-			for(i=0; i < Npsi; i++) {
+			for(i=0; i < Nmode; i++) {
 				Real kx=CartesianMode[i].X();
 				vort[i]=y[i]*kx*kx;
 			}
 			CartesianPad(psix,vort);
 			crfft2dT(psix,log2Nxb,log2Nyb,1);
 		
-			for(i=0; i < Npsi; i++) {
+			for(i=0; i < Nmode; i++) {
 				Real ky=CartesianMode[i].Y();
 				vort[i]=y[i]*ky*ky;
 			}
@@ -457,7 +630,7 @@ void NWave::Output(int)
 			
 			for(i=0; i < nfft; i++) psiy[i] *= psix[i];
 				
-			for(i=0; i < Npsi; i++) {
+			for(i=0; i < Nmode; i++) {
 				Real kx=CartesianMode[i].X();
 				Real ky=CartesianMode[i].Y();
 				vort[i]=y[i]*kx*ky;

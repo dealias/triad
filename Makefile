@@ -7,12 +7,10 @@ include $(TRI)/config/Common
 
 INCL = 
 
-POLAR = Polar PolarAverage simpfast
-RFFT = rfft $(FFT) $(CORE) $(UTILS)
-
-NAVIER = Navier NWave Geometry $(POLAR) Cartesian $(RFFT)
-THREEWAVE = ThreeWave NWave Geometry $(POLAR) Cartesian $(RFFT)
-BURGER = Burger Geometry Cartesian1 $(RFFT)
+NAVIER = Navier NWave Polar PolarAverage simpfast Cartesian rfft \
+		 $(FFT) $(CORE) $(UTILS)
+THREEWAVE = ThreeWave NWave $(CORE) $(UTILS)
+BURGER = Burger NWave Cartesian1 rfft $(FFT) $(CORE) $(UTILS)
 POLARAVG = PolarAverageTest PolarAverage simpfast
 
 TRIAD = $(NAVIER) $(THREEWAVE) $(BURGER) $(POLARAVG)

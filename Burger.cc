@@ -1,26 +1,34 @@
 #include "options.h"
+#include "NWave.h"
+#include "Geometry.h"
+#include "Basis.h"
 #include "Cartesian1.h"
-#include "Burger.h"
 #include "fft.h"
 
 #include <sys/stat.h> // On the sun this must come after xstream.h
 
 LinearityBase *Linearity;
-
-char *BurgerVocabulary::Name() {return "Burger";}
-char *BurgerVocabulary::Abbrev() {return "burger";}
+GeometryBase *Geometry;
 
 char *method="PS";
 char *geometry="Cartesian1";
 char *integrator="PC";
 char *linearity="BandLimited";
 
-int Nmode;   // number of explictly evolved modes
-int NmodeR;  // number of reflected modes
-int Ntotal; // total number of (evolved+reflected) modes
-
-// (0 => evolve all modes, 1 => evolve only half of the modes).
-int reality=1; // Reality condition flag 
+class BurgerVocabulary : public VocabularyBase {
+public:
+	char *Name() {return "Burger's Turbulence";}
+	char *Abbrev() {return "burger";}
+	BurgerVocabulary();
+	Table<LinearityBase> *LinearityTable;
+	Table<GeometryBase> *GeometryTable;
+	GeometryBase *NewGeometry(char *& key) {
+		return GeometryTable->Locate(key);
+	}
+	LinearityBase *NewLinearity(char *& key) {
+		return LinearityTable->Locate(key);
+	}
+};
 
 // Global variables
 Real alpha=1.0;
@@ -45,23 +53,12 @@ int pH=1;
 
 int randomIC=1;
 
-static Real mode_density;
+// (0 => evolve all modes, 1 => evolve only half of the modes).
+int reality=1; // Reality condition flag 
+
+Real mode_density;
 static Real mscale;
-
-Nu *nu,*nu_inv;
-Real *nuR_inv,*nuI;
-Real *forcing;
-
-static Var random_factor=0.0;
-static Real last_t=-REAL_MAX;
-static Var *ux, *uconv;
-
-void ConstantForcing(Var *source, double t)
-{
-	if(t-last_t > tauforce) {last_t=t; crand_gauss(&random_factor);}
-#pragma ivdep
-	for(int k=0; k < Nmode; k++) source[k] += forcing[k]*random_factor;
-}
+static Var *ux,*uconv;
 
 class BandLimited : public LinearityBase {
 public:
@@ -75,6 +72,15 @@ public:
 		if(k > kH) gamma -= pow(k,pH)*nuH*pow(k,pH);
 		return gamma;
 	}
+};
+
+class PS : public NWave {
+public:
+	PS() {
+		if(!reality) msg(ERROR,"Pseudospectral approximation needs reality=1");
+	}
+	char *Name() {return "Pseudospectral";}
+	void NonLinearSrc(Var *source, Var *psi, double);
 };
 
 BurgerVocabulary::BurgerVocabulary()
@@ -115,10 +121,25 @@ BurgerVocabulary::BurgerVocabulary()
 	LinearityTable=new Table<LinearityBase>("Linearity");
 
 	METHOD(PS);
+	
+	INTEGRATOR(C_Euler);
+	INTEGRATOR(I_PC);
+	INTEGRATOR(C_PC);
+	INTEGRATOR(E_PC);
+	INTEGRATOR(CE_PC);
+	INTEGRATOR(I_RK2);
+	INTEGRATOR(C_RK2);
+	INTEGRATOR(I_RK4);
+	INTEGRATOR(C_RK4);
+	INTEGRATOR(I_RK5);
+	INTEGRATOR(C_RK5);
+	
 	BASIS(Cartesian1);
 	
 	LINEARITY(BandLimited);
 }
+
+BurgerVocabulary Burger;
 
 void PS::NonLinearSrc(Var *source, Var *u, double)
 {
@@ -151,14 +172,6 @@ void PS::NonLinearSrc(Var *source, Var *u, double)
 #endif
 }
 
-void Burger::LinearSrc(Var *source, Var *u, double)
-{
-#pragma ivdep
-	for(int k=0; k < Nmode; k++) source[k] -= nu[k]*u[k];
-}
-
-BurgerVocabulary Burger_Vocabulary;
-
 Real force_re(const Mode& v) 
 {
 	Real k=v.K();
@@ -178,18 +191,18 @@ Real continuum_factor=1.0;
 static strstream *avgyre,*avgyim;
 static int tcount=0;
 
-void Burger::InitialConditions()
+void NWave::InitialConditions()
 {
 	int i,n;
 	
 	krmin2=krmin*krmin;
 	mode_density=(strcmp(method,"SR") == 0 ? 1.0/krmin : 1.0);
 		
-	Geometry=Burger_Vocabulary.NewGeometry(geometry);
+	Geometry=Burger.NewGeometry(geometry);
 	if(!Geometry->Valid(Problem->Abbrev()))
 		msg(ERROR,"Geometry \"%s\" is incompatible with method \"%s\"",
 			Geometry->Name(),Problem->Abbrev());
-	Linearity=Burger_Vocabulary.NewLinearity(linearity);
+	Linearity=Burger.NewLinearity(linearity);
 	Nmode=Geometry->Create();
 	ny=Nmode*(1+Nmoment);
 	Ntotal=Geometry->TotalNumber();
@@ -261,7 +274,7 @@ static Real Normalization(int i) {return Geometry->Normalization(i);}
 static Real nu_re(int i) {Complex nuC=nu[i]; return nuC.re;}
 static Real nu_im(int i) {Complex nuC=nu[i]; return nuC.im;}
 
-void Burger::Initialize()
+void NWave::Initialize()
 {
 	int i;
 	
@@ -281,27 +294,34 @@ void Burger::Initialize()
 	for(i=Nmode; i < ny; i++) y[i]=0.0;
 }
 
-void compute_invariants(Var *y, int Nmode, Real& E)
+void NWave::ComputeInvariants(Var *y, int Nmode, Real& E, Real& Z, Real& P)
 {
-	Real Ek;
-	E=0.0;
+	Real Ek,Zk,Pk,k2;
+	E=Z=P=0.0;
 	for(int i=0; i < Nmode; i++) {
+		k2=Geometry->K2(i);
 		Ek=Geometry->Normalization(i)*abs2(y[i])*Geometry->Area(i);
+		Zk=k2*Ek;
+		Pk=k2*Zk;
 		E += Ek;
+		Z += Zk;
+		P += Pk;
 	}
 	
 	Real factor=(reality ? 1.0: 0.5)*continuum_factor;
 	E *= factor;
+	Z *= factor;
+	P *= factor;
 }	
 
-void Burger::Output(int)
+void NWave::Output(int)
 {
-	Real E;
+	Real E,Z,P;
 	int n;
 	
-	compute_invariants(y,Nmode,E);
+	ComputeInvariants(y,Nmode,E,Z,P);
 	
-	fevt << t << "\t" << E << endl;
+	fevt << t << "\t" << E << "\t" << Z << "\t" << P << endl;
 	
 	out_real(fyvt,y,"y.re","y.im",Nmode);
 	fyvt.flush();
@@ -324,46 +344,6 @@ void ForcingAt(int i, Real &force)
 {
 	force=force_re(Geometry->ModeOf(i));
 	return;
-}
-
-void display_invariants(Real E)
-{
-	cout << "Energy = " << E << newl;
-}
-
-void Burger::FinalOutput()
-{
-	Real E;
-	int i;
-	const int Nlimit=128;
-	
-	cout << newl << "FINAL VALUES:" << newl << endl;
-	if(Nmode <= Nlimit || verbose > 1) {
-		for(i=0; i < Nmode; i++) cout << "u[" << i << "] = " << y[i] << newl;
-		cout << endl;
-	}
-	
-	compute_invariants(y,Nmode,E);
-	display_invariants(E);
-	
-	if(Nmoment > 2 && t) {
-		cout << newl << "AVERAGED VALUES:" << newl << endl;
-// We overwrite y+3*Nmode here, since it is no longer needed.
-		Var *y2=y+3*Nmode;
-		for(i=0; i < Nmode; i++) y2[i] = (real(y2[i])+imag(y2[i]))/t;
-		
-		if(Nmode <= Nlimit || verbose > 1) {
-			for(i=0; i < Nmode; i++) {
-				Real y2avg=real(y2[i]);
-				cout << "|u|^2 [" << i << "] = " << y2avg << newl;
-			}
-			cout << endl;
-		}
-		
-		for(i=0; i < Nmode; i++) y2[i] = sqrt(real(y2[i]));
-		compute_invariants(y2,Nmode,E);
-		display_invariants(E);
-	}
 }
 
 void Basis<Cartesian1>::Initialize()

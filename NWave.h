@@ -2,37 +2,20 @@
 #define __NWave_h__ 1
 
 #include "kernel.h"
-#include "Geometry.h"
-#include "Partition.h"
 #include "Linearity.h"
-#include "Basis.h"
+#include "Triad.h"
 
-extern int Npsi;   // number of explictly evolved modes
-extern int NpsiR;  // number of reflected modes
+extern int Nmode;   // number of explictly evolved modes
+extern int NmodeR;  // number of reflected modes
 extern int Ntotal; // total number of (evolved+reflected) modes
+
+extern Var *psibuffer,*psibufferR,*psibufferStop;
 
 extern Nu *nu,*nu_inv;
 extern Real *nuR_inv,*nuI;
 extern Real *forcing;
 
 extern Real continuum_factor;
-void compute_invariants(Var *y, int Npsi, Real& E, Real& Z, Real& P);
-void display_invariants(Real E, Real Z, Real P);
-
-class NWaveVocabulary : public VocabularyBase {
-public:
-	char *Name();
-	char *Abbrev();
-	NWaveVocabulary();
-	Table<GeometryBase> *GeometryTable;
-	Table<LinearityBase> *LinearityTable;
-	GeometryBase *NewGeometry(char *& key) {
-		return GeometryTable->Locate(key);
-	}
-	LinearityBase *NewLinearity(char *& key) {
-		return LinearityTable->Locate(key);
-	}
-};
 
 class NWave : public ProblemBase {
 public:
@@ -44,6 +27,11 @@ public:
 	void FinalOutput();
 	void LinearSrc(Var *, Var *, double);
 	
+	void ConstantForcing(Var *source, double t);
+	void ComputeMoments(Var *source, Var *psi);
+	void ComputeInvariants(Var *y, int Nmode, Real& E, Real& Z, Real& P);
+	void DisplayInvariants(Real E, Real Z, Real P);
+
 	static void ExponentialLinearity(Var *, Var *, double);
 	static void ConservativeExponentialLinearity(Real *, Real *, double );
 	static void ConservativeExponentialLinearity(Complex *, Complex *, double);
@@ -53,22 +41,6 @@ class SR : public NWave {
 public:	
 	SR() {}
 	char *Name() {return "Spectral Reduction";}
-	void NonLinearSrc(Var *source, Var *psi, double);
-};
-
-class Convolution : public NWave {
-public:
-	Convolution() {}
-	char *Name() {return "Convolution";}
-	void NonLinearSrc(Var *source, Var *psi, double);
-};
-
-class PS : public NWave {
-public:
-	PS() {
-		if(!reality) msg(ERROR,"Pseudospectral approximation needs reality=1");
-	}
-	char *Name() {return "Pseudospectral";}
 	void NonLinearSrc(Var *source, Var *psi, double);
 };
 

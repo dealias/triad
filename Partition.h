@@ -5,32 +5,16 @@
 
 #include "Geometry.h"
 #include "DynVector.h"
+#include "Triad.h"
 
 #define PARTITION(key,discrete) {\
 new Entry<Partition<key,discrete>,GeometryBase>(#key,GeometryTable);}
 
-class Triad {
-public:
-	Var *pq;
-	Mc Mkpq;
-	void Store(Var *pqindex, Mc value) {pq=pqindex; Mkpq=value;}
-};
+extern Var *psibuffer,*psibufferR,*psibufferStop;
 
-struct TriadLimits {
-	Triad *start;
-	Triad *stop;
-};
-
-extern int Ntriad;
 extern int discrete;
 extern int movie;
 extern int truefield;
-
-extern Var *pqbuffer;
-extern Var **pqIndex;
-extern int *qStart;
-extern DynVector<Triad> triad;
-extern TriadLimits *triadLimits;
 
 template<class T, class D>
 INLINE int InInterval(const D& m, const T& a, const T& b);

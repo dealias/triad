@@ -8,17 +8,6 @@
 #endif
 #include "kernel.h"
 
-#if(MCREAL)
-typedef Real Mc;
-typedef float McWeight;
-#else
-typedef Complex Mc;
-typedef Complex McWeight;
-#endif
-
-extern Var *psibuffer,*psibufferR,*psibufferStop;
-extern int reality; // Reality condition flag 
-
 class GeometryBase {
 protected:	
 	int Nmode; // number of unreflected (explicitly evolved) modes

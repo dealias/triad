@@ -7,6 +7,7 @@
 extern int Nx;
 extern int Ny;
 extern int *ModeBin;
+extern int reality;
 
 extern int Nx0,NRows,NPad,NPadTop,xoffset;
 extern int Nevolved;

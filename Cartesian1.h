@@ -6,6 +6,7 @@
 
 extern int Nx;
 extern int *ModeBin;
+extern int reality;
 
 extern int Nx0,Nxb,Nxp,NPad;
 extern int Nevolved;
