@@ -3,6 +3,9 @@
 
 #include <errno.h>
 
+#if _CRAY
+#include "options.h" // Work around CRAY template instantiation problem
+#endif
 #include "Geometry.h"
 #include "DynVector.h"
 #include "Cartesian.h"

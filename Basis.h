@@ -1,9 +1,6 @@
 #ifndef __Basis_h__
 #define __Basis_h__ 1
 
-#if _CRAY
-#include "options.h" // Work around CRAY template instantiation problem
-#endif
 #include "Geometry.h"
 #include "DynVector.h"
 
