@@ -1,9 +1,9 @@
-#include <sys/stat.h>
-
 #include "options.h"
 #include "Cartesian1.h"
 #include "Burger.h"
 #include "fft.h"
+
+#include <sys/stat.h>
 
 LinearityBase *Linearity;
 
