@@ -11,7 +11,7 @@
 
 #if(DOUBLE_PRECISION)
 typedef double Real;
-#define STD_MAX 1.0e+308
+#define STD_MAX DBL_STD_MAX
 #define REAL_MIN DBL_MIN
 #define REAL_MAX DBL_MAX
 #define REAL_EPSILON DBL_EPSILON

@@ -63,11 +63,13 @@ inline void set(T *to, const T * from, int n)
 	memcpy(to,from,sizeof(*from)*n);
 }
 
+#ifndef __SGI_STL_INTERNAL_ALGOBASE_H
 template<class T>
 inline void swap(T& p, T& q)
 {
 	T temp; temp=p; p=q; q=temp;
 }
+#endif
 
 template<class T>
 inline void sort2(T& p, T& q, int& sign)
