@@ -27,16 +27,11 @@ const Array1<Complex> eigen(const Array2<Complex>& A)
   Complex *w=E;
   Complex *vs=NULL;
   int ldvs=1;
-  int lwork=-1;
+  int lwork=(n ? 4*n : 1);
   Real *rwork=new Real[n];
   Complex work0[1];
   char *bwork=NULL;
   int info;
-		
-  zgees_(jobvs,sort,select,n,B,lda,&sdim,w,vs,ldvs,work0,lwork,rwork,bwork,
-	 &info);
-	
-  lwork=(int) work0[0].re;
   Complex *work=new Complex[lwork];
 	
   zgees_(jobvs,sort,select,n,B,lda,&sdim,w,vs,ldvs,work,lwork,rwork,bwork,
