@@ -106,7 +106,7 @@ inline int Param<char *>::InRange(char *) {return 1;}
 inline int Param<Complex>::InRange(Complex) {return 1;}
 
 template<class T>
-void Param<T>::get_values(const char *arg, T (*rtn)(const char *))
+inline void Param<T>::get_values(const char *arg, T (*rtn)(const char *))
 {
 	int i=0;
 	char *ptr;
