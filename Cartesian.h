@@ -19,7 +19,9 @@ public:
 		if(x == 0.0 && y == 0.0) return 0.0;
 #endif		
 		Real th=atan2(y,x);
-		return (th == PI) ? -PI : th;
+		if(!reality && th < 0) th += twopi;
+		else if (th == PI) th=-PI;
+		return th;
 	}
 	Real X() const {return x;}
 	Real Y() const {return y;}

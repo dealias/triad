@@ -131,7 +131,9 @@ void Bin<Polar,Cartesian>::MakeModes()
 		w++;
 	}
 	mode.Resize(nmode);
+#if !_CRAY	
 	if(verbose > 3) for(int i=0; i < nmode; i++) cout << mode[i] << endl;
+#endif	
 }
 
 static const Real linacc=0.01;

@@ -35,21 +35,20 @@ public:
 
 inline Real InInterval(const Cartesian& x, const Polar& a, const Polar& b)
 {
-	const Real width=1000.0;
-	const Real fuzz1=1.0-width*REAL_EPSILON;
-	const Real fuzz2=1.0+width*REAL_EPSILON;
-	const Real a1=a.K2()*fuzz1, a2=a.K2()*fuzz2;
-	const Real b1=b.K2()*fuzz1, b2=b.K2()*fuzz2;
+	const Real width=100.0;
+	const Real fuzz=1.0+width*REAL_EPSILON;
+	
+	const Real K2fuzz=(b.K2()-a.K2())*fuzz;
+	const Real a1=a.K2()-K2fuzz, a2=a.K2()+K2fuzz;
+	const Real b1=b.K2()-K2fuzz, b2=b.K2()+K2fuzz;
 	
 	const Real xK2=x.K2();
 	if(xK2 < a1 || xK2 >= b2) return 0.0;
 	
+	const Real Thfuzz=(b.Th()-a.Th())*fuzz;
+	const Real A1=a.Th()-Thfuzz, A2=a.Th()+Thfuzz;
+	const Real B1=b.Th()-Thfuzz, B2=b.Th()+Thfuzz;
 	const Real xTh=x.Th();
-	Real A1,A2,B1,B2;
-	if(a.Th() >= 0.0) {A1=a.Th()*fuzz1; A2=a.Th()*fuzz2;}
-	else {A1=a.Th()*fuzz2; A2=a.Th()*fuzz1;}
-	if(b.Th() >= 0.0) {B1=b.Th()*fuzz1, B2=b.Th()*fuzz2;}
-	else {B1=b.Th()*fuzz2, B2=b.Th()*fuzz1;}
 	
 	if(xTh < A1 || xTh >= B2) return 0.0;
 	if(xK2 >= a2 && xK2 < b1 && xTh >= A2 && xTh < B1) return 1.0;
