@@ -302,7 +302,8 @@ INLINE void Partition<T,D>::GenerateWeights() {
 									 coangular(&bin[p],&bin[q]) ||
 									 coangular(&bin[q],&bin[k])))
 						binaverage=0.0;
-					else binaverage=ComputeBinAverage(&bin[k],&bin[p],&bin[q]);
+					else
+						binaverage=ComputeBinAverage(&bin[k],&bin[p],&bin[q]);
 				
 					if(binaverage) {
 						if(verbose > 3) cout << kpq << ": " << binaverage <<
