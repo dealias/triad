@@ -1,5 +1,5 @@
 /* Array.h:  A high-performance multi-dimensional C++ array class
-Copyright (C) 2000 John C. Bowman (bowman@math.ualberta.ca)
+Copyright (C) 2001 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.19
+#define __ARRAY_H_VERSION__ 1.20
 
 // Defining NDEBUG improves optimization but disables argument checking.
 // Defining __NOARRAY2OPT inhibits special optimization of Array2[].
@@ -87,18 +87,19 @@ class array1 {
     }
     Activate();
   }
-  void Allocate(unsigned int nx0) {
-    Dimension(nx0);
-    __checkActivate(1);
-  }
   void Deallocate() const {
     if(test(allocated)) {delete [] v; clear(allocated);}
   }
-  void Dimension(unsigned int nx0) {size=nx0;}
+  virtual void Dimension(unsigned int nx0) {size=nx0;}
   void Dimension(unsigned int nx0, T *v0) {
     Dimension(nx0); v=v0; clear(allocated);
   }
 
+  void Allocate(unsigned int nx0) {
+    Dimension(nx0);
+    __checkActivate(1);
+  }
+  
   array1() : size(0), state(unallocated) {}
   array1(unsigned int nx0) : state(unallocated) {Allocate(nx0);}
   array1(unsigned int nx0, T *v0) : state(unallocated) {Dimension(nx0,v0);}

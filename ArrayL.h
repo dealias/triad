@@ -15,57 +15,72 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
-#ifndef __Array2n_h__
-#define __Array2n_h__ 1
+#ifndef __ArrayL_h__
+#define __ArrayL_h__ 1
 
-#define __ARRAY2N_H_VERSION__ 1.11
+#define __ARRAYL_H_VERSION__ 1.20
 
+// Lower triangular Arrays
+//
 // Defining NDEBUG improves optimization.
 
 #include <iostream.h>
 #include <strstream.h>
 #include "Array.h"
-#include "Arrayp.h"
 
-typedef unsigned int uint;
-
-namespace Array {
-  
 #ifdef NDEBUG
 #define __check(i,n,dim,m)
 #else
 #define __check(i,n,dim,m) Check(i,n,dim,m)
 #endif
 
-const uint one=1;
+typedef unsigned int uint;
 
+namespace Array {
+  
 template<class T>
-class Array2n : public array1<T>, public ArrayMod {
+class array2L : public array1<T> {
+  uint n;
  public:
-  void Dimension(uint n) {size=(one << n)-1;}
+  void Dimension(uint n0) {n=n0; size=n*(n+1)/2;}
 
-  Array2n() {}
-  Array2n(uint n) {Allocate(n);}
-  Array2n(uint n, T *v0) {Dimension(n,v0);}
-  Array2n(const Array2n<T>& A) {v=A.v; size=A.size; state=A.test(temporary);}
+  uint index(int i, int j) const {return i*(i+1)/2+j;}
+  int N() const {return n;}
+  
+  array2L() {}
+  array2L(uint n) {Allocate(n);}
+  array2L(uint n, T *v0) {Dimension(n,v0);}
+  array2L(const array2L<T>& A) {v=A.v; size=A.size; state=A.test(temporary);}
 	
-  Array1<T> operator [] (uint j) const {
-    uint m=one << j;
-    __check(2*(m-1),size,1,1);
-    return Array1<T>(m,v+m-1);
+  array1<T> operator [] (uint i) const {
+    __check(i,n,1,1);
+    return array1<T>(i+1,v+index(i,0));
   }
 	
-  T& operator () (uint j, int k) const {
-    uint m=one << j;
-    __check(2*(m-1),size,2,1);
-//    __check(k,m,1,1);
-    Mod(k,m);
-    return v[m+k-1];
+  T& operator () (uint i, uint j) const {
+    __check(i,n,2,1);
+    __check(j,i+1,2,1);
+    return v[index(i,j)];
   }
+  T* operator () () const {return v;}
 	
-  Array2n<T>& operator = (T a) {Load(a); return *this;}
+  array2L<T>& operator = (T a) {Load(a); return *this;}
 };
   
+template<class T>
+ostream& operator << (ostream& s, const array2L<T>& A)
+{
+  T *p=A();
+  for(unsigned int i=0; i < A.N(); i++) {
+    for(unsigned int j=0; j <= i; j++) {
+      s << *(p++) << " ";
+    }
+    s << _newl;
+  }
+  s << flush;
+  return s;
+}
+
 }
 
 #undef __check
