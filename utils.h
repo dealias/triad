@@ -25,6 +25,9 @@ size_t memory();
 #include "precision.h"
 #include "Complex.h"
 #include "pow.h"
+
+#define __ArrayExtensions
+#define __ExternalArrayExit
 #include "Array.h"
 
 extern const double pi;
@@ -174,8 +177,6 @@ enum ErrorCode {WARNING_,OVERRIDE_,SLEEP_,ERROR_};
 #define SLEEP_GLOBAL SLEEP_,"",0
 #define ERROR_GLOBAL ERROR_,"",0
 
-#define __ArrayExtensions
-#define __ExternalArrayExit
 inline void Array::ArrayExit(char *x) {msg(ERROR_GLOBAL,x);}
 	
 enum ExitCode {FATAL=-1,CONTINUE,COMPLETE};
