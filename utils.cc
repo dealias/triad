@@ -161,6 +161,11 @@ int check_match(int match_type, const char *object, const char *key, int warn)
 	return 1;
 }
 
+unsigned int atou(const char *s)
+{
+	return atoi(s);
+}
+	
 Complex atoc(const char *s)
 {
 	double re,im;

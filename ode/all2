@@ -1,7 +1,9 @@
 #!/bin/csh -f
 testcase exact $*
+testcase implicit $*
 testcase pc $*
 testcase rk2 $*
 testcase i-pc $*
 testcase e-pc $*
+testcase le-pc $*
 

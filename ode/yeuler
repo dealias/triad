@@ -18,14 +18,19 @@ read {trb1 1 yrb1 2}
 data "$!run/exact"
 read {texact 1 yexact 2}
 
-set yeuler=yeuler-yexact
-set yi_euler=yi_euler-yexact
-set ye_euler=ye_euler-yexact
-set yrb1=yrb1-yexact
+data "$!run/implicit"
+read {timplicit 1 yimplicit 2}
+
+#set yeuler=yeuler-yexact
+#set yi_euler=yi_euler-yexact
+#set ye_euler=ye_euler-yexact
+#set yrb1=yrb1-yexact
 
 set y=yeuler concat yi_euler concat ye_euler concat yrb1
 set t=teuler concat ti_euler concat te_euler concat trb1
 
+set y=yexact concat yimplicit
+set t=texact concat timplicit
 autolimits t y
 expand $expand0
 notation -4 4 -4 4
@@ -37,15 +42,18 @@ ltype 0
 abscissa
 
 lctype 5 magenta
-connectlegend "" "RB1" trb1 yrb1
+#connectlegend "" "RB1" trb1 yrb1
 lctype 2 green
-connectlegend "" "E-Euler" te_euler ye_euler
+#connectlegend "" "E-Euler" te_euler ye_euler
 lctype 0 red
-connectlegend "" "Euler" teuler yeuler
+#connectlegend "" "Euler" teuler yeuler
 lctype 1 blue
-connectlegend "" "I-Euler" ti_euler yi_euler
-#ctype purple
-#connectlegend "" "exact" texact yexact
+#connectlegend "" "I-Euler" ti_euler yi_euler
+lctype 0 fuchsia
+connectlegend "" "Implicit" timplicit yimplicit
+ltype 2
+ctype purple
+connectlegend "" "exact" texact yexact
 
 expand $expand0/1.4
 ctype purple

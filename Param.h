@@ -89,6 +89,7 @@ inline void Param<char *>::SetStr(const char *s) {get_values(s,&atos);}
 inline void Param<const char *>::SetStr(const char *s) {get_values(s,&atosc);}
 inline void Param<double>::SetStr(const char *s) {get_values(s,&atof);}
 inline void Param<int>::SetStr(const char *s) {get_values(s,&atoi);}
+inline void Param<unsigned int>::SetStr(const char *s) {get_values(s,&atou);}
 inline void Param<Complex>::SetStr(const char *s) {get_values(s,&atoc);}
 
 inline int Param<double>::InRange(double value)
@@ -97,6 +98,11 @@ inline int Param<double>::InRange(double value)
 }
 
 inline int Param<int>::InRange(int value)
+{
+	return (min == max) || (value >= min && value <= max);
+}
+
+inline int Param<unsigned int>::InRange(unsigned int value)
 {
 	return (min == max) || (value >= min && value <= max);
 }

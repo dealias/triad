@@ -5,7 +5,7 @@ inline void IntegratorBase::ChangeTimestep(double& dt, double dtnew,
 										   const double t, const double sample)
 {
 	// New time step must be <= sample.
-	if(sample && dtnew > sample) dtnew=sample;
+	if(sample > 0.0 && dtnew > sample) dtnew=sample;
 	
 	if(abs(dt-dtnew) <= tprecision*abs(dt))	return;	// Don't adjust time step.
 	

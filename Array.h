@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.09
+#define __ARRAY_H_VERSION__ 1.10
 
 // Defining NDEBUG improves optimization but disables argument checking.
 
@@ -86,12 +86,15 @@ public:
 	}
 	void Deallocate() CONST {delete [] v; clear(allocated);}
 	void Dimension(unsigned int nx0) {nx=nx0;}
-	void Dimension(unsigned int nx0, T *v0) {Dimension(nx0); v=v0; clear(allocated);}
+	void Dimension(unsigned int nx0, T *v0) {
+		Dimension(nx0); v=v0; clear(allocated);
+	}
 
 	array1() : nx(0), state(unallocated) {}
 	array1(unsigned int nx0) : state(unallocated) {Allocate(nx0);}
 	array1(unsigned int nx0, T *v0) : state(unallocated) {Dimension(nx0,v0);}
-	array1(const array1<T>& A) : v(A.v), nx(A.nx), state(A.test(temporary)) {}
+//	array1(const array1<T>& A) : v(A.v), nx(A.nx), state(A.test(temporary)) {}
+	array1(const array1<T>& A) : v(A.v), nx(A.nx), state(unallocated) {}
 	virtual ~array1() {if(test(allocated)) Deallocate();}
 	
 	void Freeze() {state=unallocated;}

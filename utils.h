@@ -320,7 +320,8 @@ inline Complex expi(Real phase)
 
 char *atos(const char *s);
 Complex atoc(const char *s);
-	
+unsigned int atou(const char *s);
+
 const int default_nperline=4;
 
 static const char *outerror="Cannot write %s to output stream";

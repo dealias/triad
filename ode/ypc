@@ -3,51 +3,62 @@ reset
 execute getrun
 reset
 
+data "$!run/exact"
+read {texact 1 yexact 2}
+
 data "$!run/pc"
 read {tpc 1 ypc 2}
 
 data "$!run/rk2"
 read {trk2 1 yrk2 2}
 
-data "$!run/i_pc"
-read {ti_pc 1 yi_pc 2}
+data "$!run/implicit"
+read {timplicit 1 yimplicit 2}
 
 data "$!run/e_pc"
 read {te_pc 1 ye_pc 2}
 
-data "$!run/exact"
-read {texact 1 yexact 2}
+data "$!run/le_pc"
+read {tle_pc 1 yle_pc 2}
 
-set ypc=ypc-yexact
-set yrk2=yrk2-yexact
-set yi_pc=yi_pc-yexact
-set ye_pc=ye_pc-yexact
+#set ypc=ypc-yexact
+#set yrk2=yrk2-yexact
+#set yimplicit=yimplicit-yexact
+#set ye_pc=ye_pc-yexact
 
-set y=ypc concat yrk2 concat yi_pc concat ye_pc
-set t=tpc concat trk2 concat ti_pc concat te_pc
+#set y=ypc concat yrk2 concat yimplicit concat ye_pc concat yle_pc
+#set t=tpc concat trk2 concat timplicit concat te_pc concat tle_pc
+
+set y=yimplicit concat ye_pc concat yle_pc concat yexact
+set t=timplicit concat te_pc concat tle_pc concat texact
 
 autolimits t y
 expand $expand0
 box
 xlabel t
-ylabel error
+#ylabel error
+ylabel y
 ltype 0
 
 abscissa
 
-ctype red
+lctype 0 red
 connectlegend "" "PC" tpc ypc
-ctype magenta
+lctype 1 magenta
 #connectlegend "" "RK-2" trk2 yrk2
 ctype blue
-connectlegend "" "I-PC" ti_pc yi_pc
-ctype green
+connectlegend "" "implicit" timplicit yimplicit
+ltype 1 ctype green
 connectlegend "" "E-PC" te_pc ye_pc
-#ctype magenta
-#connectlegend "" "exact" texact yexact
+ltype 3 ctype black
+connectlegend "" "LE-PC" tle_pc yle_pc
+ltype 2 ctype magenta
+connectlegend "" "exact" texact yexact
 
 expand $expand0/1.4
 ctype purple
 title "Comparison of 2nd-Order Integrators"
 
 id
+
+
