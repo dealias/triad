@@ -553,7 +553,6 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 	if(pointsize) buf << "-pointsize " << pointsize << " ";
 	for(int f=0; f < nfiles; f++) {
 		char *fieldname=argf[f];
-		buf << option.str();
 		if(pointsize) {
 			buf << " -label \"";
 			if(!(floating_scale || byte)) 
@@ -561,6 +560,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 					<< separator << setprecision(2) << vmaxf[f] << "\\n";
 			buf << fieldname << "\" ";
 		}
+		buf << option.str();
 		buf << format << ":" << rgbdir << fieldname
 			<< setfill('0') << setw(4) << n << "." << format << " ";
 	}
