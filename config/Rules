@@ -17,6 +17,9 @@ FORCE:
 %.$(D): %.cc
 	$(MAKEDEPEND) $(INCL) $(MDOPTS) $< > $@
 
+%.$(D): %.c
+	$(MAKEDEPEND) $(INCL) $(MDOPTS) $< > $@
+
 ifneq ($(wildcard $(TRI)/config/$(HOSTTYPE).rules),)
 include $(TRI)/config/$(HOSTTYPE).rules
 endif

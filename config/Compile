@@ -1,7 +1,8 @@
 include Makefile
 
-files: $(FILES:=.o)
-	$(C++) $(OPT) -o $(NAME) $(FILES:=.o) $(LIB)
+files: $(FILES:=.o) $(CFILES:=.o)
+	$(C++) $(OPT) -o $(NAME) $(FILES:=.o) $(CFILES:=.o) $(LIB)
 
 include $(FILES:=.$(D))
+include $(CFILES:=.$(D))
 
