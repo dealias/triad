@@ -1225,7 +1225,7 @@ public:
 	}
 	
 	int InPhi() {
-		return (phi >= 0 && phi <= cutoff);
+		return (phi <= cutoff);
 	}
 	
 	int InRange() {
@@ -1239,6 +1239,7 @@ public:
 	}
 	
 	Toroidal(Cartesian P) {SetCartesian(P.x,P.y,P.z);}
+	
 	operator Cartesian() const {
 		Real rp=R0+r*cos(theta);
 		return Cartesian(rp*cos(phi),rp*sin(phi),r*sin(theta));
