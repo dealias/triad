@@ -1,5 +1,5 @@
 /* RGB:  A movie production utility
-Copyright (C) 2000 John C. Bowman (bowman@math.ualberta.ca)
+Copyright (C) 2000, 2002 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.11";
+const char VERSION[]="1.12";
 
 #include "xstream.h"
 #include <iostream>
@@ -287,7 +287,7 @@ void animate(int argc, const char *filename, int n, const char *type,
 void usage(const char *program)
 {
   cerr << PROGRAM << " version " << VERSION
-       << " [(C) John C. Bowman <bowman@math.ualberta.ca> 2000]" << endl
+       << " [(C) John C. Bowman <bowman@math.ualberta.ca> 2002]" << endl
        << "Usage: " << program << " [options] file1 [file2 ...]"
        << endl;
 }
@@ -1108,8 +1108,10 @@ void montage(unsigned int nfiles, char *argf[], int n, const char *format,
 
 void identify(int, int n, const char *type, int& xsize, int& ysize)
 {
+  ostringstream inamebuf;
+  inamebuf << rgbdir << outname << n << ".identify";
+  const char *iname=strdup(inamebuf.str().c_str());
   ostringstream buf;
-  char *iname=".identify";
   buf << "identify " << rgbdir << outname << n << "." << type
       << " > " << iname;
   const char *cmd=buf.str().c_str();
