@@ -738,10 +738,10 @@ int main(int argc, char *argv[])
   rgbdirbuf << dirbuf.str() << "/";
   ostringstream buf;
   buf << "mkdirhier " << dirbuf.str();
-  const char *cmd=strdup(buf.str().c_str());
+  const char *cmd=buf.str().c_str();
   if(verbose) cout << cmd << endl;
   system(cmd);
-  rgbdir=strdup(rgbdirbuf.str().c_str());
+  rgbdir=rgbdirbuf.str().c_str();
 	
   if(palette == -1) palette=vector ? RAINBOW : BWRAINBOW; //Default palette
   if(!grey) MakePalette(palette);
@@ -1000,7 +1000,7 @@ int main(int argc, char *argv[])
       ostringstream buf;
       buf << rgbdir << fieldname.str() << setfill('0') << setw(NDIGITS)
 	  << set << "." << format;
-      const char *oname=strdup(buf.str().c_str());
+      const char *oname=buf.str().c_str();
       ofstream fout(oname);
       if(!fout) {
 	cleanup();
@@ -1185,7 +1185,7 @@ int main(int argc, char *argv[])
 	montage(mfiles,files,0,format,"tiff");
 	ostringstream buf;
 	buf << "xv " << outname << begin << ".tiff";
-	cmd=strdup(buf.str().c_str());
+	cmd=buf.str().c_str();
 	if(verbose) cout << cmd << endl;
 	system(cmd);
       } else {
@@ -1203,7 +1203,7 @@ int main(int argc, char *argv[])
       } else {
 	ostringstream buf;
 	buf << "%0" << NDIGITS << "d";
-	animate(mfiles,files[0],nset-1,format,strdup(buf.str().c_str()),
+	animate(mfiles,files[0],nset-1,format,buf.str().c_str(),
 		xsize,ysize); 
       }
     }
@@ -1217,7 +1217,7 @@ void cleanup()
   if(!preserve) {
     ostringstream buf;
     buf << "rm -r " << rgbdir << " >& /dev/null";
-    const char *cmd=strdup(buf.str().c_str());
+    const char *cmd=buf.str().c_str();
     if(verbose) cout << cmd << endl;
     system(cmd);
   }
@@ -1277,7 +1277,7 @@ void montage(unsigned int nfiles, char *argf[], int n, const char *format,
   }
   buf << outname << frame << "." << type;
   if(!verbose) buf << ">& /dev/null";
-  const char *cmd=strdup(buf.str().c_str());
+  const char *cmd=buf.str().c_str();
   if(verbose) cout << cmd << endl;
   system(cmd);
 	
@@ -1290,7 +1290,7 @@ void montage(unsigned int nfiles, char *argf[], int n, const char *format,
 	  << n << "." << format << " ";
     }
     if(!verbose) buf << " >& /dev/null";
-    cmd=strdup(buf.str().c_str());
+    cmd=buf.str().c_str();
     if(verbose) cout << cmd << endl;
     system(cmd);
   }
@@ -1300,11 +1300,11 @@ void identify(int, int n, const char *type, int& xsize, int& ysize)
 {
   ostringstream inamebuf;
   inamebuf << rgbdir << outname << n << ".identify";
-  const char *iname=strdup(inamebuf.str().c_str());
+  const char *iname=inamebuf.str().c_str();
   ostringstream buf;
   buf << "identify " << rgbdir << outname << n << "." << type
       << " > " << iname;
-  const char *cmd=strdup(buf.str().c_str());
+  const char *cmd=buf.str().c_str();
   if(verbose) cout << cmd << endl;
   system(cmd);
   ifstream fin(iname);
@@ -1333,7 +1333,7 @@ void mpeg(int, int n, const char *type, int xsize, int ysize)
       << " -PF " << rgbdir << outname << " -s " << outname
       << "." << type;
   if(!verbose) buf << " > /dev/null";
-  const char *cmd=strdup(buf.str().c_str());
+  const char *cmd=buf.str().c_str();
   if(verbose) cout << cmd << endl;
   system(cmd);
 }
@@ -1345,7 +1345,7 @@ void animate(int, const char *filename, int n, const char *type,
   buf << "animate -scenes 0-" << n << " -size " << xsize << "x" << ysize
       << " -depth 8 " << type << ":" << rgbdir << filename << pattern
       << "." << type;
-  const char *cmd=strdup(buf.str().c_str());
+  const char *cmd=buf.str().c_str();
   if(verbose) cout << cmd << endl;
   system(cmd);
 }
