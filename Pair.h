@@ -12,14 +12,12 @@ public:
 	Var *Index() {return &psipq;}
 };
 
-#if(0)
 class Triad {
 public:
 	Var *pq;
 	Mc Mkpq;
 	void Store(Var *pqindex, Mc value) {pq=pqindex; Mkpq=value;}
 };
-#endif
 
 extern int Npsi;
 extern int Npair;
@@ -29,9 +27,8 @@ extern int reality;
 
 extern Var *psibuffer;
 extern Pair *pair;
-extern DynVector<Mc> Mkpq;
-extern DynVector<Var *> ptrpq;
-extern Mc *MkpqBase,**MkpqStop;
-extern Var **ptrpqBase;
+extern DynVector<Triad> triad;
+extern Triad *triadBase;
+extern Triad **triadStop;
 
 #endif
