@@ -386,7 +386,7 @@ Real out_im(int i);
 
 template<class S>
 void out_real(S& os, Complex *f, char *textre, char *textim, int n,
-			  int nperline=default_nperline) 
+			  int nperline) 
 {
 	out_base=f;
 	out_function(os,out_re,textre,n,nperline);
@@ -398,7 +398,7 @@ void out_real(S& os, Complex *f, char *textre, char *textim, int n)
 {
 	out_base=f;
 	out_function(os,out_re,textre,n,default_nperline);
-	out_function(os,out_im,textim,n,defautl_nperline);
+	out_function(os,out_im,textim,n,default_nperline);
 }
 
 inline double drand()
