@@ -28,11 +28,15 @@ int main(int argc, char *argv[])
 			for(int i=0; i < nxy; i++) {
 				float v;
 				fin >> v;
-				if(fin.eof()) msg(ERROR,"End of file during processing");
+				if(fin.eof()) {
+					msg(WARNING,"End of file during processing");
+					break;
+				}
 				if(v < vmin) vmin=v;
 				if(v > vmax) vmax=v;
 				value[l][i]=v;
 			}
+			if(fin.eof()) break;
 		}
 		n++;
 		int nx0,ny0,nz0;
