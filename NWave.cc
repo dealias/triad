@@ -30,12 +30,15 @@ inline Complex spdot(Triad *tstart, const Triad *tstop)
 	return sumre+I*sumim;
 }
 
-inline void multpq(Var *& pq, Var *p)
+inline void multpq()
 {
-	Real psipre=p->re, psipim=p->im;
-	for(Var *q=p; q < psibufferStop; q++, pq++) {
-		pq->re=psipre*q->re-psipim*q->im;
-		pq->im=psipre*q->im+psipim*q->re;
+	Var *pq=pqbuffer;
+	for(Var *p=psibuffer; p < psibufferStop; p++) {
+		Real psipre=p->re, psipim=p->im;
+		for(Var *q=p; q < psibufferStop; q++, pq++) {
+			pq->re=psipre*q->re-psipim*q->im;
+			pq->im=psipre*q->im+psipim*q->re;
+		}
 	}
 }
 
@@ -49,11 +52,14 @@ inline Var spdot(Triad *tstart, const Triad *tstop)
 	return sum;
 }
 
-inline void multpq(Var *& pq, Var *p)
+inline void multpq()
 {
-	Var psip=*p;
+	Var *pq=pqbuffer;
+	for(Var *p=psibuffer; p < psibufferStop; p++) {
+		Var psip=*p;
 #pragma ivdep		
-	for(Var *q=p; q < psibufferStop; q++, pq++) *pq=psip*(*q);
+		for(Var *q=p; q < psibufferStop; q++, pq++) *pq=psip*(*q);
+	}
 }
 
 #endif
@@ -69,8 +75,7 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 		for(Var *k=psibuffer; k < kstop; k++) conjugate(*(k+Npsi),*k);
 	}
 	
-	Var *pq=pqbuffer;
-	for(Var *p=psibuffer; p < psibufferStop; p++) multpq(pq,p);
+	multpq();
 	
 	Triad *t=triadBase,**tstop=triadStop;
 	Var *kstop=source+Npsi;
