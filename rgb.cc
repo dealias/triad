@@ -426,9 +426,9 @@ int main(int argc, char *const argv[])
 			int kmin=0;
 			int kmax=nz-1;
 			if(kmin < lower) kmin=lower;
-			if(kmax > lower) kmax=upper;
+			if(kmax > upper) kmax=upper;
 		
-			for(int k=kmin; k < kmax; k++) {
+			for(int k=kmin; k <= kmax; k++) {
 				if(floating_section) {vmin=vmink[k]; vmax=vmaxk[k];}
 				double step=(vmax == vmin) ? 0.0 : PaletteRange/(vmax-vmin);
 				for(int j=0; j < ny; j++)  {
