@@ -806,8 +806,11 @@ int main(int argc, char *const argv[])
 	if((remote || !label) && make_mpeg) putenv("DISPLAY=");
 
 	if(nset) {
-		if(extract) montage(nfiles,argf,n,format,extract);
-		else {
+				
+		if(extract) {
+			for(n=0; n < nset; n++)
+				montage(nfiles,argf,n,format,extract);
+		} else {
 			if(label || make_mpeg) { 
 				if(make_mpeg) montage(nfiles,argf,0,format,"miff");
 				for(n=0; n < nset; n++) 
