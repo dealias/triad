@@ -1,6 +1,6 @@
 C++ = xlC -+ -D_ANSI_C_SOURCE
 OPT = $(CFLAGS)
-LIB = $(LFLAGS) -lessl -lm
+LIB = $(LFLAGS) -lesslp2 -lm
 MAKEDEPEND = $(C++) -M -P
 D = u
 
