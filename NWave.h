@@ -102,7 +102,7 @@ public:
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, double&, int, int);
-	void Source(Var *src, Var *y, double t) {Problem->NonLinearSrc(src,y,t);}
+	void Source(Var *src, Var *Y, double t) {Problem->NonLinearSrc(src,Y,t);}
 };
 
 #if _CRAY
@@ -119,9 +119,9 @@ public:
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, double&, int start, int stop);
-	void Source(Var *src, Var *y, double t) {
-		Problem->NonLinearSrc(src,y,t);
-		NWave::ExponentialLinearity(src,y,t);
+	void Source(Var *src, Var *Y, double t) {
+		Problem->NonLinearSrc(src,Y,t);
+		NWave::ExponentialLinearity(src,Y,t);
 	}
 };
 
@@ -134,9 +134,9 @@ public:
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, double&, int, int);
-	void Source(Var *src, Var *y, double t) {
-		Problem->NonLinearSrc(src,y,t);
-		NWave::ConservativeExponentialLinearity(src,y,t);
+	void Source(Var *src, Var *Y, double t) {
+		Problem->NonLinearSrc(src,Y,t);
+		NWave::ConservativeExponentialLinearity(src,Y,t);
 	}
 };
 
@@ -149,7 +149,7 @@ public:
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, double&, int, int);
-	void Source(Var *src, Var *y, double t) {Problem->NonLinearSrc(src,y,t);}
+	void Source(Var *src, Var *Y, double t) {Problem->NonLinearSrc(src,Y,t);}
 };
 
 class C_RK2 : public RK2, public CorrectC_PC {
@@ -173,7 +173,7 @@ public:
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, double&, int, int);
-	void Source(Var *src, Var *y, double t) {Problem->NonLinearSrc(src,y,t);}
+	void Source(Var *src, Var *Y, double t) {Problem->NonLinearSrc(src,Y,t);}
 };
 
 class C_RK4 : public RK4 {
@@ -199,7 +199,7 @@ public:
 	char *Name() {return "Fifth-Order Runge-Kutta w/Integrating Factor";}
 	void Predictor(double, double, int, int);
 	int Corrector(double, double&, int, int);
-	void Source(Var *src, Var *y, double t) {Problem->NonLinearSrc(src,y,t);}
+	void Source(Var *src, Var *Y, double t) {Problem->NonLinearSrc(src,Y,t);}
 };
 
 class C_RK5 : public RK5 {
