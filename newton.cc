@@ -99,7 +99,7 @@ bool newton(Real &x1, Real x2, Real (*f)(Real x), Real (*dfdx)(Real x),
 }
 
 
-#if 1
+#ifdef TEST
 Real f(Real x) 
 {
   return x*x*x-1.0;
