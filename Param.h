@@ -66,6 +66,7 @@ public:
 	}
 	
 	void GraphicsOutput(ostream& os) {
+		if(!dump) return; // Don't dump control parameters
 		if(nvar==1) os << "define " << name << " \"" << var[0] << "\"";
 		else {
 			os << "set " << name << "={";
