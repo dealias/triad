@@ -70,7 +70,7 @@ public:
 	
 	inline int InRange(T);
 	
-	void get_values(const char *arg, T (*rtn)(const char *));
+	inline void get_values(const char *arg, T (*rtn)(const char *));
 };
 
 template<class T>
