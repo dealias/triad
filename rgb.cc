@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
 	char *buf=new char[200+2*strlen(argv[1])];
 // Delete old rgb files
 	char *rgbdir=getenv("RGB_DIR");
+	if(!rgbdir) rgbdir=".";
 	sprintf(buf,"rm %s/%s*.rgb > /dev/null 2>&1",rgbdir,argv[1]);
 	system(buf);
 
@@ -89,8 +90,8 @@ int main(int argc, char *argv[])
 		sprintf(buf,"convert -size %dx%d -interlace none %s/%s*.rgb %s.mpg",
 				xsize,ysize,rgbdir,argv[1],argv[1]);
 	else
-		sprintf(buf,"animate -size %dx%d -interlace none %s*.rgb",
-				xsize,ysize,argv[1]);
+		sprintf(buf,"animate -size %dx%d -interlace none %s/%s*.rgb",
+				xsize,ysize,rgbdir,argv[1]);
 	printf(buf);
 	printf("\n");
 	system(buf);
