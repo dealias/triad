@@ -9,8 +9,8 @@ inline void IntegratorBase::Source(Var *src, Var *y, double t)
 	Problem->LinearSrc(src,y,t);
 }
 
-inline void calc_error(const Var& initial, const Var& norm, const Var& pred,
-					   const Var& corr, double& errmax)
+inline void IntegratorBase::CalcError(const Var& initial, const Var& norm, 
+									  const Var& pred, const Var& corr)
 {
 	Real denom,error;
 	denom=max(norm2(norm),norm2(initial));
@@ -20,7 +20,7 @@ inline void calc_error(const Var& initial, const Var& norm, const Var& pred,
 	}
 }
 
-inline Solve_RC IntegratorBase::CheckError(double errmax)
+inline Solve_RC IntegratorBase::CheckError()
 {
 	if(dynamic >= 0) {
 		if(errmax > tolmax2) return UNSUCCESSFUL;
@@ -49,14 +49,14 @@ public:
 	char *Name() {return "Predictor-Corrector";}
 	Solve_RC Solve(double, double);
 	virtual void Predictor(double, double, int, int);
-	virtual int Corrector(double, double&, int, int);
+	virtual int Corrector(double, int, int, int);
 	virtual void StandardPredictor(double t, double dt, int start,
 								   int stop) {
 		PC::Predictor(t,dt,start,stop);
 	}
-	virtual int StandardCorrector(double dt, double& errmax,
-								  int start, int stop) {
-		return PC::Corrector(dt,errmax,start,stop);
+	virtual int StandardCorrector(double dt, int dynamic, int start,
+								  int stop) {
+		return PC::Corrector(dt,dynamic,start,stop);
 	}
 };
 
@@ -74,12 +74,12 @@ public:
 	}
 	char *Name() {return "LeapFrog";}
 	void Predictor(double, double, int, int);
-	int Corrector(double, double&, int, int);
+	int Corrector(double, int, int, int);
 	void StandardPredictor(double t, double dt, int start, int stop) {
 		LeapFrog::Predictor(t,dt,start,stop);
 	}
-	int StandardCorrector(double dt, double& errmax, int start, int stop) {
-		return LeapFrog::Corrector(dt,errmax,start,stop);
+	int StandardCorrector(double dt, int dynamic, int start, int stop) {
+		return LeapFrog::Corrector(dt,dynamic,start,stop);
 	}
 };
 
@@ -90,14 +90,13 @@ public:
 	char *Name() {return "Second-Order Runge-Kutta";}
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
-	int Corrector(double, double&, int, int);
+	int Corrector(double, int, int, int);
 	void StandardPredictor(double t, double dt, int start,
 						   int stop) {
 		RK2::Predictor(t,dt,start,stop);
 	}
-	int StandardCorrector(double dt, double& errmax, int start,
-						  int stop) {
-		return RK2::Corrector(dt,errmax,start,stop);
+	int StandardCorrector(double dt, int dynamic, int start, int stop) {
+		return RK2::Corrector(dt,dynamic,start,stop);
 	}
 };
 
@@ -112,14 +111,13 @@ public:
 	char *Name() {return "Fourth-Order Runge-Kutta";}
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
-	int Corrector(double, double&, int, int);
+	int Corrector(double, int, int, int);
 	void StandardPredictor(double t, double dt, int start,
 						   int stop) {
 		RK4::Predictor(t,dt,start,stop);
 	}
-	int StandardCorrector(double dt, double& errmax, int start,
-						  int stop) {
-		return RK4::Corrector(dt,errmax,start,stop);
+	int StandardCorrector(double dt, int dynamic, int start, int stop) {
+		return RK4::Corrector(dt,dynamic,start,stop);
 	}
 };
 
@@ -144,18 +142,18 @@ public:
 	}
 	char *Name() {return "Fifth-Order Runge-Kutta";}
 	void TimestepDependence(double);
-	void ExtrapolateTimestep (double errmax) {
+	void ExtrapolateTimestep () {
 		if(errmax < tolmin2) {if(errmax) stepfactor=pow(tolmin2/errmax,pgrow);}
 		else if(tolmin2) stepinverse=stepfactor=pow(tolmin2/errmax,pshrink);
 		if(errmax <= tolmax2) errmax=0.0; // Force a time step adjustment.
 	}
 	void Predictor(double, double, int, int);
-	int Corrector(double, double&, int, int);
+	int Corrector(double, int, int, int);
 	void StandardPredictor(double t, double dt, int start,int stop) {
 		RK5::Predictor(t,dt,start,stop);
 	}
-	int StandardCorrector(double dt, double& errmax, int start,int stop) {
-		return RK5::Corrector(dt,errmax,start,stop);
+	int StandardCorrector(double dt, int dynamic, int start, int stop) {
+		return RK5::Corrector(dt,dynamic,start,stop);
 	}
 };
 

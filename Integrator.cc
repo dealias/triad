@@ -121,27 +121,25 @@ Solve_RC Euler::Solve(double t, double dt)
 
 Solve_RC PC::Solve(double t, double dt)
 {
-	double errmax=0.0;
+	errmax=0.0;
+	errmask=Problem->ErrorMask();
 	
 	if(new_y0) Source(source0,y0,t);
 	Problem->Transform(y0,t,dt,yi);
 	
 	Predictor(t,dt,0,nyprimary);
-	if(!Corrector(dt,errmax,0,nyprimary)) {
-		if(hybrid) StandardCorrector(dt,errmax,0,nyprimary);
+	if(!Corrector(dt,0,0,nyprimary)) {
+		if(hybrid) StandardCorrector(dt,dynamic,0,nyprimary);
 		else return NONINVERTIBLE;
 	}
 	
 	// Disregard averaging error
 	if(Nmoment) {
 		StandardPredictor(t,dt,nyprimary,ny);
-		int dynamic_value=dynamic;
-		dynamic=0;
-		StandardCorrector(dt,errmax,nyprimary,ny);
-		dynamic=dynamic_value;
+		StandardCorrector(dt,0,nyprimary,ny);
 	}
 
-	Solve_RC flag=(dynamic ? CheckError(errmax) : SUCCESSFUL);
+	Solve_RC flag=(dynamic ? CheckError() : SUCCESSFUL);
 	new_y0=(flag != UNSUCCESSFUL);
 	if(new_y0) {
 		set(y0,y,ny);
@@ -157,14 +155,16 @@ void PC::Predictor(double t, double dt, int start, int stop)
 	Source(source,y1,t+dt);
 }
 
-int PC::Corrector(double dt, double& errmax, int start, int stop)
+int PC::Corrector(double dt, int dynamic, int start, int stop)
 {
 	int j;
 	const double halfdt=0.5*dt;
 	Var *y0_=y0; // Workaround Cray bug;
 	for(j=start; j < stop; j++) y[j]=y0_[j]+halfdt*(source0[j]+source[j]);
-	if(dynamic) for(j=start; j < stop; j++) 
-		calc_error(y0[j],y[j],y0[j]+dt*source0[j],y[j],errmax);
+	if(dynamic)
+		for(j=start; j < stop; j++) 
+			if(!errmask || errmask[j]) 
+				CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
 	return 1;
 }
 
@@ -180,12 +180,14 @@ void LeapFrog::Predictor(double t, double, int start, int stop)
 	lasthalfdt=halfdt;
 }
 	
-int LeapFrog::Corrector(double dt, double& errmax, int start, int stop)
+int LeapFrog::Corrector(double dt, int dynamic, int start, int stop)
 {
 	int j;
 	for(j=start; j < stop; j++) y[j]=y0[j]+dt*source[j];
-	if(dynamic) for(j=start; j < stop; j++)
-		calc_error(y0[j],y[j],y0[j]+dt*source0[j],y[j],errmax);
+	if(dynamic)
+		for(j=start; j < stop; j++)
+			if(!errmask || errmask[j]) 
+				CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
 	return 1;
 }
 
@@ -201,12 +203,14 @@ void RK2::Predictor(double t, double, int start, int stop)
 	Source(source,y1,t+halfdt);
 }
 
-int RK2::Corrector(double dt, double& errmax, int start, int stop)
+int RK2::Corrector(double dt, int dynamic, int start, int stop)
 {
 	int j;
 	for(j=start; j < stop; j++) y[j]=y0[j]+dt*source[j];
-	if(dynamic) for(j=start; j < stop; j++)
-		calc_error(y0[j],y[j],y0[j]+dt*source0[j],y[j],errmax);
+	if(dynamic)
+		for(j=start; j < stop; j++)
+			if(!errmask || errmask[j])
+				CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
 	return 1;
 }
 
@@ -230,13 +234,15 @@ void RK4::Predictor(double t, double dt, int start, int stop)
 	Source(source,y,t+dt);
 }
 
-int RK4::Corrector(double, double& errmax, int start, int stop)
+int RK4::Corrector(double, int dynamic, int start, int stop)
 {
 	int j;
 	for(j=start; j < stop; j++) 
 		y[j]=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+source[j]);
-	if(dynamic) for(j=start; j < stop; j++)
-		calc_error(y0[j],y[j],y0[j]+dt*source2[j],y[j],errmax);
+	if(dynamic)
+		for(j=start; j < stop; j++)
+			if(!errmask || errmask[j])
+				CalcError(y0[j],y[j],y0[j]+dt*source2[j],y[j]);
 	return 1;
 }
 
@@ -336,7 +342,7 @@ void RK5::Predictor(double t, double, int start, int stop)
 #endif // COMPLEX
 
 
-int RK5::Corrector(double, double& errmax, int start, int stop)
+int RK5::Corrector(double, int dynamic, int start, int stop)
 {
 	int j;
 #pragma ivdep		
@@ -365,8 +371,9 @@ int RK5::Corrector(double, double& errmax, int start, int stop)
 #endif
 		}
 		for(j=start; j < stop; j++)
-			calc_error(y0[j],y[j],y3[j],y[j],errmax);
-		ExtrapolateTimestep(errmax);
+			if(!errmask || errmask[j]) CalcError(y0[j],y[j],y3[j],y[j]);
+
+		ExtrapolateTimestep();
 	}
 	return 1;
 }

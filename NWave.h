@@ -90,7 +90,7 @@ class C_PC : public PC, public CorrectC_PC {
 public:
 	void Allocate(int n) {PC::Allocate(n); if(hybrid) y1=new Var[n];}
 	char *Name() {return "Conservative Predictor-Corrector";}
-	int Corrector(double, double&, int, int);
+	int Corrector(double, int, int, int);
 };
 
 class I_PC : public PC {
@@ -101,7 +101,7 @@ public:
 	char *Name() {return "Predictor-Corrector w/Integrating Factor";}
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
-	int Corrector(double, double&, int, int);
+	int Corrector(double, int, int, int);
 	void Source(Var *src, Var *Y, double t) {Problem->NonLinearSrc(src,Y,t);}
 };
 
@@ -118,7 +118,7 @@ public:
 	char *Name() {return "Exponential Predictor-Corrector";}
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
-	int Corrector(double, double&, int start, int stop);
+	int Corrector(double, int, int, int);
 	void Source(Var *src, Var *Y, double t) {
 		Problem->NonLinearSrc(src,Y,t);
 		NWave::ExponentialLinearity(src,Y,t);
@@ -133,7 +133,7 @@ public:
 	char *Name() {return "Conservative Exponential Predictor-Corrector";}
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
-	int Corrector(double, double&, int, int);
+	int Corrector(double, int, int, int);
 	void Source(Var *src, Var *Y, double t) {
 		Problem->NonLinearSrc(src,Y,t);
 		NWave::ConservativeExponentialLinearity(src,Y,t);
@@ -148,7 +148,7 @@ public:
 	char *Name() {return "Second-Order Runge-Kutta w/Integrating Factor";}
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
-	int Corrector(double, double&, int, int);
+	int Corrector(double, int, int, int);
 	void Source(Var *src, Var *Y, double t) {Problem->NonLinearSrc(src,Y,t);}
 };
 
@@ -156,7 +156,7 @@ class C_RK2 : public RK2, public CorrectC_PC {
 public:
 	void Allocate(int n) {RK2::Allocate(n); if(hybrid) y1=new Var[n];}
 	char *Name() {return "Conservative Second-Order Runge-Kutta";}
-	int Corrector(double, double&, int, int);
+	int Corrector(double, int, int, int);
 	int Correct(const Real y0, const Real y1, Real& y,
 				const Real source0, const Real source, const double dt);
 	int Correct(const Complex y0, const Complex y1, Complex& y,
@@ -172,7 +172,7 @@ public:
 	char *Name() {return "Fourth-Order Runge-Kutta w/Integrating Factor";}
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
-	int Corrector(double, double&, int, int);
+	int Corrector(double, int, int, int);
 	void Source(Var *src, Var *Y, double t) {Problem->NonLinearSrc(src,Y,t);}
 };
 
@@ -182,7 +182,7 @@ protected:
 public:
 	char *Name() {return "Conservative Fourth-Order Runge-Kutta";}
 	void TimestepDependence(double);
-	int Corrector(double, double&, int, int);
+	int Corrector(double, int, int, int);
 	int Correct(const Real y0, Real& y, const Real source0,
 				const Real source1, const Real source2, 
 				const Real source, const double dt);
@@ -198,7 +198,7 @@ public:
 	void Allocate(int);
 	char *Name() {return "Fifth-Order Runge-Kutta w/Integrating Factor";}
 	void Predictor(double, double, int, int);
-	int Corrector(double, double&, int, int);
+	int Corrector(double, int, int, int);
 	void Source(Var *src, Var *Y, double t) {Problem->NonLinearSrc(src,Y,t);}
 };
 
@@ -206,7 +206,7 @@ class C_RK5 : public RK5 {
 public:
 	void Allocate(int n) {RK5::Allocate(n); y2=new Var[n]; y4=new Var[n];}
 	char *Name() {return "Conservative Fifth-Order Runge-Kutta";}
-	int Corrector(double, double&, int, int);
+	int Corrector(double, int, int, int);
 	inline void Correct(const Real y0, Real& y2, Real &y3,
 						const Real y4, Real& y,
 						const Real source0, const Real source2, 

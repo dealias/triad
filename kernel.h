@@ -54,11 +54,14 @@ protected:
 	Var *y;
 	int ny;
 	char *abbrev;
+	int *errmask;
 public:	
+	ProblemBase() {errmask=NULL;}
 	void SetAbbrev(char *abbrev0) {abbrev=abbrev0;}
 	char *Abbrev() {return abbrev;}
 	Var *Vector() {return y;}
 	int Size() {return ny;}
+	int *ErrorMask() {return errmask;}
 	
 	virtual char *Name() {return "";}
 	virtual void LinearSrc(Var *, Var *, double) {}
@@ -82,6 +85,8 @@ protected:
 	char *abbrev;
 	int ny,nyprimary;
 	Var *y0, *yi, *source;
+	double errmax;
+	int *errmask;
 	double tolmax2,tolmin2;
 	double stepfactor,stepinverse,stepnoninverse;
 	double dtmax;
@@ -110,7 +115,9 @@ public:
 	void ChangeTimestep(double& dt, double dtnew, const double t,
 						const double sample);
 	
-	Solve_RC CheckError(double errmax);
+	void CalcError(const Var& initial, const Var& norm, const Var& pred,
+				   const Var& corr);
+	Solve_RC CheckError();
 	virtual void Allocate(int n);
 	virtual char *Name()=0;
 	virtual Solve_RC Solve(double, double)=0;

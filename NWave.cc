@@ -329,13 +329,15 @@ inline int CorrectC_PC::Correct(const Complex y0, const Complex y1, Complex& y,
 	return 1;
 }
 
-int C_PC::Corrector(double dt, double& errmax, int start, int stop)
+int C_PC::Corrector(double dt, int dynamic, int start, int stop)
 {
 	int j;
 	for(j=start; j < stop; j++)
 		if(!Correct(y0[j],y1[j],y[j],source0[j],source[j],dt)) return 0;
-	if(dynamic) for(j=start; j < stop; j++)
-		calc_error(y0[j],y[j],y1[j],y[j],errmax);
+	if(dynamic) 
+		for(j=start; j < stop; j++)
+			if(!errmask || errmask[j]) 
+				CalcError(y0[j],y[j],y1[j],y[j]);
 	return 1;
 }
 
@@ -370,15 +372,17 @@ void E_PC::Predictor(double t, double, int start, int stop)
 	Source(source,y1,t+dt);
 }
 
-int E_PC::Corrector(double, double& errmax, int start, int stop)
+int E_PC::Corrector(double, int dynamic, int start, int stop)
 {
 	int j;
 	for(j=start; j < stop; j++) {
 		source[j]=0.5*(source0[j]+source[j]);
 		y[j]=expinv[j]*y0[j]+onemexpinv[j]*source[j];
 	}
-	if(dynamic) for(j=start; j < stop; j++)
-		calc_error(y0[j]*dtinv,source[j],source0[j],source[j],errmax);
+	if(dynamic)
+		for(j=start; j < stop; j++)
+			if(!errmask || errmask[j]) 
+				CalcError(y0[j]*dtinv,source[j],source0[j],source[j]);
 	return 1;
 }
 
@@ -399,13 +403,14 @@ void I_PC::Predictor(double t, double dt, int start, int stop)
 	Source(source,y1,t+dt);
 }
 
-int I_PC::Corrector(double dt, double& errmax, int start, int stop)
+int I_PC::Corrector(double dt, int dynamic, int start, int stop)
 {
 	const double halfdt=0.5*dt;
 	if(dynamic) for(int j=start; j < stop; j++) {
 		Var pred=y[j];
 		y[j]=y0[j]*expinv[j]+halfdt*(source0[j]*expinv[j]+source[j]);
-		calc_error(y0[j]*expinv[j],y[j],pred,y[j],errmax);
+		if(!errmask || errmask[j]) 
+			CalcError(y0[j]*expinv[j],y[j],pred,y[j]);
 	} else for(int j=start; j < stop; j++) {
 		y[j]=y0[j]*expinv[j]+halfdt*(source0[j]*expinv[j]+source[j]);
 	}
@@ -445,7 +450,7 @@ void CE_PC::Predictor(double t, double, int start, int stop)
 	Source(source,y,t+dt);
 }
 
-int CE_PC::Corrector(double, double& errmax, int start, int stop)
+int CE_PC::Corrector(double, int dynamic, int start, int stop)
 {
 	int j;
 	for(j=start; j < stop; j++)
@@ -453,7 +458,8 @@ int CE_PC::Corrector(double, double& errmax, int start, int stop)
 					onemexpinv[j])) return 0;
 	if(dynamic) for(j=start; j < stop; j++) {
 		Var corr=0.5*(source0[j]+source[j]);
-		calc_error(y0[j]*dtinv,corr,source0[j],corr,errmax);
+		if(!errmask || errmask[j]) 
+			CalcError(y0[j]*dtinv,corr,source0[j],corr);
 	}
 	return 1;
 }
@@ -476,14 +482,15 @@ void I_RK2::Predictor(double t, double, int start, int stop)
 	Source(source,y1,t+halfdt);
 }
 
-int I_RK2::Corrector(double dt, double& errmax, int start, int stop)
+int I_RK2::Corrector(double dt, int dynamic, int start, int stop)
 {
 	int j;
 	for(j=start; j < stop; j++)
 		y[j]=y0[j]*expinv[j]+dt*source[j];
 	if(dynamic) for(j=start; j < stop; j++)
-		calc_error(y0[j]*expinv[j],y[j],
-				   (y0[j]+dt*source0[j])*expinv[j],y[j],errmax);
+		if(!errmask || errmask[j]) 
+			CalcError(y0[j]*expinv[j],y[j],
+					  (y0[j]+dt*source0[j])*expinv[j],y[j]);
 	for(j=start; j < stop; j++) y[j] *= expinv[j];
 	return 1;
 }
@@ -508,13 +515,15 @@ inline int C_RK2::Correct(const Complex Y0, const Complex Y1, Complex& Y,
 	return 1;
 }
 
-int C_RK2::Corrector(double dt, double& errmax, int start, int stop)
+int C_RK2::Corrector(double dt, int dynamic, int start, int stop)
 {
 	int j;
 	for(j=start; j < stop; j++)
 		if(!Correct(y0[j],y1[j],y[j],source0[j],source[j],dt)) return 0;
-	if(dynamic) for(j=start; j < stop; j++)
-		calc_error(y0[j],y[j],y0[j]+dt*source0[j],y[j],errmax);
+	if(dynamic)
+		for(j=start; j < stop; j++)
+			if(!errmask || errmask[j]) 
+				CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
 	return 1;
 }
 
@@ -543,16 +552,18 @@ void I_RK4::Predictor(double t, double dt, int start, int stop)
 	Source(source,y,t+dt);
 }
 
-int I_RK4::Corrector(double, double& errmax, int start, int stop)
+int I_RK4::Corrector(double, int dynamic, int start, int stop)
 {
 	int j;
 	for(j=start; j < stop; j++) {
 		y[j]=((y0[j]+sixthdt*source0[j])*expinv[j]+
 			  thirddt*(source1[j]+source2[j]))*expinv[j]+sixthdt*source[j];
 	}
-	if(dynamic) for(j=start; j < stop; j++)
-		calc_error(y0[j]*dtinv,source[j],source2[j]*expinv[j],source[j],
-				   errmax);
+	if(dynamic)
+		for(j=start; j < stop; j++)
+			if(!errmask || errmask[j]) 
+				CalcError(y0[j]*dtinv,source[j],source2[j]*expinv[j],
+						  source[j]);
 	return 1;
 }
 
@@ -586,14 +597,15 @@ inline int C_RK4::Correct(const Complex Y0, Complex& Y, const Complex Source0,
 	return 1;
 }
 
-int C_RK4::Corrector(double dt, double& errmax, int start, int stop)
+int C_RK4::Corrector(double dt, int dynamic, int start, int stop)
 {
 	int j;
 	if(dynamic) for(j=start; j < stop; j++) {
 		Var pred=y[j];
 		if(!Correct(y0[j],y[j],source0[j],source1[j],source2[j],source[j],dt))
 			return 0;
-		calc_error(y0[j],y[j],pred,y[j],errmax);
+		if(!errmask || errmask[j]) 
+			CalcError(y0[j],y[j],pred,y[j]);
 	}
 	else for(j=start; j < stop; j++) {
 		if(!Correct(y0[j],y[j],source0[j],source1[j],source2[j],source[j],dt))
@@ -715,9 +727,9 @@ void I_RK5::Predictor(double t, double, int start, int stop)
 
 #endif // COMPLEX
 
-int I_RK5::Corrector(double dt, double& errmax, int start, int stop)
+int I_RK5::Corrector(double dt, int dynamic, int start, int stop)
 {
-	RK5::Corrector(dt,errmax,start,stop);
+	RK5::Corrector(dt,dynamic,start,stop);
 #pragma ivdep	
 	for(int j=start; j < stop; j++) y[j] *= expinv[j];
 	return 1;
@@ -757,7 +769,7 @@ inline void C_RK5::Correct(const Complex Y0, Complex& Y2, Complex& Y3,
 			Source3.im,Source4.im,Source.im,dt,invertible);
 }
 
-int C_RK5::Corrector(double, double& errmax, int start, int stop)
+int C_RK5::Corrector(double, int dynamic, int start, int stop)
 {
 	int j,invertible=1;
 #pragma ivdep
@@ -774,8 +786,9 @@ int C_RK5::Corrector(double, double& errmax, int start, int stop)
 	
 	if(dynamic) {
 		for(j=start; j < stop; j++) 
-			calc_error(y0[j]*y0[j],y2[j],y3[j],y2[j],errmax);
-		ExtrapolateTimestep(errmax);
+			if(!errmask || errmask[j]) 
+				CalcError(y0[j]*y0[j],y2[j],y3[j],y2[j]);
+		ExtrapolateTimestep();
 	}
 	return 1;
 }
