@@ -750,7 +750,7 @@ int main(int argc, char *argv[])
     offset=PaletteMin;
   }
 	
-  if(lower == upper && bar=0) band=0;
+  if(lower == upper && bar == 0) band=0;
   
   for(unsigned int f=0; f < nfiles; f++) {
     const char *fieldname=argf[f];
