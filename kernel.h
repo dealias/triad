@@ -19,9 +19,9 @@ extern double last_dump;
 extern int iteration;
 extern int invert_cnt;
 
-extern char *run;
-extern char *method;
-extern char *integrator;
+extern const char *run;
+extern const char *method;
+extern const char *integrator;
 
 // Global vocabulary
 extern int itmax; 
@@ -44,8 +44,8 @@ public:
 	virtual void Display(ostream& os)=0;
 	virtual void GraphicsOutput(ostream& os)=0;
 	virtual void Output(ostream& os)=0;
-	virtual void SetStr(char *)=0;		// Set from string	
-	virtual char *Name()=0;
+	virtual void SetStr(const char *)=0;		// Set from string	
+	virtual const char *Name()=0;
 };
 
 enum Solve_RC {NONINVERTIBLE=-1,UNSUCCESSFUL,SUCCESSFUL,ADJUST};
@@ -54,12 +54,12 @@ class ProblemBase {
 protected:
 	Var *y;
 	int ny;
-	char *abbrev;
+	const char *abbrev;
 	int *errmask;
 public:	
 	ProblemBase() {errmask=NULL;}
-	void SetAbbrev(char *abbrev0) {abbrev=abbrev0;}
-	char *Abbrev() {return abbrev;}
+	void SetAbbrev(const char *abbrev0) {abbrev=abbrev0;}
+	const char *Abbrev() {return abbrev;}
 	Var *Vector() {return y;}
 	int Size() {return ny;}
 	int *ErrorMask() {return errmask;}
@@ -84,7 +84,7 @@ extern ProblemBase *Problem;
 
 class IntegratorBase {
 protected:
-	char *abbrev;
+	const char *abbrev;
 	int ny;
 	Var *y0, *yi, *source;
 	double errmax;
@@ -97,8 +97,8 @@ protected:
 	int microprocess;
 	int verbose;
 public:	
-	void SetAbbrev(char *abbrev0) {abbrev=abbrev0;}
-	char *Abbrev() {return abbrev;}
+	void SetAbbrev(const char *abbrev0) {abbrev=abbrev0;}
+	const char *Abbrev() {return abbrev;}
 	void SetParam(double tolmax, double tolmin, double stepfactor0,
 				  double stepnoninvert, double dtmin0, double dtmax0,
 				  int itmax0, int microsteps0, int verbose0) {
@@ -125,7 +125,7 @@ public:
 				   const Var& corr);
 	Solve_RC CheckError();
 	virtual void Allocate(int n);
-	virtual char *Name()=0;
+	virtual const char *Name()=0;
 	virtual Solve_RC Solve(double, double)=0;
 	virtual int Microfactor() {return 1;}
 	virtual void TimestepDependence(double) {}
@@ -144,7 +144,7 @@ public:
 	Table<ProblemBase> *ProblemTable;
 	Table<IntegratorBase> *IntegratorTable;
 	
-	ParamBase *Locate(char *key, int *match_type);
+	ParamBase *Locate(const char *key, int *match_type);
 	void ParamAdd(ParamBase *p);
 	void Parse(char *s);
 	void Assign(const char *s, int warn=1);
@@ -152,20 +152,21 @@ public:
 	void List(ostream& os);
 	void Dump(ostream& os);
 	void GraphicsDump(ostream& os);
-	virtual char *Name()=0;
-	virtual char *Abbrev()=0;
-	virtual char *Directory() {return "";}
+	virtual const char *Name()=0;
+	virtual const char *Abbrev()=0;
+	virtual const char *Directory() {return "";}
 
-	ProblemBase *NewProblem(char *& key) {
+	ProblemBase *NewProblem(const char *& key) {
 		ProblemBase *p=ProblemTable->Locate(key);
 		p->SetAbbrev(key);
 		return p;
 	}
 	
-	IntegratorBase *NewIntegrator(char *& key) {
-		undashify(key,key);
-		IntegratorBase *p=IntegratorTable->Locate(key);
-		p->SetAbbrev(key);
+	IntegratorBase *NewIntegrator(const char *& key) {
+		char *key2=strdup(key);
+		undashify(key,key2);
+		IntegratorBase *p=IntegratorTable->Locate(key2);
+		p->SetAbbrev(key2);
 		return p;
 	}
 	
@@ -191,7 +192,7 @@ void testlock();
 void dump(int it, int final, double tmax);
 
 template<class T>
-inline void open_output(T& fout, const char *delimiter, char *suffix,
+inline void open_output(T& fout, const char *delimiter, const char *suffix,
 						int append)
 {
 	char *filename=Vocabulary->FileName(delimiter,suffix);
@@ -203,7 +204,7 @@ inline void open_output(T& fout, const char *delimiter, char *suffix,
 }
 
 template<class T>
-inline void open_output(T& fout, const char *delimiter, char *suffix)
+inline void open_output(T& fout, const char *delimiter, const char *suffix)
 {
 	open_output(fout,delimiter,suffix,restart);
 }	

@@ -101,6 +101,7 @@ char *dashify(const char *s, char *s2=NULL);
 char *undashify(const char *s, char *s2=NULL);
 char *convert(const char *s, char from, char to, char *s2);
 
+const char null[1]="";
 extern "C" char *strdup(const char *);
 
 extern "C" int strcasecmp (const char *s1, const char *s2);
@@ -119,7 +120,7 @@ void *bsearch2(register const void *key,
 			   int (*compar)(const void *, const void *, const size_t),
 			   int *match_type);
 
-int check_match(int match_type, char *object, char *s, int warn=1);
+int check_match(int match_type, const char *object, const char *s, int warn=1);
 			   
 #ifdef __GNUC__ 	
 inline void vform(char *format, va_list& vargs, ostream& os=cout)
@@ -303,6 +304,7 @@ inline Complex expi(Real phase)
 	return Complex(cosy,siny);
 }
 
+char *atos(const char *s);
 Complex atoc(const char *s);
 	
 const int default_nperline=4;

@@ -1,8 +1,8 @@
 #include "options.h"
 #include "kernel.h"
 
-char *method="Ode";
-char *integrator="PC";
+const char *method="Ode";
+const char *integrator="PC";
 
 // Global variables
 Nu *nu;

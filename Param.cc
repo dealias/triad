@@ -18,7 +18,7 @@ void VocabularyBase::Sort()
 				"Duplicate vocabulary entry: %s",ParamList[i]->Name());
 }
 
-ParamBase *VocabularyBase::Locate(char *key, int *match_type) 
+ParamBase *VocabularyBase::Locate(const char *key, int *match_type) 
 {
 	ParamBase **ptr;
 	ptr=(ParamBase **) bsearch2(key,ParamList,NParam,sizeof(ParamBase *),

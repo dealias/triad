@@ -102,11 +102,11 @@ VocabularyBase::VocabularyBase()
 	VOCAB_NODUMP(clobber,0,1);
 	VOCAB_NODUMP(override,0,1);
 	VOCAB_NODUMP(verbose,0,4);
-	VOCAB_NODUMP(run,"","");
+	VOCAB_NODUMP(run,null,null);
 	VOCAB(checkpoint,0,INT_MAX);
 	VOCAB(output,0,1);
-	VOCAB(method,"","");
-	VOCAB(integrator,"","");
+	VOCAB(method,null,null);
+	VOCAB(integrator,null,null);
 	
 	ProblemTable=new Table<ProblemBase>("method");
 	IntegratorTable=new Table<IntegratorBase>("integrator");

@@ -122,14 +122,14 @@ void *bsearch2(register const void *key,
 				
 			// Check for unambiguous match:
 			// If the key also matches the previous entry to n characters,
-			// it's ambiguous. 
+			// it is ambiguous. 
 			if(idx > 0) {
 				p0 = (void *) (((const char *) base) + ((idx-1) * size));
 				if((*compar)((char *) key,p0,n) == 0) *match_type=0; 
 			}
 				
 			// If the key also matches the next entry to n characters,
-			// it's ambiguous.
+			// it is ambiguous.
 			if(idx < nmemb-1) {
 				p0 = (void *) (((const char *) base) + ((idx+1) * size));
 				if((*compar)((char *) key,p0,n) == 0) *match_type=0; 
@@ -148,7 +148,7 @@ void *bsearch2(register const void *key,
 	return (void *) base;
 }
 
-int check_match(int match_type, char *object, char *key, int warn)
+int check_match(int match_type, const char *object, const char *key, int warn)
 {
 	switch(match_type) {
 	case -1:

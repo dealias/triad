@@ -46,7 +46,7 @@ public:
 		for(int i=0; i < Size(); i++) os << Entry(i)->Key() << newl;
 		os << flush;
 	}
-	B *Locate (char *& key) {
+	B *Locate (const char *& key) {
 		int match_type;
 		EntryBase<B> *e;
 		B *p;
