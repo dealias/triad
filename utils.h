@@ -59,13 +59,13 @@ inline void sort2(T& p, T& q, int& sign)
 }
 
 template<class T>
-inline T min(const T& a, const T& b)
+inline T min(T a, T b)
 {
 	return (a < b) ? a : b;
 }
 
 template<class T>
-inline T max(const T& a, const T& b)
+inline T max(T a, T b)
 {
 	return (a > b) ? a : b;
 }

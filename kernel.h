@@ -53,10 +53,7 @@ public:
 enum Solve_RC {NONINVERTIBLE=-1,UNSUCCESSFUL,SUCCESSFUL,ADJUST};
 
 typedef void Source_t(Var *, Var *, double);
-
-extern Source_t *LinearSrc;
-extern Source_t *NonlinearSrc;
-extern Source_t *ConstantSrc;
+extern Source_t *LinearSrc,*NonlinearSrc,*ConstantSrc;
 
 class IntegratorBase {
 protected:
@@ -99,7 +96,6 @@ public:
 	Solve_RC CheckError(double errmax);
 	virtual void Allocate(int)=0;
 	virtual char *Name()=0;
-	typedef Solve_RC Solve_t(Var *, double, double);
 	virtual Solve_RC Solve(Var *, double, double)=0;
 	virtual void Source(Var *, Var *, double);
 	virtual int Microfactor() {return 1;}

@@ -38,7 +38,7 @@ protected:
 public:
 	void Allocate(int n) {ny=n; source=new Var[n];}
 	char *Name() {return "Euler";}
-	Solve_t Solve;
+	Solve_RC Solve(Var *, double, double);
 };
 
 class PC : public IntegratorBase {
@@ -51,7 +51,7 @@ public:
 	void Allocate(int n) {ny=n; source=new Var[n];
 						  y1=y=new Var [n]; source0=new Var [n];}
 	char *Name() {return "Predictor-Corrector";}
-	Solve_t Solve;
+	Solve_RC Solve(Var *, double, double);
 	virtual void Predictor(Var *, double, double);
 	virtual int Corrector(Var *, double, double&, int start, int stop);
 	virtual int StandardCorrector(Var *y0, double dt, double& errmax,
@@ -65,8 +65,8 @@ class RK2 : public PC {
 public:
 	char *Name() {return "Second-Order Runge-Kutta";}
 	void TimestepDependence(double);
-	Predictor_t Predictor;
-	Corrector_t Corrector;
+	void Predictor(Var *, double, double);
+	int Corrector(Var *, double, double&, int start, int stop);
 	int StandardCorrector(Var *y0, double dt, double& errmax,
 								  int start, int stop) {
 		return RK2::Corrector(y0,dt,errmax,start,stop);
@@ -82,8 +82,8 @@ public:
 						  source1=new Var [n]; source2=new Var [n];}
 	char *Name() {return "Fourth-Order Runge-Kutta";}
 	void TimestepDependence(double);
-	Predictor_t Predictor;
-	Corrector_t Corrector;
+	void Predictor(Var *, double, double);
+	int Corrector(Var *, double, double&, int start, int stop);
 	int StandardCorrector(Var *y0, double dt, double& errmax,
 								  int start, int stop) {
 		return RK4::Corrector(y0,dt,errmax,start,stop);
@@ -115,8 +115,8 @@ public:
 		else if(tolmin2) stepinverse=stepfactor=pow(tolmin2/errmax,pshrink);
 		if(errmax <= tolmax2) errmax=0.0; // Force a time step adjustment.
 	}
-	Predictor_t Predictor;
-	Corrector_t Corrector;
+	void Predictor(Var *, double, double);
+	int Corrector(Var *, double, double&, int start, int stop);
 	int StandardCorrector(Var *y0, double dt, double& errmax,
 								  int start, int stop) {
 		return RK5::Corrector(y0,dt,errmax,start,stop);

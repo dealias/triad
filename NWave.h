@@ -77,8 +77,8 @@ public:
 	void Allocate(int);
 	char *Name() {return "Exponential Predictor-Corrector";}
 	void TimestepDependence(double);
-	Predictor_t Predictor;
-	Corrector_t Corrector;
+	void Predictor(Var *, double, double);
+	int Corrector(Var *, double, double&, int start, int stop);
 	void Source(Var *source, Var *y, double t) {
 		if(NonlinearSrc) (*NonlinearSrc)(source,y,t);
 		ExponentialLinearity(source,y,t);
@@ -93,8 +93,8 @@ public:
 	void Allocate(int);
 	char *Name() {return "Exponential Second-Order Runge-Kutta";}
 	void TimestepDependence(double);
-	Predictor_t Predictor;
-	Corrector_t Corrector;
+	void Predictor(Var *, double, double);
+	int Corrector(Var *, double, double&, int start, int stop);
 };
 
 class E_RK4 : public E_RK2 {
@@ -103,8 +103,8 @@ protected:
 public:
 	void Allocate(int);
 	char *Name() {return "Exponential Fourth-Order Runge-Kutta";}
-	Predictor_t Predictor;
-	Corrector_t Corrector;
+	void Predictor(Var *, double, double);
+	int Corrector(Var *, double, double&, int start, int stop);
 };
 
 class CE_PC : public E_PC, public CorrectC_PC {
@@ -114,8 +114,8 @@ public:
 	void Allocate(int);
 	char *Name() {return "Conservative Exponential Predictor-Corrector";}
 	void TimestepDependence(double);
-	Predictor_t Predictor;
-	Corrector_t Corrector;
+	void Predictor(Var *, double, double);
+	int Corrector(Var *, double, double&, int start, int stop);
 	void Source(Var *source, Var *y, double t) {
 		if(NonlinearSrc) (*NonlinearSrc)(source,y,t);
 		ConservativeExponentialLinearity(source,y,t);
