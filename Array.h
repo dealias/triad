@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.11
+#define __ARRAY_H_VERSION__ 1.12
 
 // Defining NDEBUG improves optimization but disables argument checking.
 
@@ -46,7 +46,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 inline ostream& _newl(ostream& s) {s << '\n'; return s;}
 
 #ifndef __ExternalArrayExit
-void __ArrayExit(char *x)
+inline void __ArrayExit(char *x)
 {
 	cout << _newl << "ERROR: " << x << "." << endl;
 	exit(1);

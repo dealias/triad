@@ -1,3 +1,4 @@
+#undef __ExternalArrayExit
 #include "Array.h"
 
 enum Palette {RAINBOW,BRAINBOW,WRAINBOW,BWRAINBOW,WHEEL,RGREYB,

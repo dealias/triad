@@ -176,10 +176,6 @@ enum ErrorCode {WARNING_,OVERRIDE_,SLEEP_,ERROR_};
 enum ExitCode {FATAL=-1,CONTINUE,COMPLETE};
 extern ExitCode exit_signal;
 
-#define __ArrayExtensions
-#define __ExternalArrayExit
-void __ArrayExit(char *x);
-	
 void mailuser(const char *text);
 void remove_dir(const char *text);
 int copy(const char *oldname, const char *newname);
