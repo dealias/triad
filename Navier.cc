@@ -189,19 +189,20 @@ void NWave::InitialConditions()
 		forcing[i]=Geometry->Forcing(i)*norm;
 	}
 	
+	int nindependent=Geometry->IndependentNumber();
 	// Randomize the initial conditions.	
-	// If reality condition is not explicitly enforced and the number of
-	// angular bins is even, force the initial conditions to respect reality. 
 	if(randomIC) {
-		int nindependent=Geometry->IndependentNumber();
 		for(i=0; i < nindependent; i++) {
 			Var w;
 			crand_gauss(&w);
 			y[i] *= w;
 		}
-#pragma ivdep		
-		for(i=nindependent; i < Npsi; i++) y[i]=conj(y[i-nindependent]);
 	}
+	
+	// If reality condition is not explicitly enforced and the number of
+	// angular bins is even, force the initial conditions to respect reality. 
+#pragma ivdep		
+	for(i=nindependent; i < Npsi; i++) y[i]=conj(y[i-nindependent]);
 	
 	if(restart) {
 		Real t0;
