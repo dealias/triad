@@ -281,7 +281,7 @@ INLINE void Partition<T,D>::GenerateWeights() {
 	}
 	
 	cout << newl << "GENERATING WEIGHT FACTORS." << endl;
-	if(n > USHRT_MAX || n > maxbins)
+	if(n > USHRT_MAX || n >= maxbins)
 		msg(ERROR, "Internal limit on number of bins exceeded");	
 	
 	for(k=0; k < Nmode; k++) {	// Loop for k < p < q

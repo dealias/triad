@@ -6,7 +6,7 @@ GeometryBase *Geometry;
 Weight *weightBase;
 WeightIndex WeightN;
 
-const int maxbins=65535;
+const int maxbins=65536;
 
 int get_weights(DynVector<Weight>& weight, int *Nweight, char *filename)
 {
