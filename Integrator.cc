@@ -172,13 +172,14 @@ int PC::Corrector(double dt, int dynamic, int start, int stop)
 	const double halfdt=0.5*dt;
 	if(dynamic) {
 		for(j=start; j < stop; j++) {
-			Var pred=y1[j];
 			y[j]=y0[j]+halfdt*(source0[j]+source[j]);
-			if(!errmask || errmask[j]) CalcError(y0[j],y[j],pred,y[j]);
+			if(!errmask || errmask[j]) CalcError(y0[j],y[j],
+												 y0[j]+dt*source0[j],y[j]);
 		}
 		ExtrapolateTimestep();
-	} else for(j=start; j < stop; j++)
+	} else for(j=start; j < stop; j++) {
 		y[j]=y0[j]+halfdt*(source0[j]+source[j]);
+	}
 	
 	return 1;
 }
