@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.17
+#define __ARRAY_H_VERSION__ 1.18
 
 // Defining NDEBUG improves optimization but disables argument checking.
 // Defining __NOARRAY2OPT inhibits special optimization of Array2[].
@@ -91,7 +91,9 @@ class array1 {
     Dimension(nx0);
     __checkActivate(1);
   }
-  void Deallocate() const {delete [] v; clear(allocated);}
+  void Deallocate() const {
+    if(test(allocated)) {Deallocate(); clear(allocated);}
+  }
   void Dimension(unsigned int nx0) {size=nx0;}
   void Dimension(unsigned int nx0, T *v0) {
     Dimension(nx0); v=v0; clear(allocated);
@@ -105,7 +107,7 @@ class array1 {
   array1(T *v0) {
     Dimension(INT_MAX,v0);
   }
-  virtual ~array1() {if(test(allocated)) Deallocate();}
+  virtual ~array1() {Deallocate();}
 	
   void Freeze() {state=unallocated;}
   void Hold() {if(test(allocated)) {state=temporary;}}
@@ -160,7 +162,7 @@ class array1 {
 #if 0		
     Dimension(A.Nx());
     if(A.Size() > size) {
-      if(test(allocated)) Deallocate();
+      Deallocate();
       __checkActivate(1);
     }
 #endif		
@@ -315,7 +317,7 @@ class array2 : public array1<T> {
 #if 0		
     Dimension(A.Nx(),A.Ny());
     if(A.Size() > size) {
-      if(test(allocated)) Deallocate();
+      Deallocate();
       __checkActivate(2);
     }
 #endif		
@@ -738,7 +740,7 @@ class Array2 : public array2<T> {
 #if 0		
     Dimension(A.Nx(),A.Ny());
     if(A.Size() > size) {
-      if(test(allocated)) Deallocate();
+      Deallocate();
       __checkActivate(2);
     }
 #endif		
