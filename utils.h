@@ -385,7 +385,7 @@ inline void out_curve(S& os, T *f, const char *text, unsigned int n)
 template<class S, class T>
 inline void out_curve(S& os, T f, const char *text)
 {
-	out_curve(os,&f,text,1,default_nperline);
+	out_curve(os,&f,text,(unsigned int) 1,default_nperline);
 }
 
 template<class S>
