@@ -258,7 +258,7 @@ void PS::NonLinearSrc(Var *source, Var *psi, double)
 	
 #pragma ivdep	
 	for(i=0; i < Nmode; i++) {
-		Real kx=CartesianMode[i].X();
+		Real kx=CartesianModeX[i];
 		source[i].re=-psi[i].im*kx;
 		source[i].im=psi[i].re*kx;
 	}
@@ -272,7 +272,7 @@ void PS::NonLinearSrc(Var *source, Var *psi, double)
 
 #pragma ivdep	
 	for(i=0; i < Nmode; i++) {
-		Real ky=CartesianMode[i].Y();
+		Real ky=CartesianModeY[i];
 		source[i].re=-psi[i].im*ky;
 		source[i].im=psi[i].re*ky;
 	}

@@ -17,6 +17,8 @@ unsigned int log2Nxb,log2Nyb;
 int nfft; // Total number of FFT elements;
 int Nxb,Nxb1,Nyb,Nyp;
 Cartesian *CartesianMode;
+Real *CartesianModeX;
+Real *CartesianModeY;
 
 Real krmin=1.0;
 Real krmin2=0.0;
@@ -35,6 +37,8 @@ void Basis<Cartesian>::MakeBins()
 		
 	n=Nx*Ny-1;
 	mode=CartesianMode=new Cartesian[n];
+	CartesianModeX=new Real[n];
+	CartesianModeY=new Real[n];
 	Nmode=(reality ? n/2 : n);
 	nindependent=(reality || n % 2) ? Nmode : n/2;
 	
@@ -52,6 +56,8 @@ void Basis<Cartesian>::MakeBins()
 	}
 	
 	for(i=0; i < n; i++) {
+		CartesianModeX[i]=mode[i].X();
+		CartesianModeY[i]=mode[i].Y();
 		if(mode[i] == mode0) msg(ERROR,"Zero mode (%d) encountered",i);
 	}
 	

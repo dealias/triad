@@ -17,6 +17,9 @@ extern double scale;
 extern Real krmin;
 extern Real krmin2;
 
+extern Real *CartesianModeX;
+extern Real *CartesianModeY;
+
 class Cartesian : public Mode {
 public:	
 	int x,y;	// wavenumber components
@@ -42,6 +45,8 @@ public:
 		else return Nevolved-y*Nx-x-1; // Reflected Modes;
 	}
 };
+
+extern Cartesian *CartesianMode;
 
 inline Cartesian operator - (const Cartesian& a)
 {
@@ -101,8 +106,6 @@ inline ostream& operator << (ostream& s, const Cartesian& b)
 	return s;
 }
 	
-extern Cartesian *CartesianMode;
-
 inline int Basis<Cartesian>::InGrid(Cartesian& m)
 {
 	return (m != Cartesian(0,0)) && 
