@@ -443,7 +443,7 @@ void mtridiagonal(int n, T *u, const T *f, const Real *c, const Real *a,
 {
   int jstop=m*inc2;
 		
-#if !_CRAYMVP
+#ifndef _CRAYMVP
   if(inc1 == 1) {
     for(int j=0; j < jstop; j += inc2) 
       tridiagonal(n,u+j,f+j,c+j,a+j,b+j,work);
