@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
   open_output(gparam,dirsep,"param",0);
   Vocabulary->GraphicsDump(gparam);
   gparam.close();
-  
+
   Problem->Setup();
   Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,dtmin,dtmax,
 		       itmax,microsteps,verbose,dynamic);

@@ -319,6 +319,19 @@ inline Complex expi(Real phase)
   return Complex(cosy,siny);
 }
 
+inline void LeastSquaresFit(unsigned n, Real *x, Real *y, Real &m, Real &b) 
+{
+  Real sumx=0.0, sumy=0.0, sumxx=0.0, sumxy=0.0;
+  for(unsigned i=0; i < n; i++) {
+    sumx += x[i];
+    sumy += y[i];
+    sumxx += x[i]*x[i];
+    sumxy += x[i]*y[i];
+  }
+  m=(n*sumxy-sumx*sumy)/(n*sumxx-sumx*sumx);
+  b=(sumy-m*sumx)/n;
+}
+
 char *atos(const char *s);
 Complex atoc(const char *s);
 unsigned int atou(const char *s);
