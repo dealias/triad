@@ -32,7 +32,8 @@ typedef void stack_t;
 
 extern char* run;
 static const double init_time=time(NULL);
-static const double ticktime=1.0/CLOCKS_PER_SEC;
+/* static const double ticktime=1.0/CLOCKS_PER_SEC; */
+static const double ticktime=1.0/sysconf(_SC_CLK_TCK);
 
 void cputime(double *cpu)
 {

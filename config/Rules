@@ -8,7 +8,7 @@ clean:
 	rm -rf *.o *.$(D) *mon.out $(CLEAN)
 
 %.$(D): %.cc
-	$(MAKEDEPEND) $(INCL) $(MDOPTS) $< > $@
+	$(MAKEDEPEND) -Wno-deprecated $(INCL) $(MDOPTS) $< > $@
 
 ifneq ($(wildcard $(TRI)/config/$(HOSTTYPE).rules),)
 include $(TRI)/config/$(HOSTTYPE).rules
