@@ -225,33 +225,37 @@ void NWave::InitialConditions()
 	Vocabulary->GraphicsDump(fparam);
 	fparam.close();
 	
-	if(movie && strcmp(method,"PS") != 0) {
-		Real k0=FLT_MAX;
-		for(i=0; i < Npsi; i++) k0=min(k0,Geometry->K(i));
+	if(movie && strcmp(method,"SR") == 0) {
+		if(discrete) {
+			set_fft_parameters();
+			psix=new Var[nfft];
+		} else {
+			Real k0=FLT_MAX;
+			for(i=0; i < Npsi; i++) k0=min(k0,Geometry->K(i));
 	
-		if(!ngridx) ngridx=Nx;
-		if(!ngridy) ngridy=Ny;
-		Real L=twopi/k0;
-		xcoeff=new Complex [ngridx*Npsi];
-		for(int m=0; m < Npsi; m++) {
-			Real kx=Geometry->X(m);
-			for(i=0; i < ngridx; i++) {
-				Complex *p=xcoeff+i*Npsi;
-				Real X=i*L/ngridx;
-				p[m]=expi(kx*X);
-
-			}				
-		}
-		
-		if(ngridy == ngridx) ycoeff=xcoeff;
-		else {
+			if(!ngridx) ngridx=Nx;
+			if(!ngridy) ngridy=Ny;
+			Real L=twopi/k0;
+			
+			xcoeff=new Complex [ngridx*Npsi];
+			for(int m=0; m < Npsi; m++) {
+				Real area_factor=sqrt(sqrt(Geometry->Area(m)));
+				Real kx=Geometry->X(m);
+				for(i=0; i < ngridx; i++) {
+					Complex *p=xcoeff+i*Npsi;
+					Real X=i*L/ngridx;
+					p[m]=expi(kx*X)*area_factor;
+				}				
+			}
+			
 			ycoeff=new Complex [ngridy*Npsi];
 			for(int m=0; m < Npsi; m++) {
+				Real area_factor=sqrt(sqrt(Geometry->Area(m)));
 				Real ky=Geometry->Y(m);
 				for(int j=0; j < ngridy; j++) {
 					Complex *q=ycoeff+j*Npsi;
 					Real Y=j*L/ngridy;
-					q[m]=expi(ky*Y);
+					q[m]=expi(ky*Y)*area_factor;
 				}
 			}
 		}
@@ -328,7 +332,7 @@ void NWave::Output(int)
 	
 	if(movie) {
 		lock();
-		if(strcmp(method,"PS") != 0) {
+		if(strcmp(method,"SR") == 0 && !discrete) {
 			fpsi << ngridx << ngridy << 1;
 			for(int j=ngridy-1; j >= 0; j--) {
 				Complex *q=ycoeff+j*Npsi;
@@ -342,11 +346,11 @@ void NWave::Output(int)
 					fpsi << (float) sum;
 				}
 			}
-		} 
-		else {
+		} else {
 			fpsi << Nxb << Nyb << 1;
-		
-			CartesianPad(psix,y);
+			if(discrete) DiscretePad(psix,y);
+			else CartesianPad(psix,y);
+			
 			crfft2dT(psix,log2Nxb,log2Nyb,1);
 		
 			Real *psir=(Real *) psix;

@@ -10,7 +10,7 @@ extern int nfft;
 extern int Nxb,Nxb1,Nyb,Nyp;
 
 extern Var *psix,*psiy,*vort;
-extern Real *kfactor;
+extern Real *knorm2,*kfactor;
 
 template<class T>
 class Basis : public GeometryBase {
@@ -54,16 +54,20 @@ INLINE void Basis<T>::List(ostream &os)
 template<class T>
 INLINE void Basis<T>::Initialize()
 {
+	knorm2=new Real[Nmode];
 	kfactor=new Real[Nmode];
 	
 	if(strcmp(Problem->Abbrev(),"PS") == 0) {
-		cout << endl << "ALLOCATING FFT BUFFERS (" << Nxb << " x " << Nyp << ")."
-			 << endl;
+		cout << endl << "ALLOCATING FFT BUFFERS (" << Nxb << " x " << Nyp
+			 << ")." << endl;
 		psix=new Var[nfft];
 		psiy=new Var[nfft];
 		vort=new Var[nfft];
 		Real scale=Nxb*Nyb;
-		for(int k=0; k < Nmode; k++) kfactor[k]=1.0/(scale*mode[k].K2());
+		for(int k=0; k < Nmode; k++) {
+			knorm2[k]=mode[k].K2();
+			kfactor[k]=1.0/(scale*knorm2[k]);
+		}
 	} else {
 		psibuffer=new Var[n];
 		psibufferR=(reality ? psibuffer+Nmode : psibuffer);

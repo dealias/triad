@@ -9,6 +9,7 @@ char *Basis<Cartesian>::Name() {return "Cartesian";}
 // Cartesian vocabulary
 int Nx=17; // Number of modes in x-direction
 int Ny=17; // Number of modes in y-direction
+int *ModeBin;
 
 int Nx0,NRows,NPad,NPadTop,xoffset;
 int Nevolved;
@@ -51,6 +52,13 @@ void Basis<Cartesian>::MakeBins()
 		if(mode[i] == mode0) msg(ERROR,"Zero mode (%d) encountered",i);
 	}
 	
+	set_fft_parameters();
+
+	return;
+}
+
+void set_fft_parameters()
+{	
 	int nminx=(3*Nx-1)/2;
 	int nminy=(3*Ny-1)/2;
 	for(log2Nxb=0; nminx > (1 << log2Nxb); log2Nxb++);
@@ -68,12 +76,39 @@ void Basis<Cartesian>::MakeBins()
 	Nx0=(Nx-1)/2;
 	NPad=Nxb1-Nx;
 	NPadTop=(Nyp-(Ny+1)/2)*Nxb1+Nxb1-((Nx+1)/2+xoffset);
+}
 
-	return;
+void DiscretePad(Var *to, Var *from)
+{
+	int k=0;
+	to += xoffset;
+	*(to++)=0.0;
+	Var *tostop=to+Nx0;
+#pragma ivdep		
+	for(; to < tostop; to++) {
+		int index=ModeBin[k++];
+		if(index >= 0) *to=from[index];
+		else *to=0.0;
+	}
+    for(int j=0; j < NRows-1; j++) {
+        tostop += NPad;
+#pragma ivdep		
+        for(; to < tostop; to++) *to=0.0;
+        tostop += Nx;
+#pragma ivdep		
+		for(; to < tostop; to++) {
+			int index=ModeBin[k++];
+			if(index >= 0) *to=from[index];
+			else *to=0.0;
+		}
+    }
+	tostop += NPadTop;
+#pragma ivdep		
+	for(; to < tostop; to++) *to=0.0;
 }
 
 #if _CRAY
-void CartesianPad(Var *to_, Var * from)
+void CartesianPad(Var *to_, Var *from)
 {
 	Var *to=to_+xoffset;
 	*(to++)=0.0;

@@ -209,7 +209,6 @@ class Partition : public GeometryBase {
 	Hash<WeightIndex> *hash;
 	int Nweight,Nhash;
 	Bin<T,D> *bin; // pointer to table of bins
-	int *ModeBin;
 public:
 	char *Name();
 	int Valid(char *s) {return strcmp(s,"SR")==0;}

@@ -5,6 +5,7 @@
 
 extern int Nx;
 extern int Ny;
+extern int *ModeBin;
 
 extern int xoffset;
 extern int Nx0,NRows,NPad,NPadTop;
@@ -105,6 +106,9 @@ inline int Basis<Cartesian>::InGrid(Cartesian& m)
 		(low.Column() <= m.Column() && m.Column() <= high.Column()) &&
 		(low.Row() <= m.Row() && m.Row() <= high.Row());
 }
+
+void set_fft_parameters();
+void DiscretePad(Var *to, Var *from);
 
 #if _CRAY
 void CartesianPad(Var *to, Var *from);

@@ -20,7 +20,7 @@ int Ntriad;
 DynVector<Triad> triad;
 TriadLimits *triadLimits;
 
-Real *kfactor;
+Real *knorm2,*kfactor;
 
 Nu *nu,*nu_inv;
 Real *nuR_inv,*nuI;
@@ -164,7 +164,7 @@ void PS::NonLinearSrc(Var *source, Var *psi, double)
 	crfft2dT(psix,log2Nxb,log2Nyb,1);
 
 #pragma ivdep	
-	for(i=0; i < Npsi; i++)	source[i] *= CartesianMode[i].K2();
+	for(i=0; i < Npsi; i++)	source[i] *= knorm2[i];
 	CartesianPad(vort,source);
 	crfft2dT(vort,log2Nxb,log2Nyb,1);
 
@@ -203,7 +203,7 @@ void PS::NonLinearSrc(Var *source, Var *psi, double)
 	}
 
 #pragma ivdep	
-	for(i=0; i < Npsi; i++)	source[i] *= CartesianMode[i].K2();
+	for(i=0; i < Npsi; i++)	source[i] *= knorm2[i];
 	CartesianPad(vort,source);
 	crfft2dT(vort,log2Nxb,log2Nyb,1);
 
