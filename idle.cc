@@ -1,4 +1,3 @@
-test
 #ifdef _ANSI_C_SOURCE
 #undef _ANSI_C_SOURCE
 #endif
