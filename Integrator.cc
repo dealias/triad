@@ -234,6 +234,51 @@ void RK5::TimestepDependence(double dt)
 	d4=277.0/14336.0*dt; d5=0.25*dt;
 }
 
+#if _CRAY && COMPLEX
+void RK5::Predictor(Var *y0, double t, double)
+{
+	int j;
+	
+#pragma ivdep		
+	for(j=0; j < ny; j++) {
+		y[j].re=y0[j].re+b10*source0[j].re;
+		y[j].im=y0[j].im+b10*source0[j].im;
+	}
+	Source(source1,y,t+a1);
+#pragma ivdep		
+	for(j=0; j < ny; j++) {
+		y2[j].re=y0[j].re+b20*source0[j].re+b21*source1[j].re;
+		y2[j].im=y0[j].im+b20*source0[j].im+b21*source1[j].im;
+	}
+	Source(source2,y2,t+a2);
+#pragma ivdep		
+	for(j=0; j < ny; j++) {
+		y3[j].re=y0[j].re+b30*source0[j].re+b31*source1[j].re+
+			b32*source2[j].re;
+		y3[j].im=y0[j].im+b30*source0[j].im+b31*source1[j].im+
+			b32*source2[j].im;
+	}
+	Source(source3,y3,t+a3);
+#pragma ivdep		
+	for(j=0; j < ny; j++) {
+		y4[j].re=y0[j].re+b40*source0[j].re+b41*source1[j].re+
+			b42*source2[j].re+b43*source3[j].re;
+		y4[j].im=y0[j].im+b40*source0[j].im+b41*source1[j].im+
+			b42*source2[j].im+b43*source3[j].im;
+	}
+	Source(source4,y4,t+a4);
+#pragma ivdep		
+	for(j=0; j < ny; j++) {
+		y5[j].re=y0[j].re+b50*source0[j].re+b51*source1[j].re+
+			b52*source2[j].re+b53*source3[j].re+b54*source4[j].re;
+		y5[j].im=y0[j].im+b50*source0[j].im+b51*source1[j].im+
+			b52*source2[j].im+b53*source3[j].im+b54*source4[j].im;
+	}
+	Source(source,y5,t+a5);
+}
+	
+#else // _CRAY && COMPLEX
+	
 void RK5::Predictor(Var *y0, double t, double)
 {
 	int j;
@@ -257,6 +302,8 @@ void RK5::Predictor(Var *y0, double t, double)
 		b52*source2[j]+b53*source3[j]+b54*source4[j];
 	Source(source,y5,t+a5);
 }
+
+#endif // _CRAY && COMPLEX
 
 int RK5::Corrector(Var *y0, double, double& errmax, int start, int stop)
 {
