@@ -1,22 +1,9 @@
 #include "options.h"
 #include "fft.h"
 
-static Complex *wpTable;
-static unsigned int wpTableSize=0;
+extern Complex *wpTable;
+extern unsigned int wpTableSize;
 
-static void fft_init(unsigned int log2n)
-{
-	unsigned int n=1 << log2n;
-	
-	wpTable=new(wpTable,log2n) Complex;
-	unsigned int mmax=1 << wpTableSize;
-	while (n > mmax) {
-		mmax <<= 1;
-		wpTable[wpTableSize]=expim1(twopi/mmax);
-		wpTableSize++;
-	}
-}
-	
 // Return the bit-reversed forward Fourier transform of a Complex vector.
 // Before calling, data must be allocated as Complex[n].
 // On entry: data contains the n Complex values.

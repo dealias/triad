@@ -1,11 +1,28 @@
 #include "options.h"
 #include "fft.h"
 
+Complex *wpTable;
+unsigned int wpTableSize=0;
+
 static Complex *WTable;
 static unsigned int WTableSize=0;
 
+void fft_init(unsigned int log2n)
+{
+	unsigned int n=1 << log2n;
+	
+	wpTable=new(wpTable,log2n) Complex;
+	unsigned int mmax=1 << wpTableSize;
+	while (n > mmax) {
+		mmax <<= 1;
+		wpTable[wpTableSize]=expim1(twopi/mmax);
+		wpTableSize++;
+	}
+}
+	
 void rfft_init(unsigned int log2n)
 {
+	if(log2n > wpTableSize) fft_init(log2n);
 	unsigned int n4=1 << (log2n-1);
 	
 	WTable=new(WTable,n4) Complex;
@@ -26,9 +43,9 @@ void rfft_init(unsigned int log2n)
 void rfft_br(Complex *data, unsigned int log2n)
 {		 
 	unsigned int i;
+	if(log2n > wpTableSize) fft_init(log2n+1);
 	
-	if(log2n > TableSize) fft_init(log2n+1);
-	fft_br(data,log2n);
+	unsigned int log4n=log2n/2;
 	if(2*log4n == log2n) fft4(data,log4n,1); // Special case for powers of 4.
 	else fft_br(data,log2n);
 //	fft(data,log2n,1);
@@ -60,7 +77,7 @@ void rfft_br(Complex *data, unsigned int log2n)
 void rfft_brinv(Complex *data, unsigned int log2n)
 {		 
 	unsigned int i;
-	if(log2n > TableSize) fft_init(log2n+1);
+	if(log2n > wpTableSize) fft_init(log2n+1);
 	
 	unsigned int n2=1 << log2n;
 	unsigned int n4=n2 >> 1;
