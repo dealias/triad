@@ -253,7 +253,7 @@ void Convolution::NonLinearSrc(Var *source, Var *psi, double)
 void PS::NonLinearSrc(Var *source, Var *psi, double)
 {
 #if COMPLEX
-	const int bitreverse=0; // Use faster bit-reversed FFT's
+	const int bitreverse=1; // Use faster bit-reversed FFT's if available
 	int i;
 	
 #pragma ivdep	
