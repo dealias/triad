@@ -51,6 +51,8 @@ int verbose=0;
 int two=0;
 int gradient=0;
 int damp=0;
+int r1,g1,b1;
+int r2,g2,b2;
 
 static int floating_scale=0;
 static int floating_section=0;
@@ -88,7 +90,7 @@ char *extract=NULL;
 
 enum Parameters {RFACTOR=256,THETA,PHI,YXASPECT,ZXASPECT,POINTSIZE,AVGX,AVGY,\
 				 EXTRACT,NCOLORS,BACKGROUND,XMIN,XMAX,YMIN,YMAX,ZMIN,ZMAX,
-				 LABEL,ALPHA,CROP,NXFINE,NYFINE,NZFINE};
+				 LABEL,ALPHA,CROP,NXFINE,NYFINE,NZFINE,CONST,RATE};
 
 Real Rfactor=2.0;
 Real Theta=0.9;
@@ -425,6 +427,8 @@ int main(int argc, char *const argv[])
                {"Nxfine", 1, 0, NXFINE},
                {"Nyfine", 1, 0, NYFINE},
                {"Nzfine", 1, 0, NZFINE},
+               {"const", 1, 0, CONST},
+               {"rate", 1, 0, RATE},
                {"pointsize", 1, 0, POINTSIZE},
                {"Rfactor", 1, 0, RFACTOR},
                {"Theta", 1, 0, THETA},
