@@ -8,6 +8,7 @@
 #include <fstream.h>
 #include <math.h>
 #include <stdio.h>
+#include <memory.h>
 
 #define INLINE inline
 

@@ -26,7 +26,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	}
 	
 	int inc=2*inc1;
-	int jump=2*inc2; // Should be odd. JCB
+	int jump=2*inc2; // Should be 2*odd. JCB
 	CFFTMLT(&data[0].re,&data[0].im,work,trigs,ifax,inc,jump,n,nk,isign);
 }
 

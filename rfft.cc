@@ -7,6 +7,12 @@ unsigned int wpTableSize=0;
 static Complex *WTable;
 static unsigned int WTableSize=0;
 
+#if _CRAY
+const int offset=1;
+#else
+const int offset=0;
+#endif	
+
 void fft_init(unsigned int log2n)
 {
 	unsigned int n=1 << log2n;
@@ -220,11 +226,11 @@ void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	if(isign == 1) {
 		for(unsigned int i=1; i < n4; i++) {
 			Complex *p=data+i*inc1, *q=data+(n2-i)*inc1;
-			Complex W=conj(WTable[i]);
+			Complex W=2.0*conj(WTable[i]);
 #pragma ivdep
 			for(unsigned int k=0; k < kstop; k += inc2) {
 				Complex u=conj(p[k]), v=q[k];
-				Complex A=u+v, B=2.0*W*(u-v);
+				Complex A=u+v, B=W*(u-v);
 				p[k]=A-B;
 				q[k]=conj(A+B);
 			}
@@ -235,11 +241,11 @@ void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	} else {
 		for(unsigned int i=1; i < n4; i++) {
 			Complex *p=data+i*inc1, *q=data+(n2-i)*inc1;
-			Complex W=conj(WTable[i]);
+			Complex W=2.0*conj(WTable[i]);
 #pragma ivdep
 			for(unsigned int k=0; k < kstop; k += inc2) {
 				Complex u=p[k], v=conj(q[k]);
-				Complex A=u+v, B=2.0*W*(u-v);
+				Complex A=u+v, B=W*(u-v);
 				p[k]=A-B;
 				q[k]=conj(A+B);
 			}
@@ -286,7 +292,7 @@ void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 		for(i=1; i < nx; i += 2) p[i]=-p[i];
 	}
 
-	mfft(data,log2nx,isign,nyp,1,nx);
+	mfft(data,log2nx,isign,nyp,1,nx+offset);
 	
 	for(p=data; p < pstop; p += pinc) {
 #pragma ivdep
@@ -334,7 +340,7 @@ void rcfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 		for(i=0; i < nx; i += 2) p[i]=-p[i];
 	}
 	
-	mfft(data,log2nx,isign,nyp,1,nx);
+	mfft(data,log2nx,isign,nyp,1,nx+offset);
 	
 	for(p=data; p < pstop; p += nx) {
 #pragma ivdep

@@ -48,11 +48,16 @@ void Basis<Cartesian>::MakeBins()
 	Nxb=1 << log2Nxb;
 	Nyb=1 << log2Nyb;
 	Nyp=(Nyb/2+1);
-	nfft=Nxb*Nyp;
 	xoffset=Nxb/2;
+	int Nxb1=Nxb;
+	
+#if _CRAY // Avoid memory bank conflicts
+	Nxb1 += 1;
+#endif	
+	nfft=Nxb1*Nyp;
 	Nx0=(Nx-1)/2;
-	NPad=Nxb-Nx;
-	NPadTop=(Nyp-(Ny+1)/2)*Nxb+Nxb-((Nx+1)/2+xoffset);
+	NPad=Nxb1-Nx;
+	NPadTop=(Nyp-(Ny+1)/2)*Nxb1+Nxb1-((Nx+1)/2+xoffset);
 	
 	for(j=0; j >= low.Row(); j--) // Reflected modes
 		for(i=((j == 0) ? -1 : high.Column()); i >= low.Column(); i--)
