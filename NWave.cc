@@ -18,39 +18,62 @@ Nu *nu,*nu_inv;
 Real *nuR_inv,*nuI;
 Real *forcing;
 
-Var spdot(Triad *&t, const Triad *tstop);
+#if _AIX && COMPLEX
+// Special case to help xlC with optimization:
 
-inline void PrimitiveNucleus(Var *source)
-{	
-	Var *k,*kstop=source+Npsi;
-	Triad *t=triadBase,**tstop=triadStop;
-	
-	for(k=source; k < kstop; k++) *k=spdot(t,*(tstop++));
+inline Var spdot(Triad *tstart, const Triad *tstop)
+{
+	Triad *t=tstart;
+	Real sumre, sumim;
+	for(sumre=sumim=0.0; t < tstop; t++) {
+		sumre += t->Mkpq * (*t->pq).re;
+		sumim -= t->Mkpq * (*t->pq).im;
+	}
+	return Complex(sumre,sumim);
 }
+
+#else
+
+inline Var spdot(Triad *tstart, const Triad *tstop)
+{
+	Triad *t=tstart;
+	Var sum;
+	for(sum=0.0; t < tstop; t++) {
+		sum += t->Mkpq * conj(*(t->pq));
+	}
+	return sum;
+}
+
+#endif
 
 void PrimitiveNonlinearity(Var *source, Var *psi, double)
 {
-	Var *k,*kstop,*q;
-	Pair *p,*pstop;
-	
 	set(psibuffer,psi,Npsi);
 	
 	// Compute reflected psi's
 	if(reality) {
+		Var *kstop,*q;
 		kstop=q=psibuffer+Npsi;
 #pragma ivdep		
-		for(k=psibuffer; k < kstop; k++,q++) conjugate(*q,*k);
+		for(Var *k=psibuffer; k < kstop; k++,q++) conjugate(*q,*k);
 	}
 	
-	pstop=pair+Npair;
+	Pair *pstop=pair+Npair;
 #pragma ivdep		
-	for(p=pair; p < pstop; p++) p->psipq=(*p->p)*(*p->q);
+	for(Pair *p=pair; p < pstop; p++) p->psipq=(*p->p)*(*p->q);
 	
-	PrimitiveNucleus(source);
+	Triad *t=triadBase,**tstop=triadStop;
+	Var *kstop=source+Npsi;
+	
+	for(Var *k=source; k < kstop; k++) {
+		*k=spdot(t,*tstop);
+		t=*(tstop++);
+	}
 	
 	// Compute moments
 	if(average && Nmoment > 0) {
-		Var *q0=q=source+Npsi;
+		Var *k,*kstop,*q,*q0;
+		q0=q=source+Npsi;
 		kstop=psi+Npsi;
 #if 1
 #pragma ivdep

@@ -277,7 +277,7 @@ void RK5::Predictor(Var *y0, double t, double)
 	Source(source,y5,t+a5);
 }
 	
-#else // _CRAY && COMPLEX
+#else // !_CRAY && COMPLEX
 	
 void RK5::Predictor(Var *y0, double t, double)
 {
