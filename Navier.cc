@@ -51,7 +51,7 @@ int weiss=0;
 
 class Diamagnetic : public LinearityBase {
 public:
-	Real Frequency(const Polar& v) {return vd*v.Y()/Denominator(v.K2());}
+	Real Frequency(const Polar& v) {return vd*v.Y();}
 };
 
 class BandLimited : public Diamagnetic {
@@ -266,7 +266,7 @@ void NWave::InitialConditions()
 			norm_factor=new Real[Npsi];
 			for(int m=0; m < Npsi; m++) {
 				norm_factor[m]=sqrt(Geometry->Normalization(m)/
-									Geometry->K2(m));
+									Linearity->Denominator(Geometry->K2(m)));
 			}
 		} else {
 			int m;
@@ -287,7 +287,9 @@ void NWave::InitialConditions()
 			for(m=0; m < Npsi; m++) {
 				Real Dkinv=1.0/Geometry->Area(m);
 				Real kx=Geometry->X(m);
-				Real norm=sqrt(Geometry->Normalization(m)/Geometry->K2(m));
+				Real norm=sqrt(Geometry->Normalization(m)/
+							   Linearity->Denominator(Geometry->K2(m)));
+
 				for(i=0; i < ngridx; i++) {
 					Complex *p=xcoeff+i*Npsi;
 					Real X=i*L/ngridx;

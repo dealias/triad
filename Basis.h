@@ -67,13 +67,13 @@ INLINE void Basis<T>::Initialize()
 		Real scale=Nxb*Nyb;
 		for(int k=0; k < Nmode; k++) {
 			knorm2[k]=mode[k].K2();
-			kfactor[k]=1.0/(scale*Linearity->Denominator(mode[k].K2()));
+			kfactor[k]=1.0/(scale*Normalization(k));
 		}
 	} else {
 		psibuffer=new Var[n];
 		psibufferR=(reality ? psibuffer+Nmode : psibuffer);
 		for(int k=0; k < Nmode; k++) 
-			kfactor[k]=1.0/Linearity->Denominator(mode[k].K2());
+			kfactor[k]=1.0/Normalization(k);
 	}
 }
 

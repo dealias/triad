@@ -145,6 +145,8 @@ inline void CartesianUnPad(Var *to, const Var *from)
 #endif
 
 // Factor which converts |y|^2 to 2.0*energy in stream function normalization:
-inline Real Basis<Cartesian>::Normalization(int i) {return K2(i);}
+inline Real Basis<Cartesian>::Normalization(int i) {
+	return Linearity->Denominator(Geometry->K2(i));
+}
 
 #endif
