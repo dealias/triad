@@ -23,6 +23,8 @@ class IntegratorBase {
   int microprocess;
   int verbose;
   int dynamic;
+  int order;
+  double pgrow, pshrink;
  public:	
   virtual ~IntegratorBase() {}
   void SetAbbrev(const char *abbrev0) {abbrev=abbrev0;}
@@ -55,6 +57,15 @@ class IntegratorBase {
   void CalcError(const Var& initial, const Var& norm, const Var& pred,
 		 const Var& corr);
   Solve_RC CheckError();
+  
+  virtual void ExtrapolateTimestep () {
+    if(errmax < tolmin2) {
+      if(errmax) growfactor=pow(tolmin2/errmax,pgrow);
+    } else if(tolmin2) shrinkfactor=growfactor=pow(tolmin2/errmax,pshrink);
+    growfactor=min(growfactor,stepfactor);
+    shrinkfactor=max(shrinkfactor,stepinverse);
+    if(errmax <= tolmax2) errmax=0.0; // Force a time step adjustment.
+  }
   
   void Alloc0(vector2& Y, vector& y);
   void Alloc(vector2& Y, vector& y);
@@ -137,16 +148,17 @@ class AdamsBashforth : public IntegratorBase {
   double b0,b1,b2;
   int init;
  public:
+  AdamsBashforth() {order=3;}
   void Allocate() {
     IntegratorBase::Allocate();
     Alloc(Y0,y0);
     Alloc0(Src0,source0);
     Alloc0(Src1,source1);
-    init=2;
   }
-  const char *Name() {return "Third-Order Adams-Bashforth";}
+  const char *Name() {return "Third-Order Adams-Bashforth-Moulton";}
   Solve_RC Solve();
   void TimestepDependence() {
+    init=2;
     a0=23.0/12.0*dt;
     a1=-4.0/3.0*dt;
     b0=a2=5.0/12.0*dt;
@@ -161,8 +173,6 @@ class PC : public IntegratorBase {
   vector y0,source0;
   vector2 Y0,Src0;
   double halfdt;
-  int order;
-  double pgrow, pshrink;
  public:
   PC() {order=2;}
   void Allocate() {
@@ -170,21 +180,12 @@ class PC : public IntegratorBase {
     Alloc(Y0,y0);
     Alloc0(Src0,source0);
     new_y0=1;
-    pgrow=0.5/order; pshrink=(order > 1) ? 0.5/(order-1) : 0;
   }
   const char *Name() {return "Predictor-Corrector";}
   Solve_RC Solve();
 	
   void TimestepDependence() {
     halfdt=0.5*dt;
-  }
-  virtual void ExtrapolateTimestep () {
-    if(errmax < tolmin2) {
-      if(errmax) growfactor=pow(tolmin2/errmax,pgrow);
-    } else if(tolmin2) shrinkfactor=growfactor=pow(tolmin2/errmax,pshrink);
-    growfactor=min(growfactor,stepfactor);
-    shrinkfactor=max(shrinkfactor,stepinverse);
-    if(errmax <= tolmax2) errmax=0.0; // Force a time step adjustment.
   }
   virtual void Predictor();
   virtual int Corrector();

@@ -25,7 +25,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 using namespace Array;
 
 const char PROGRAM[]="TRIAD";
-const char VERSION[]="1.41";
+const char VERSION[]="1.42";
 const int RestartVersion=2;
 Real RestartProblemVersion=0;
 

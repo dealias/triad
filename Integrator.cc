@@ -164,6 +164,8 @@ void IntegratorBase::Allocate()
   Dimension1(y,Problem->yVector());
   Dimension1(Y,Problem->YVector());
   Dimension1(Yout,Problem->YVector());
+  
+  pgrow=0.5/order; pshrink=(order > 1) ? 0.5/(order-1) : 0;
 }
 
 Solve_RC Euler::Solve()
@@ -241,7 +243,6 @@ int PC::Corrector()
 	CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
     }
     ExtrapolateTimestep();
-    errmax=0;
   } else for(unsigned int j=0; j < ny; j++) {
     y[j]=y0[j]+halfdt*(source0[j]+source[j]);
   }
@@ -280,10 +281,11 @@ int SYM2::Corrector()
   return 1;
 }
 
-// *** Need to add Transform and BackTransform here...
-
 Solve_RC AdamsBashforth::Solve()
 {
+  Solve_RC flag;
+  errmax=0.0;
+  
   swaparray(Y0,Y);
   Set1(y,Y[0]);
   Set1(y0,Y0[0]);
@@ -296,11 +298,26 @@ Solve_RC AdamsBashforth::Solve()
     Set1(source1,Src1[0]);
     Set1(source,Src[0]);
     Source(Src0,Y0,t);
+    Problem->Transform(Y0,t,dt,YI);
     for(unsigned int j=0; j < ny; j++) 
       y[j]=y0[j]+a0*source0[j]+a1*source1[j]+a2*source[j];
+    Problem->BackTransform(Y,t+dt,dt,YI);
     Source(Src,Y,t);
-    for(unsigned int j=0; j < ny; j++) 
-      y[j]=y0[j]+b0*source[j]+b1*source0[j]+b2*source1[j];
+    if(dynamic) {
+      for(unsigned int j=0; j < ny; j++) {
+	Var temp=y0[j]+b0*source[j]+b1*source0[j]+b2*source1[j];
+	CalcError(y0[j],temp,y[j],temp);
+	y[j]=temp;
+      }
+      ExtrapolateTimestep();
+      flag=CheckError();
+    } else {
+      for(unsigned int j=0; j < ny; j++) {
+	y[j]=y0[j]+b0*source[j]+b1*source0[j]+b2*source1[j];
+      }
+      flag=SUCCESSFUL;
+    }
+    if (flag != UNSUCCESSFUL) Problem->BackTransform(Y,t+dt,dt,YI);
     break;
     }
   case 1:
@@ -309,23 +326,26 @@ Solve_RC AdamsBashforth::Solve()
     {
     Set1(source0,Src0[0]);
     Set1(source,Src[0]);
-    // Initialize with 2nd-order predictor-corrector
+    // Initialize with 2nd-order predictor-corrector **IMPROVE: USE RK4?**
     Source(Src0,Y0,t);
+    Problem->Transform(Y0,t,dt,YI);
     for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+dt*source0[j];
+    Problem->BackTransform(Y,t+dt,dt,YI);
     Source(Src,Y,t);
     double halfdt=0.5*dt;
     for(unsigned int j=0; j < ny; j++) 
       y[j]=y0[j]+halfdt*(source0[j]+source[j]);
+    Problem->BackTransform(Y,t+dt,dt,YI);
+    flag=SUCCESSFUL;
     init--;
     break;
     }
   }
   
   Problem->Stochastic(Y,t,dt);
-  return SUCCESSFUL;
+  return flag;
 }
 
-// *** Need to add Transform and BackTransform and here...
 Solve_RC Midpoint::Solve()
 {
   int niterations=10;
@@ -336,13 +356,16 @@ Solve_RC Midpoint::Solve()
   if(verbose > 1) cout << endl;
   Source(Src,Y0,t);
   
+  Problem->Transform(Y0,t,dt,YI);
   for(int i=0; i < niterations; i++) {
     for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+halfdt*source[j];
     if(verbose > 1) cout << y[0] << endl;
+    Problem->BackTransform(Y,t+dt,dt,YI);
     Source(Src,Y,t);
   }
   for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+dt*source[j];
   if(verbose > 1) cout << y[0] << endl;
+  Problem->BackTransform(Y,t+dt,dt,YI);
 	
   Problem->Stochastic(Y,t,dt);
   return SUCCESSFUL;
