@@ -1374,7 +1374,7 @@ extern char **environ;
 int System(const char *command) 
 {
   int pid;
-  static int cleaning=0;
+  static bool cleaning=false;
 
   if (command == 0) return 1;
   pid = fork();
@@ -1395,10 +1395,10 @@ int System(const char *command)
       if (errno != EINTR) msg(ERROR,"Process %d failed", pid);
     } else {
       if(WIFEXITED(status)) status=WEXITSTATUS(status);
-      else return -1;
-      msg(WARNING,"%s\nReceived signal %d",command,status);
+      else msg(ERROR,"Process %d exited abnormally", pid);
+      if(status) msg(WARNING,"%s\nReceived signal %d",command,status);
       if(cleaning) return status;
-	cleaning=1; cleanup();
+      cleaning=true; cleanup();
     }
   }
 }
