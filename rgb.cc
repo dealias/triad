@@ -169,7 +169,7 @@ void manimate(int argc, char *const argf[], int n, char *const type,
 	
 extern "C" int getopt(int argc, char *const argv[], const char *optstring);
 
-extern "C" void unsetenv(const char *);
+extern "C" void putenv(const char *);
 
 void usage(char *program)
 {
@@ -495,7 +495,7 @@ int main(int argc, char *const argv[])
 		nset=nset ? min(nset,set) : set;
 	}
 	
-	if(remote && make_mpeg) unsetenv("DISPLAY");
+	if(remote && make_mpeg) putenv("DISPLAY");
 
 	if(nset == 1) msg(ERROR, "More than one frame required");
 	
