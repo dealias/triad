@@ -293,6 +293,7 @@ void read_init()
 
 void lock()
 {
+	if(testing) return;
 	flock.open(lname);
 	if(!flock) {
 		msg(WARNING,"Could not create lock file %s",lname);
@@ -302,6 +303,7 @@ void lock()
 
 void unlock()
 {
+	if(testing) return;
 	if(flock) {
 		flock.close();
 		if(remove(lname) == -1) {
@@ -317,19 +319,22 @@ void testlock()
 	ftest.open(lname);
 	if(ftest) {
 		msg(OVERRIDE,"Lock file %s exists.\nFiles may be corrupted",lname);
-		flock.open(lname);
-		unlock();
+		if(remove(lname) == -1) {
+			msg(WARNING,"Could not remove lock file %s",lname);
+			errno=0;
+		}
 	} else errno=0;
 }
 
 void dump(int it, int final, double tmax) 
 {
 	if(!restart || it > 0) {
-		if(!testing) lock();
+		lock();
 		if((tmax-t >= 1.0E-6*tmax || final) && t > last_dump) {
 			Problem->Output(it); last_dump=t;
 		}
-		if(!testing) unlock();
+		statistics();
+		unlock();
 	}
 	
 	int iter=final_iteration+iteration;
@@ -386,7 +391,6 @@ void set_timer()
 
 void statistics()
 {
-	if(restart && it == 0) return;
 	fstats << setw(w) << final_iteration+iteration << " " <<
 		setw(e) << t << " " << setw(e) << dt << " " << setw(w) << 
 		invert_cnt << " ";
