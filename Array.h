@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.05
+#define __ARRAY_H_VERSION__ 1.06	
 
 // Defining NDEBUG improves optimization but disables argument checking.
 
