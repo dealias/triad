@@ -41,7 +41,7 @@ NWave::NWave()
 }
 
 void None::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
-						  Source_t **ConstantSrc)
+						  Source_t **)
 {
 	*LinearSrc=StandardLinearity;
 	*NonlinearSrc=PrimitiveNonlinearitySR;
