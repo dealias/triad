@@ -44,13 +44,16 @@ bool newton(Real &x, Real (*f)(Real x), Real (*dfdx)(Real x),
 bool newton(Real &x1, Real x2, Real (*f)(Real x), Real (*dfdx)(Real x),
 	    Real epsilon, bool verbose=false, unsigned int MaxIterations=100)
 {
+  cerr.precision(16);
+  
   Real f1=(*f)(x1);
   if(f1 == 0.0) return x1;
   Real f2=(*f)(x2);
   if(f2 == 0.0) return x2;
 	
   if((f1 > 0.0 && f2 > 0.0) || (f1 < 0.0 && f2 < 0.0)) {
-    cerr << "ERROR: root not bracketed" << endl;
+    cerr << "ERROR: root not bracketed, f(x1)=" << f1 << ", f(x2)=" << f2 
+	 << endl;
     return false;
   }
 
@@ -63,7 +66,6 @@ bool newton(Real &x1, Real x2, Real (*f)(Real x), Real (*dfdx)(Real x),
   }
 	
   if(verbose) {
-    cerr.precision(16);
     cerr << endl << "Midpoint: " << x << endl;
   }
 
