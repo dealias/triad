@@ -26,6 +26,13 @@ void rcfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 			 int isign);
 
+void rcfft3d(Complex *data, unsigned int log2nx, unsigned int log2ny,
+			 unsigned int log2nz, int isign);
+void crfft3d(Complex *data, unsigned int log2nx, unsigned int log2ny,
+			 unsigned int log2nz, int isign);
+void fft3d(Complex *data, unsigned int log2nx, unsigned int log2ny,
+		   unsigned int log2nz, int isign);
+	
 void fft4(Complex *data, unsigned int log4n, int isign);
 
 void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned

@@ -332,7 +332,7 @@ int main(int argc, char *const argv[])
 	
 	char *const format=gray ? "gray" : "rgb";
 	int PaletteMin=gray ? 255 : ColorPaletteMin[palette];
-	int PaletteRange=gray ? -255 : ColorPaletteMax[palette]-PaletteMin;
+	int PaletteRange=gray ? -255 : (ColorPaletteMax[palette]-PaletteMin);
 	
 	red=Red[palette];
 	green=Green[palette];
@@ -419,7 +419,7 @@ int main(int argc, char *const argv[])
 					for(int j2=0; j2 < my; j2++) {
 						for(int i=0; i < nx; i++)  {
 							int index=(step == 0.0) ? PaletteRange/2 : 
-								(int) ((vmin+value[k][i+nx*j])*step+0.5);
+								(int) ((value[k][i+nx*j]-vmin)*step+0.5);
 							index += PaletteMin;
 							if(gray) {
 								for(int i2=0; i2 < mx; i2++)
@@ -572,7 +572,7 @@ void manimate(int, char *const argf[], int n, char *const type,
 {
 	strstream buf;
 	buf << "animate -scene 0-" << n << " -size " << xsize << "x" << ysize
-		<< " " << type << ":" << rgbdir << argf[0] << "." << type << ".%d" 
+		<< " " << type << ":" << rgbdir << argf[0] << "%d" << "." << type
 		<< ends;
 	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;

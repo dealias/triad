@@ -314,7 +314,7 @@ void fft(Complex *data, unsigned int log2n, int isign, int bitreverse)
 //           log2n contains the base-2 logarithm of n.
 //           isign is +1 for a forward transform, -1 for an inverse transform.
 //           inc1 is the stride between the elements of each Complex vector.
-//           inc2 is the stride between first elements of the vectors.
+//           inc2 is the stride between the first elements of the vectors.
 // On exit:  data contains the n Complex Fourier values for each k=0,...,nk-1.
 // Note: When computing an inverse transform, the result must be divided by n.
 
