@@ -40,10 +40,10 @@ public:
 	int Resolution(int radix, int lvl) {return pow(radix,lvl+1);}
 };
 
-extern DirichletBC Dirichlet[];
-extern NeumannBC Neumann[];
-extern PeriodicBC Periodic[];
-extern PeriodicBC Mixed1[];
+extern DirichletBC Dirichlet[1];
+extern NeumannBC Neumann[1];
+extern PeriodicBC Periodic[1];
+extern PeriodicBC Mixed1[1];
 
 class Limits {
 public:
