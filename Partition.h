@@ -77,7 +77,7 @@ public:
 };
 
 template<class T, class D>
-ostream& operator << (ostream& os, const Bin<T,D>& y) {
+inline ostream& operator << (ostream& os, const Bin<T,D>& y) {
 	os << "[" << y.min << "\t" << y.cen << "\t" << y.max << "]";
 	if(discrete) os << ": " << y.area;
 	return os;
