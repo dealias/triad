@@ -7,7 +7,7 @@
 
 class LinearityBase {
 public:	
-	virtual char *Name()=0;
+	virtual char *Name() {return "None";}
 	virtual Real Denominator(Real k2) {return k2;}
 	
 	virtual Real Growth(const Polar&) {return 0.0;}
