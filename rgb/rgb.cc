@@ -29,8 +29,8 @@ const char VERSION[]="1.09";
 #include <sys/wait.h>
 
 #include "getopt.h"
-#include "DynVector.h"
 #include "utils.h"
+#include "DynVector.h"
 #include "rgb.h"
 
 #ifndef PI
