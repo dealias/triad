@@ -1291,17 +1291,13 @@ void Torus(Array2<Ivec>& Index)
 	Ayx=-cosTheta*sinPhi; Ayy=cosTheta*cosPhi; Ayz=sinTheta;
 	Azx=sinTheta*sinPhi; Azy=-sinTheta*cosPhi; Azz=cosTheta;
 	
-	int minnum1=50;
-	int minnum2=50;
+	int mini=128;
+	int minj=128;
+	int mink=128;
 	
-	int Minnum1=10;
-	int Minnum2=10;
-	
-	int n1level=20;
-	int n2level=20;
-	
-	int maxnum1=pow(2,n1level-1);
-	int maxnum2=pow(2,n2level-1);
+	int Mini=4;
+	int Minj=8;
+	int Mink=8;
 	
 	int maxk=cutoff ? min(nz,(int) ((cutoff/twopibynz)+1.5)) : nz;
 	
@@ -1331,19 +1327,16 @@ void Torus(Array2<Ivec>& Index)
 									break;
 								}
 							}
-							if((!define2 && num2 >= minnum2) ||
-							   (!refine2 && num2 >= Minnum2) ||
-							   num2 >= maxnum2)
-								break;
+							if((!define2 && num2 >= minj) ||
+							   (!refine2 && num2 >= Minj)) break;
 							num2 *= 2;
 							denom2 *= 0.5;
 						}
 						define1 += define2;
 						refine1 += refine2;
 					}
-					if((!define1 && num1 >= minnum1) ||
-					   (!refine1 && num1 >= Minnum1) ||
-					   num1 >= maxnum1) break;
+					if((!define1 && num1 >= mink) ||
+					   (!refine1 && num1 >= Mink)) break;
 					num1 *= 2;
 					denom1 *= 0.5;
 				}
@@ -1377,19 +1370,16 @@ void Torus(Array2<Ivec>& Index)
 									break;
 								}
 							}
-							if((!define2 && num2 >= minnum2) ||
-							   (!refine2 && num2 >= Minnum2) ||
-							   num2 >= maxnum2)
-								break;
+							if((!define2 && num2 >= mini) ||
+							   (!refine2 && num2 >= Mini)) break;
 							num2 *= 2;
 							denom2 *= 0.5;
 						}
 						define1 += define2;
 						refine1 += refine2;
 					}
-					if((!define1 && num1 >= minnum1) ||
-					   (!refine1 && num1 >= Minnum1) ||
-					   num1 >= maxnum1) break;
+					if((!define1 && num1 >= minj) ||
+					   (!refine1 && num1 >= Minj)) break;
 					num1 *= 2;
 					denom1 *= 0.5;
 				}
