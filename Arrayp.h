@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Arrayp_h__
 #define __Arrayp_h__ 1
 
-#define __ARRAYP_H_VERSION__ 1.11
+#define __ARRAYP_H_VERSION__ 1.12
 
 // Defining NDEBUG improves optimization.
 
@@ -28,7 +28,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 class ArrayMod {
 public:	
-	void Mod(int& i, int n) const {
+	void Mod(int& i, unsigned int n) const {
 		if(i >= n) i -= n;
 		else if(i < 0) i += n;
 	
