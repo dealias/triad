@@ -211,8 +211,8 @@ void rfft_br(Complex *data, unsigned int log2n)
 	unsigned int i;
 	
 	if(log2n > TableSize) fft_init(log2n+1);
-	fft_br(data,log2n);
-//	fft(data,log2n,1);
+//	fft_br(data,log2n);
+	fft(data,log2n,1);
 	
 	unsigned int n2=1 << log2n;
 	unsigned int n4=n2/2;
@@ -260,15 +260,15 @@ void rfft_brinv(Complex *data, unsigned int log2n)
 		data[n2-i]=conj(A+B);
 	}
 	
-	fft_brinv(data,log2n);
-//	fft(data,log2n,-1);
+//	fft_brinv(data,log2n);
+	fft(data,log2n,-1);
 }
 
 void fft(Complex *data, unsigned int log2n, int isign)
 {
 	unsigned int mmax,m,j,istep,i,n;
-	static Complex *wpTable[2];
-	static unsigned int TableSize[2]={0,0};
+	static Complex *wpTable;
+	static unsigned int TableSize;
 
 	n=1 << log2n;
 
@@ -288,32 +288,38 @@ void fft(Complex *data, unsigned int log2n, int isign)
 		j += m;
 	}
 	
-	int index=(isign == 1) ? 1 : 0;
-	unsigned int TableSizei=TableSize[index];
-	if(log2n > TableSizei) wpTable[index]=new(wpTable[index],log2n) Complex;
-	mmax=1 << TableSizei;
-	Real pmtwopi=isign*twopi;
+	if(log2n > TableSize) wpTable=new(wpTable,log2n) Complex;
+	mmax=1 << TableSize;
 	while (mmax < n) {
 		mmax <<= 1;
-		wpTable[index][TableSizei++]=expim1(pmtwopi/mmax);
+		wpTable[TableSize++]=expim1(twopi/mmax);
 	}
 	
 	mmax=1; 
-	Complex *wp=wpTable[index], *pstop=data+n;
+	Complex *wp=wpTable, *pstop=data+n;
  	while (mmax < n) {
 		istep=mmax << 1;
-		Real c=1.0, s=0.0;
-		Real wpre=wp->re, wpim=wp->im;
+		Complex *p;
+		for(p=data; p < pstop; p += istep) {
+			Complex *q=p+mmax;
+			Real tempre=p->re-q->re;
+			Real tempim=p->im-q->im;
+			p->re += q->re;
+			p->im += q->im;
+			q->re=tempre;
+			q->im=tempim;
+		}
+		Real wpre=wp->re, wpim=wp->im*isign;
 		wp++;
-		for(m=0; m < mmax; m++) {
-			Complex *p,*q;
+		Real c=1.0+wpre, s=wpim;
+		for(m=1; m < mmax; m++) {
 			for(p=data+m; p < pstop; p += istep) {
-				q=p+mmax;
+				Complex *q=p+mmax;
 				Real tempre=c*q->re-s*q->im;
 				Real tempim=c*q->im+s*q->re;
 				q->re=p->re-tempre;
-				p->re += tempre;
 				q->im=p->im-tempim;
+				p->re += tempre;
 				p->im += tempim;
 			}
 			Real wtemp=c;
