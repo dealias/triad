@@ -751,6 +751,9 @@ int main(int argc, char *argv[])
 			msep=max(2,my);
 		}
 		
+		if(rescale && trans != NULL) 
+				msg(ERROR, "Rescale for transforms not yet implemented");
+			
 		switch(trans) {
 		case IDENTITY: 
 			Nx=nx; Ny=ny;
@@ -800,8 +803,6 @@ int main(int argc, char *argv[])
 		if(jstop > ystop) jstop=ystop;
 						
 		if(rescale) {
-			if(trans != NULL) 
-				msg(ERROR, "Rescale for transforms not yet implemented");
 			xstart=istart;
 			xstop=istop;
 			ystart=jstart;
