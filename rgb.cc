@@ -179,6 +179,12 @@ int main(int argc, char *const argv[])
 	}
 }
 
+#if sun
+char *separator="____________";
+#else
+char *separator="\t\t\t";
+#endif
+
 void montage(int nfiles, char *const argf[], int n, char *const type)
 {
 	strstream buf;
@@ -187,7 +193,7 @@ void montage(int nfiles, char *const argf[], int n, char *const type)
 	for(int f=0; f < nfiles; f++) {
 		char *fieldname=argf[f];
 		buf << " -label \"" << setprecision(2) << vmin[f]
-			<< "                       " << setprecision(2) << vmax[f] << "\\n"
+			<< separator << setprecision(2) << vmax[f] << "\\n"
 			<< fieldname <<	"\" " << rgbdir << "/"
 			<< fieldname << setfill('0') << setw(4) << n << ".rgb";
 	}

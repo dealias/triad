@@ -336,12 +336,11 @@ void compute_invariants(Var *y, int Npsi, Real& E, Real& Z, Real& P)
 void out_field(oxstream& fout, Real *psir)
 {
 	fout << Nxb << Nyb << 1;
-	Real ninv=1.0/(Nxb*Nyb);
 	int factor=2*(Nxb1-1);
 	for(int j=Nyb-1; j >= 0; j--) {
 		int jN=factor*(j/2)+j;
 		for(int i=0; i < Nxb; i++)
-			fout << (float) (psir[2*i+jN]*ninv);
+			fout << (float) psir[2*i+jN];
 	}
 	fout.flush();
 }
@@ -389,6 +388,9 @@ void NWave::Output(int)
 			else CartesianPad(psix,y);
 			
 			crfft2dT(psix,log2Nxb,log2Nyb,1);
+			Real ninv=1.0/(Nxb*Nyb);
+			for(i=0; i < nfft; i++) psix[i] *= ninv;
+			
 			out_field(fpsi,(Real *) psix);
 		}
 		if(!fpsi) msg(ERROR, "Cannot write to movie file psi");
@@ -419,8 +421,9 @@ void NWave::Output(int)
 			CartesianPad(psix,vort);
 			crfft2dT(psix,log2Nxb,log2Nyb,1);
 			
+			Real ninv=1.0/(Nxb*Nyb);
 			for(i=0; i < nfft; i++)
-				psix[i]=psix[i]*psix[i]-psiy[i];
+				psix[i]=(psix[i]*psix[i]-psiy[i])*ninv;
 			
 			out_field(fweiss,(Real *) psix);
 		}
