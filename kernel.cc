@@ -1,4 +1,3 @@
-#include "xstream.h"
 #include "options.h"
 #include "kernel.h"
 

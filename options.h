@@ -5,6 +5,7 @@
 #define MCREAL 1
 #define DOUBLE_PRECISION 1
 
+#include "utils.h"
 #include "precision.h"
 #include "Complex.h"
 

@@ -1,6 +1,7 @@
 #ifndef __utils_h__
 #define __utils_h__ 1
 
+#include "xstream.h"
 #include <stddef.h>
 #include <stdarg.h>
 #include <stdlib.h>

@@ -1,11 +1,11 @@
+#include "utils.h"
+
 #include <ctype.h>
 #include <iostream.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
 #include <time.h>
-
-#include "utils.h"
 
 char* run=NULL;
 Exit_code exit_signal=COMPLETE;
