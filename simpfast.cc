@@ -1,5 +1,4 @@
 #include "options.h"
-#include <math.h>
 
 const int nest=100;
 
