@@ -49,14 +49,14 @@ void fft(Complex *data, unsigned int log2n, int isign, Real scale, int)
 // Note: When computing an inverse transform, the result must be divided by n.
 
 void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
-		  unsigned int inc1, unsigned int inc2, int)
+		  unsigned int inc1, unsigned int inc2, Real scale, int)
 {
 	static unsigned int data2size=0;
 	static Complex *data2=NULL;
 	
 	if(inc1 == 1) {
 		Complex *pstop=data+nk*inc2;
-		for(Complex *p=data; p < pstop; p += inc2) fft(p,log2n,isign);
+		for(Complex *p=data; p < pstop; p += inc2) fft(p,log2n,isign,scale);
 		return;
 	}
 	
@@ -69,7 +69,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		Complex *p=data+inc2*k;
 		unsigned int i;
 		for(i=0; i < n; i++) data2[i]=p[i*inc1];
-		fft(data2,log2n,isign);
+		fft(data2,log2n,isign,scale);
 		for(i=0; i < n; i++) p[i*inc1]=data2[i];
 	}
 }

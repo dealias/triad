@@ -59,7 +59,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		 aux1[i][j],naux,aux2[i][j],naux);
 }
 
-void fft(Complex *data, unsigned int log2n, int isign, int)
+void fft(Complex *data, unsigned int log2n, int isign, Real scale, int)
 {
 	mfft(data,log2n,isign,1,1,1,1);
 }
