@@ -32,10 +32,6 @@ const char VERSION[]="1.12";
 #include "DynVector.h"
 #include "rgb.h"
 
-#ifndef PI
-#define PI 3.14159265358979323846264338327950288
-#endif
-
 using namespace Array;
 
 const double pi=PI;
