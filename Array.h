@@ -412,7 +412,7 @@ public:
 	}
 	Array4<T>& operator -= (T a) {
 		int inc=nyzw+nzw+nw+1, size=Size0();
-		for(int i=0; i < size; i += inc) v[i] -= w;
+		for(int i=0; i < size; i += inc) v[i] -= a;
 		return *this;
 	}
 };
