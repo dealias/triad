@@ -91,6 +91,7 @@ protected:
 	int *errmask;
 	double tolmax2,tolmin2;
 	double stepfactor,stepinverse,stepnoninverse;
+	double growfactor, shrinkfactor;
 	double dtmin,dtmax;
 	int itmax,microsteps;
 	int microprocess;
@@ -104,8 +105,8 @@ public:
 		if(tolmax < tolmin) msg(ERROR_GLOBAL,"tolmax < tolmin"); 
 		tolmax2=tolmax*tolmax;
 		tolmin2=tolmin*tolmin;
-		stepfactor=stepfactor0;
-		stepinverse=1.0/stepfactor;
+		growfactor=stepfactor=stepfactor0;
+		shrinkfactor=stepinverse=1.0/stepfactor;
 		stepnoninverse=1.0/stepnoninvert;
 		dtmin=dtmin0;
 		dtmax=dtmax0;

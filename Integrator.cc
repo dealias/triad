@@ -86,7 +86,7 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 				switch(Solve(t,dt))	{
 				case ADJUST:
 					t += dt;
-					ChangeTimestep(dt,sign*min(sign*dt*stepfactor,dtmax),t,
+					ChangeTimestep(dt,sign*min(sign*dt*growfactor,dtmax),t,
 								   sample);
 					cont=0;	break;
 				case SUCCESSFUL:
@@ -98,7 +98,7 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 					invert_cnt++;
 					ChangeTimestep(dt,dt*stepnoninverse,t,sample); break;
 				case UNSUCCESSFUL:
-					ChangeTimestep(dt,max(dt*stepinverse,dtmin),t,sample);
+					ChangeTimestep(dt,max(dt*shrinkfactor,dtmin),t,sample);
 				}
 			} while(cont);
 			iteration++;
