@@ -27,7 +27,6 @@ public:
 	
 	Array1() {}
 //	virtual ~Array1() {}
-	Array1(T *v0) : v(v0) {}
 	Array1(int nx0) {Allocate(nx0);}
 	Array1(int nx0, T *v0) {Dimension(nx0,v0);}
 	
@@ -46,11 +45,11 @@ public:
 	Array1<T>& operator = (T *a) {Load(a); return *this;}
 	Array1<T>& operator = (const Array1<T>& A) {Load(A.Base()); return *this;}
 	
-	Array1<T>& operator += (Array1<T>& A) {
+	Array1<T>& operator += (const Array1<T>& A) {
 		int size=Size(); for(int i=0; i < size; i++) v[i] += A(i);
 		return *this;
 	}
-	Array1<T>& operator -= (Array1<T>& A) {
+	Array1<T>& operator -= (const Array1<T>& A) {
 		int size=Size(); for(int i=0; i < size; i++) v[i] -= A(i);
 		return *this;
 	}
@@ -75,7 +74,7 @@ public:
 };
 
 template<class T>
-ostream& operator << (ostream& s, Array1<T>& A)
+ostream& operator << (ostream& s, const Array1<T>& A)
 {
 	T *p=A.Base();
 	for(int i=0; i < A.Nx(); i++) {
@@ -85,7 +84,7 @@ ostream& operator << (ostream& s, Array1<T>& A)
 }
 
 template<class T>
-istream& operator >> (istream& s, Array1<T>& A)
+istream& operator >> (istream& s, const Array1<T>& A)
 {
 	T *p=A.Base();
 	for(int i=0; i < A.Nx(); i++) {
@@ -105,14 +104,16 @@ public:
 	void Allocate(int nx0, int ny0) {Dimension(nx0,ny0); v=new T[Size()];}
 	
 	Array2() {}
-	Array2(int nz, T *v0) : ny(nz) {v=v0;}
 	Array2(int nx0, int ny0) {Allocate(nx0,ny0);}
 	Array2(int nx0, int ny0, T *v0) {Dimension(nx0,ny0,v0);}
 	
 	int Ny() const {return ny;}
 	int N2() const {return ny;}
-	Array1<T> operator [] (int ix) const {return Array1<T>(v+ix*ny);}
-	T* operator [] (int ix) {return v+ix*ny;}
+#if ARRAY_CHECK
+	Array1<T> operator [] (int ix) const {return Array1<T>(nx,v+ix*ny);}
+#else	
+	T* operator [] (int ix) const {return v+ix*ny;}
+#endif	
 	T& operator () (int ix, int iy) const {return v[ix*ny+iy];}
 	T& operator () (int i) {return v[i];}
 	
@@ -140,7 +141,7 @@ public:
 };
 
 template<class T>
-ostream& operator << (ostream& s, Array2<T>& A)
+ostream& operator << (ostream& s, const Array2<T>& A)
 {
 	T *p=A.Base();
 	for(int i=0; i < A.Nx(); i++) {
@@ -154,7 +155,7 @@ ostream& operator << (ostream& s, Array2<T>& A)
 }
 
 template<class T>
-istream& operator >> (istream& s, Array2<T>& A)
+istream& operator >> (istream& s, const Array2<T>& A)
 {
 	T *p=A.Base();
 	for(int i=0; i < A.Nx(); i++) {
@@ -183,11 +184,10 @@ public:
 		Dimension(nx0,ny0,nz0); v=v0;
 	}
 	Array3() {}
-	Array3(int nza, int na, T *v0) : nyz(nza), nz(na) {v=v0;}
 	Array3(int nx0, int ny0, int nz0) {Allocate(nx0,ny0,nz0);}
 	Array3(int nx0, int ny0, int nz0, T *v0) {Dimension(nx0,ny0,nz0,v0);}
 	int Nz() const {return nz;}
-	Array2<T> operator [] (int ix) const {return Array2<T>(nz,v+ix*nyz);}
+	Array2<T> operator [] (int ix) const {return Array2<T>(ny,nz,v+ix*nyz);}
 	T& operator () (int ix, int iy, int iz) const {return v[ix*nyz+iy*nz+iz];}
 	T& operator () (int i) {return v[i];}
 	Array3<T>& operator = (T a) {Load(a); return *this;}
@@ -214,7 +214,7 @@ public:
 };
 
 template<class T>
-ostream& operator << (ostream& s, Array3<T>& A)
+ostream& operator << (ostream& s, const Array3<T>& A)
 {
 	T *p=A.Base();
 	for(int i=0; i < A.Nx(); i++) {
@@ -231,7 +231,7 @@ ostream& operator << (ostream& s, Array3<T>& A)
 }
 
 template<class T>
-istream& operator >> (istream& s, Array3<T>& A)
+istream& operator >> (istream& s, const Array3<T>& A)
 {
 	T *p=A.Base();
 	for(int i=0; i < A.Nx(); i++) {
@@ -263,16 +263,14 @@ public:
 		Dimension(nx0,ny0,nz0,a0); v=v0;
 	}
 	Array4() {}
-	Array4(int nzab, int nab, int nb, T *v0) : nyza(nzab), nza(nab), na(nb) {
-		v=v0;
-	}
 	Array4(int nx0, int ny0, int nz0, int na0) {Allocate(nx0,ny0,nz0,na0);}
 	Array4(int nx0, int ny0, int nz0, int na0, T *v0) {
 		Dimension(nx0,ny0,nz0,na0,v0);
 	}
 	int N4() const {return na;}
 	int Na() const {return na;}
-	Array3<T> operator [] (int ix) const {return Array3<T>(nza,na,v+ix*nyza);}
+	Array3<T> operator [] (int ix) const {
+		return Array3<T>(ny,nz,na,v+ix*nyza);}
 	T& operator () (int ix, int iy, int iz, int ia) const {
 		return v[ix*nyza+iy*nza+iz*na+ia];
 	}
@@ -301,7 +299,7 @@ public:
 };
 
 template<class T>
-ostream& operator << (ostream& s, Array4<T>& A)
+ostream& operator << (ostream& s, const Array4<T>& A)
 {
 	T *p=A.Base();
 	for(int i=0; i < A.Nx(); i++) {
@@ -321,7 +319,7 @@ ostream& operator << (ostream& s, Array4<T>& A)
 }
 
 template<class T>
-istream& operator >> (istream& s, Array4<T>& A)
+istream& operator >> (istream& s, const Array4<T>& A)
 {
 	T *p=A.Base();
 	for(int i=0; i < A.Nx(); i++) {
