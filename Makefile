@@ -4,6 +4,7 @@ FFT = fft
 POLL = poll
 
 include $(TRI)/config/Common
+
 INCL = 
 
 POLAR = Polar PolarAverage simpfast

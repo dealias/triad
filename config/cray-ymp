@@ -1,7 +1,8 @@
 C++ = /usr/bin/CC -D_POSIX_SOURCE
 OPT = $(CFLAGS)
 LIB = $(LFLAGS) -lsci -lm
-MDOPT = -I /usr/include/CC
+MAKEDEPEND = /lib/cpp -M
+
 ARCH = unix.o
 FFT = cfft.o
 POLL = tremain.o

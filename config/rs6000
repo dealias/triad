@@ -1,7 +1,9 @@
 C++ = xlC -+ -D_ANSI_C_SOURCE
 OPT = $(CFLAGS)
 LIB = $(LFLAGS) -lessl -lm
-MDOPT = -I /usr/lpp/xlC/include -I /
+MAKEDEPEND = $(C++) -M 
+D = u
+
 ARCH = unix.o
 FFT = efft.o
 #POLL = idle.o

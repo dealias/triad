@@ -1,13 +1,13 @@
+D = d
 LIB = $(LFLAGS) -lm
 OPT = -g $(CFLAGS)
+INCL = -I . -I $(TRI) -I-
 
 vpath %.cc $(TRI)
-
-INCL = -I . -I $(TRI) -I-
 
 include $(TRI)/config/$(HOSTTYPE)
 
 UTILS = utils strcasecmp new $(ARCH) $(POLL)
-CORE = kernel Integrator Param 
+CORE = kernel Integrator Param
 
 .SUFFIXES: .cc

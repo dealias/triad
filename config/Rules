@@ -2,13 +2,13 @@
 	$(C++) $(OPT) $(INCL) -o $@ -c $<
 
 clean:
-	rm -f *.o *.d *mon.out $(ALL)
+	rm -f *.o *.$(D) *mon.out $(ALL)
 
-%.d: %.cc
-	$(SHELL) -ec '$(C++) $(INCL) -M $< | sed '\''s|$*\\.o[ :]*|& $@|g'\'' > $@'
+%.$(D): %.cc
+	$(MAKEDEPEND) $(INCL) $(MDOPTS) $< > $@
 
 all: $(TRIAD:=.o)
 	$(C++) $(OPT) -o triad $(TRIAD:=.o) $(LIB)
 
-include $(TRIAD:=.d)
+include $(TRIAD:=.$(D))
 

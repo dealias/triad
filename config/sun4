@@ -1,4 +1,4 @@
 C++ = CC -D_POSIX_SOURCE
 OPT = $(CFLAGS)
-MDOPT = -I /opt/SUNWspro/SC3.0/include/CC/
+MAKEDEPEND = $(C++) -M
 
