@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 	// Allow time step to be overridden from command line (even on restarts).
 	if(dt) explicit_dt=1; 
 	
-	if(run == NULL) {run="test"; testing=1; clobber=1;}
+	if(*run == 0) {run="test"; testing=1; clobber=1;}
 	
 	lname=Vocabulary->FileName(dirsep,"LOCK");
 	rname=Vocabulary->FileName(dirsep,"restart");

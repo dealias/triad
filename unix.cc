@@ -51,7 +51,7 @@ void mailuser(char *text)
 {
 	if(time(NULL)-init_time < longrun) return;
 	char *user=getpwuid(getuid())->pw_name;
-	char *buf=new char[50+strlen(run),strlen(text)+strlen(user)];
+	char *buf=new char[50+strlen(run)+strlen(text)+strlen(user)];
 	sprintf(buf,"%s -s 'Run %s %s.' %s < /dev/null > /dev/null",command,
 			run,text,user);
 	system(buf);
