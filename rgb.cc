@@ -516,13 +516,7 @@ char *separator="                                               ";
 void montage(int nfiles, char *const argf[], int n, char *const format,
 			 char *const type)
 {
-#ifdef __alpha__
-#define BUFSIZE 1024
-	char str[BUFSIZE];
-	strstream buf(str,BUFSIZE);
-#else
 	strstream buf;
-#endif	
 	buf << "montage -size " << xsize << "x" << ysize
 	    << " -geometry " << xsize << "x" << ysize << " -interlace none";
 	for(int f=0; f < nfiles; f++) {
