@@ -1,17 +1,14 @@
 #include "NWave.h"
 
 int Npsi;
-int Npair;
 int Ntriad;
 
 // Reality condition flag 
 //	(0 => evolve all modes, 1 => evolve only half of the modes).
 int reality=1;	
 
-Var *psibuffer,*pqbuffer;
-DynVector<Pair> pair;
+Var *psibuffer,*psibufferStop,*pqbuffer;
 DynVector<Triad> triad;
-Pair *pairBase;
 Triad *triadBase;
 Triad **triadStop;
 
@@ -59,9 +56,11 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 	}
 	
 	Var *pq=pqbuffer;
-	Pair *pstop=pairBase+Npair;
+	for(Var *p=psibuffer; p < psibufferStop; p++) {
+		Var psip=*p;
 #pragma ivdep		
-	for(Pair *p=pairBase; p < pstop; p++) *(pq++)=(*p->p)*(*p->q);
+		for(Var *q=p; q < psibufferStop; q++, pq++) *pq=psip*(*q);
+	}
 	
 	Triad *t=triadBase,**tstop=triadStop;
 	Var *kstop=source+Npsi;
@@ -78,10 +77,10 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 		Var *kstop=psi+Npsi;
 #if 1
 #pragma ivdep
-		for(k=psi; k < kstop; k++,q++) *q=product(*k,*k);   // psi^2
+		for(k=psi; k < kstop; k++, q++) *q=product(*k,*k);   // psi^2
 		for(int n=1; n < Nmoment; n++) {
 #pragma ivdep
-			for(k=psi; k < kstop; k++,q++) *q=product(*(q-Npsi),*k);  // psi^n
+			for(k=psi; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);  // psi^n
 		}
 #else
 		for(k=psi; k < kstop; k++) {

@@ -101,8 +101,9 @@ template<class T>
 int Partition<T>::Create()
 {
 	MakeBins();
-	psibuffer=new Var[reality ? 2*Nmode : Nmode];
-	
+	psibuffer=new Var[n];
+	psibufferStop=psibuffer+n;
+
 	if(verbose > 2) {
 		cout.precision(3);
 		ListBins(cout);
@@ -196,7 +197,6 @@ inline Mc Partition<T>::FindWeight(int k, int p, int q) {
 template<class T>
 void Partition<T>::ComputeTriads() {
 	Mc nkpq;
-	Var **pqindex,**index;
 	Real norm;
 	int k,p,q;
 	ifstream fin;
@@ -204,7 +204,7 @@ void Partition<T>::ComputeTriads() {
 	char *filename;
 	int i,formatted=0;
 	
-	Ntriad=Npair=0;
+	Ntriad=0;
 	
 	filename=WeightFileName("");
 	fin.open(filename);
@@ -252,27 +252,20 @@ void Partition<T>::ComputeTriads() {
 		if(!fout.good()) msg(ERROR,"Error writing to weight file %s",filename);
 	}
 	
-	int npq=pq(n,n);
-	pqindex=new Var*[npq];
-	pqbuffer=new Var[npq];
-	for(p=0; p < n; p++) for(q=p; q < n; q++) pqindex[pq(p,q)]=NULL;
+	pqbuffer=new Var[pq(n,n)];
 	triadStop=new Triad*[Nmode];
 	Triad *triadBase0=triad.Base();
 	
 	for(k=0; k < Nmode; k++) {
 		norm=1.0/(twopi2*Area(k));
+		Var *pq=pqbuffer;
 		for(p=0; p < n; p++) {
-			for(q=p; q < n; q++) {
+			for(q=p; q < n; q++, pq++) {
 				nkpq=FindWeight(k,p,q);
 				
 				if(nkpq != 0.0)	{
-					index=pqindex+pq(p,q);
-					if(!*index) {
-						*index=pqbuffer+Npair;
-						pair[Npair++].Store(&psibuffer[p],&psibuffer[q]);
-					}
 					nkpq *= ((p==q) ? 0.5 : 1.0) * norm;
-					triad[Ntriad++].Store(*index,nkpq);
+					triad[Ntriad++].Store(pq,nkpq);
 				}
 			}
 		}
@@ -282,22 +275,14 @@ void Partition<T>::ComputeTriads() {
 	triadBase=triad.Base();
 	for(k=0; k < Nmode; k++) triadStop[k] += triadBase-triadBase0;
 
-	pairBase=pair.Base();
-	
-	delete [] pqindex;
 	weight.~DynVector();
 
-	cout << endl << Npair << " WAVENUMBER PAIRS ALLOCATED." << endl <<
-		Ntriad-Nmode << " WAVENUMBER TRIADS ALLOCATED." << endl;
+	cout << endl << Ntriad-Nmode << " WAVENUMBER TRIADS ALLOCATED." << endl;
 }
 
 template<class T>
 void Partition<T>::ListTriads() {
 	int j;
-	cout << endl << Npair << " Pairs:" << endl;
-	for(j=0; j < Npair; j++) { 
-		cout << "(" << pair[j].p << "," << pair[j].q << ")" << endl;
-	}
 	cout << endl << Ntriad-Nmode << " Triads:" << endl;
 	for(j=0; j < Ntriad; j++) {
 		if(triad[j].pq)	cout << triad[j].Mkpq << endl;

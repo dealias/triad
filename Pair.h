@@ -4,12 +4,6 @@
 #include "types.h"
 #include "DynVector.h"
 
-class Pair {
-public:
-	Var *p, *q;
-	void Store(Var *p0, Var *q0) {p=p0; q=q0;}
-};
-
 class Triad {
 public:
 	Var *pq;
@@ -18,15 +12,12 @@ public:
 };
 
 extern int Npsi;
-extern int Npair;
 extern int Ntriad;
 
 extern int reality;
 
-extern Var *psibuffer,*pqbuffer;
-extern DynVector<Pair> pair;
+extern Var *psibuffer,*psibufferStop,*pqbuffer;
 extern DynVector<Triad> triad;
-extern Pair *pairBase;
 extern Triad *triadBase;
 extern Triad **triadStop;
 

@@ -70,6 +70,7 @@ void NWave::InitialConditions()
 	pair[2].Store(&psibuffer[0],&psibuffer[1]);
 	pairBase=pair.Base();
 
+	triadStop=new Triad*[Npsi];
 	Triad *triadBase0=triad.Base();
 	for(k=0; k < Npsi; k++) {
 		triad[k].Store(pqbuffer+k,Mkpq[k]);
