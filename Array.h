@@ -1,5 +1,5 @@
 /* Array.h:  A high-performance multi-dimensional C++ array class
-Copyright (C) 2001-2003 John C. Bowman (bowman@math.ualberta.ca)
+Copyright (C) 2001-2004 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.26
+#define __ARRAY_H_VERSION__ 1.27
 
 // Defining NDEBUG improves optimization but disables argument checking.
 // Defining __NOARRAY2OPT inhibits special optimization of Array2[].
@@ -142,7 +142,6 @@ class array1 {
   }
 	
   unsigned int Nx() const {return size;}
-  unsigned int N1() const {return size;}
   
 #ifdef NDEBUG
   typedef T *opt;
@@ -315,7 +314,6 @@ class array2 : public array1<T> {
 	
   unsigned int Nx() const {return nx;}
   unsigned int Ny() const {return ny;}
-  unsigned int N2() const {return ny;}
 
 #ifndef __NOARRAY2OPT
   T *operator [] (int ix) const {
@@ -430,7 +428,7 @@ class array3 : public array1<T> {
   unsigned int Nx() const {return nx;}
   unsigned int Ny() const {return ny;}
   unsigned int Nz() const {return nz;}
-  unsigned int N3() const {return nz;}
+
   array2<T> operator [] (int ix) const {
     __check(ix,nx,3,1);
     return array2<T>(ny,nz,v+ix*nyz);
@@ -542,8 +540,8 @@ class array4 : public array1<T> {
   unsigned int Nx() const {return nx;}
   unsigned int Ny() const {return ny;}
   unsigned int Nz() const {return ny;}
-  unsigned int Nw() const {return nw;}
   unsigned int N4() const {return nw;}
+
   array3<T> operator [] (int ix) const {
     __check(ix,nx,3,1);
     return array3<T>(ny,nz,nw,v+ix*nyzw);
@@ -601,7 +599,7 @@ ostream& operator << (ostream& s, const array4<T>& A)
   for(unsigned int i=0; i < A.Nx(); i++) {
     for(unsigned int j=0; j < A.Ny(); j++) {
       for(unsigned int k=0; k < A.Nz(); k++) {
-	for(unsigned int l=0; l < A.Nw(); l++) {
+	for(unsigned int l=0; l < A.N4(); l++) {
 	  s << *(p++) << " ";
 	}
 	s << _newl;
@@ -661,9 +659,9 @@ class array5 : public array1<T> {
   unsigned int Nx() const {return nx;}
   unsigned int Ny() const {return ny;}
   unsigned int Nz() const {return ny;}
-  unsigned int Nw() const {return nw;}
-  unsigned int Nv() const {return nv;}
+  unsigned int N4() const {return nw;}
   unsigned int N5() const {return nv;}
+
   array4<T> operator [] (int ix) const {
     __check(ix,nx,4,1);
     return array4<T>(ny,nz,nw,nv,v+ix*nyzwv);
@@ -722,7 +720,8 @@ ostream& operator << (ostream& s, const array5<T>& A)
   for(unsigned int i=0; i < A.Nx(); i++) {
     for(unsigned int j=0; j < A.Ny(); j++) {
       for(unsigned int k=0; k < A.Nz(); k++) {
-	for(unsigned int l=0; l < A.Nw(); l++) {
+	for(unsigned int l=0; l < A.N4(); l++) {
+	  for(unsigned int l=0; l < A.N5(); l++) {
 	  s << *(p++) << " ";
 	}
 	s << _newl;
@@ -815,7 +814,7 @@ class Array1 : public array1<T> {
     return *this;
   }
   
-  unsigned int Ox() const {return ox;}
+  int Ox() const {return ox;}
 };
 
 template<class T>
@@ -857,21 +856,19 @@ class Array2 : public array2<T> {
 
 #ifndef __NOARRAY2OPT
   T *operator [] (int ix) const {
-    int offset=ix*ny;
-    return voff+offset;
+    return voff+ix*(int) ny;
   }
 #else
   Array1<T> operator [] (int ix) const {
     __check(ix,nx,ox,2,1);
-    int offset=ix*ny;
-    return Array1<T>(ny,vtemp+offset,oy);
+    return Array1<T>(ny,vtemp+ix*(int) ny,oy);
   }
 #endif
   
   T& operator () (int ix, int iy) const {
     __check(ix,nx,ox,2,1);
     __check(iy,ny,oy,2,2);
-    return voff[ix*ny+iy];
+    return voff[ix*(int) ny+iy];
   }
   T& operator () (int i) const {
     __check(i,size,0,2,0);
@@ -901,6 +898,9 @@ class Array2 : public array2<T> {
     return *this;
   }
 	
+  int Ox() const {return ox;}
+  int Oy() const {return oy;}
+  
   void Identity() {
     Load((T) 0.0);
     __checkSize();
@@ -953,14 +953,13 @@ class Array3 : public array3<T> {
 	
   Array2<T> operator [] (int ix) const {
     __check(ix,nx,ox,3,1);
-    int offset=ix*nyz;
-    return Array2<T>(ny,nz,vtemp+offset,oy,oz);
+    return Array2<T>(ny,nz,vtemp+ix*(int) nyz,oy,oz);
   }
   T& operator () (int ix, int iy, int iz) const {
     __check(ix,nx,ox,3,1);
     __check(iy,ny,oy,3,2);
     __check(iz,nz,oz,3,3);
-    return voff[ix*nyz+iy*nz+iz];
+    return voff[ix*(int) nyz+iy*(int) nz+iz];
   }
   T& operator () (int i) const {
     __check(i,size,0,3,0);
@@ -981,6 +980,11 @@ class Array3 : public array3<T> {
     A.Purge(); 
     return *this;
   }
+  
+  int Ox() const {return ox;}
+  int Oy() const {return oy;}
+  int Oz() const {return oz;}
+
 };
 
 template<class T>
@@ -1033,15 +1037,14 @@ class Array4 : public array4<T> {
 
   Array3<T> operator [] (int ix) const {
     __check(ix,nx,ox,3,1);
-    int offset=ix*nyzw;
-    return Array3<T>(ny,nz,nw,vtemp+offset,oy,oz,ow);
+    return Array3<T>(ny,nz,nw,vtemp+ix*(int) nyzw,oy,oz,ow);
   }
   T& operator () (int ix, int iy, int iz, int iw) const {
     __check(ix,nx,ox,4,1);
     __check(iy,ny,oy,4,2);
     __check(iz,nz,oz,4,3);
     __check(iw,nw,ow,4,4);
-    return voff[ix*nyzw+iy*nzw+iz*nw+iw];
+    return voff[ix*(int) nyzw+iy*(int) nzw+iz*(int) nw+iw];
   }
   T& operator () (int i) const {
     __check(i,size,0,4,0);
@@ -1062,6 +1065,11 @@ class Array4 : public array4<T> {
     A.Purge();
     return *this;
   }
+  
+  int Ox() const {return ox;}
+  int Oy() const {return oy;}
+  int Oz() const {return oz;}
+  int O4() const {return ow;}
 };
 
 template<class T>
@@ -1116,8 +1124,7 @@ class Array5 : public array5<T> {
 
   Array4<T> operator [] (int ix) const {
     __check(ix,nx,ox,4,1);
-    int offset=ix*nyzwv;
-    return Array4<T>(ny,nz,nw,nv,vtemp+offset,oy,oz,ow,ov);
+    return Array4<T>(ny,nz,nw,nv,vtemp+ix*(int) nyzwv,oy,oz,ow,ov);
   }
   T& operator () (int ix, int iy, int iz, int iw, int iv) const {
     __check(ix,nx,ox,5,1);
@@ -1125,7 +1132,7 @@ class Array5 : public array5<T> {
     __check(iz,nz,oz,5,3);
     __check(iw,nw,ow,5,4);
     __check(iv,nv,ov,5,5);
-    return voff[ix*nyzwv+iy*nzwv+iz*nwv+iw*nv+iv];
+    return voff[ix*(int) nyzwv+iy*(int) nzwv+iz*(int) nwv+iw*(int) nv+iv];
   }
   T& operator () (int i) const {
     __check(i,size,0,5,0);
@@ -1146,6 +1153,11 @@ class Array5 : public array5<T> {
     A.Purge();
     return *this;
   }
+  int Ox() const {return ox;}
+  int Oy() const {return oy;}
+  int Oz() const {return oz;}
+  int O4() const {return ow;}
+  int O5() const {return ov;}
 };
 
 template<class T>
