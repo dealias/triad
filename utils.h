@@ -66,13 +66,11 @@ inline void set(T *to, const T * from, unsigned int n)
   memcpy(to,from,sizeof(*from)*n);
 }
 
-#ifndef __mips
 template<class T>
 inline void swap(T& p, T& q)
 {
   T temp=p; p=q; q=temp;
 }
-#endif
 
 template<class T>
 inline void sort2(T& p, T& q, int& sign)
