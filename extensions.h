@@ -29,7 +29,7 @@ inline double sgn(const double x)
   return (x == 0.0 ? 0.0 : (x > 0.0 ? 1.0 : -1.0));
 }
 
-#if HAVE_LONGEXP
+#ifdef HAVE_LONGEXP
 inline long double exp(long double x)
 {
   return expl(x);
