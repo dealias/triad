@@ -279,14 +279,9 @@ Complex atoc(const char *s);
 	
 const int default_nperline=4;
 
-#if _CFRONT
-// Cfront can't seem to handle a template here.
-inline void out_function(ostream& os, Real (*f)(int), char *text, int n,
-						 int nperline)
-#else
 template<class T>
-inline void out_function(ostream& os, T (*f)(int), char *text, int n, int nperline)
-#endif	
+inline void out_function(ostream& os, T (*f)(int), char *text, int n,
+						 int nperline)
 {
 	int i;
 	os << "# " << text << newl;
@@ -297,13 +292,8 @@ inline void out_function(ostream& os, T (*f)(int), char *text, int n, int nperli
 	os << (*f)(n-1) << newl;
 }
 
-#if _CFRONT
-// Cfront can't seem to handle a template here.
-inline void out_curve(ostream& os, Real *f, char *text, int n, int nperline)
-#else
 template<class T>	
 inline void out_curve(ostream& os, T *f, char *text, int n, int nperline)
-#endif
 {
 	int i;
 	os << "# " << text << newl;
