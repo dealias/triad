@@ -2,6 +2,7 @@
 #if _CRAY
 #include <sys/machd.h>
 #endif
+#include "utils.h"
 
 extern "C" TREMAIN(const double& seconds);
 
