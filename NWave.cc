@@ -42,8 +42,10 @@ inline void PrimitiveNucleus(Complex *source, Real)
 	for(k=source; k < kstop; k++) {
 		tstop=*(triadstop++);
 		for(sumre=sumim=0.0; t < tstop; t++) {
-			sumre += t->Mkpq*(*(Complex *)t->pq).re;
-			sumim -= t->Mkpq*(*(Complex *)t->pq).im;
+			Real m=t->Mkpq;
+			Complex *psipq=(Complex *)t->pq;
+			sumre += m*(*psipq).re;
+			sumim -= m*(*psipq).im;
 		}
 		(*k).re=sumre;
 		(*k).im=sumim;
@@ -79,8 +81,14 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 		Var *q0=q=source+Npsi;
 		kstop=psi+Npsi;
 #if 1
+#if _CRAY		
+#pragma ivdep
+#endif
 		for(k=psi; k < kstop; k++,q++) *q=product(*k,*k);   // psi^2
 		for(int n=1; n < Nmoment; n++) {
+#if _CRAY		
+#pragma ivdep
+#endif
 			for(k=psi; k < kstop; k++,q++,q0++) *q=product(*q0,*k);  // psi^n
 		}
 #else
