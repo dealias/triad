@@ -48,12 +48,16 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 		}
 		
 		if(sample == 0.0) dump(it,0,tmax);
-		else if(sample > 0 && (forwards ? t >= tstop : t <= tstop)) {
-			nout++;
-			tstop=tstart+sign*nout*sample;
-			if(forwards ? tstop > tmax : tstop < tmax) tmax=tstop=t;
-			else dump(it,0,tmax);
-			if(dtorig) {ChangeTimestep(dt,dtorig,t,sample); dtorig=0.0;}
+		else if(sample > 0) {
+			if(abs(tstop-t) <= tprecision*abs(tstop)) tstop=t;
+			if (forwards ? t >= tstop : t <= tstop) {
+				nout++;
+				tstop=tstart+sign*nout*sample;
+				if((forwards ? tstop > tmax : tstop < tmax) ||
+				   abs(tmax-tstop) <= tprecision*abs(tmax)) tmax=tstop=t;
+				else dump(it,0,tmax);
+				if(dtorig) {ChangeTimestep(dt,dtorig,t,sample); dtorig=0.0;}
+			}
 		}
 		
 		statistics(it);
@@ -72,7 +76,7 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 			
 			if(forwards ? t+dt > tstop : t+dt < tstop) {
 				if(abs(tstop-t) <= tprecision*abs(tstop)) t=tstop;
-				if(t == tstop) break;
+				if(t >= tstop) break;
 				dtorig=dt;
 				ChangeTimestep(dt,tstop-t,t,sample);
 				itx=microsteps-1; // This is the final iteration.
