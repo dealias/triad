@@ -69,7 +69,7 @@ class Table {
 	while(1) {
 	  cin.getline(s,blocksize);
 	  buf << s;
-	  cout << s << endl;
+	  cout << buf.str() << endl;
   	  if(cin.eof() || !cin.fail()) {input=errno=0; break;}
 	  cin.clear();
 	}
