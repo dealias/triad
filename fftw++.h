@@ -44,7 +44,7 @@ using Array::Array3;
 
 static Array1<Complex> NULL1;  
 static Array2<Complex> NULL2;  
-static Array3<Complex> NULL3;  
+static Array3<Complex> NULL3;
 #endif
 
 static Complex FFTW;
@@ -104,6 +104,10 @@ protected:
     return n/2+(!out || in == out);
   }
   
+  unsigned int realsize(unsigned int n, Complex *in, double *out) {
+    return realsize(n,in,(Complex *) out);
+  }
+  
   // Shift the Fourier origin to (nx/2,0)
   void Shift(Complex *data, unsigned int nx, unsigned int ny) {
     const unsigned int nyp=ny/2+1;
@@ -146,7 +150,7 @@ public:
     if((size_t) p % sizeof(Complex) == 0) return;
     cerr << "ERROR: " << s << " array is not " << sizeof(Complex) 
 	 << "-byte aligned" << endl;
-    exit(1);
+//    exit(1);
   }
   
   void Setup(Complex *in, Complex *out) {
@@ -166,6 +170,9 @@ public:
     if(alloc) operator delete [] (in,FFTW,size);
     SaveWisdom();
   }
+  
+  void Setup(Complex *in, double *out) {Setup(in,(Complex *) out);}
+  void Setup(double *in, Complex *out) {Setup((Complex *) in,out);}
   
   void LoadWisdom() {
     ifWisdom.open(WisdomName);
@@ -199,10 +206,26 @@ public:
     Execute(in,out);
   }
     
+  void fft(double *in, Complex *out=NULL) {
+    fft((Complex *) in,out);
+  }
+  
+  void fft(Complex *in, double *out) {
+    fft(in,(Complex *) out);
+  }
+  
   virtual void fftNormalized(Complex *in, Complex *out=NULL) {
     Setout(in,out);
     Execute(in,out);
     for(unsigned int i=0; i < size; i++) out[i] *= norm;
+  }
+  
+  void fftNormalized(Complex *in, double *out) {
+    fftNormalized(in,(Complex *) out);
+  }
+  
+  void fftNormalized(double *in, Complex *out=NULL) {
+    fftNormalized((Complex *) in,out);
   }
   
   void fftNormalized(Complex *in, Complex *out,
@@ -336,12 +359,21 @@ public:
   rcfft1d(unsigned int nx, Complex *in=NULL, Complex *out=NULL) 
     : fftw(nx/2+1,-1,nx), nx(nx) {Setup(in,out);} 
   
+  rcfft1d(unsigned int nx, double *in, Complex *out) 
+    : fftw(nx/2+1,-1,nx), nx(nx) {Setup(in,out);} 
+  
 #ifdef __Array_h__
   rcfft1d(const array1<Complex>& in, const array1<Complex>& out=NULL1)
     : fftw(in.Nx(),-1,2*(in.Nx()-1)), nx(2*(in.Nx()-1)) {Setup(in,out);} 
   
   rcfft1d(const Array1<Complex>& in, const Array1<Complex>& out=NULL1)
     : fftw(in.Nx(),-1,2*(in.Nx()-1)), nx(2*(in.Nx()-1)) {Setup(in,out);} 
+  
+  rcfft1d(const array1<double>& in, const array1<Complex>& out)
+    : fftw(out.Nx(),-1,2*(out.Nx()-1)), nx(2*(out.Nx()-1)) {Setup(in,out);} 
+  
+  rcfft1d(const Array1<double>& in, const Array1<Complex>& out)
+    : fftw(out.Nx(),-1,2*(out.Nx()-1)), nx(2*(out.Nx()-1)) {Setup(in,out);} 
 #endif  
   
   fftw_plan Plan(Complex *in, Complex *out) {
@@ -380,11 +412,20 @@ public:
   crfft1d(unsigned int nx, Complex *in=NULL, Complex *out=NULL) 
     : fftw(realsize(nx,in,out),1,nx), nx(nx) {Setup(in,out);} 
   
+  crfft1d(unsigned int nx, Complex *in, double *out) 
+    : fftw(realsize(nx,in,out),1,nx), nx(nx) {Setup(in,out);} 
+  
 #ifdef __Array_h__
   crfft1d(const array1<Complex>& in, const array1<Complex>& out=NULL1) 
     : fftw(in.Nx(),1,2*(in.Nx()-1)), nx(2*(in.Nx()-1)) {Setup(in,out);} 
   
   crfft1d(const Array1<Complex>& in, const Array1<Complex>& out=NULL1) 
+    : fftw(in.Nx(),1,2*(in.Nx()-1)), nx(2*(in.Nx()-1)) {Setup(in,out);} 
+  
+  crfft1d(const array1<Complex>& in, const array1<double>& out) 
+    : fftw(in.Nx(),1,2*(in.Nx()-1)), nx(2*(in.Nx()-1)) {Setup(in,out);} 
+  
+  crfft1d(const Array1<Complex>& in, const Array1<double>& out) 
     : fftw(in.Nx(),1,2*(in.Nx()-1)), nx(2*(in.Nx()-1)) {Setup(in,out);} 
 #endif  
   
@@ -477,7 +518,7 @@ class mcrfft1d : public fftw {
   unsigned int dist;
 public:
   mcrfft1d(unsigned int nx, unsigned int m=1, unsigned int stride=1,
-	 unsigned int dist=0, Complex *in=NULL, Complex *out=NULL) 
+	 unsigned int dist=0, Complex *in=NULL, double *out=NULL) 
     : fftw((realsize(nx,in,out)-1)*stride+(m-1)*Dist(nx,stride,dist)+1,1,nx),
       nx(nx), m(m), stride(stride), dist(Dist(nx,stride,dist)) {Setup(in,out);}
   
@@ -636,7 +677,7 @@ class crfft2d : public fftw {
   bool shift;
 public:  
   crfft2d(unsigned int nx, unsigned int ny, Complex *in=NULL,
-	  Complex *out=NULL) 
+	  double *out=NULL) 
     : fftw(nx*(realsize(ny,in,out)),1,nx*ny), nx(nx), ny(ny), shift(true)
   {Setup(in,out);} 
   
@@ -811,7 +852,7 @@ class crfft3d : public fftw {
   bool shift;
 public:  
   crfft3d(unsigned int nx, unsigned int ny, unsigned int nz, Complex *in=NULL,
-	  Complex *out=NULL) : fftw(nx*ny*(realsize(nz,in,out)),1,nx*ny*nz),
+	  double *out=NULL) : fftw(nx*ny*(realsize(nz,in,out)),1,nx*ny*nz),
 			       nx(nx), ny(ny), nz(nz),
 			       shift(true) {Setup(in,out);} 
   
