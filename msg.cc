@@ -42,12 +42,14 @@ void msg(int severity, char *file, int line, char *format,...)
 	
 	if(severity == OVERRIDE_) {
 		if(msg_override) {severity=WARNING_; tty_override=0;}
-		else severity=ERROR_;
+		else {
+			severity=ERROR_;
 #if __unix
-		int errno_save=errno;
-		if(isatty(STDIN_FILENO)) {severity=WARNING_; tty_override=1;}
-		else errno=errno_save;
+			int errno_save=errno;
+			if(isatty(STDIN_FILENO)) {severity=WARNING_; tty_override=1;}
+			else errno=errno_save;
 #endif	
+		}
 	}
 
 	if(severity == ERROR_) cout << "ERROR: ";

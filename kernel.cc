@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
 	cout.precision(REAL_DIG);
 	
 	cout << newl << PROGRAM << " version " << VERSION
-		 << " [(C) John C. Bowman 1998]" << newl;
+		 << " [(C) John C. Bowman 1999]" << newl;
 	
 	cout << newl << "MACHINE: " << machine() << " [" << date() << "]" << newl;
 	

@@ -406,14 +406,8 @@ inline double drand()
 	return ((double) rand())/RAND_MAX;
 }
 
-double crand_gauss(Real);
-Complex crand_gauss(const Complex&);
-
-inline double drand_gauss()
-{
-	double w;
-	return crand_gauss(w);
-}
+double drand_gauss();
+Complex crand_gauss();
 
 inline ixstream& operator >> (ixstream& s, Complex& y)
 {

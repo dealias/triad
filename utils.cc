@@ -186,7 +186,7 @@ char *atos(const char *s)
 	return s2;
 }
 
-double drand_gauss(double)
+double drand_gauss()
 {
 	double factor,r2,v1,v2;
 	static int flag=0;
@@ -208,12 +208,7 @@ double drand_gauss(double)
 	}
 }
 
-double crand_gauss(double w)
-{
-	return drand_gauss(w);
-}
-	
-Complex crand_gauss(const Complex&)
+Complex crand_gauss()
 {
 	double r2,v1,v2;
 	do {
