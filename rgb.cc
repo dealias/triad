@@ -111,14 +111,15 @@ int main(int argc, char *const argv[])
 	int label=0;
 	int make_mpeg=0;
 	int syntax=0;
-	char c;
 	extern int optind;
 	extern char *optarg;
 	
 #ifdef __GNUC__	
 	optind=0;
 #endif	
-	while ((c=getopt(argc,argv,"bfghlmvzx:H:V:B:E:X:Y:Z:")) != -1) {
+	while (1) {
+		char c = getopt(argc,argv,"bfghlmvzx:H:V:B:E:X:Y:Z:");
+		if (c == -1) break;
 		switch (c) {
 		case 'b':
 			byte=1;
@@ -250,11 +251,10 @@ int main(int argc, char *const argv[])
 				rc=byte ? readframe(fin,nx,ny,nz,value,vmin,vmax) :
 					readframe(xin,nx,ny,nz,value,vmin,vmax);
 				if(rc == EOF) break;
-				n++;
 				if(n < begin) continue;
 				if(vmin < gmin) gmin=vmin;
 				if(vmax > gmax) gmax=vmax;
-			} while (rc == 0 && n < end);
+			} while (n++ < end && rc == 0)
 			
 			if(zero && gmin < 0 && gmax > 0) {
 				gmax=max(-gmin,gmax);
@@ -274,7 +274,6 @@ int main(int argc, char *const argv[])
 			rc=byte ? readframe(fin,nx,ny,nz,value,vmin,vmax) :
 				readframe(xin,nx,ny,nz,value,vmin,vmax);
 			if(rc == EOF) break;
-			n++;
 			if(n < begin) continue;
 			
 			if(!floating_scale) {vmin=gmin;	vmax=gmax;}
@@ -322,7 +321,7 @@ int main(int argc, char *const argv[])
 			
 			fout.close();
 			if(!fout) msg(ERROR,"Cannot write to output file %s",oname);
-		} while (rc == 0 && n < end);
+		} while (n++ < end && rc == 0);
 		nset=nset ? min(nset,n-begin) : n-begin;
 	}
 	
