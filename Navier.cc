@@ -389,7 +389,7 @@ void NWave::Output(int)
 			
 			crfft2dT(psix,log2Nxb,log2Nyb,1);
 			Real ninv=1.0/(Nxb*Nyb);
-			for(i=0; i < nfft; i++) psix[i] *= ninv;
+			for(int i=0; i < nfft; i++) psix[i] *= ninv;
 			
 			out_field(fpsi,(Real *) psix);
 		}
