@@ -283,7 +283,7 @@ int SYM2::Corrector()
 
 Solve_RC AdamsBashforth::Solve()
 {
-  Solve_RC flag;
+  Solve_RC flag=UNSUCCESSFUL;
   errmax=0.0;
   
   swaparray(Y0,Y);
