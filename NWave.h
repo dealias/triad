@@ -30,7 +30,7 @@ public:
 enum Linearity {STANDARD,EXPONENTIAL,CONSERVATIVE_EXPONENTIAL};
 
 class NWave : public ProblemBase {
-	Source_t (this::*Linearity);
+	Source_t (NWave::*Linearity);
 public:
 	void InitialConditions();
 	void Initialize();
@@ -38,7 +38,7 @@ public:
 	void Output(int it);
 	void FinalOutput();
 	
-	void LinearSrc(Var *src, Var *y, double t) {Linearity(src,y,t);}
+	void LinearSrc(Var *src, Var *y, double t) {this.Linearity(src,y,t);}
 	
 	Source_t StandardLinearity;
 	Source_t ExponentialLinearity;
