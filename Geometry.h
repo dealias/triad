@@ -154,6 +154,8 @@ int Partition<T>::Create()
 	return Nmode;
 }
 
+int out_weights(ofstream& fout, Weight* w, int lastindex, int n);
+	
 template<class T>
 void Partition<T>::GenerateWeights() {
 	Mc binaverage;
@@ -164,18 +166,19 @@ void Partition<T>::GenerateWeights() {
 	double interval=15.0;
 	ofstream fout;
 	
+	char *filename=WeightFileName("");
+	fout.open(filename);
+	if(!fout) msg(ERROR,"Weight file %s could not be opened",filename);
+	fout.write((char *) &lastindex,sizeof(int));
+	
 	if(Nweight) {
+		lastindex=out_weights(fout,weight.Base(),lastindex,Nweight);
 		previous=weight[Nweight-1].Index();
 		first=0;
 	} else {
 		previous=0;
 		first=1;
 	}
-	
-	char *filename=WeightFileName("");
-	fout.open(filename);
-	if(!fout) msg(ERROR,"Weight file %s could not be opened",filename);
-	fout.write((char *) &lastindex,sizeof(int));
 	
 	cout << endl << "GENERATING WEIGHT FACTORS." << endl;
 	nkpq=WeightIndex(Nmode,Nmode,n);
@@ -204,12 +207,8 @@ void Partition<T>::GenerateWeights() {
 						cout << 100*(kpq+1)/nkpq << 
 							"% of weight factors generated (" << kpq+1 <<
 								"/" <<	nkpq << ")." << endl;
-						lock();
-						fout.write((char *) (weight.Base()+lastindex),
-								   Nweight*sizeof(Weight));
-						fout.flush();
-						unlock();
-						lastindex=Nweight;
+						lastindex=out_weights(fout,weight.Base(),lastindex,
+											  Nweight);
 					}
 				}
 			}
@@ -217,6 +216,9 @@ void Partition<T>::GenerateWeights() {
 	}
 	if(Nweight >= 100) cout << endl;
 }
+
+
+
 
 template<class T>
 inline Mc Partition<T>::FindWeight(int k, int p, int q) {

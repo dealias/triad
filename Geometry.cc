@@ -51,6 +51,7 @@ int get_weights(DynVector<Weight>& weight, int *Nweight, char *filename,
 		} else {
 			if(n) fin.read((char *) weight.Base(),n*sizeof(Weight));
 			else while(fin.read((char *) &weight[n],sizeof(Weight))) n++;
+			cout << "n=" << n << endl;
 		}
 		fin.close();
 		errno=0;
@@ -88,3 +89,11 @@ void save_formatted_weights(DynVector<Weight>& w, int n, char *filename)
 	if(!fout.good()) msg(ERROR,write_error,filename);
 }	
 
+int out_weights(ofstream& fout, Weight* w, int lastindex, int n)
+{
+	lock();
+	fout.write((char *) (w+lastindex),(n-lastindex)*sizeof(Weight));
+	fout.flush();
+	unlock();
+	return n;
+}
