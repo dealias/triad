@@ -335,7 +335,8 @@ void testlock()
 	ifstream ftest;
 	ftest.open(lname);
 	if(ftest) {
-		msg(OVERRIDE,"Lock file %s exists.\nFiles may be corrupted",lname);
+		msg(OVERRIDE,
+			"Lock file %s exists.\nOutput files may be corrupted",lname);
 		if(remove(lname) == -1) {
 			msg(WARNING,"Could not remove lock file %s",lname);
 			errno=0;
