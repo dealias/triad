@@ -33,8 +33,8 @@ public:
 	int Nx() const {return nx;}
 	int N1() const {return nx;}
 	T *Base() const {return v;}
-	T& operator [] (int ix) {return v[ix];}
-	T& operator () (int ix) {return v[ix];}
+	T& operator [] (int ix) const {return v[ix];}
+	T& operator () (int ix) const {return v[ix];}
 	
 	void Load(const T a) {int size=Size(); for(int i=0; i < size; i++) v[i]=a;}
 	void Load(T *a) {set(v,a,Size());}
@@ -115,7 +115,7 @@ public:
 	T* operator [] (int ix) const {return v+ix*ny;}
 #endif	
 	T& operator () (int ix, int iy) const {return v[ix*ny+iy];}
-	T& operator () (int i) {return v[i];}
+	T& operator () (int i) const {return v[i];}
 	
 	Array2<T>& operator = (T a) {Load(a); return *this;}
 	Array2<T>& operator = (T *a) {Load(a); return *this;}
@@ -189,7 +189,7 @@ public:
 	int Nz() const {return nz;}
 	Array2<T> operator [] (int ix) const {return Array2<T>(ny,nz,v+ix*nyz);}
 	T& operator () (int ix, int iy, int iz) const {return v[ix*nyz+iy*nz+iz];}
-	T& operator () (int i) {return v[i];}
+	T& operator () (int i) const {return v[i];}
 	Array3<T>& operator = (T a) {Load(a); return *this;}
 	Array3<T>& operator = (T *a) {Load(a); return *this;}
 	Array3<T>& operator = (const Array3<T>& A) {Load(A.Base()); return *this;}
@@ -274,7 +274,7 @@ public:
 	T& operator () (int ix, int iy, int iz, int ia) const {
 		return v[ix*nyza+iy*nza+iz*na+ia];
 	}
-	T& operator () (int i) {return v[i];}
+	T& operator () (int i) const {return v[i];}
 	Array4<T>& operator = (T a) {Load(a); return *this;}
 	Array4<T>& operator = (T *a) {Load(a); return *this;}
 	Array4<T>& operator = (const Array4<T>& A) {Load(A.Base()); return *this;}
