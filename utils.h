@@ -220,13 +220,13 @@ inline Complex& Complex::operator /= (Real y)
 Complex atoc(const char *s);
 
 #ifndef __GNUC__
-ostream& operator << (ostream& s, const Complex& y)
+inline ostream& operator << (ostream& s, const Complex& y)
 {
 	s << "(" << y.real() << ", " << y.imag() << ")";
 	return s;
 }
 
-istream& operator >> (istream& s, Complex& y)
+inline istream& operator >> (istream& s, Complex& y)
 {
 	Real re,im;
 	s >> "(" >> re >> "," >> im >> ")";
