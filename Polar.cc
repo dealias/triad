@@ -15,10 +15,12 @@ Real kthneg;
 
 char *Partition<Polar>::Name() {return "Polar";}
 
-char *Partition<Polar>::WeightFileName() {
-	char *filename=new char[strlen(Problem->Abbrev())+strlen(Name())+100];
-	sprintf(filename,"%s/%s/%dx%d_%g:%g_%g%s",Problem->Abbrev(),
-			downcase(Name()),Nr,Nth,krmin,krmax,kthmin,reality ? "R" : "");
+char *Partition<Polar>::WeightFileName(char *suffix) {
+	char *filename=new char[strlen(Problem->Abbrev())+strlen(Name())+
+	strlen(suffix)+100];
+	sprintf(filename,"%s/%s/%dx%d_%g:%g_%g%s%s",Problem->Abbrev(),
+			downcase(Name()),Nr,Nth,krmin,krmax,kthmin,reality ? "R" : "",
+			suffix);
 	return filename;
 }
 

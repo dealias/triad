@@ -46,13 +46,13 @@ double dtmax=0.0;
 int digits=REAL_DIG;
 int restart=0;
 double polltime=0.0;
+int input=0;
+int output=0;
 int hybrid=0;
 
 int microsteps=1;
 double sample=0.0;
 int initialize=0;
-int input=0;
-int output=0;
 int clobber=0;
 
 ProblemBase::ProblemBase()
@@ -259,9 +259,9 @@ void read_init()
 		finit.read((char *) cpu,sizeof(cpu));
 	}
 	
+	finit.close();
 	if(!finit.good())
 		msg(ERROR,"Error reading from initialization file %s",iname);
-	finit.close();
 	if(!override_dt) dt=dt0;
 	if(restart) {t=t0; last_dump=t;}
 }

@@ -41,6 +41,19 @@ public:
 	Mc Value() const {return value;}
 };
 
+inline istream& operator >> (istream& s, Weight& y) {
+	unsigned int index;
+	Mc value;
+	s >> index >> value;
+	y.Store(index,value);
+	return s;
+}
+
+inline ostream& operator << (ostream& s, const Weight& y) {
+	s << y.Index() << endl << y.Value();
+	return s;
+}
+
 template<class T>
 class Partition : public GeometryBase {
 	DynVector<Weight> weight;
@@ -50,7 +63,7 @@ class Partition : public GeometryBase {
 public:
 	Partition() {}
 	char *Name();
-	char *WeightFileName();
+	char *WeightFileName(char *suffix);
 	int Create();
 	void MakeBins();
 	void ListBins(ostream &os);
@@ -186,30 +199,53 @@ void Partition<T>::ComputeTriads() {
 	ifstream fin;
 	ofstream fout;
 	char *filename;
+	int i,formatted=0;
 	
 	Ntriad=Npair=0;
 	
-	fin.open(filename=WeightFileName());
-	if(fin) {
-		fin.read((char *) &Nweight,sizeof(int));
-		if(fin.eof()) fin.close();
+	filename=WeightFileName("");
+	fin.open(filename);
+	if(!fin) {
+		filename=WeightFileName("f");
+		fin.open(filename);
+		formatted=1;
 	}
+	
+	if(fin) {
+		if(formatted) fin >> Nweight;
+		else fin.read((char *) &Nweight,sizeof(int));
+		if(fin.eof() || !Nweight) fin.close();
+	}
+	
 	if(fin) {
 		(void) weight[Nweight-1];
-		fin.read((char *) weight.Base(),Nweight*sizeof(Weight));
+		if(formatted) for(i=0; i < Nweight; i++) fin >> weight[i];
+		else fin.read((char *) weight.Base(),Nweight*sizeof(Weight));
+		fin.close();
 		if(!fin.good()) msg(ERROR,"Error reading from weight file %s",
 							filename);
-		fin.close();
-	} else {
+		if(!formatted && output) {
+			filename=WeightFileName("f");
+			fout.open(filename);
+			if(!fout) msg(ERROR,"Weight file %s could not be opened",filename);
+			fout << Nweight << endl;
+			for(i=0; i < Nweight; i++) fout << weight[i] << endl;
+			fout.close();
+			if(!fout.good())
+				msg(ERROR,"Error writing to weight file %s",filename);
+		}
+	}
+	
+	if(!fin || formatted) {
 		errno=0;
+		filename=WeightFileName("");
 		fout.open(filename);
 		if(!fout) msg(ERROR,"Weight file %s could not be opened",filename);
-		GenerateWeights();
+		if(!fin) GenerateWeights();
 		fout.write((char *) &Nweight,sizeof(int));
 		fout.write((char *) weight.Base(),Nweight*sizeof(Weight));
-		if(!fout.good()) msg(ERROR,"Error writing to weight file %s",
-							 filename);
 		fout.close();
+		if(!fout.good()) msg(ERROR,"Error writing to weight file %s",filename);
 	}
 	
 	pqindex=new Var*[pq(n,n)];
@@ -217,7 +253,7 @@ void Partition<T>::ComputeTriads() {
 	for(p=0; p < n; p++) for(q=p; q < n; q++) pqindex[pq(p,q)]=NULL;
 	
 	for(k=0; k < Nmode; k++) {
-		denom=twopi2*bin[k].Area();
+		denom=twopi2*Area(k);
 		for(p=0; p < n; p++) {
 			for(q=p; q < n; q++) {
 				nkpq=FindWeight(k,p,q);
