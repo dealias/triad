@@ -179,15 +179,14 @@ int PC::Corrector(double dt, int dynamic, int start, int stop)
 Solve_RC AdamsBashforth::Solve(double t, double& dt)
 {
 	Var *temp;
-	int j;
 	switch(init) {
 	case 0:
 		temp=source2; source2=source1; source1=source0; source0=temp;
 		Source(source0,y0,t);
-		for(j=0; j < ny; j++) 
+		for(int j=0; j < ny; j++) 
 			y[j]=y0[j]+a0*source0[j]+a1*source1[j]+a2*source2[j];
 		Source(source,y,t);
-		for(j=0; j < ny; j++) 
+		for(int j=0; j < ny; j++) 
 			y0[j] += b0*source[j]+b1*source0[j]+b2*source1[j];
 		break;
 	case 1:
@@ -195,10 +194,10 @@ Solve_RC AdamsBashforth::Solve(double t, double& dt)
 	case 2:
 		// Initialize with 2nd-order predictor corrector
 		Source(source0,y0,t);
-		for(j=0; j < ny; j++) y[j]=y0[j]+dt*source0[j];
+		for(int j=0; j < ny; j++) y[j]=y0[j]+dt*source0[j];
 		Source(source,y,t);
 		double halfdt=0.5*dt;
-		for(j=0; j < ny; j++) 
+		for(int j=0; j < ny; j++) 
 			y0[j] += halfdt*(source[j]+source0[j]);
 		init--;
 		break;

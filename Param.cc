@@ -12,7 +12,7 @@ void VocabularyBase::Sort()
 {
 	qsort(ParamList,NParam,sizeof(ParamBase *),ParamCompare);
 	
-	for(int i=0; i < NParam-1; i++)
+	for(unsigned int i=0; i < NParam-1; i++)
 		if(ParamCompare(&ParamList[i],&ParamList[i+1]) == 0)
 			msg(ERROR_GLOBAL,
 				"Duplicate vocabulary entry: %s",ParamList[i]->Name());
@@ -29,17 +29,17 @@ ParamBase *VocabularyBase::Locate(const char *key, int *match_type)
 
 void VocabularyBase::List(ostream& os)
 {
-	for(int i=0; i < NParam; i++) ParamList[i]->Display(os);
+	for(unsigned int i=0; i < NParam; i++) ParamList[i]->Display(os);
 }
 
 void VocabularyBase::Dump(ostream& os)
 {
-	for(int i=0; i < NParam; i++) ParamList[i]->Output(os);
+	for(unsigned int i=0; i < NParam; i++) ParamList[i]->Output(os);
 }
 
 void VocabularyBase::GraphicsDump(ostream& os)
 {
-	for(int i=0; i < NParam; i++) ParamList[i]->GraphicsOutput(os);
+	for(unsigned int i=0; i < NParam; i++) ParamList[i]->GraphicsOutput(os);
 }
 
 void VocabularyBase::Parse(char *s)
