@@ -152,7 +152,7 @@ class VocabularyBase {
 	
   ParamBase *Locate(const char *key, int *match_type);
   void ParamAdd(ParamBase *p);
-  void Parse(const char *s);
+  void Parse(char *s);
   void Assign(const char *s, int warn=1);
   void Sort();
   void List(ostream& os);

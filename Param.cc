@@ -42,7 +42,7 @@ void VocabularyBase::GraphicsDump(ostream& os)
   for(unsigned int i=0; i < NParam; i++) ParamList[i]->GraphicsOutput(os);
 }
 
-void VocabularyBase::Parse(const char *s)
+void VocabularyBase::Parse(char *s)
 {
   char *command=strtok(s," \n\t");
   if(command)  {
