@@ -352,8 +352,8 @@ void dump(int it, int final, double tmax)
 					rename(rname,rcheck.str());
 					msg(WARNING,"Cannot rename %s to checkpoint file %s",rname,
 						rcheck.str());
-			} else copy(rname,rcheck.str())
-				  
+				} else copy(rname,rcheck.str());
+			}  
 			if(rename(rtemp,rname))
 				msg(WARNING,"Cannot rename restart file %s",rtemp);
 		}
