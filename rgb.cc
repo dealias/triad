@@ -321,7 +321,7 @@ int main(int argc, char *const argv[])
 	if(rgbdir) rgbdirbuf << rgbdir;
 	else rgbdirbuf << "/tmp/" << getenv("USER");
 	unsigned int process=getpid();
-	char prefix="/rgb.";
+	char *prefix="/rgb.";
 	strstream buf;
 	buf << "mkdirhier " << prefix << process << ends;
 	char *cmd=buf.str();
