@@ -43,6 +43,7 @@ class ParamBase {
  public:
   ParamBase() {}
   virtual void Display(ostream& os)=0;
+  virtual void Help(ostream& os)=0;
   virtual void GraphicsOutput(ostream& os)=0;
   virtual void Output(ostream& os)=0;
   virtual void SetStr(const char *)=0;		// Set from string	

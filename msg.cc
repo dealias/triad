@@ -40,13 +40,16 @@ void msg(int severity, const char *file, int line, const char *format,...)
     cout << beep;
   }
 	
-  if(severity == OVERRIDE_) {
+  if(severity == OVERRIDE_ || severity == RETRY_) {
     if(msg_override) {severity=WARNING_; tty_override=0;}
     else {
       severity=ERROR_;
 #if __unix
       int errno_save=errno;
-      if(isatty(STDIN_FILENO)) {severity=WARNING_; tty_override=1;}
+      if(isatty(STDIN_FILENO)) {
+	if(severity == OVERRIDE_) tty_override=1;
+	severity=WARNING_;
+      }
       else errno=errno_save;
 #endif	
     }

@@ -15,8 +15,8 @@ inline void VocabularyBase::ParamAdd(ParamBase *p)
   ParamList[NParam++]=p;
 }
 
-#define VOCAB(var,min,max) Vocab(&var, #var, min, max, 1, 1)
-#define VOCAB_NODUMP(var,min,max) Vocab(&var, #var, min, max, 1, 0)
+#define VOCAB(var,min,max,help) Vocab(&var, #var, min, max, help, 1, 1)
+#define VOCAB_NODUMP(var,min,max,help) Vocab(&var, #var, min, max, help, 1, 0)
 
 #define VOCAB_ARRAY(var) \
 Vocab(var, #var, *var-*var, *var-*var, (int) (sizeof(var)/sizeof(*var)),1)
@@ -28,10 +28,12 @@ class Param : public ParamBase {
   T *var;
   T min;
   T max;
+  char *help;
   int dump;
  public:
-  Param(T *address, const char *s, int n, T min0, T max0, int dump0) {
-    name=s; nvar=n; var=address; min=min0; max=max0; dump=dump0;
+  Param(T *address, const char *s, int n, T min0, T max0, char *help0,
+	int dump0) {
+    name=s; nvar=n; var=address; min=min0; max=max0; help=help0; dump=dump0;
     Vocabulary->ParamAdd(this);
   }
 
@@ -48,6 +50,10 @@ class Param : public ParamBase {
     os << name << " = ";
     for(int i=0; i < nvar-1; i++) os << var[i] << ", ";
     os << var[nvar-1] << endl;
+  }
+	
+  void Help(ostream& os) {
+    os << help << endl;
   }
 	
   void Output(ostream& os) {
@@ -74,9 +80,9 @@ class Param : public ParamBase {
 };
 
 template<class T>
-inline void Vocab(T *var, char *s, T min, T max, int n, int dump)
+inline void Vocab(T *var, char *s, T min, T max, char *help, int n, int dump)
 {
-  (void) new Param<T>(var,s,n,min,max,dump);
+  (void) new Param<T>(var,s,n,min,max,help,dump);
 }
 
 

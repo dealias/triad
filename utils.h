@@ -165,15 +165,17 @@ extern int beep_enabled;
 extern int msg_override;
 extern void (*inform)(const char *);
 
-enum ErrorCode {WARNING_,OVERRIDE_,SLEEP_,ERROR_};
+enum ErrorCode {WARNING_,OVERRIDE_,RETRY_,SLEEP_,ERROR_};
 
 #define WARNING WARNING_,__FILE__,__LINE__
 #define OVERRIDE OVERRIDE_,__FILE__,__LINE__
+#define RETRY RETRY_,__FILE__,__LINE__
 #define SLEEP SLEEP_,__FILE__,__LINE__
 #define ERROR ERROR_,__FILE__,__LINE__
 
 #define WARNING_GLOBAL WARNING_,"",0
 #define OVERRIDE_GLOBAL OVERRIDE_,"",0
+#define RETRY_GLOBAL RETRY_,"",0
 #define SLEEP_GLOBAL SLEEP_,"",0
 #define ERROR_GLOBAL ERROR_,"",0
 

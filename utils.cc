@@ -152,10 +152,10 @@ int check_match(int match_type, const char *object, const char *key, int warn)
 {
   switch(match_type) {
   case -1:
-    if(warn) msg(OVERRIDE_GLOBAL, "Unknown %s: %s",object,key);
+    if(warn) msg(RETRY_GLOBAL, "Unknown %s: %s",object,key);
     return 0;
   case 0:
-    if(warn) msg(ERROR_GLOBAL, "Ambiguous %s: %s",object,key);
+    if(warn) msg(RETRY_GLOBAL, "Ambiguous %s: %s",object,key);
     return 0;
   }
   return 1;

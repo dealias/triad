@@ -52,26 +52,28 @@ class Table {
     B *p;
     qsort(Base(),Size(),sizeof(*Base()),Compare);
     
-    if(*key == 0) {
-      cout << newl << "Available " << name << " values: [" << endl;
-      List(cout);
-      cout << "]" << newl << newl << name << "=";
+    while(1) {
+	e=*(EntryBase<B> **) bsearch2(key,Base(),Size(),sizeof(*Base()),
+				      KeyCompare,&match_type);
+	if(check_match(match_type,name,key)) break;
+	
+	cout << newl << "Recognized " << name << " values: [" << endl;
+	List(cout);
+	cout << "]" << newl << newl << name << "=";
       
-      const int blocksize=80;
-      char s[blocksize];
-      strstream buf;
-      while(1) {
-	cin.getline(s,blocksize);
-	buf << s;
-	if(cin.eof() || !cin.fail()) {errno=0; break;}
-	cin.clear();
-      }
-      if(buf.str()) key=strdup(buf.str());
+	const int blocksize=80;
+	char s[blocksize];
+	strstream buf;
+	
+	while(1) {
+	  cin.getline(s,blocksize);
+	  buf << s;
+  	  if(cin.eof() || !cin.fail()) {errno=0; break;}
+	  cin.clear();
+	}
+	if(buf.str()) key=strdup(buf.str());
     }
     
-    e=*(EntryBase<B> **) bsearch2(key,Base(),Size(),sizeof(*Base()),
-				  KeyCompare,&match_type);
-    check_match(match_type,name,key);
     p=e->New();
     if(*p->Name()) {
       key=e->Key();
