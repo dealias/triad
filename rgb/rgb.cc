@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.09";
+const char VERSION[]="1.10";
 
 #include "xstream.h"
 #include <iostream.h>
@@ -123,7 +123,7 @@ int skip=1;
 	
 const int Undefined=-2;
 int background=Undefined;
-int labelcnt=0;
+unsigned int labelcnt=0;
 DynVector<char *> Label;
 
 const char *outname=NULL;
@@ -278,17 +278,13 @@ int readframe(ixstream& xin, int nx, int ny, int nz, Array3<float> value,
   return 0;
 }
 
-void montage(int nfiles, char *argf[], int n, const char *format,
+void montage(unsigned int nfiles, char *argf[], int n, const char *format,
 	     const char *type);
 void identify(int argc, int n, const char *type, int& xsize, int& ysize);
 void mpeg(int argc, int n, const char *type, int xsize, int ysize);
 void animate(int argc, const char *filename, int n, const char *type,
 	     const char *pattern, int xsize, int ysize);
 	
-#ifdef __GNUC__
-extern "C" void putenv(const char *);
-#endif
-
 void usage(const char *program)
 {
   cerr << PROGRAM << " version " << VERSION
@@ -699,7 +695,7 @@ int main(int argc, char *argv[])
   }
 	
   errno=0;
-  int nfiles=argc-optind;
+  unsigned int nfiles=argc-optind;
   if(syntax || nfiles < 1) {
     if(syntax) cerr << endl;
     usage(argv[0]);
@@ -754,7 +750,7 @@ int main(int argc, char *argv[])
     offset=PaletteMin;
   }
 	
-  for(int f=0; f < nfiles; f++) {
+  for(unsigned int f=0; f < nfiles; f++) {
     const char *fieldname=argf[f];
     ixstream xin;
 		
@@ -770,8 +766,8 @@ int main(int argc, char *argv[])
     if(kmin < lower) kmin=lower;
     if(kmax > upper) kmax=upper;
 		
-    int mpal=max(bar,my);
-    int msep=max(band,my);
+    int mpal=bar*my;
+    int msep=band*my;
 		
     if(rescale && trans != IDENTITY) 
       msg(ERROR, "Rescale for transforms not yet implemented");
@@ -1059,7 +1055,7 @@ char *separator="_______________________________________________";
 char *separator="                                               ";
 #endif
 
-void montage(int nfiles, char *argf[], int n, const char *format,
+void montage(unsigned int nfiles, char *argf[], int n, const char *format,
 	     const char *type)
 {
   strstream buf;
@@ -1070,7 +1066,7 @@ void montage(int nfiles, char *argf[], int n, const char *format,
   if(make_mpeg) buf << " -crop 2800x2800+0+0"; // Workaround internal mpeg limit
   buf << option.str() << " -interlace none ";
   if(pointsize) buf << "-pointsize " << pointsize << " ";
-  for(int f=0; f < nfiles; f++) {
+  for(unsigned int f=0; f < nfiles; f++) {
     const char *fieldname=argf[f];
     const char *text=(f < labelcnt ? Label[f] : fieldname);
     if(label) {
@@ -1099,7 +1095,7 @@ void montage(int nfiles, char *argf[], int n, const char *format,
   if(n > 0 && !preserve) {
     strstream buf;
     buf << "rm ";
-    for(int f=0; f < nfiles; f++) {
+    for(unsigned int f=0; f < nfiles; f++) {
       const char *fieldname=argf[f];
       buf << rgbdir << fieldname << setfill('0') << setw(NDIGITS)
 	  << n << "." << format << " ";
