@@ -41,7 +41,7 @@ depend:
 	$(MAKEDEPEND) $(MDOPT) -I /usr/local/include \
 	kernel.cc Approx.cc Integrator.cc Param.cc ThreeWave.cc \
 	Navier.cc NWave.cc Geometry.cc Polar.cc PolarAverage.cc simpfast.cc \
-	Kepler.cc Lotka.cc utils.cc strcasecmp.cc new.cc idle.cc
+	Kepler.cc Lotka.cc utils.cc strcasecmp.cc new.cc arch/idle.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
