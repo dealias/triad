@@ -16,7 +16,7 @@ const Array2<T> exp(const Array2<T>& a)
 	
   unsigned int n2=n*n;
   //	static DynVector<T> temp(n2);
-  //	if(n2 > temp.Alloc()) temp.Resize(n2);
+  //	if(n2 > temp.Alloc()) temp.Realloc(n2);
   Array2<T> B(n,n);
 	
   Real Amax;
