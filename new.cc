@@ -1,7 +1,11 @@
-#include <stdlib.h>
-#include <iostream.h>
-#include <new.h>
+#include <cstdlib>
+#include <iostream>
+#include <new>
 // #include <mem_test_user>
+
+using std::cout;
+using std::endl;
+using std::set_new_handler;
 
 #if defined(__linux__) && defined (__i386__)
 #include <fpu_control.h>

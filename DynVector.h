@@ -20,8 +20,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 #define __DYNVECTOR_H_VERSION__ 1.00
 
-#include <stdlib.h>
-#include <iostream.h>
+#include <cstdlib>
+#include <iostream>
 
 #ifndef __ExternalDynVectorExit
 inline void DynVectorExit(char *x)

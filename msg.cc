@@ -1,14 +1,14 @@
 #include "utils.h"
 
-#include <ctype.h>
-#include <iostream.h>
-#include <errno.h>
-#include <time.h>
-#include <strstream.h>
+#include <cctype>
+#include <iostream>
+#include <cerrno>
+#include <ctime>
+#include <sstream>
 
 #if __unix
 #include <unistd.h>
-#include <signal.h>
+#include <csignal>
 #endif
 
 char beep='\a';
@@ -76,7 +76,7 @@ void msg(int severity, const char *file, int line, const char *format,...)
 
   if((severity == ERROR_ && abort_flag) || severity == SLEEP_) {
     if(inform) {
-      strstream buf,vbuf;
+      ostringstream buf,vbuf;
       va_start(vargs,format);
       vform(format,vargs,vbuf);
       va_end(vargs);
@@ -88,7 +88,7 @@ void msg(int severity, const char *file, int line, const char *format,...)
       if(errno && errno < sys_nerr)
 	buf << " " << sys_errlist[errno] << ".";
       buf << ends;
-      (*inform)(buf.str());
+      (*inform)(buf.str().c_str());
     }
     if(severity == SLEEP_ && __unix) {
 #if __unix			

@@ -1,14 +1,14 @@
 #ifndef __kernel_h__
 #define __kernel_h__ 1
 
-#include <iostream.h>
-#include <fstream.h>
-#include <stdio.h>
-#include <limits.h>
-#include <errno.h>
-#include <time.h>
-#include <string.h>
-#include <strstream.h>
+#include <iostream>
+#include <fstream>
+#include <cstdio>
+#include <climits>
+#include <cerrno>
+#include <ctime>
+#include <string>
+#include <sstream>
 
 #define __ExternalDynVectorExit
 #include "DynVector.h"

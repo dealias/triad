@@ -1,5 +1,5 @@
 .cc.o:
-	$(C++) -Wno-deprecated $(OPT) $(INCL) -o $@ -c $<
+	$(C++) $(OPT) $(INCL) -o $@ -c $<
 
 triad: $(TRIAD:=.o)
 	$(C++) $(OPT) -o triad $(TRIAD:=.o) $(LIB)
@@ -8,7 +8,7 @@ clean:
 	rm -rf *.o *.$(D) *mon.out $(CLEAN)
 
 %.$(D): %.cc
-	$(MAKEDEPEND) -Wno-deprecated $(INCL) $(MDOPTS) $< > $@
+	$(MAKEDEPEND) $(INCL) $(MDOPTS) $< > $@
 
 ifneq ($(wildcard $(TRI)/config/$(HOSTTYPE).rules),)
 include $(TRI)/config/$(HOSTTYPE).rules

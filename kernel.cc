@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
     const int blocksize=80;
     char s[blocksize];
     while(!fparam.eof()) {
-      strstream buf;
+      ostringstream buf;
       while(1) {
 	fparam.getline(s,blocksize);
 	buf << s;
@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
 	fparam.clear();
       }
       buf << ends;
-      Vocabulary->Parse(buf.str());
+      Vocabulary->Parse(buf.str().c_str());
     }
     fparam.close();
   } else {
@@ -233,9 +233,9 @@ int main(int argc, char *argv[])
   }
 
   if(checkpoint && tmpdir) {
-    strstream buf;
+    ostringstream buf;
     buf << tmpdir << dirsep << Vocabulary->FileName("","") << ends;
-    mkdir(buf.str(),0xFFFF);
+    mkdir(buf.str().c_str(),0xFFFF);
   }
 					
   save_parameters();
@@ -402,7 +402,7 @@ void statistics(int it)
     frestart.close();
     if(frestart) {
       if(checkpoint && it > 0 && (it-1) % checkpoint == 0) {
-	strstream rcheck;
+	ostringstream rcheck;
 	if(tmpdir) rcheck << tmpdir << dirsep;
 	rcheck << rname << "." << last_iter << ends;
 	if(tmpdir ? copy(rname,rcheck.str()) : 
@@ -440,8 +440,8 @@ void statistics(int it)
 
 const char *VocabularyBase::FileName(const char* delimiter, const char *suffix)
 {
-  strstream buf;
+  ostringstream buf;
   buf << Directory() << run << delimiter << suffix << ends;
   buf.rdbuf()->freeze();
-  return buf.str();
+  return buf.str().c_str();
 }

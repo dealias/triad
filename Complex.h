@@ -20,9 +20,13 @@
 
 #define __ATT_complex__
 
-#include <iostream.h>
-#include <math.h>
+#include <iostream>
+#include <cmath>
 #include "precision.h"
+
+using std::istream;
+using std::ostream;
+using std::ws;
 
 class Complex
 {

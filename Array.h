@@ -36,23 +36,30 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #define __checkActivate(i) Activate()
 #endif
 
-#include <iostream.h>
-#include <strstream.h>
+#include <iostream>
+#include <string>
+#include <sstream>
 #include <unistd.h>
-#include <limits.h>
-#include <stdlib.h>
+#include <climits>
+#include <cstdlib>
+
+using std::istream;
+using std::string;
+using std::istringstream;
+using std::ostringstream;
+using std::cout;
 
 namespace Array {
   
 inline ostream& _newl(ostream& s) {s << '\n'; return s;}
 
-inline void ArrayExit(char *x);
+inline void ArrayExit(const char *x);
   
 #ifndef __ExternalArrayExit
-inline void ArrayExit(char *x)
+inline void ArrayExit(const char *x)
 {
   cout << _newl << "ERROR: " << x << "." << endl;
-  exit(1);
+  exit(1);`
 } 
 #endif
 
@@ -80,10 +87,10 @@ class array1 {
   }
   void CheckActivate(int dim) {
     if (test(allocated)) {
-      strstream buf;
+      ostringstream buf;
       buf << "Reallocation of Array" << dim
 	  << " attempted (must Deallocate first)" << ends;
-      ArrayExit(buf.str());
+      ArrayExit(buf.str().c_str());
     }
     Activate();
   }
@@ -117,14 +124,14 @@ class array1 {
   virtual void Check(int i, int n, unsigned int dim, unsigned int m,
 		     int o=0) const {
     if(i < 0 || i >= n) {
-      strstream buf;
+      ostringstream buf;
       buf << "Array" << dim << " index ";
       if(m) buf << m << " ";
       buf << "is out of bounds (" << i+o;
       if(i < 0) buf << " < " << o;
       else buf << " > " << n+o-1;
       buf << ")" << ends;
-      ArrayExit(buf.str());
+      ArrayExit(buf.str().c_str());
     }
   }
 	
