@@ -25,6 +25,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 using std::cout;
 using std::endl;
+using std::ostream;
 
 #ifndef __ExternalDynVectorExit
 inline void DynVectorExit(char *x)

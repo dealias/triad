@@ -45,8 +45,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 using std::istream;
 using std::ostream;
 using std::ostringstream;
+using std::cin;
 using std::cout;
 using std::endl;
+using std::flush;
 
 namespace Array {
   
