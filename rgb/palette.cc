@@ -61,6 +61,7 @@ void MakePalette(int palette)
 	case REDBLUE:
 	case REDGREEN:
 	case GREENBLUE:
+	case GENERAL:
 		offset=0;
 		nintervals=1;
 		break;
