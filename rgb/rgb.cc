@@ -669,6 +669,7 @@ int main(int argc, char *const argv[])
 			break;
 		case 2:
 			kmin=kmax=0;
+			lower=0; upper=INT_MAX;
 			a0=(int) (ceil(ny/twopi)+0.5);
 			a=a0+nx;
 			R0=(int) (zxaspect*a+0.5);
