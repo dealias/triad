@@ -145,6 +145,11 @@ public:
 	void GraphicsDump(ostream& os);
 	virtual char *Name()=0;
 	virtual char *Abbrev()=0;
+	virtual char *Directory() {
+		char *s=new char[strlen(Abbrev())+strlen(dirsep)+1];
+		sprintf(s,"%s%s",Abbrev(),dirsep);
+		return s;
+	}
 
 	ProblemBase *NewProblem(char *key) {
 		ProblemBase *p=ProblemTable->Locate(key);

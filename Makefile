@@ -1,46 +1,26 @@
-LIB = $(LFLAGS) -lm
-OPT = -g $(CFLAGS)
-MAKEDEPEND = makedepend
+TRI = .
+ARCH = unix fft
+POLL = poll
 
-ARCH = unix.o fft.o
-POLL = poll.o
+include $(TRI)/config/Common
+INCL = 
 
-include config/$(HOSTTYPE)
+POLAR = Polar PolarAverage simpfast
+NWAVE = NWave Geometry convolve Cartesian $(CORE) $(UTILS)
+NAVIER = Navier $(NWAVE) $(POLAR)
+THREEWAVE = ThreeWave $(NWAVE)
+POLARAVG = PolarAverageTest PolarAverage simpfast
+TRIAD = $(NAVIER) $(THREEWAVE) $(POLARAVG)
 
-UTILS = utils.o strcasecmp.o new.o $(POLL) $(ARCH)
-CORE = kernel.o Integrator.o Param.o $(UTILS)
-POLAR = Polar.o PolarAverage.o simpfast.o
-NWAVE = NWave.o convolve.o Cartesian.o
-TRIAD = Geometry.o $(NWAVE) $(CORE) $(POLAR)
+triad: $(NAVIER:=.o)
+	$(C++) $(OPT) -o triad $(NAVIER:=.o) $(LIB) 
 
+w3:	$(THREEWAVE:=.o)
+	$(C++) $(OPT) -o triad $(THREEWAVE:=.o) $(LIB)
 
-.SUFFIXES: .cc
+polaraverage: $(POLARAVG:=.o) $(UTILS:=.o)
+	$(C++) $(OPT) -o triad $(POLARAVG=.o) $(UTILS:=.o) $(LIB)
 
-triad:	Navier.o $(TRIAD)
-	$(C++) $(OPT) -o triad Navier.o $(TRIAD) $(LIB) 
+include $(TRI)/config/Rules
 
-w3:	ThreeWave.o $(TRIAD)
-	$(C++) $(OPT) -o triad ThreeWave.o $(NWAVE) $(CORE) $(LIB)
-
-kepler:	Kepler.o $(CORE)
-	$(C++) $(OPT) -o triad Kepler.o $(CORE) $(LIB)
-
-polaraverage: PolarAverageTest.o PolarAverage.o simpfast.o $(UTILS)
-	$(C++) $(OPT) -o triad PolarAverageTest.o PolarAverage.o simpfast.o \
-		$(UTILS) $(LIB)
-
-.cc.o:
-	$(C++) $(OPT) -o $@ -c $<
-
-clean:
-	rm -f *.o *mon.out $(ALL)
-
-depend:	kernel.cc Integrator.cc Param.cc ThreeWave.cc \
-		Navier.cc NWave.cc Geometry.cc Cartesian.cc convolve.cc fft.cc \
-		Polar.cc PolarAverage.cc simpfast.cc \
-		Kepler.cc utils.cc strcasecmp.cc new.cc \
-		poll.cc idle.cc tremain.cc unix.cc cfft.cc efft.cc
-	$(MAKEDEPEND) -f .makedepend $(MDOPT) -I /usr/local/include $^
-
-include .makedepend
 

@@ -387,8 +387,9 @@ void statistics()
 
 char *VocabularyBase::FileName(const char* delimiter, const char *suffix)
 {
-	char *filename=new char[strlen(run)+strlen(delimiter)+strlen(suffix)+2];
-	sprintf(filename,"%s%s%s",run,delimiter,suffix);
+	char *filename=new char[strlen(Directory())+strlen(run)+strlen(delimiter)+
+	strlen(suffix)+1];
+	sprintf(filename,"%s%s%s%s",Directory(),run,delimiter,suffix);
 	return filename;
 }
 
