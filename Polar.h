@@ -36,7 +36,7 @@ public:
 inline Real InInterval(const Cartesian& x, const Polar& a, const Polar& b)
 {
 	const Real width=1000.0;
-	const Real fuzz=1.0+width*REAL_EPSILON;
+	const Real fuzz=width*REAL_EPSILON;
 	
 	const Real K2fuzz=(b.K2()-a.K2())*fuzz;
 	const Real a1=a.K2()-K2fuzz, a2=a.K2()+K2fuzz;
