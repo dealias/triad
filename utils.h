@@ -58,7 +58,7 @@ inline Real dmod(Real x, Real n) {
 }
 
 template<class T> 
-inline void set(T *to, const T * from, int n)
+inline void set(T *to, const T * from, unsigned int n)
 {
 	memcpy(to,from,sizeof(*from)*n);
 }
@@ -324,27 +324,28 @@ const int default_nperline=4;
 static const char *outerror="Cannot write %s to output stream";
 
 template<class T>	
-inline void out_curve(oxstream& os, T *f, const char *text, int n, int)
+inline void out_curve(oxstream& os, T *f, const char *text, unsigned int n,
+					  int)
 {
 	os << n;
-	for(int i=0; i < n; i++) os << f[i];
+	for(unsigned int i=0; i < n; i++) os << f[i];
 	if(!os) msg(WARNING,outerror,text);
 }
 
 template<class T>
-inline void out_function(oxstream& os, T (*f)(int), const char *text, 
-						 int n, int) 
+inline void out_function(oxstream& os, T (*f)(unsigned int), const char *text, 
+						 unsigned int n, int) 
 {
 	os << n;
-	for(int i=0; i < n; i++) os << (*f)(i);
+	for(unsigned int i=0; i < n; i++) os << (*f)(i);
 	if(!os) msg(WARNING,outerror,text);
 }
 
 template<class T>
-inline void out_function(ostream& os, T (*f)(int), const char *text, int n,
-						 int nperline)
+inline void out_function(ostream& os, T (*f)(unsigned int), const char *text,
+						 unsigned int n, int nperline)
 {
-	int i;
+	unsigned int i;
 	os << "# " << text << newl;
 	for(i=0; i < n-1;) {
 		os << (*f)(i);
@@ -355,9 +356,10 @@ inline void out_function(ostream& os, T (*f)(int), const char *text, int n,
 }
 
 template<class T>	
-inline void out_curve(ostream& os, T *f, const char *text, int n, int nperline)
+inline void out_curve(ostream& os, T *f, const char *text, unsigned int n,
+					  int nperline)
 {
-	int i;
+	unsigned int i;
 	os << "# " << text << newl;
 	for(i=0; i < n-1;) {
 		os << f[i];
@@ -368,13 +370,14 @@ inline void out_curve(ostream& os, T *f, const char *text, int n, int nperline)
 }
 
 template<class S>
-inline void out_function(S& os, Real (*f)(int), const char *text, int n)
+inline void out_function(S& os, Real (*f)(unsigned int), const char *text,
+						 unsigned int n)
 {
 	out_function(os,f,text,n,default_nperline);
 }
 	
 template<class S, class T>
-inline void out_curve(S& os, T *f, const char *text, int n)
+inline void out_curve(S& os, T *f, const char *text, unsigned int n)
 {
 	out_curve(os,f,text,n,default_nperline);
 }
@@ -387,24 +390,24 @@ inline void out_curve(S& os, T f, const char *text)
 
 template<class S>
 void out_real(S& os, Real *f, const char *textre, const char *,
-			  int n, int nperline) 
+			  unsigned int n, int nperline) 
 {
 	out_curve(os,f,textre,n,nperline);
 }
 
 template<class S>
-void out_real(S& os, Real *f, const char *textre, const char *, int n)
+void out_real(S& os, Real *f, const char *textre, const char *, unsigned int n)
 {
 	out_curve(os,f,textre,n,default_nperline);
 }
 
 extern Complex *out_base;
-Real out_re(int i);
-Real out_im(int i);
+Real out_re(unsigned int i);
+Real out_im(unsigned int i);
 
 template<class S>
-void out_real(S& os, Complex *f, const char *textre, const char *textim, int n,
-			  int nperline) 
+void out_real(S& os, Complex *f, const char *textre, const char *textim,
+			  unsigned int n, int nperline) 
 {
 	out_base=f;
 	out_function(os,out_re,textre,n,nperline);
@@ -412,7 +415,8 @@ void out_real(S& os, Complex *f, const char *textre, const char *textim, int n,
 }
 
 template<class S>
-void out_real(S& os, Complex *f, const char *textre, const char *textim, int n)
+void out_real(S& os, Complex *f, const char *textre, const char *textim,
+			  unsigned int n)
 {
 	out_base=f;
 	out_function(os,out_re,textre,n,default_nperline);

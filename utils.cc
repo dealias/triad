@@ -230,6 +230,6 @@ char *output_filename(char *basename, char *suffix)
 }
 
 Complex *out_base;
-Real out_re(int i) {return out_base[i].re;}
-Real out_im(int i) {return out_base[i].im;}
+Real out_re(unsigned int i) {return out_base[i].re;}
+Real out_im(unsigned int i) {return out_base[i].im;}
 
