@@ -69,24 +69,19 @@ public:
 		return (int) ((n-1)*((double)(value-first)/(last-first)));
 	}
 	
-	Hash(int n0, T value(int)) {
-		n=n0; first=value(0); last=value(n-1);
+	Hash(int nhash, int nvalue, T value(int)) {
+		n=nhash; first=value(0); last=value(nvalue-1);
 		table=new int[n+1];
 		int j=0;
 		for(int i=0; i < n; i++) {
-			while (j < n && hash(value(j)) < i) j++;
-			if(j >= n) msg(ERROR,"Hash table index is out of bounds");
+			while (j < nvalue && hash(value(j)) < i) j++;
+			if(j >= nvalue) msg(ERROR,"Hash table index is out of bounds");
 			table[i]=j;
 		}
-		table[n]=n;
+		table[n]=nvalue;
 	}
 	
-	inline void Limits(const T kpq, int *l,int *u) {
-		int h=hash(kpq);
-		if(h < 0 || h >= n) {*l=*u=0; return;}
-		*l=table[h];
-		*u=table[h+1];
-	}
+	inline int Table(int hash) {return table[hash];}
 };
 	
 extern Weight *weightBase;
@@ -197,7 +192,7 @@ template<class T>
 inline Mc Partition<T>::FindWeight(int k, int p, int q) {
 	if(k==p || p==q || q==k) return 0.0;
 	
-	int l,u,dummy, sign=1, conjflag=0, k0=k;
+	int dummy, sign=1, conjflag=0, k0=k;
 	
 	// Exploit the full antisymmetry of the weight factors: reorder so that
 	// k <= p <= q.
@@ -211,7 +206,10 @@ inline Mc Partition<T>::FindWeight(int k, int p, int q) {
 	if(p >= Nmode) {int K=k; k=p-Nmode; p=q-Nmode; q=K+Nmode; conjflag=1;}
 	
 	Index_t kpq=WeightIndex(k,p,q);
-	hash->Limits(kpq,&l,&u);
+	int h=hash->hash(kpq);
+	if(h < 0 || h >= n) return 0.0; // no match found.
+	int l=hash->Table(h);
+	int u=hash->Table(h+1);
 	
 	while(l < u) {
 		int i=(l+u)/2;
@@ -304,7 +302,7 @@ void Partition<T>::ComputeTriads() {
 	
 	weightBase=weight.Base();
 
-	hash=new Hash<Index_t>(Nweight,HashWeightIndex);
+	hash=new Hash<Index_t>(2*Nweight,Nweight,HashWeightIndex);
 	cout << "HASH TABLE CONSTRUCTED." << endl;
 
 	triad.Resize(Nmode*n);
