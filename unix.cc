@@ -20,7 +20,7 @@
 
 extern char* run;
 static const double init_time=time(NULL);
-static const int firstcall=1;
+static int firstcall=1;
 static clock_t cpu0;
 static const double clockinv=1.0/CLOCKS_PER_SEC;
 
