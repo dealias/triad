@@ -1,6 +1,6 @@
 TRI = .
 ARCH = unix
-FFT = fft
+FFT = fft rfft
 POLL = poll
 
 include $(TRI)/config/Common

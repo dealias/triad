@@ -5,7 +5,8 @@ MAKEDEPEND = /lib/cpp -M
 MDOPTS = -I /usr/include/CC
 
 ARCH = unix
-FFT = cfft
+FFT = cfft rfft
 POLL = tremain
+
 
 
