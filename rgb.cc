@@ -9,6 +9,10 @@
 #if __GNUC__
 #include <getopt.h>
 #endif
+#if _AIX
+#define optind Optind
+#define optarg Optarg
+#endif
 
 #include "DynVector.h"
 #include "rgb.h"

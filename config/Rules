@@ -4,14 +4,14 @@
 clean:
 	rm -f *.o *mon.out $(ALL)
 
-rgb: rgb.cc msg.cc new.cc
-	$(C++) $(OPT) $(INCL) -o $(HOME)/bin/rgb rgb.cc msg.cc new.cc $(LIB)
-
 %.$(D): %.cc
 	$(MAKEDEPEND) $(INCL) $(MDOPTS) $< > $@
 
 all: $(TRIAD:=.o)
 	$(C++) $(OPT) -o triad $(TRIAD:=.o) $(LIB)
+
+rgb: $(RGB:=.cc)
+	$(C++) $(OPT) -o $(HOME)/bin/rgb $(RGB:=.cc) $(LIB)
 
 include $(TRIAD:=.$(D))
 

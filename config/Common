@@ -9,5 +9,6 @@ include $(TRI)/config/$(HOSTTYPE)
 
 UTILS = utils strcasecmp new $(ARCH) $(POLL)
 CORE = kernel Integrator Param
+RGB = rgb msg new
 
 .SUFFIXES: .cc
