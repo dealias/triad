@@ -34,9 +34,10 @@ static int xsize,ysize;
 static int verbose=0;
 static int floating_scale=0;
 static int byte=0;
-static int implicit=1;
 static int zero=0;
 static int preserve=0;
+
+int implicit=1;
 
 void cleanup();
 
