@@ -114,7 +114,7 @@ void adjust_parameters(double& dt, double& dtmax, double& tmax, int& itmax)
 	if(dtmax == 0.0) dtmax=DBL_MAX;
 }	
 
-int main(int argc, char *argv[])
+void main(int argc, char *argv[])
 {
 	int i;
 
