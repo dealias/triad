@@ -10,7 +10,6 @@
 #include <string.h>
 
 #include "utils.h"
-#include "types.h"
 #include "DynVector.h"
 #include "Table.h"
 
@@ -21,7 +20,7 @@ extern int iteration;
 extern int invert_cnt;
 
 extern char *run;
-extern char *problem;
+extern char *method;
 extern char *integrator;
 
 // Global vocabulary
@@ -63,17 +62,18 @@ public:
 	Var *Vector() {return y;}
 	int Size() {return ny;}
 	
-	virtual char *Name()=0;
-	void SetLinearity(int) {}
+	virtual char *Name() {return "";}
+	virtual void SetLinearity(int) {}
 	virtual void LinearSrc(Var *, Var *, double) {}
 	virtual void NonLinearSrc(Var *, Var *, double) {}
+	virtual void Transform(Var *, double, double) {}
+	virtual void BackTransform(Var *, double, double) {}
+	virtual void Initialize() {}
+	virtual void FinalOutput() {}
+	virtual int Microprocess() {return 0;}
 	
 	virtual void InitialConditions()=0;
-	virtual void Initialize() {}
 	virtual void Output(int it)=0;
-	virtual void FinalOutput() {}
-	
-	virtual int Microprocess() {return 0;}
 };
 	
 Compare_t ProblemCompare;
@@ -168,7 +168,7 @@ extern VocabularyBase *Vocabulary;
 #include "Param.h"
 #include "Integrator.h"
 
-#define PROBLEM(key) {new Entry<key,ProblemBase> (#key,ProblemTable);}
+#define METHOD(key) {new Entry<key,ProblemBase> (#key,ProblemTable);}
 
 #define PLURAL(x) ((x)==1 ? "" : "s")
 

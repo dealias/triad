@@ -1,3 +1,4 @@
+#include "options.h"
 #include "kernel.h"
 #include "Param.h"
 

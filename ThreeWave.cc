@@ -1,24 +1,25 @@
+#include "options.h"
 #include "NWave.h"
 
-char *NWave::Name() {return "Three-Wave";}
-char *NWave::Abbrev() {return "w3";}
+char *NWaveVocabulary::Name() {return "Three-Wave";}
+char *NWaveVocabulary::Abbrev() {return "w3";}
 
-char *approximation="Convolution";
+char *method="SR";
 char *integrator="PC";
-const int MaxMoment=INT_MAX;
 
-// Three-wave variables
+// Global variables
 int randomIC=0;
-Mc Mk[]={1.0,1.0,-2.0};
-static Nu nu0[]={0.0,0.0,0.0};
-static Var IC[]={sqrt(1.5),0.0,sqrt(1.5)};
-Real *K;
 Real tauforce=0.0;
 
-NWave::NWave()
+// Local variables
+static Mc Mk[]={1.0,1.0,-2.0};
+static Nu nu0[]={0.0,0.0,0.0};
+static Var IC[]={sqrt(1.5),0.0,sqrt(1.5)};
+static Real *K;
+
+NWaveVocabulary::NWaveVocabulary()
 {
-	Problem=this;
-	
+	Vocabulary=this;
 	reality=0;
 	
 	VOCAB(randomIC,0,1);
@@ -28,7 +29,7 @@ NWave::NWave()
 	VOCAB_ARRAY(IC);
 	VOCAB_ARRAY(nu0);
 	
-	APPROXIMATION(Convolution);
+	PROBLEM(SR);
 	
 	INTEGRATOR(C_Euler);
 	INTEGRATOR(I_PC);
@@ -43,13 +44,7 @@ NWave::NWave()
 	INTEGRATOR(C_RK5);
 }
 
-void Convolution::SetSrcRoutines();
-{
-	Problem->LinearSrc=NWave::StandardLinearity;
-	Problem->NonLinearSrc=NWave::PrimitiveNonLinearitySR;
-}
-
-NWave ThreeWaveProblem;
+NWaveVocabulary NWave_Vocabulary;
 
 ofstream fout;
 
@@ -64,7 +59,8 @@ void NWave::InitialConditions()
 	psibufferStop=psibuffer+Npsi;
 	y=new Var[ny];
 	K=new Real [Npsi];
-	
+	forcing=new Real[Npsi];
+		
 	K[0]=sqrt(3.0);
 	K[1]=sqrt(9.0);
 	K[2]=sqrt(6.0);
@@ -93,7 +89,10 @@ void NWave::InitialConditions()
 	}
 	triadLimits[Npsi-1].stop=triad.Base()+Npsi;
 	
-	for(k=0; k < Npsi; k++) y[k]=IC[k];
+	for(k=0; k < Npsi; k++) {
+		y[k]=IC[k];
+		forcing[k]=0.0;
+	}
 	if(randomIC) {
 		for(int i=0; i < Npsi; i++) {
 			Var w;
@@ -142,10 +141,10 @@ void NWave::Output(int)
 	fout << y[i] << endl;
 }
 
-void LinearityAt(int , Nu &)
+void LinearityAt(int, Nu &)
 {
 }
 
-void ForcingAt(int , Real &)
+void ForcingAt(int, Real &)
 {
 }

@@ -1,30 +1,34 @@
-// Note: COMPLEX must be set to 0 in types.h
-
+#include "options.h"
 #include "kernel.h"
-#include "Param.h"
-#include "Integrator.h"
-#include "Approx.h"
 
-char *approximation="none";
+char *problem="Kepler";
 char *integrator="C_PC";
 
 // Vocabulary
-double r0=1.0,v0=0.0,th0=0.0,L=1.0,K=1.5,m=1.0;
+double r0=1.0;
+double v0=0.0;
+double th0=0.0;
+double L=1.0;
+double K=1.5;
+double m=1.0;
 
-// Variables;
+// Local variables;
 double A0,E0,beta;
 
 enum {R, V, Th};
 
-void KeplerSource(Var *, Var *, double);
+class KeplerVocabulary : public VocabularyBase {
+public:
+	char *Name() {return "Kepler";}
+	char *Abbrev() {return "kepler";}
+	KeplerVocabulary();
+};
 
 class Kepler : public ProblemBase {
 public:
-	Kepler();
-	char *Name() {return "Kepler";}
-	char *Abbrev() {return "kepler";}
 	void InitialConditions();
 	void Output(int it);
+	Source_t NonLinearSrc;
 };
 
 class C_PC : public PC {
@@ -33,11 +37,10 @@ public:
 	int Corrector(double, double&, int, int);
 };
 
-Kepler::Kepler()
+KeplerVocabulary::KeplerVocabulary()
 {
-	Problem=this;
-	ny=3;
-	y=new Var[ny];
+	Vocabulary=this;
+	problem=Name();
 	
 	VOCAB(r0,0.0,0.0);
 	VOCAB(v0,0.0,0.0);
@@ -45,21 +48,20 @@ Kepler::Kepler()
 	VOCAB(L,0.0,0.0);
 	VOCAB(m,0.0,0.0);
 	
-	APPROXIMATION(None);
+	PROBLEM(Kepler);
 	INTEGRATOR(C_PC);
 }
 
-void None::SetSrcRoutines(Source_t **, Source_t **NonlinearSrc, Source_t **)
-{
-	*NonlinearSrc=KeplerSource;
-}
-
-Kepler KeplerProblem;
+KeplerVocabulary Kepler_Vocabulary;
 
 ofstream fout;
 
 void Kepler::InitialConditions()
 {
+	ny=3;
+	Nmoment=0;
+	y=new Var[ny];
+	
 	y[R]=r0;
 	y[V]=v0;
 	y[Th]=th0;
@@ -89,7 +91,7 @@ void Kepler::Output(int it)
 	
 }
 
-void KeplerSource(Var *source, Var *y, double)
+void Kepler::NonLinearSrc(Var *source, Var *y, double)
 {
 	source[R]=y[V];
 	source[V]=(L*L/(m*y[R])-K)/(m*y[R]*y[R]);

@@ -1,3 +1,4 @@
+#include "options.h"
 #include "kernel.h"
 #include "Geometry.h"
 #include "Basis.h"

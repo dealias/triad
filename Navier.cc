@@ -1,3 +1,4 @@
+#include "options.h"
 #include "NWave.h"
 #include "Polar.h"
 #include "Cartesian.h"
@@ -7,10 +8,11 @@
 char *NWaveVocabulary::Name() {return "N-Wave";}
 char *NWaveVocabulary::Abbrev() {return "nw";}
 
-char *problem="PS";
+char *method="PS";
 char *geometry="Cartesian";
 char *integrator="PC";
 
+// Global variables
 Real alpha=1.0;
 Real beta=1.0;
 Real E0=1.0;
@@ -77,9 +79,9 @@ NWaveVocabulary::NWaveVocabulary()
 	
 	GeometryTable=new Table<GeometryBase>("Geometry");
 
-	PROBLEM(SR);
-	PROBLEM(Convolution);
-	PROBLEM(PS);
+	METHOD(SR);
+	METHOD(Convolution);
+	METHOD(PS);
 	
 	INTEGRATOR(C_Euler);
 	INTEGRATOR(I_PC);

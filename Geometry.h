@@ -2,7 +2,14 @@
 #define __Geometry_h__ 1
 
 #include "kernel.h"
-#include "utils.h"
+
+#if(MCREAL)
+typedef Real Mc;
+typedef float McWeight;
+#else
+typedef Complex Mc;
+typedef Complex McWeight;
+#endif
 
 extern Var *psibuffer,*psibufferR,*psibufferStop;
 extern int reality; // Reality condition flag 

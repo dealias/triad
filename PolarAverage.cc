@@ -4,6 +4,7 @@
    specifying the magnitude and angular limits of the three bins which are
    integrated over.  */
 
+#include "options.h"
 #include "Polar.h"
 
 static int cnt; // Index to keep track of which variables have been swapped.

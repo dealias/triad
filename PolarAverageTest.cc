@@ -1,5 +1,6 @@
 /* Test of PolarAverage routine */
 
+#include "options.h"
 #include "Polar.h"
 #include <stdio.h>
 

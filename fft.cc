@@ -1,3 +1,4 @@
+#include "options.h"
 #include "utils.h"
 
 static Complex *wpTable;

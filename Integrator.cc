@@ -1,3 +1,4 @@
+#include "options.h"
 #include "kernel.h"
 
 inline void IntegratorBase::ChangeTimestep(double& dt, const double dtnew,
@@ -104,7 +105,9 @@ void IntegratorBase::Allocate(int n)
 Solve_RC Euler::Solve(double t, double dt)
 {
 	Source(source,y0,t);
+	Problem->Transform(y0,t,dt);
 	for(int j=0; j < ny; j++) y0[j] += dt*source[j];
+	Problem->BackTransform(y0,t,dt);
 	return SUCCESSFUL;
 }
 
@@ -112,7 +115,11 @@ Solve_RC PC::Solve(double t, double dt)
 {
 	double errmax=0.0;
 	
-	if(new_y0) Source(source0,y0,t);
+	if(new_y0) {
+		Source(source0,y0,t);
+		Problem->Transform(y0,t,dt);
+	}
+	
 	Predictor(t,dt,0,nyprimary);
 	if(!Corrector(dt,errmax,0,nyprimary)) {
 		if(hybrid) StandardCorrector(dt,errmax,0,nyprimary);
@@ -130,29 +137,33 @@ Solve_RC PC::Solve(double t, double dt)
 
 	Solve_RC flag=(dynamic ? CheckError(errmax) : SUCCESSFUL);
 	new_y0=(flag != UNSUCCESSFUL);
-	if(new_y0) set(y0,y,ny);
+	if(new_y0) {
+		set(y0,y,ny);
+		Problem->BackTransform(y,t,dt);
+	}
 	return flag;
 }
 
 void PC::Predictor(double t, double dt, int start, int stop)
 {
 	for(int j=start; j < stop; j++) y1[j]=y0[j]+dt*source0[j];
-//	Invert(y1,t,dt);
+	Problem->BackTransform(y1,t,dt);
 	Source(source,y1,t+dt);
 }
 
 int PC::Corrector(double dt, double& errmax, int start, int stop)
 {
 	const double halfdt=0.5*dt;
-	if(dynamic) for(int j=start; j < stop; j++) {
-		Var pred=y[j];
-		y[j]=y0[j]+halfdt*(source0[j]+source[j]);
-		calc_error(y0[j],y[j],pred,y[j],errmax);
+	if(dynamic) {
+		for(int j=start; j < stop; j++) {
+			Var pred=y[j];
+			y[j]=y0[j]+halfdt*(source0[j]+source[j]);
+			calc_error(y0[j],y[j],pred,y[j],errmax);
+		}
 	} else {
 		Var *y0_=y0; // Workaround Cray bug;
-		for(int j=start; j < stop; j++) {
+		for(int j=start; j < stop; j++)
 			y[j]=y0_[j]+halfdt*(source0[j]+source[j]);
-		}
 	}
 	return 1;
 }
@@ -165,6 +176,7 @@ void RK2::TimestepDependence(double dt)
 void RK2::Predictor(double t, double, int start, int stop)
 {
 	for(int j=start; j < stop; j++) y1[j]=y0[j]+halfdt*source0[j];
+	Problem->BackTransform(y1,t,dt);
 	Source(source,y1,t+halfdt);
 }
 

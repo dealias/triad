@@ -1,3 +1,4 @@
+#include "options.h"
 #include "kernel.h"
 
 #include <iomanip.h>
@@ -83,13 +84,13 @@ VocabularyBase::VocabularyBase()
 	VOCAB_NODUMP(run,"","");
 	VOCAB(output,0,1);
 	VOCAB(discrete,0,1);
-	VOCAB(problem,"","");
+	VOCAB(method,"","");
 	VOCAB(integrator,"","");
 	
 	VOCAB_NODUMP(average,0,1); // Obsolete
 	VOCAB_NODUMP(approximation,"",""); // Obsolete
 		
-	ProblemTable=new Table<ProblemBase>("problem");
+	ProblemTable=new Table<ProblemBase>("method");
 	IntegratorTable=new Table<IntegratorBase>("integrator");
 	
 	INTEGRATOR(Exact);
@@ -173,7 +174,7 @@ int main(int argc, char *argv[])
 		else msg(ERROR,"Cannot write to parameter file %s",ptemp);
 	}
 	
-	Problem=Vocabulary->NewProblem(problem);
+	Problem=Vocabulary->NewProblem(method);
 	Integrator=Vocabulary->NewIntegrator(integrator);
 	
 	if(!(restart || initialize)) {
@@ -386,9 +387,8 @@ void statistics()
 
 char *VocabularyBase::FileName(const char* delimiter, const char *suffix)
 {
-	char *filename=new char[strlen(Abbrev())+strlen(run)+
-	strlen(delimiter)+strlen(suffix)+2];
-	sprintf(filename,"%s/%s%s%s",Abbrev(),run,delimiter,suffix);
+	char *filename=new char[strlen(run)+strlen(delimiter)+strlen(suffix)+2];
+	sprintf(filename,"%s%s%s",run,delimiter,suffix);
 	return filename;
 }
 

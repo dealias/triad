@@ -1,3 +1,4 @@
+#include "options.h"
 #include "NWave.h"
 #include "Cartesian.h"
 

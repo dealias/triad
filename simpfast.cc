@@ -1,5 +1,5 @@
 #include <math.h>
-#include "precision.h"
+#include "options.h"
 
 const int nest=100;
 const Real foureps=(4.0*REAL_EPSILON);
