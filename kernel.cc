@@ -59,6 +59,7 @@ double tolmax=0.005;
 double tolmin=0.0;
 double stepfactor=sqrt(2.0);
 double stepnoninvert=stepfactor;
+double dtmin=0.0;
 double dtmax=0.0;
 double tprecision=0.0;
 int digits=REAL_DIG;
@@ -90,6 +91,7 @@ VocabularyBase::VocabularyBase()
 	VOCAB(tolmin,0.0,DBL_STD_MAX);
 	VOCAB(stepfactor,1.0,DBL_STD_MAX);
 	VOCAB(stepnoninvert,1.0,DBL_STD_MAX);
+	VOCAB(dtmin,0.0,DBL_STD_MAX);
 	VOCAB(dtmax,0.0,DBL_STD_MAX);
 	VOCAB(tprecision,0.0,DBL_STD_MAX);
 	VOCAB(sample,0.0,DBL_STD_MAX);
@@ -131,6 +133,9 @@ void adjust_parameters(double& dt, double& dtmax, double& tmax, int& itmax)
 	else if(itmax == -1) itmax=INT_MAX;
 
 	if(dtmax == 0.0) dtmax=DBL_STD_MAX;
+	
+	if(dt < dtmin) dt=dtmin;
+	if(dt > dtmax) dt=dtmax;
 }	
 
 int main(int argc, char *argv[])
@@ -247,8 +252,8 @@ int main(int argc, char *argv[])
 	
 	Integrator->Allocate(ny);
 	
-	Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,dtmax,itmax,
-						 microsteps,verbose);
+	Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,dtmin,dtmax,
+						 itmax,microsteps,verbose);
 	
 	cout << newl << "INTEGRATING:" << endl;
 	set_timer();

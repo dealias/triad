@@ -91,7 +91,7 @@ protected:
 	int *errmask;
 	double tolmax2,tolmin2;
 	double stepfactor,stepinverse,stepnoninverse;
-	double dtmax;
+	double dtmin,dtmax;
 	int itmax,microsteps;
 	int microprocess;
 	int verbose;
@@ -99,14 +99,15 @@ public:
 	void SetAbbrev(char *abbrev0) {abbrev=abbrev0;}
 	char *Abbrev() {return abbrev;}
 	void SetParam(double tolmax, double tolmin, double stepfactor0,
-				  double stepnoninvert, double dtmax0, int itmax0,
-				  int microsteps0, int verbose0) {
+				  double stepnoninvert, double dtmin0, double dtmax0,
+				  int itmax0, int microsteps0, int verbose0) {
 		if(tolmax < tolmin) msg(ABORT,"tolmax < tolmin"); 
 		tolmax2=tolmax*tolmax;
 		tolmin2=tolmin*tolmin;
 		stepfactor=stepfactor0;
 		stepinverse=1.0/stepfactor;
 		stepnoninverse=1.0/stepnoninvert;
+		dtmin=dtmin0;
 		dtmax=dtmax0;
 		itmax=itmax0;
 		microsteps=microsteps0*Microfactor();

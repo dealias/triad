@@ -98,7 +98,7 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 					invert_cnt++;
 					ChangeTimestep(dt,dt*stepnoninverse,t,sample); break;
 				case UNSUCCESSFUL:
-					ChangeTimestep(dt,dt*stepinverse,t,sample);
+					ChangeTimestep(dt,max(dt*stepinverse,dtmin),t,sample);
 				}
 			} while(cont);
 			iteration++;
