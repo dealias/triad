@@ -207,7 +207,7 @@ void msg(int fatal, char *file, int line, char *format,...)
 	cout << flush;
 }
 
-#if(unix)
+#if(__unix)
 #include <pwd.h>
 #endif
 
@@ -219,7 +219,7 @@ static const double longrun=500.0;
 void mailuser(char *text)
 {
 	if(time(NULL)-init_time < longrun) return;
-#if(unix)
+#if(__unix)
 	char *user=getpwuid(getuid())->pw_name;
 	char *buf=new char[50+strlen(run),strlen(text)+strlen(user)];
 	sprintf(buf,"mail -s 'Run %s %s.' %s < /dev/null > /dev/null",

@@ -7,7 +7,7 @@
 #include <fstream.h>
 #include <math.h>
 
-#if unix
+#if __unix
 #if __i386__
 #include "arch/i386.h"
 #else
