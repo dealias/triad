@@ -367,6 +367,7 @@ int main(int argc, char *const argv[])
 	
 	if(!preserve) {
 		buf << "rm -r " << rgbdir << " > /dev/null 2>&1" << ends;
+		char *cmd=buf.str();
 		if(verbose) cout << cmd << endl;
 		system(cmd);
 	}
