@@ -86,7 +86,7 @@ inline int Basis<Cartesian>::InGrid(Cartesian& m)
 		(low.Row() <= m.Row() && m.Row() <= high.Row());
 }
 
-#if _CRAY
+#if _CRAY || 1
 void CartesianPad(Var * restrict to, Var *from);
 void CartesianUnPad(Var * restrict to, Var *from);
 #else

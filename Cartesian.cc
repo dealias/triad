@@ -64,8 +64,8 @@ void Basis<Cartesian>::MakeBins()
 	return;
 }
 
-#if _CRAY
-void CartesianPad(Var * restrict to_, Var * from)
+#if _CRAY || 1
+void CartesianPad(Var *to_, Var * from)
 {
 	Var *to=to_+xoffset;
 	*(to++)=0.0;
@@ -85,7 +85,7 @@ void CartesianPad(Var * restrict to_, Var * from)
 	for(; to < tostop; to++) *to=0.0;
 }
 
-void CartesianUnPad(Var * restrict to_, Var *from)
+void CartesianUnPad(Var *to_, Var *from)
 {
 	from += xoffset+1;
 	Var *to=to_;
