@@ -238,7 +238,7 @@ void out_function(ostream& os, T (*f)(int), char *text, int n, int nperline)
 	os << "# " << text << newl;
 	for(i=0; i < n-1;) {
 		os << (*f)(i);
-		if(++i % nperline) os << "\t"; else os << " \\" << newl;
+		if(++i % nperline) os << "\t"; else os << " \\\n";
 	}
 	os << (*f)(n-1) << newl;
 }
@@ -255,7 +255,7 @@ void out_curve(ostream& os, T *f, char *text, int n, int nperline)
 	os << "# " << text << newl;
 	for(i=0; i < n-1;) {
 		os << f[i];
-		if(++i % nperline) os << "\t"; else os << " \\" << newl;
+		if(++i % nperline) os << "\t"; else os << " \\\n";
 	}
 	os << f[n-1] << newl;
 }
@@ -277,9 +277,9 @@ inline void out_curve(ostream& os, T f, char *text)
 	out_curve(os,&f,text,1,default_nperline);
 }
 
-void out_real(ostream& os, Complex *f, char *format, int n,
+void out_real(ostream& os, Complex *f, char *textre, char *, int n,
 					 int nperline=default_nperline);
-void out_real(ostream& os, Real *f, char *format, int n,
+void out_real(ostream& os, Real *f, char *textre, char *textim, int n,
 					 int nperline=default_nperline);
 
 inline double drand()

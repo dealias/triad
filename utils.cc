@@ -294,19 +294,16 @@ static Complex *base;
 static Real out_re(int i) {return base[i].re;}
 static Real out_im(int i) {return base[i].im;}
 
-void out_real(ostream& os, Real *f, char *format, int n, int nperline)
+void out_real(ostream& os, Real *f, char *textre, char *, int n,
+			  int nperline)
 {
-	char *text=new char[strlen(format)+1];
-	sprintf(text,format,"");
-	out_curve(os,f,text,n,nperline);
+	out_curve(os,f,textre,n,nperline);
 }
 
-void out_real(ostream& os, Complex *f, char *format, int n, int nperline)
+void out_real(ostream& os, Complex *f, char *textre, char *textim, int n,
+			  int nperline) 
 {
-	char *text=new char[strlen(format)+4];
 	base=f;
-	sprintf(text,format,".re");
-	out_function(os,out_re,text,n,nperline);
-	sprintf(text,format,".im");
-	out_function(os,out_im,text,n,nperline);
+	out_function(os,out_re,textre,n,nperline);
+	out_function(os,out_im,textim,n,nperline);
 }

@@ -170,7 +170,7 @@ static ifstream ftin;
 static ofstream fparam,fevt,fyvt,ft,favgy,fprolog;
 Real continuum_factor=1.0;
 typedef char Avgylabel[20];
-static Avgylabel *avgylabel;
+static Avgylabel *avgyre,*avgyim;
 static char tempbuffer[30];
 static int tcount=0;
 
@@ -224,12 +224,14 @@ void NWave::InitialConditions()
 	open_output(ft,dirsep,"t");
 	open_output(fprolog,dirsep,"prolog");
 	
-	avgylabel=new Avgylabel[Nmoment];
+	avgyre=new Avgylabel[Nmoment];
+	avgyim=new Avgylabel[Nmoment];
 	for(n=0; n < Nmoment; n++) {
 		sprintf(tempbuffer,"avgy%d",n);
 		mkdir(Problem->FileName(dirsep,tempbuffer),0xFFFF);
 		errno=0;
-		sprintf(avgylabel[n],"y%%s^%d",n);
+		sprintf(avgyre[n],"y.re^%d",n);
+		sprintf(avgyim[n],"y.im^%d",n);
 	}
 	
 	Problem->GraphicsDump(fparam);
@@ -293,7 +295,7 @@ void NWave::Output(int)
 	
 	fevt << t << "\t" << E << "\t" << Z << "\t" << P << endl;
 	
-	out_real(fyvt,y,"y%s",Npsi);
+	out_real(fyvt,y,"y.re","y.im",Npsi);
 	fyvt.flush();
 	
 	Var *yavg=y+Npsi;
@@ -301,7 +303,7 @@ void NWave::Output(int)
 		sprintf(tempbuffer,"avgy%d%st%d",n,dirsep,tcount);
 		open_output(favgy,dirsep,tempbuffer,0);
 		out_curve(favgy,t,"t");
-		out_real(favgy,yavg+Npsi*n,avgylabel[n],Npsi);
+		out_real(favgy,yavg+Npsi*n,avgyre[n],avgyim[n],Npsi);
 		favgy.close();
 	}
 	tcount++;

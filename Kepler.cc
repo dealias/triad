@@ -67,7 +67,6 @@ void Kepler::InitialConditions()
 	A0=L*L/(m*r0)-K;	// Assumes th0=0.
 	beta=K/A0;
 	
-	dynamic=0;
 	open_output(fout,dirsep,downcase(undashify(Integrator->Abbrev())));
 }
 

@@ -83,7 +83,6 @@ void Lotka::Output(int it)
 	fout << t << "\t";
 	for(i=0; i < ny-1; i++) fout << y[i] << "\t";
 	fout << y[i] << "\t" << E-E0 << endl; 
-	dynamic=0;
 }
 
 void LotkaSource(Var *source, Var *y, double)
