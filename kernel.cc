@@ -168,8 +168,9 @@ int main(int argc, char *argv[])
 		char s[blocksize];
 		strstream buf;
 		while(1) {
-			fparam.get(s,blocksize,EOF);
+			fparam.get(s,blocksize,0x03);
 			if(fparam.eof()) break;
+			cout << s << endl;
 			buf << s;
 		}
 		buf << ends;

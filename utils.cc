@@ -199,6 +199,7 @@ void msg(int fatal, char *file, int line, char *format,...)
 
 	if(fatal) cout << "ERROR: ";
 	else cout << "WARNING: ";
+	cout << flush;
 	
 	va_start(vargs,format);
 	vprintf(format,vargs);
