@@ -1,9 +1,9 @@
 #ifndef __PolarBin_h__
 #define __PolarBin_h__ 1
 
-#include "Partition.h"
 #include "Polar.h"
 #include "Cartesian.h"
+#include "Partition.h"
 
 // Polar vocabulary
 extern int Nr;

@@ -32,6 +32,12 @@ extern int *qStart;
 extern DynVector<Triad> triad;
 extern TriadLimits *triadLimits;
 
+// Work around CRAY template instantiation problem
+#if _CRAY
+template<class T, class D>
+inline int InInterval(const D& m, const T& a, const T& b);
+#endif
+
 template<class T, class D>
 class Bin {
 public:
