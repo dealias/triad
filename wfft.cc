@@ -87,7 +87,7 @@ void scalefft(Complex *data, unsigned int n, unsigned int nk,
 	if(inc1 == 1) {
 		for(unsigned int k=0; k < kstop; k += inc2) {
 			Complex *p0=data+k, *pstop=p0+n;
-#pragma ivdep			
+//#pragma ivdep			
 			for(Complex *p=p0; p < pstop; p++) {
 				p->re *= scale;
 				p->im *= scale;
@@ -96,7 +96,7 @@ void scalefft(Complex *data, unsigned int n, unsigned int nk,
 	} else {
 		Complex *pstop=data+n*inc1;
 		for(Complex *p=data; p < pstop; p += inc1) {
-#pragma ivdep			
+//#pragma ivdep			
 			for(unsigned int k=0; k < kstop; k += inc2) {
 				p[k].re *= scale;
 				p[k].im *= scale;
@@ -114,7 +114,7 @@ void signscalefft(Complex *data, unsigned int n, int isign, unsigned int nk,
 			if(inc1 == 1) {
 				for(unsigned int k=0; k < kstop; k += inc2) {
 					Complex *p0=data+k, *pstop=p0+n;
-#pragma ivdep			
+//#pragma ivdep			
 					for(Complex *p=p0; p < pstop; p++) {
 						p->im=-p->im;
 					}
@@ -122,7 +122,7 @@ void signscalefft(Complex *data, unsigned int n, int isign, unsigned int nk,
 			} else {
 				Complex *pstop=data+n*inc1;
 				for(Complex *p=data; p < pstop; p += inc1) {
-#pragma ivdep			
+//#pragma ivdep			
 					for(unsigned int k=0; k < kstop; k += inc2) {
 						p[k].im=-p[k].im;
 					}
@@ -136,7 +136,7 @@ void signscalefft(Complex *data, unsigned int n, int isign, unsigned int nk,
 			if(inc1 == 1) {
 				for(unsigned int k=0; k < kstop; k += inc2) {
 					Complex *p0=data+k, *pstop=p0+n;
-#pragma ivdep			
+//#pragma ivdep			
 					for(Complex *p=p0; p < pstop; p++) {
 						p->re *= scale;
 						p->im *= -scale;
@@ -145,7 +145,7 @@ void signscalefft(Complex *data, unsigned int n, int isign, unsigned int nk,
 			} else {
 				Complex *pstop=data+n*inc1;
 				for(Complex *p=data; p < pstop; p += inc1) {
-#pragma ivdep			
+//#pragma ivdep			
 					for(unsigned int k=0; k < kstop; k += inc2) {
 						p[k].re *= scale;
 						p[k].im *= -scale;

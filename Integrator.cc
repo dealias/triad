@@ -329,27 +329,27 @@ void RK5::TimestepDependence(double dt)
 void RK5::Predictor(double t, double, unsigned int start, unsigned int stop)
 {
 	unsigned int j;
-#pragma ivdep		
+//#pragma ivdep		
 	for(j=start; j < stop; j++) y[j]=y0[j]+b10*source0[j];
 	Problem->BackTransform(y,t+a1,a1,yi);
 	if(yi) set(yi,y,ny);
 	Source(source,y,t+a1);
-#pragma ivdep		
+//#pragma ivdep		
 	for(j=start; j < stop; j++) y2[j]=y0[j]+b20*source0[j]+b21*source[j];
 	Problem->BackTransform(y2,t+a2,a2,yi);
 	Source(source2,y2,t+a2);
-#pragma ivdep		
+//#pragma ivdep		
 	for(j=start; j < stop; j++) y3[j]=y0[j]+b30*source0[j]+b31*source[j]+
 									b32*source2[j];
 	Problem->BackTransform(y3,t+a3,a3,y2);
 	Source(source3,y3,t+a3);
-#pragma ivdep		
+//#pragma ivdep		
 	for(j=start; j < stop; j++) y4[j]=y0[j]+b40*source0[j]+b41*source[j]+
 									b42*source2[j]+b43*source3[j];
 	Problem->BackTransform(y4,t+a4,a4,y3);
 	if(yi) set(yi,y4,ny);
 	Source(source4,y4,t+a4);
-#pragma ivdep		
+//#pragma ivdep		
 	for(j=start; j < stop; j++) y[j]=y0[j]+b50*source0[j]+b51*source[j]+
 									b52*source2[j]+b53*source3[j]+
 									b54*source4[j];
@@ -361,7 +361,7 @@ int RK5::Corrector(double, int dynamic, unsigned int start, unsigned int stop)
 {
 	unsigned int j;
 	if(dynamic) {
-#pragma ivdep		
+//#pragma ivdep		
 		for(j=start; j < stop; j++) {
 			y[j]=y0[j]+c0*source0[j]+c2*source2[j]+c3*source3[j]+c5*source[j];
 			if(!errmask || errmask[j]) {
@@ -372,7 +372,7 @@ int RK5::Corrector(double, int dynamic, unsigned int start, unsigned int stop)
 		}
 		ExtrapolateTimestep();
 	} else {
-#pragma ivdep		
+//#pragma ivdep		
 		for(j=start; j < stop; j++) {
 			y[j]=y0[j]+c0*source0[j]+c2*source2[j]+c3*source3[j]+c5*source[j];
 		}

@@ -53,7 +53,7 @@ void fft(Complex *data, unsigned int log2n, int isign, Real scale,
  	while(istep > 4) {
 		unsigned int mmax=istep >> 1;
 		Complex *p;
-#pragma ivdep			
+//#pragma ivdep			
 		for(p=data; p < pstop; p += istep) {
 			Real tempre=p->re;
 			Real tempim=p->im;
@@ -70,7 +70,7 @@ void fft(Complex *data, unsigned int log2n, int isign, Real scale,
 		for(unsigned int m=1; m < mmax-1; m += 2) {
 			Real c2=c+c*wpre-s*wpim;
 			Real s2=s+s*wpre+c*wpim;
-#pragma ivdep			
+//#pragma ivdep			
 			for(p=data+m; p < pstop; p += istep) {
 				Complex *q=p+mmax;
 				Real tempre=p->re-q->re;
@@ -90,7 +90,7 @@ void fft(Complex *data, unsigned int log2n, int isign, Real scale,
 			c=c2+c2*wpre-s2*wpim;
 			s=s2+s2*wpre+c2*wpim;
 		}
-#pragma ivdep			
+//#pragma ivdep			
 		for(p=data+mmax-1; p < pstop; p += istep) {
 			Complex *q=p+mmax;
 			Real tempre=p->re-q->re;
@@ -108,7 +108,7 @@ void fft(Complex *data, unsigned int log2n, int isign, Real scale,
 	
  	if(n > 2) {
 		if(isign == 1) {
-#pragma ivdep			
+//#pragma ivdep			
 			for(Complex *p=data; p < pstop; p += 4) {
 				Real tempre=p->re;
 				Real tempim=p->im;
@@ -126,7 +126,7 @@ void fft(Complex *data, unsigned int log2n, int isign, Real scale,
 				q1->im=temp2re;
 			}
 		} else {
-#pragma ivdep			
+//#pragma ivdep			
 			for(Complex *p=data; p < pstop; p += 4) {
 				Real tempre=p->re;
 				Real tempim=p->im;
@@ -148,7 +148,7 @@ void fft(Complex *data, unsigned int log2n, int isign, Real scale,
 	
 	if(scale == 1.0 || !bitreverse) {
 		if(n > 1) {
-#pragma ivdep			
+//#pragma ivdep			
 			for(Complex *p=data; p < pstop; p += 2) {
 				Real tempre=p->re;
 				Real tempim=p->im;
@@ -161,7 +161,7 @@ void fft(Complex *data, unsigned int log2n, int isign, Real scale,
 		}
 	} else {
 		if(n > 1) {
-#pragma ivdep			
+//#pragma ivdep			
 			for(Complex *p=data; p < pstop; p += 2) {
 				Real tempre=p->re;
 				Real tempim=p->im;
@@ -276,7 +276,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		Complex *p;
 		for(p=data; p < pstop; p += istepnk) {
 			Complex *q=p+mmaxnk;
-#pragma ivdep			
+//#pragma ivdep			
 			for(unsigned int k=0; k < kstop; k += inc2) {
 				Real tempre=p[k].re;
 				Real tempim=p[k].im;
@@ -295,7 +295,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 			Real s2=s+s*wpre+c*wpim;
 			for(p=data+m*inc1; p < pstop; p += istepnk) {
 				Complex *p1=p+inc1,*q=p+mmaxnk,*q1=q+inc1;
-#pragma ivdep			
+//#pragma ivdep			
 				for(unsigned int k=0; k < kstop; k += inc2) {
 					Real tempre=p[k].re-q[k].re;
 					Real tempim=p[k].im-q[k].im;
@@ -316,7 +316,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		}
 		for(p=data+mmaxnk-inc1; p < pstop; p += istepnk) {
 			Complex *q=p+mmaxnk;
-#pragma ivdep			
+//#pragma ivdep			
 			for(unsigned int k=0; k < kstop; k += inc2) {
 				Real tempre=p[k].re-q[k].re;
 				Real tempim=p[k].im-q[k].im;
@@ -337,7 +337,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		if(isign == 1) {
 			for(Complex *p=data; p < pstop; p += fourinc1) {
 				Complex *p1=p+inc1,*q=p1+inc1,*q1=q+inc1;
-#pragma ivdep			
+//#pragma ivdep			
 				for(unsigned int k=0; k < kstop; k += inc2) {
 					Real tempre=p[k].re;
 					Real tempim=p[k].im;
@@ -356,7 +356,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		} else {
 			for(Complex *p=data; p < pstop; p += fourinc1) {
 				Complex *p1=p+inc1,*q=p1+inc1,*q1=q+inc1;
-#pragma ivdep			
+//#pragma ivdep			
 				for(unsigned int k=0; k < kstop; k += inc2) {
 					Real tempre=p[k].re;
 					Real tempim=p[k].im;
@@ -380,7 +380,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		if(n > 1) {
 			for(Complex *p=data; p < pstop; p += twoinc1) {
 				Complex *q=p+inc1;
-#pragma ivdep			
+//#pragma ivdep			
 				for(unsigned int k=0; k < kstop; k += inc2) {
 					Real tempre=p[k].re;
 					Real tempim=p[k].im;
@@ -395,7 +395,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		if(n > 1) {
 			for(Complex *p=data; p < pstop; p += twoinc1) {
 				Complex *q=p+inc1;
-#pragma ivdep			
+//#pragma ivdep			
 				for(unsigned int k=0; k < kstop; k += inc2) {
 					Real tempre=p[k].re;
 					Real tempim=p[k].im;
@@ -406,7 +406,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 				}
 			}
 		} else {
-#pragma ivdep			
+//#pragma ivdep			
 			for(unsigned int k=0; k < kstop; k += inc2) {
 				data[k].re *= scale;
 				data[k].im *= scale;
@@ -420,7 +420,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 			for(unsigned int i=0; i < n-1; i++) {
 				if(j > i) {
 					Complex *p=data+i*inc1, *q=data+j*inc1;
-#pragma ivdep			
+//#pragma ivdep			
 					for(unsigned int k=0; k < kstop; k += inc2) {
 						Real tempre=p[k].re;
 						Real tempim=p[k].im;
@@ -444,7 +444,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 					Complex *p=data+i*inc1;
 					if(j > i) {
 						Complex *q=data+j*inc1;
-#pragma ivdep			
+//#pragma ivdep			
 						for(unsigned int k=0; k < kstop; k += inc2) {
 							Real tempre=p[k].re;
 							Real tempim=p[k].im;
@@ -454,7 +454,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 							q[k].im=tempim*scale;
 						}
 					} else {
-#pragma ivdep			
+//#pragma ivdep			
 						for(unsigned int k=0; k < kstop; k += inc2) {
 							p[k].re *= scale;
 							p[k].im *= scale;
@@ -470,7 +470,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 				j += m;
 			}
 			Complex *p=data+(n-1)*inc1;
-#pragma ivdep			
+//#pragma ivdep			
 			for(unsigned int k=0; k < kstop; k += inc2) {
 				p[k].re *= scale;
 				p[k].im *= scale;
@@ -497,7 +497,7 @@ static void fft_br(Complex *data, unsigned int log2n, int isign, Real scale)
 	
 	if(scale == 1.0) {
 		if(n > 1) {
-#pragma ivdep			
+//#pragma ivdep			
 			for(Complex *p=data; p < pstop; p += 2) {
 				Real tempre=p->re;
 				Real tempim=p->im;
@@ -510,7 +510,7 @@ static void fft_br(Complex *data, unsigned int log2n, int isign, Real scale)
 		}
 	} else {
 		if(n > 1) {
-#pragma ivdep			
+//#pragma ivdep			
 			for(Complex *p=data; p < pstop; p += 2) {
 				Real tempre=p->re;
 				Real tempim=p->im;
@@ -528,7 +528,7 @@ static void fft_br(Complex *data, unsigned int log2n, int isign, Real scale)
 	
 	if(n > 2) {
 		if(isign == 1) {
-#pragma ivdep			
+//#pragma ivdep			
 			for(Complex *p=data; p < pstop; p += 4) {
 				Real tempre=p->re;
 				Real tempim=p->im;
@@ -547,7 +547,7 @@ static void fft_br(Complex *data, unsigned int log2n, int isign, Real scale)
 				q1->im=temp2im;
 			}
 		} else {
-#pragma ivdep			
+//#pragma ivdep			
 			for(Complex *p=data; p < pstop; p += 4) {
 				Real tempre=p->re;
 				Real tempim=p->im;
@@ -574,7 +574,7 @@ static void fft_br(Complex *data, unsigned int log2n, int isign, Real scale)
  	while(mmax < n) {
 		unsigned int istep=mmax << 1;
 		Complex *p;
-#pragma ivdep			
+//#pragma ivdep			
 		for(p=data; p < pstop; p += istep) {
 			Complex *q=p+mmax;
 			Real tempre=p->re;
@@ -591,7 +591,7 @@ static void fft_br(Complex *data, unsigned int log2n, int isign, Real scale)
 		for(unsigned int m=1; m < mmax-1; m += 2) {
 			Real c2=c+c*wpre-s*wpim;
 			Real s2=s+s*wpre+c*wpim;
-#pragma ivdep			
+//#pragma ivdep			
 			for(p=data+m; p < pstop; p += istep) {
 				Complex *q=p+mmax;
 				Real tempre=c*q->re-s*q->im;
@@ -612,7 +612,7 @@ static void fft_br(Complex *data, unsigned int log2n, int isign, Real scale)
 			c=c2+c2*wpre-s2*wpim;
 			s=s2+s2*wpre+c2*wpim;
 		}
-#pragma ivdep			
+//#pragma ivdep			
 		for(p=data+mmax-1; p < pstop; p += istep) {
 			Complex *q=p+mmax;
 			Real tempre=c*q->re-s*q->im;
@@ -658,7 +658,7 @@ static void mfft_br(Complex *data, unsigned int log2n, int isign,
 		if(n > 1) {
 			for(Complex *p=data; p < pstop; p += twoinc1) {
 				Complex *q=p+inc1;
-#pragma ivdep			
+//#pragma ivdep			
 				for(unsigned int k=0; k < kstop; k += inc2) {
 					Real tempre=p[k].re;
 					Real tempim=p[k].im;
@@ -673,7 +673,7 @@ static void mfft_br(Complex *data, unsigned int log2n, int isign,
 		if(n > 1) {
 			for(Complex *p=data; p < pstop; p += twoinc1) {
 				Complex *q=p+inc1;
-#pragma ivdep			
+//#pragma ivdep			
 				for(unsigned int k=0; k < kstop; k += inc2) {
 					Real tempre=p[k].re;
 					Real tempim=p[k].im;
@@ -684,7 +684,7 @@ static void mfft_br(Complex *data, unsigned int log2n, int isign,
 				}
 			}
 		} else {
-#pragma ivdep			
+//#pragma ivdep			
 			for(unsigned int k=0; k < kstop; k += inc2) {
 				data[k].re *= scale;
 				data[k].im *= scale;
@@ -697,7 +697,7 @@ static void mfft_br(Complex *data, unsigned int log2n, int isign,
 		if(isign == 1) {
 			for(Complex *p=data; p < pstop; p += fourinc1) {
 				Complex *p1=p+inc1,*q=p1+inc1,*q1=q+inc1;
-#pragma ivdep			
+//#pragma ivdep			
 				for(unsigned int k=0; k < kstop; k += inc2) {
 					Real tempre=p[k].re;
 					Real tempim=p[k].im;
@@ -716,7 +716,7 @@ static void mfft_br(Complex *data, unsigned int log2n, int isign,
 		} else {
 			for(Complex *p=data; p < pstop; p += fourinc1) {
 				Complex *p1=p+inc1,*q=p1+inc1,*q1=q+inc1;
-#pragma ivdep			
+//#pragma ivdep			
 				for(unsigned int k=0; k < kstop; k += inc2) {
 					Real tempre=p[k].re;
 					Real tempim=p[k].im;
@@ -745,7 +745,7 @@ static void mfft_br(Complex *data, unsigned int log2n, int isign,
 		Complex *p;
 		for(p=data; p < pstop; p += istepnk) {
 			Complex *q=p+mmaxnk;
-#pragma ivdep			
+//#pragma ivdep			
 			for(unsigned int k=0; k < kstop; k += inc2) {
 				Real tempre=p[k].re;
 				Real tempim=p[k].im;
@@ -764,7 +764,7 @@ static void mfft_br(Complex *data, unsigned int log2n, int isign,
 			Real s2=s+s*wpre+c*wpim;
 			for(p=data+m*inc1; p < pstop; p += istepnk) {
 				Complex *p1=p+inc1,*q=p+mmaxnk,*q1=q+inc1;
-#pragma ivdep			
+//#pragma ivdep			
 				for(unsigned int k=0; k < kstop; k += inc2) {
 					Real tempre=c*q[k].re-s*q[k].im;
 					Real tempim=c*q[k].im+s*q[k].re;
@@ -785,7 +785,7 @@ static void mfft_br(Complex *data, unsigned int log2n, int isign,
 		}
 		for(p=data+mmaxnk-inc1; p < pstop; p += istepnk) {
 			Complex *q=p+mmaxnk;
-#pragma ivdep			
+//#pragma ivdep			
 			for(unsigned int k=0; k < kstop; k += inc2) {
 				Real tempre=c*q[k].re-s*q[k].im;
 				Real tempim=c*q[k].im+s*q[k].re;

@@ -20,11 +20,11 @@ void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
 	const unsigned int n=1 << log2n, n2=n/2;
 	unsigned int i;
 
-#pragma ivdep	
+//#pragma ivdep	
 	for(i=m; i < n2+1; i++) F[i]=0.0;
 	crfft(F,log2n,-1,1.0,-bitreverse);
 	
-#pragma ivdep	
+//#pragma ivdep	
 	for(i=0; i < n2; i++) {
 		H[i].re=F[i].re*g[i].re;
 		H[i].im=F[i].im*g[i].im;
@@ -50,7 +50,7 @@ void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
 	unsigned int n=1 << log2n;
 	unsigned int i;
 
-#pragma ivdep	
+//#pragma ivdep	
 	for(i=m; i < n/2+1; i++) G[i]=0.0;
 	crfft(G,log2n,-1,1.0,-bitreverse);
 	
@@ -71,11 +71,11 @@ void convolve_direct(Complex *H, Complex *F, Complex *G, unsigned int m)
 	unsigned int i,j;
 	for(i=0; i < m; i++) {
 		Complex sum=0.0;
-#pragma ivdep	
+//#pragma ivdep	
 		for(j=0; j <= i; j++) sum += F[j]*G[i-j];
-#pragma ivdep	
+//#pragma ivdep	
 		for(j=i+1; j < m; j++) sum += F[j]*conj(G[j-i]);
-#pragma ivdep	
+//#pragma ivdep	
 		for(j=1; j < m-i; j++) sum += conj(F[j])*G[i+j];
 		H[i]=sum;
 	}
