@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <iostream.h>
-
 #include <new.h>
 
 void my_new_handler()
