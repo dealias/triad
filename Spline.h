@@ -7,9 +7,9 @@
 namespace Array {
   
 // Do a binary search of an ordered array of n elements to find an interval
-// containing key. Return the index corresponding to the left-hand endpoint
-// of the matching interval, n-1 if the key is greater than the last
-// element, or n if the key is less than the first element.
+// containing a given key. Return the index corresponding to the left-hand
+// endpoint of the matching interval, n-1 if the key is greater than or
+// equal to the last element, or n if the key is less than the first element.
 template<class X>
 unsigned int bintsearch(X key, unsigned int n, const typename array1<X>::opt x)
 {
@@ -30,14 +30,48 @@ unsigned int bintsearch(X key, unsigned int n, const typename array1<X>::opt x)
   return 0;
 }
 
+// Linearly interpolation of data points (x_i,y_i), where the x_i are listed
+// in ascending order. Values outside the available data range are linearly
+// extrapolated using the first derivative at the nearest endpoint. 
+  
+template<class X, class Y>
+Y LinearInterpolate(unsigned int n,
+		    const typename array1<X>::opt x,
+		    const typename array1<Y>::opt y, X x0, unsigned int i) 
+{
+  if(n == 0) ArrayExit("Zero data points in linear interpolation");
+  if(n == 1) return y[0];
+  if(i >= n) {
+    X dx=x[1]-x[0];
+    return y[0]+(y[1]-y[0])/dx*(x0-x[0]);
+  }
+  if(i == n-1) {
+    X dx=x[n-1]-x[n-2];
+    return y[n-1]+(y[n-1]-y[n-2])/dx*(x0-x[n-1]);
+  }
+
+  X D=x[i+1]-x[i];
+  X B=(x0-x[i])/D;
+  X A=1.0-B;
+  return A*y[i]+B*y[i+1];
+}
+    
+template<class X, class Y>
+Y LinearInterpolate(unsigned int n,
+		    const typename array1<X>::opt x,
+		    const typename array1<Y>::opt y, X x0) 
+{
+    return LinearInterpolate<X,Y>(n,x,y,x0,bintsearch(x0,n,x));
+}
+
 // Compute a natural cubic spline (zero second derivatives at the endpoints)
-// of n data points (x_i,y_i) where the x_i are listed in ascending order.
+// of n data points (x_i,y_i), where the x_i are listed in ascending order.
 // The constructor computes the second derivatives at each point;
 // interpolated values can then be computed with Interpolate. Values
-// outside the available data range are computed via linear extrapolation,
-// based on the value of the first derivative at the nearest endpoint.
+// outside the available data range are linearly extrapolated using
+// the first derivative at the nearest endpoint.
   
-template<class Y, class X>
+template<class X, class Y>
 class CubicSpline {
 protected:
   static double sixth;
@@ -91,8 +125,8 @@ public:
   Y Interpolate(unsigned int n,
 		const typename array1<X>::opt x,
 		const typename array1<Y>::opt y, X x0, unsigned int i) {
-    if(n < 2) ArrayExit("Cubic spline requires at least 2 points");
-    if(x0 == x[n-1]) return y[n-1];
+    if(n == 0) ArrayExit("Zero data points in cubic spline");
+    if(n == 1) return y[0];
     if(i >= n) {
       X dx=x[1]-x[0];
       return y[0]+((y[1]-y[0])/dx-sixth*dx*y2[1])*(x0-x[0]);
@@ -118,17 +152,17 @@ public:
   }
 };
 
-template<class Y, class X>
-double CubicSpline<Y,X>::sixth=1.0/6.0;
+template<class X, class Y>
+double CubicSpline<X,Y>::sixth=1.0/6.0;
   
-template<class Y, class X>
-unsigned int CubicSpline<Y,X>::size=0;
+template<class X, class Y>
+unsigned int CubicSpline<X,Y>::size=0;
 
-template<class Y, class X>
-typename array1<X>::opt CubicSpline<Y,X>::work;
+template<class X, class Y>
+typename array1<X>::opt CubicSpline<X,Y>::work;
 
-template<class Y, class X>
-typename array1<Y>::opt CubicSpline<Y,X>::y2;
+template<class X, class Y>
+typename array1<Y>::opt CubicSpline<X,Y>::y2;
 
 }
 

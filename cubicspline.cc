@@ -24,7 +24,7 @@ int main()
   y[3]=-1.0;
   y[4]=2.0;
   y[5]=1.0;
-  y[6]=1.0;
+  y[6]=3.0;
   
   cout << x << endl;
   cout << y << endl;
@@ -33,7 +33,7 @@ int main()
   double delta=(x[n-1]-x[0])/m;
   for(int i=-m/2; i <= 3*m/2; i++) {
     double xi=x[0]+i*delta;
-    cout << xi << " " << S.Interpolate(n,x,y,xi) << endl;
+    cout << xi << " " << S.Interpolate<double,double>(n,x,y,xi) << endl;
   }
     
   return 0;
