@@ -14,7 +14,7 @@ static double scale=1.0;
 void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		  unsigned int inc1, unsigned int inc2, int)
 {
-	int i,j,naux;
+	int j,naux;
 	static int TableSize=0;
 	static int *nTable,nkTable,*nauxTable;
 	static double **aux1[2],**aux2[2];
@@ -34,8 +34,8 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		if(n <= 2048) naux=20000;
 		else naux=20000+2.28*n;
 		naux += (2*n+256)*((nk > 64) ? nk : 64);
-		nTable[i]=n;
-		nkTable[i]=nk;
+		nTable[j]=n;
+		nkTable[j]=nk;
 		nauxTable[j]=naux;
 	
 		for(int isign=-1; isign <= 1; isign += 2) {
