@@ -28,22 +28,18 @@ public:
 };
 
 class NWave : public ProblemBase {
-	static Source_t *Linearity;
 public:
+	NWave() {}
 	void InitialConditions();
 	void Initialize();
 	void OpenOutput();
 	void Output(int it);
 	void FinalOutput();
+	Source_t LinearSrc;
 	
-	void LinearSrc(Var *src, Var *y, double t) {(*Linearity)(src,y,t);}
-	
-	static Source_t StandardLinearity;
 	static Source_t ExponentialLinearity;
 	static void ConservativeExponentialLinearity(Real *, Real *, double );
 	static void ConservativeExponentialLinearity(Complex *, Complex *, double);
-	static void SetLinearity(Source_t *Linearity0) {Linearity=Linearity0;}
-	NWave() {}
 };
 
 class SR : public NWave {
@@ -119,6 +115,10 @@ public:
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, double&, int start, int stop);
+	void Source(Var *src, Var *y, double t) {
+		Problem->NonLinearSrc(src,y,t);
+		NWave::ExponentialLinearity(src,y,t);
+	}
 };
 
 
@@ -131,6 +131,10 @@ public:
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, double&, int, int);
+	void Source(Var *src, Var *y, double t) {
+		Problem->NonLinearSrc(src,y,t);
+		NWave::ConservativeExponentialLinearity(src,y,t);
+	}
 };
 
 class I_RK2 : public RK2 {

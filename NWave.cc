@@ -30,8 +30,6 @@ static Var random_factor=0.0;
 
 static Real last_t=-REAL_MAX;
 
-Source_t *NWave::Linearity=StandardLinearity;
-
 inline void ConstantForcing(Var *source, double t)
 {
 	if(t-last_t > tauforce) {last_t=t; crand_gauss(&random_factor);}
@@ -193,7 +191,7 @@ void PS::NonLinearSrc(Var *source, Var *psi, double)
 #endif
 }
 	
-void NWave::StandardLinearity(Var *source, Var *psi, double)
+void NWave::LinearSrc(Var *source, Var *psi, double)
 {
 #pragma ivdep
 	for(int k=0; k < Npsi; k++) source[k] -= nu[k]*psi[k];
@@ -319,7 +317,6 @@ void E_PC::Allocate(int n)
 		if(nu[j] != 0.0) nu_inv[j]=1.0/nu[j];
 		else nu_inv[j]=1.0;
 	}
-	NWave::SetLinearity(NWave::ExponentialLinearity);
 }
 
 void E_PC::TimestepDependence(double dt)
@@ -395,7 +392,6 @@ void CE_PC::Allocate(int n)
 		if(real(nu[j]) != 0.0) nuR_inv[j]=1.0/real(nu[j]);
 		else nuR_inv[j]=1.0;
 	}
-	NWave::SetLinearity(NWave::ConservativeExponentialLinearity);
 }
 
 void CE_PC::TimestepDependence(double dt)

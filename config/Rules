@@ -1,0 +1,14 @@
+.cc.o:
+	$(C++) $(OPT) $(INCL) -o $@ -c $<
+
+clean:
+	rm -f *.o *.d *mon.out $(ALL)
+
+%.d: %.cc
+	$(SHELL) -ec '$(C++) $(INCL) -M $< | sed '\''s|$*\\.o[ :]*|& $@|g'\'' > $@'
+
+all: $(TRIAD:=.o)
+	$(C++) $(OPT) -o triad $(TRIAD:=.o) $(LIB)
+
+include $(TRIAD:=.d)
+
