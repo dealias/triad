@@ -102,7 +102,7 @@ void SR::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
 	*LinearSrc=StandardLinearity;
 	*NonlinearSrc=PrimitiveNonlinearitySR;
 	*ConstantSrc=ConstantForcing;
-	continuum_factor=1.0/twopi2;
+	continuum_factor=1.0;
 }
 
 void None::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,

@@ -304,7 +304,7 @@ void Partition<T>::ComputeTriads() {
 
 	triad.Resize(Nmode*n);
 	for(k=0; k < Nmode; k++) {
-		norm=1.0/(twopi2*Area(k));
+		norm=1.0/Area(k);
 		pq=pqbuffer;
 		for(p=0; p < n; p++) {
 			for(q=max(NmodeR,p); q < n; q++, pq++) {
