@@ -18,7 +18,7 @@ char *linearity="BandLimited";
 class BurgerVocabulary : public VocabularyBase {
 public:
 	char *Name() {return "Burger's Turbulence";}
-	char *Abbrev() {return "burger";}
+	char *Abbrev() {return "bt";}
 	BurgerVocabulary();
 	Table<LinearityBase> *LinearityTable;
 	Table<GeometryBase> *GeometryTable;
