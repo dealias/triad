@@ -59,7 +59,7 @@ public:
 	
   DynVector() : v(NULL), size(0), alloc(0), state(allocated) {}
   void SetDynVector(const DynVector<T>& A) {v=A.v; size=A.size;
-                                     alloc=A.alloc; state(A.test(temporary));}
+                                     alloc=A.alloc; state=A.test(temporary);}
   DynVector(const DynVector<T>& A) {SetDynVector(A);}
   DynVector(unsigned int s) {Allocate(s);}
   virtual ~DynVector() {Deallocate();}
