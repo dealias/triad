@@ -38,7 +38,8 @@ void ConstantForcing(Var *source, double t)
 	for(int k=0; k < Npsi; k++) source[k] += forcing[k]*random_factor;
 }
 
-void ComputeMoments(Var *source, Var *psi) {
+void ComputeMoments(Var *source, Var *psi)
+{
 	Var *k, *q=source+Npsi, *kstop=psi+Npsi;
 #pragma ivdep
 	for(k=psi; k < kstop; k++, q++) {
