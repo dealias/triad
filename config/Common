@@ -1,7 +1,7 @@
 D = d
 LIB = $(LFLAGS) -lm
 OPT = -g $(CFLAGS)
-INCL = -I. -I$(TRI) -I- -Wno-deprecated
+INCL = -I. -I$(TRI) -I-
 
 vpath %.cc $(TRI)
 
@@ -10,6 +10,8 @@ include $(TRI)/config/$(HOSTTYPE)
 ifdef Cpp
 C++ = $(Cpp)
 endif
+
+C++ += -Wno-deprecated
 
 UTILS = utils msg strcasecmp new $(ARCH) $(POLL)
 CORE = kernel Integrator Param
