@@ -132,14 +132,14 @@ void IntegratorBase::SetProblem(ProblemBase& problem)
 
 void IntegratorBase::Alloc(vector2& Y, vector& y)
 {
-  Allocate1(y,ny);
+  Allocate(y,ny);
   DynVector<unsigned int> *NY=Problem->Index();
   unsigned int nfields=NY->Size();
-  Allocate1(Y,nfields);
+  Allocate(Y,nfields);
   Var *p=y;
   for(unsigned int i=0; i < nfields; i++) {
     unsigned int n=(*NY)[i];
-    Dimension1(Y[i],n,p);
+    Dimension(Y[i],n,p);
     p += n;
   }
 }
@@ -150,7 +150,7 @@ void IntegratorBase::Alloc0(vector2& Y, vector& y)
   for(unsigned int i=0; i < ny; i++) y[i]=0.0;
 }
 
-void IntegratorBase::Allocate()
+void IntegratorBase::Allocator()
 {
   check_compatibility(DEBUG);
   
@@ -160,10 +160,10 @@ void IntegratorBase::Allocate()
   for(unsigned int i=0; i < nfields; i++) ny += (*NY)[i];
   Alloc0(Src,source);
   
-  Dimension1(errmask,Problem->ErrorMask());
-  Dimension1(y,Problem->yVector());
-  Dimension1(Y,Problem->YVector());
-  Dimension1(Yout,Problem->YVector());
+  Dimension(errmask,Problem->ErrorMask());
+  Dimension(y,Problem->yVector());
+  Dimension(Y,Problem->YVector());
+  Dimension(Yout,Problem->YVector());
   
   pgrow=0.5/order; pshrink=(order > 1) ? 0.5/(order-1) : 0;
 }
@@ -200,8 +200,8 @@ Solve_RC PC::Solve()
 	
   if(new_y0) {
     swaparray(Y0,Y);
-    Set1(y,Y[0]);
-    Set1(y0,Y0[0]);
+    Set(y,Y[0]);
+    Set(y0,Y0[0]);
     Source(Src0,Y0,t);
   }
   Problem->Transform(Y0,t,dt,YI);
@@ -221,7 +221,7 @@ Solve_RC PC::Solve()
     Problem->Stochastic(Y,t,dt);
   } else if(Active(YI)) {
     swaparray(Y0,YI);
-    Set1(y0,Y0[0]);
+    Set(y0,Y0[0]);
   }
   
   return flag;
@@ -287,16 +287,16 @@ Solve_RC AdamsBashforth::Solve()
   errmax=0.0;
   
   swaparray(Y0,Y);
-  Set1(y,Y[0]);
-  Set1(y0,Y0[0]);
+  Set(y,Y[0]);
+  Set(y0,Y0[0]);
   
   switch(init) {
   case 0:
     {
     leftshiftarray(Src,Src1,Src0);
-    Set1(source0,Src0[0]);
-    Set1(source1,Src1[0]);
-    Set1(source,Src[0]);
+    Set(source0,Src0[0]);
+    Set(source1,Src1[0]);
+    Set(source,Src[0]);
     Source(Src0,Y0,t);
     Problem->Transform(Y0,t,dt,YI);
     for(unsigned int j=0; j < ny; j++) 
@@ -324,8 +324,8 @@ Solve_RC AdamsBashforth::Solve()
     swaparray(Src1,Src);
   case 2:
     {
-    Set1(source0,Src0[0]);
-    Set1(source,Src[0]);
+    Set(source0,Src0[0]);
+    Set(source,Src[0]);
     // Initialize with 2nd-order predictor-corrector **IMPROVE: USE RK4?**
     Source(Src0,Y0,t);
     Problem->Transform(Y0,t,dt,YI);
@@ -350,8 +350,8 @@ Solve_RC Midpoint::Solve()
 {
   int niterations=10;
   swaparray(Y0,Y);
-  Set1(y,Y[0]);
-  Set1(y0,Y0[0]);
+  Set(y,Y[0]);
+  Set(y0,Y0[0]);
   
   if(verbose > 1) cout << endl;
   Source(Src,Y0,t);
@@ -429,11 +429,11 @@ void RK4::Predictor()
   for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+halfdt*source0[j];
   Problem->BackTransform(Y,t+halfdt,halfdt,YI);
   Source(Src1,Y,t+halfdt);
-  if(Active(YI)) {swaparray(YI,Y); Set1(y,Y[0]);}
+  if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
   for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+halfdt*source1[j];
   Problem->BackTransform(Y,t+halfdt,halfdt,YI);
   Source(Src2,Y,t+halfdt);
-  if(Active(YI)) {swaparray(YI,Y); Set1(y,Y[0]);}
+  if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
   for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+dt*source2[j];
   Problem->BackTransform(Y,t+dt,dt,YI);
 }
@@ -441,7 +441,7 @@ void RK4::Predictor()
 int RK4::Corrector()
 {
   Source(Src,Y,t+dt);
-  if(Active(YI)) {swaparray(YI,Y); Set1(y,Y[0]);}
+  if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
   if(dynamic) {
     for(unsigned int j=0; j < ny; j++) {
       y[j]=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+source[j]);
@@ -474,24 +474,24 @@ void RK5::Predictor()
   for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+b10*source0[j];
   Problem->BackTransform(Y,t+a1,a1,YI);
   Source(Src,Y,t+a1);
-  if(Active(YI)) {swaparray(YI,Y); Set1(y,Y[0]);}
+  if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
   //#pragma ivdep		
   for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+b20*source0[j]+b21*source[j];
   Problem->BackTransform(Y,t+a2,a2,YI);
   Source(Src2,Y,t+a2);
-  if(Active(YI)) {swaparray(YI,Y); Set1(y,Y[0]);}
+  if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
   //#pragma ivdep		
   for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+b30*source0[j]+b31*source[j]+
 				b32*source2[j];
   Problem->BackTransform(Y,t+a3,a3,YI);
   Source(Src3,Y,t+a3);
-  if(Active(YI)) {swaparray(YI,Y); Set1(y,Y[0]);}
+  if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
   //#pragma ivdep		
   for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+b40*source0[j]+b41*source[j]+
 				b42*source2[j]+b43*source3[j];
   Problem->BackTransform(Y,t+a4,a4,YI);
   Source(Src4,Y,t+a4);
-  if(Active(YI)) {swaparray(YI,Y); Set1(y,Y[0]);}
+  if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
   //#pragma ivdep		
   for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+b50*source0[j]+b51*source[j]+
 				b52*source2[j]+b53*source3[j]+
@@ -502,7 +502,7 @@ void RK5::Predictor()
 int RK5::Corrector()
 {
   Source(Src,Y,t+a5);
-  if(Active(YI)) {swaparray(YI,Y); Set1(y,Y[0]);}
+  if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
   if(dynamic) {
     //#pragma ivdep		
     for(unsigned int j=0; j < ny; j++) {

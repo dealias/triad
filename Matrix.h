@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Matrix_h__
 #define __Matrix_h__ 1
 
-#define __MATRIX_H_VERSION__ 1.11
+#define __MATRIX_H_VERSION__ 1.12
 
 #include "DynVector.h"
 #include "Array.h"
@@ -228,8 +228,9 @@ template<class T, class U, class V>
 inline void Mult(const Array2<T>& A, const Array2<U>& B, const Array2<V>& C)
 {
   unsigned int n=C.Size();
-  static DynVector<V> temp(n);
-  if(n > temp.Alloc()) temp.Realloc(n);
+  static typename Array1<V>::opt temp(n);
+  static unsigned int tempsize=n;
+  if(n > tempsize) Reallocate(temp,n);
 	
   unsigned int bny=B.Ny();
   unsigned int cny=C.Ny();

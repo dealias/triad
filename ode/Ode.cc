@@ -82,9 +82,9 @@ ofstream fout;
 void Ode::InitialConditions()
 {
   NY[0]=1;
-  Allocate();
+  Allocator();
   
-  Allocate1(nu,ny);
+  Allocate(nu,ny);
 	
   vector y=Y[0];
   y[0]=1.0;

@@ -240,7 +240,7 @@ int main(int argc, char *argv[])
   t=0.0; nout=0;
   Problem->InitialConditions();
   
-  Dimension1(y,Problem->yVector());
+  Dimension(y,Problem->yVector());
   ny=Problem->Size();
   
   if(restart || initialize) read_init();
@@ -256,7 +256,7 @@ int main(int argc, char *argv[])
 		       itmax,microsteps,verbose,dynamic);
 	
   Integrator->SetProblem(*Problem);
-  Integrator->Allocate();
+  Integrator->Allocator();
 	
   cout << newl << "INTEGRATING:" << endl;
   set_timer();

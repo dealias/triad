@@ -46,9 +46,9 @@ extern int override;
 extern int verbose;
 
 using Array::array1;
-using Array::Allocate1;
-using Array::Dimension1;
-using Array::Set1;
+using Array::Allocate;
+using Array::Dimension;
+using Array::Set;
 
 typedef array1<Var>::opt vector;
 typedef array1<Real>::opt rvector;
@@ -77,15 +77,15 @@ class ProblemBase {
 
   const ivector& ErrorMask() {return errmask;}
   
-  void Allocate() {
+  void Allocator() {
     unsigned int nfields=NY.Size();
     Y.Allocate(nfields);
     ny=0;
     for(unsigned int i=0; i < nfields; i++) ny += NY[i];
-    Allocate1(y,ny);
+    Allocate(y,ny);
     Var *p=y;
     for(unsigned int i=0; i < nfields; i++) {
-      Dimension1(Y[i],NY[i],p);
+      Dimension(Y[i],NY[i],p);
       p += NY[i];
     }
   }

@@ -7,10 +7,10 @@ class Exponential {
 protected:
   Nuvector nu_inv, expinv, onemexpinv;
 public:
-  void Allocate(unsigned int n) {
-    Allocate1(expinv,n);
-    Allocate1(onemexpinv,n);
-    Allocate1(nu_inv,n);
+  void Allocator(unsigned int n) {
+    Allocate(expinv,n);
+    Allocate(onemexpinv,n);
+    Allocate(nu_inv,n);
     
     for(unsigned int j=0; j < n; j++) {
       if(nu[j] != 0.0) nu_inv[j]=1.0/nu[j];
@@ -31,7 +31,7 @@ class IntegratingFactor {
 protected:
   Nuvector expinv;
 public:
-  void Allocate(unsigned int n) {Allocate1(expinv,n);}
+  void Allocator(unsigned int n) {Allocate(expinv,n);}
   void TimestepDependence(double dt, unsigned int n) {
     for(unsigned int j=0; j < n; j++) expinv[j]=exp(-nu[j]*dt);
   }
@@ -39,14 +39,14 @@ public:
 	
 class Implicit : public IntegratorBase {
 public:
-  void Allocate() {IntegratorBase::Allocate();}
+  void Allocator() {IntegratorBase::Allocator();}
   const char *Name() {return "Implicit";}
   Solve_RC Solve();
 };
 
 class E_Euler : public Euler, public Exponential {
 public:
-  void Allocate() {Euler::Allocate(); Exponential::Allocate(ny);}
+  void Allocator() {Euler::Allocator(); Exponential::Allocator(ny);}
   const char *Name() {return "Exponential Euler";}
   Solve_RC Solve();
   void TimestepDependence() {
@@ -59,7 +59,7 @@ public:
 
 class I_Euler : public Euler, public IntegratingFactor {
 public:
-  void Allocate() {Euler::Allocate(); IntegratingFactor::Allocate(ny);}
+  void Allocator() {Euler::Allocator(); IntegratingFactor::Allocator(ny);}
   const char *Name() {return "Euler w/Integrating Factor";}
   Solve_RC Solve();
   void TimestepDependence() {
@@ -79,7 +79,7 @@ public:
 class I_PC : public PC, public IntegratingFactor {
   double halfdt;
 public:
-  void Allocate() {PC::Allocate(); IntegratingFactor::Allocate(ny);}
+  void Allocator() {PC::Allocator(); IntegratingFactor::Allocator(ny);}
   const char *Name() {return "Predictor-Corrector w/Integrating Factor";}
   void TimestepDependence() {
     PC::TimestepDependence();
@@ -96,7 +96,7 @@ class E_PC : public PC, public Exponential {
 protected:
   double dtinv;
 public:
-  void Allocate() {PC::Allocate(); Exponential::Allocate(ny);}
+  void Allocator() {PC::Allocator(); Exponential::Allocator(ny);}
   const char *Name() {return "Exponential Predictor-Corrector";}
   void TimestepDependence() {
     Exponential::TimestepDependence(dt,ny);

@@ -113,6 +113,11 @@ class array1 {
     __checkActivate(1);
   }
   
+  void Reallocate(unsigned int nx0) {
+    Deallocate();
+    Allocate(nx0);
+  }
+  
   array1() : size(0), state(unallocated) {}
   array1(const void *) : size(0), state(unallocated) {}
   array1(unsigned int nx0) : state(unallocated) {Allocate(nx0);}
@@ -778,6 +783,11 @@ class Array1 : public array1<T> {
     Offsets();
   }
 	
+  void Reallocate(unsigned int nx0, int ox0=0) {
+    Deallocate();
+    Allocate(nx0,ox0);
+  }
+
   Array1() : ox(0) {}
   Array1(unsigned int nx0, int ox0=0) {
     Allocate(nx0,ox0);
@@ -1165,105 +1175,137 @@ inline bool Active(T *A)
 }
 
 template<class T>
-inline void Set1(T *&A, T *v)
+inline void Set(T *&A, T *v)
 {
   A=v;
 }
 
 template<class T>
-inline void Set1(array1<T>& A, T *v)
+inline void Set(array1<T>& A, T *v)
 {
   A.Set(v);
 }
 
 template<class T>
-inline void Set1(array1<T>& A, const array1<T>& B)
+inline void Set(array1<T>& A, const array1<T>& B)
 {
   A.Set(B());
 }
 
 template<class T>
-inline void Dimension1(T *&A, unsigned int, T *v)
+inline void Dimension(T *&A, unsigned int, T *v)
 {
   A=v;
 }
 
 template<class T>
-inline void Dimension1(array1<T>& A, unsigned int n, T *v)
+inline void Dimension(array1<T>& A, unsigned int n, T *v)
 {
   A.Dimension(n,v);
 }
 
 template<class T>
-inline void Dimension1(T *&A, T *v)
+inline void Dimension(T *&A, T *v)
 {
   A=v;
 }
 
 template<class T>
-inline void Dimension1(array1<T>& A, const array1<T>& B)
+inline void Dimension(array1<T>& A, const array1<T>& B)
 {
   A.Dimension(B);
 }
 
 template<class T>
-inline void Dimension1(Array1<T>& A, unsigned int n, const array1<T>& B, int o)
+inline void Dimension(Array1<T>& A, unsigned int n, const array1<T>& B, int o)
 {
   A.Dimension(n,B,o);
 }
 
 template<class T>
-inline void Dimension1(Array1<T>& A, unsigned int n, T *v, int o)
+inline void Dimension(Array1<T>& A, unsigned int n, T *v, int o)
 {
   A.Dimension(n,v,o);
 }
 
 template<class T>
-inline void Dimension1(T *&A, unsigned int, T *v, int o)
+inline void Dimension(T *&A, unsigned int, T *v, int o)
 {
   A=v-o;
 }
 
 template<class T>
-inline void Allocate1(T *&A, unsigned int n)
+inline void Allocate(T *&A, unsigned int n)
 {
   A=new T[n];
 }
 
 template<class T>
-inline void Allocate1(T *&A, unsigned int n, int o)
-{
-  A=new T[n]-o;
-}
-
-template<class T>
-inline void Allocate1(array1<T>& A, unsigned int n)
+inline void Allocate(array1<T>& A, unsigned int n)
 {  
   A.Allocate(n);
 }
 
 template<class T>
-inline void Allocate1(Array1<T>& A, unsigned int n, int o)
+inline void Allocate(T *&A, unsigned int n, int o)
+{
+  A=new T[n]-o;
+}
+
+template<class T>
+inline void Allocate(Array1<T>& A, unsigned int n, int o)
 {  
   A.Allocate(n,o);
 }
 
 template<class T>
-inline void Deallocate1(T *A)
+inline void Deallocate(T *A)
 {
   delete A;
 }
 
 template<class T>
-inline void Deallocate1(T *A, int o)
+inline void Deallocate(array1<T>& A)
+{  
+  A.Deallocate();
+}
+
+template<class T>
+inline void Deallocate(T *A, int o)
 {
   delete (A+o);
 }
 
 template<class T>
-inline void Deallocate1(array1<T>& A)
+inline void Deallocate(Array1<T>& A, int)
 {  
   A.Deallocate();
+}
+
+template<class T>
+inline void Reallocate(T *A, unsigned int n)
+{  
+  delete A;
+  A=new T[n];
+}
+
+template<class T>
+inline void Reallocate(array1<T>& A, unsigned int n)
+{  
+  A.Reallocate(n);
+}
+
+template<class T>
+inline void Reallocate(T *A, unsigned int n, int o)
+{  
+  delete A;
+  A=new T[n]-o;
+}
+
+template<class T>
+inline void Reallocate(Array1<T>& A, unsigned int n, int o)
+{  
+  A.Reallocate(n,o);
 }
 
 }

@@ -72,11 +72,11 @@ class IntegratorBase {
   
   void Alloc(vector2& A, vector& a, const vector2& B, const vector& b) {
     A.Dimension(B);
-    Dimension1(a,b);
+    Dimension(a,b);
   }
   
   virtual void SetProblem(ProblemBase& problem);
-  virtual void Allocate();
+  virtual void Allocator();
   virtual const char *Name()=0;
   virtual Solve_RC Solve()=0;
   virtual int Microfactor() {return 1;}
@@ -129,8 +129,8 @@ class Midpoint : public IntegratorBase {
   vector2 Y0;
   double halfdt;
  public:
-  void Allocate() {
-    IntegratorBase::Allocate();
+  void Allocator() {
+    IntegratorBase::Allocator();
     Alloc(Y0,y0);
     halfdt=0.5*dt;
   }
@@ -149,8 +149,8 @@ class AdamsBashforth : public IntegratorBase {
   int init;
  public:
   AdamsBashforth() {order=3;}
-  void Allocate() {
-    IntegratorBase::Allocate();
+  void Allocator() {
+    IntegratorBase::Allocator();
     Alloc(Y0,y0);
     Alloc0(Src0,source0);
     Alloc0(Src1,source1);
@@ -175,8 +175,8 @@ class PC : public IntegratorBase {
   double halfdt;
  public:
   PC() {order=2;}
-  void Allocate() {
-    IntegratorBase::Allocate();
+  void Allocator() {
+    IntegratorBase::Allocator();
     Alloc(Y0,y0);
     Alloc0(Src0,source0);
     new_y0=1;
@@ -196,16 +196,16 @@ class LeapFrog : public PC {
   vector2 YP,YP0; // array of dependent fields
   double oldhalfdt,lasthalfdt;
  public:
-  void Allocate() {
-    PC::Allocate(); 
+  void Allocator() {
+    PC::Allocator(); 
     Alloc(YP,yp);
     Alloc(YP0,yp0);
     lasthalfdt=0.0;
   }
   void TimestepDependence() {
     if(lasthalfdt == 0.0) {
-      Set1(yp,YP[0]);
-      Set1(y,Y[0]);
+      Set(yp,YP[0]);
+      Set(y,Y[0]);
       for(unsigned int j=0; j < ny; j++) yp[j] = y[j];
     }
     halfdt=0.5*dt;
@@ -236,8 +236,8 @@ class RK4 : public PC {
   double sixthdt;
  public:
   RK4() {order=4;}
-  void Allocate() {
-    PC::Allocate();
+  void Allocator() {
+    PC::Allocator();
     Alloc0(Src1,source1);
     Alloc0(Src2,source2);
   }
@@ -261,8 +261,8 @@ class RK5 : public RK4 {
   double d0,d2,d3,d4,d5;
  public:
   RK5() {order=5;}
-  void Allocate() {
-    RK4::Allocate();
+  void Allocator() {
+    RK4::Allocator();
     Alloc(Src3,source3,Src1,source1);
     Alloc0(Src4,source4);
   }
