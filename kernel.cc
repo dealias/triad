@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
 	cout.precision(REAL_DIG);
 	
 	cout << endl << PROGRAM << " version " << VERSION << 
-		" [(C) John C. Bowman and B. A. Shadwick 1995]" << endl;
+		" [(C) John C. Bowman and B. A. Shadwick 1996]" << endl;
 	
 	cout << endl << "PROBLEM: " << Problem->Name() << endl;
 	
