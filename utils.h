@@ -13,6 +13,7 @@
 #if unix
 #include "arch/unix.h"
 #endif
+#endif
 
 #if __MAC
 #include "arch/mac.h"
