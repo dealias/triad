@@ -84,10 +84,13 @@ void set_fft_parameters()
 void DiscretePad(Var *to, Var *from, Real *norm)
 {
 	int k=0;
-	*to=0.0;
-	to += xoffset;
+	Var *tostop=to+xoffset-Nx0;
+	for(; to < tostop; to++) *to=0.0;
+	tostop += Nx0;
+	Var *s=from+Nx0;
+	for(; to < tostop; to++) *to=conj(*(--s));
 	*(to++)=0.0;
-	Var *tostop=to+Nx0;
+	*tostop=to+Nx0;
 #pragma ivdep		
 	for(; to < tostop; to++) {
 		int index=ModeBin[k++];
@@ -114,10 +117,14 @@ void DiscretePad(Var *to, Var *from, Real *norm)
 #if _CRAYMVP
 void CartesianPad(Var *to_, Var *from)
 {
-	*to_=0.0;
-	Var *to=to_+xoffset;
+	Var *to=to_;
+	Var *tostop=to+xoffset-Nx0;
+	for(; to < tostop; to++) *to=0.0;
+	tostop += Nx0;
+	const Var *s=from+Nx0;
+	for(; to < tostop; to++) *to=conj(*(--s));
 	*(to++)=0.0;
-	Var *tostop=to+Nx0;
+	*tostop=to+Nx0;
 #pragma ivdep		
 	for(; to < tostop; to++) *to=*(from++);
     for(int j=0; j < NRows-1; j++) {

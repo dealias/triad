@@ -268,7 +268,7 @@ void PS::NonLinearSrc(Var *source, Var *psi, double)
 #pragma ivdep	
 	for(i=0; i < Nmode; i++) source[i] *= knorm2[i];
 	CartesianPad(vort,source);
-	crfft2dT_sym(vort,log2Nxb,log2Nyb,1,1.0,-bitreverse);
+	crfft2dT(vort,log2Nxb,log2Nyb,1,1.0,-bitreverse);
 
 #pragma ivdep	
 	for(i=0; i < Nmode; i++) {
@@ -277,7 +277,7 @@ void PS::NonLinearSrc(Var *source, Var *psi, double)
 		source[i].im=psi[i].re*ky;
 	}
 	CartesianPad(psiy,source);
-	crfft2dT_sym(psiy,log2Nxb,log2Nyb,1,1.0,-bitreverse);
+	crfft2dT(psiy,log2Nxb,log2Nyb,1,1.0,-bitreverse);
 
 #if 0 // Compute x-space velocity increments; requires bitreverse=0.
 	Real *v2;
@@ -307,7 +307,7 @@ void PS::NonLinearSrc(Var *source, Var *psi, double)
 #pragma ivdep	
 	for(i=0; i < Nmode; i++) source[i] *= knorm2[i];
 	CartesianPad(vort,source);
-	crfft2dT_sym(vort,log2Nxb,log2Nyb,1,1.0,-bitreverse);
+	crfft2dT(vort,log2Nxb,log2Nyb,1,1.0,-bitreverse);
 
 #pragma ivdep	
 	for(i=0; i < nfft; i++) {
@@ -605,7 +605,7 @@ void NWave::Output(int)
 			if(discrete) DiscretePad(psix,y,norm_factor);
 			else CartesianPad(psix,y);
 			
-			crfft2dT_sym(psix,log2Nxb,log2Nyb,1);
+			crfft2dT(psix,log2Nxb,log2Nyb,1);
 			Real ninv=1.0/(Nxb*Nyb);
 			for(int i=0; i < nfft; i++) psix[i] *= ninv;
 			
@@ -620,14 +620,14 @@ void NWave::Output(int)
 				vort[i]=y[i]*kx*kx;
 			}
 			CartesianPad(psix,vort);
-			crfft2dT_sym(psix,log2Nxb,log2Nyb,1);
+			crfft2dT(psix,log2Nxb,log2Nyb,1);
 		
 			for(i=0; i < Nmode; i++) {
 				Real ky=CartesianMode[i].Y();
 				vort[i]=y[i]*ky*ky;
 			}
 			CartesianPad(psiy,vort);
-			crfft2dT_sym(psiy,log2Nxb,log2Nyb,1);
+			crfft2dT(psiy,log2Nxb,log2Nyb,1);
 			
 			for(i=0; i < nfft; i++) psiy[i] *= psix[i];
 				
@@ -637,7 +637,7 @@ void NWave::Output(int)
 				vort[i]=y[i]*kx*ky;
 			}
 			CartesianPad(psix,vort);
-			crfft2dT_sym(psix,log2Nxb,log2Nyb,1);
+			crfft2dT(psix,log2Nxb,log2Nyb,1);
 			
 			Real ninv=1.0/(Nxb*Nyb);
 			for(i=0; i < nfft; i++)

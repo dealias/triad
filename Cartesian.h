@@ -119,18 +119,21 @@ void CartesianUnPad(Var *to, Var *from);
 #else
 inline void CartesianPad(Var *to, const Var *from)
 {
-	*to=0.0;
-	to += xoffset;
+	Var *tostop=to+xoffset-Nx0;
+	for(; to < tostop; to++) *to=0.0;
+	tostop += Nx0;
+	const Var *s=from+Nx0;
+	for(; to < tostop; to++) *to=conj(*(--s));
 	*(to++)=0.0;
 	set(to,from,Nx0);
 	to += Nx0; from += Nx0;
 	for(int j=0; j < NRows-1; j++) {
-		Var *tostop=to+NPad;
+		tostop=to+NPad;
 		for(; to < tostop; to++) *to=0.0;
 		set(to,from,Nx);
 		to += Nx; from += Nx;
 	}
-	Var *tostop=to+NPadTop;
+	tostop=to+NPadTop;
 	for(; to < tostop; to++) *to=0.0;
 }
 
