@@ -16,7 +16,7 @@ extern Real kthmin;
 extern Real kthmax;
 extern Real kthneg;
 
-inline int InInterval(const Cartesian& m, const Polar& a, const Polar& b)
+INLINE int InInterval(const Cartesian& m, const Polar& a, const Polar& b)
 {
 	const Real xK2=m.K2();
 	if(xK2 < a.K2() || xK2 >= b.K2()) return 0;
@@ -56,7 +56,7 @@ inline Real Bin<Polar,Cartesian>::Area()
 	else return 0.5*(max.r*max.r-min.r*min.r)*(max.th-min.th);
 }
 
-inline int coangular(Bin<Polar,Cartesian> *k, Bin<Polar,Cartesian> *p)
+INLINE int coangular(Bin<Polar,Cartesian> *k, Bin<Polar,Cartesian> *p)
 {
 	Real tol=10.0*REAL_EPSILON*pi;
 	
@@ -77,7 +77,7 @@ Real BinAverage(Bin<Polar,Cartesian> *k, Bin<Polar,Cartesian> *p,
 
 // For Navier-Stokes turbulence (velocity normalization):
 
-inline Mc Partition<Polar,Cartesian>::Ckpq(Polar&, Polar& P, Polar& Q)
+INLINE Mc Partition<Polar,Cartesian>::Ckpq(Polar&, Polar& P, Polar& Q)
 {
 	return (Q.K()-P.K())*(Q.K()+P.K());
 }

@@ -33,7 +33,7 @@ extern DynVector<Triad> triad;
 extern TriadLimits *triadLimits;
 
 template<class T, class D>
-inline int InInterval(const D& m, const T& a, const T& b);
+INLINE int InInterval(const D& m, const T& a, const T& b);
 
 template<class T, class D>
 class Bin {
@@ -244,14 +244,14 @@ public:
 	Nu Linear(int);
 	Real Forcing(int);
 	
-	inline Mc Ckpq(T&, T&, T&);
+	INLINE Mc Ckpq(T&, T&, T&);
 	
 	int pq(int p, int q) {return n*p-p*(p+1)/2+q;} // Index to element p <= q
 };
 
 
 template<class T, class D>
-inline int coangular(Bin<T,D> *k, Bin<T,D> *p);
+INLINE int coangular(Bin<T,D> *k, Bin<T,D> *p);
 
 template<class T, class D>
 INLINE void Partition<T,D>::GenerateWeights() {
