@@ -127,7 +127,7 @@ inline void vform(char *format, va_list& vargs, ostream& os)
 inline void vform(char *format, va_list& vargs)
 {
 	vprintf(format,vargs);
-	flush(stdout);
+	fflush(stdout);
 }
 #endif
 

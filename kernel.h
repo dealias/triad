@@ -190,7 +190,7 @@ void dump(int it, int final, double tmax);
 
 template<class T>
 inline void open_output(T& fout, const char *delimiter, char *suffix,
-						int append=restart)
+						int append)
 {
 	char *filename=Vocabulary->FileName(delimiter,suffix);
 	if(append) fout.open(filename,fout.app); // Append to end of output file.
@@ -199,5 +199,11 @@ inline void open_output(T& fout, const char *delimiter, char *suffix,
 	fout.precision(digits);
 	errno=0;
 }
+
+template<class T>
+inline void open_output(T& fout, const char *delimiter, char *suffix)
+{
+	open_output(fout,delimiter,suffix,restart);
+}	
 
 #endif
