@@ -42,7 +42,7 @@ public:
 	}
 	void close() {
 		if(buf) {
-#if !(_CRAY || NO_XDR_DESTROY)
+#if !(_CRAY || (__i386__ && !__ELF__))
 			xdr_destroy(&xdrs);
 #endif			
 			fclose(buf);

@@ -41,6 +41,7 @@ int ngridx=0;
 int ngridy=0;
 int movie=0;
 int truefield=0;
+int weiss=0;
 
 NWaveVocabulary::NWaveVocabulary()
 {
@@ -86,6 +87,7 @@ NWaveVocabulary::NWaveVocabulary()
 	VOCAB(ngridy,0,INT_MAX);
 	VOCAB(movie,0,1);
 	VOCAB(truefield,0,1);
+	VOCAB(weiss,0,1);
 	
 	GeometryTable=new Table<GeometryBase>("Geometry");
 
@@ -151,7 +153,7 @@ static Real equilibrium(int i)
 
 static ifstream ftin;
 static ofstream fparam,fevt,fyvt,ft,favgy,fprolog;
-static oxstream fpsi;
+static oxstream fpsi,fweiss;
 
 Real continuum_factor=1.0;
 typedef char Avgylabel[20];
@@ -209,7 +211,10 @@ void NWave::InitialConditions()
 	open_output(fyvt,dirsep,"yvt");
 	open_output(ft,dirsep,"t");
 	open_output(fprolog,dirsep,"prolog");
-	if(movie) open_output(fpsi,dirsep,"psi");
+	if(movie) {
+		open_output(fpsi,dirsep,"psi");
+		if(weiss) open_output(fweiss,dirsep,"weiss");
+	}
 	
 	if(Nmoment) {
 		avgyre=new Avgylabel[Nmoment];
@@ -328,6 +333,19 @@ void compute_invariants(Var *y, int Npsi, Real& E, Real& Z, Real& P)
 	P *= factor;
 }	
 
+void out_field(oxstream& fout, Real *psir)
+{
+	fout << Nxb << Nyb << 1;
+	Real ninv=1.0/(Nxb*Nyb);
+	int factor=2*(Nxb1-1);
+	for(int j=Nyb-1; j >= 0; j--) {
+		int jN=factor*(j/2)+j;
+		for(int i=0; i < Nxb; i++)
+			fout << (float) (psir[2*i+jN]*ninv);
+	}
+	fout.flush();
+}
+
 void NWave::Output(int)
 {
 	Real E,Z,P;
@@ -365,24 +383,47 @@ void NWave::Output(int)
 					fpsi << (float) sum;
 				}
 			}
+			fpsi.flush();
 		} else {
-			fpsi << Nxb << Nyb << 1;
 			if(discrete) DiscretePad(psix,y,norm_factor);
 			else CartesianPad(psix,y);
 			
 			crfft2dT(psix,log2Nxb,log2Nyb,1);
-		
-			Real *psir=(Real *) psix;
-			Real ninv=1.0/(Nxb*Nyb);
-			int factor=2*(Nxb1-1);
-			for(int j=Nyb-1; j >= 0; j--) {
-				int jN=factor*(j/2)+j;
-				for(int i=0; i < Nxb; i++)
-					fpsi << (float) (psir[2*i+jN]*ninv);
-			}
+			out_field(fpsi,(Real *) psix);
 		}
-		fpsi.flush();
 		if(!fpsi) msg(ERROR, "Cannot write to movie file psi");
+	
+		if(weiss && !discrete) {
+			int i;
+			for(i=0; i < Npsi; i++) {
+				Real kx=CartesianMode[i].X();
+				vort[i]=y[i]*kx*kx;
+			}
+			CartesianPad(psix,vort);
+			crfft2dT(psix,log2Nxb,log2Nyb,1);
+		
+			for(i=0; i < Npsi; i++) {
+				Real ky=CartesianMode[i].Y();
+				vort[i]=y[i]*ky*ky;
+			}
+			CartesianPad(psiy,vort);
+			crfft2dT(psiy,log2Nxb,log2Nyb,1);
+			
+			for(i=0; i < nfft; i++) psiy[i] *= psix[i];
+				
+			for(i=0; i < Npsi; i++) {
+				Real kx=CartesianMode[i].X();
+				Real ky=CartesianMode[i].Y();
+				vort[i]=y[i]*kx*ky;
+			}
+			CartesianPad(psix,vort);
+			crfft2dT(psix,log2Nxb,log2Nyb,1);
+			
+			for(i=0; i < nfft; i++)
+				psix[i]=psix[i]*psix[i]-psiy[i];
+			
+			out_field(fweiss,(Real *) psix);
+		}
 	}
 	
 	tcount++;
