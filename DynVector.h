@@ -74,14 +74,17 @@ public:
   unsigned int Size() const {return size;}
   
   void Realloc(unsigned int i) {
-    if (i == 0 && alloc && test(allocated)) delete [] v;
-    else if(i > alloc) {
+    if (i == 0 && alloc && test(allocated)) {
+      delete [] v;
+      clear(allocated);
+    } else if(i > alloc) {
       T *v0=v;
       v=new T[i];
       if (size) {
 	for(unsigned int j=0; j < size; j++) v[j]=v0[j];
 	if(test(allocated)) delete [] v0;
       }
+      set(allocated);
     }
     alloc=i;
     if(size > alloc) size=alloc;
