@@ -124,6 +124,7 @@ Solve_RC Euler::Solve(double t, double dt)
 	Problem->Transform(y0,t,dt,yi);
 	for(int j=0; j < ny; j++) y0[j] += dt*source[j];
 	Problem->BackTransform(y0,t+dt,dt,yi);
+	Problem->Stochastic(y0,t,dt);
 	return SUCCESSFUL;
 }
 
@@ -143,6 +144,7 @@ Solve_RC PC::Solve(double t, double dt)
 	if(new_y0) {
 		set(y0,y,ny);
 		Problem->BackTransform(y0,t+dt,dt,yi);
+		Problem->Stochastic(y0,t,dt);
 	} else if(yi) set(y0,yi,ny);
 	return flag;
 }

@@ -69,6 +69,7 @@ public:
 	virtual void Source(Var *src, Var *y, double t)=0;
 	virtual void Transform(Var *, double, double, Var *&) {}
 	virtual void BackTransform(Var *, double, double, Var *) {}
+	virtual void Stochastic(Var *, double, double) {}
 	virtual void Initialize() {}
 	virtual void FinalOutput() {}
 	virtual int Microprocess() {return 0;}
