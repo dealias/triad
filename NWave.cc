@@ -27,7 +27,7 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 #pragma ivdep		
 	for(Var *k=psibuffer; k < psibufferR; k++) conjugate(*(k+Npsi),*k);
 	
-#if (_AIX || __GNUC0__) && COMPLEX
+#if (_AIX || __GNUC__) && COMPLEX
 	Var *pq=pqbuffer,*p;
 	for(p=psibuffer; p < psibufferR; p++) {
 		Real psipre=p->re, psipim=p->im;
