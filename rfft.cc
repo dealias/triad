@@ -52,6 +52,7 @@ void fft_init(unsigned int log2n)
 void rfft_init(unsigned int log2n)
 {
 	if(log2n+1 > wpTableSize) fft_init(log2n+1);
+	if(log2n == 0) return;
 	unsigned int n4=1 << (log2n-1);
 	
 	WTable=new(WTable,n4) Complex;
@@ -199,6 +200,7 @@ void crfft(Complex *data, unsigned int log2n, int isign, Real scale,
 void mrcfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 			unsigned int inc1, unsigned int inc2, Real scale, int bitreverse)
 {		 
+	if(log2n == 0) return;
 	log2n--;
 	if(inc1 == 0) inc1=nk;
 	unsigned int kstop=nk*inc2;
@@ -279,6 +281,7 @@ void mrcfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 			unsigned int inc1, unsigned int inc2, Real scale, int bitreverse)
 {		 
+	if(log2n == 0) return;
 	log2n--;
 	if(inc1 == 0) inc1=nk;
 	unsigned int kstop=nk*inc2;

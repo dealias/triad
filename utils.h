@@ -109,21 +109,47 @@ void *bsearch2(register const void *key,
 			   int (*compar)(const void *, const void *, const size_t),
 			   int *match_type);
 
-int check_match(int match_type, char *object, char *s);
+int check_match(int match_type, char *object, char *s, int warn=1);
 			   
-#define OVERRIDE -1,__FILE__,__LINE__
-#define WARNING 0,__FILE__,__LINE__
-#define ERROR 1,__FILE__,__LINE__
-#define CONDITIONAL -1:1,__FILE__,__LINE__
-#define ABORT 1,"",0
+#ifdef __GNUC__ 	
+inline void vform(char *format, va_list& vargs, ostream& os=cout)
+{
+	os.vform(format,vargs);
+	os.flush();
+}
+#else
+// Lacking vsnprintf, formatting of arguments is available only for stdout.
+inline void vform(char *format, va_list& vargs, ostream& os)
+{
+	os << format; 
+	os.flush();
+}
+inline void vform(char *format, va_list& vargs)
+{
+	vprintf(format,vargs);
+	flush(stdout);
+}
+#endif
 
-void msg(int fatal, char *file, int line, char *format,...);
+void msg(int severity, char *file, int line, char *format,...);
 
-#define INVALID_CALL msg(ERROR, "Invalid call")
-#define INVALID_ARG msg(ERROR, "Invalid argument")
+extern int abort_flag;
+extern int beep_enabled;
+extern int msg_override;
+extern void (*inform)(char *);
 
-enum Exit_code {FATAL=-1,CONTINUE,COMPLETE};
-extern Exit_code exit_signal;
+enum ErrorCode {WARNING_,OVERRIDE_,ERROR_};
+
+#define WARNING WARNING_,__FILE__,__LINE__
+#define OVERRIDE OVERRIDE_,__FILE__,__LINE__
+#define ERROR ERROR_,__FILE__,__LINE__
+
+#define WARNING_GLOBAL WARNING_,"",0
+#define OVERRIDE_GLOBAL OVERRIDE_,"",0
+#define ERROR_GLOBAL ERROR_,"",0
+
+enum ExitCode {FATAL=-1,CONTINUE,COMPLETE};
+extern ExitCode exit_signal;
 
 void mailuser(char *text);
 void remove_dir(char *text);

@@ -101,7 +101,7 @@ public:
 	void SetParam(double tolmax, double tolmin, double stepfactor0,
 				  double stepnoninvert, double dtmin0, double dtmax0,
 				  int itmax0, int microsteps0, int verbose0) {
-		if(tolmax < tolmin) msg(ABORT,"tolmax < tolmin"); 
+		if(tolmax < tolmin) msg(ERROR_GLOBAL,"tolmax < tolmin"); 
 		tolmax2=tolmax*tolmax;
 		tolmin2=tolmin*tolmin;
 		stepfactor=stepfactor0;
@@ -145,7 +145,7 @@ public:
 	ParamBase *Locate(char *key, int *match_type);
 	void ParamAdd(ParamBase *p);
 	void Parse(char *s);
-	void Assign(const char *s);
+	void Assign(const char *s, int warn=1);
 	void Sort();
 	void List(ostream& os);
 	void Dump(ostream& os);

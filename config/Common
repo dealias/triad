@@ -7,7 +7,7 @@ vpath %.cc $(TRI)
 
 include $(TRI)/config/$(HOSTTYPE)
 
-UTILS = utils strcasecmp new $(ARCH) $(POLL)
+UTILS = utils msg strcasecmp new $(ARCH) $(POLL)
 CORE = kernel Integrator Param
 
 .SUFFIXES: .cc

@@ -3,6 +3,7 @@
 #include "Param.h"
 
 int NParam=0;
+int param_warn=1;
 
 static int ParamCompare(const void *a, const void *b);
 static int ParamKeyCompare(const void*key, const void *p, const size_t n);
@@ -11,6 +12,11 @@ void VocabularyBase::Sort()
 {
 	qsort(ParamList.Base(),NParam,sizeof(ParamBase *),
 		  ParamCompare);
+	
+	for(int i=0; i < NParam-1; i++)
+		if(ParamCompare(&ParamList[i],&ParamList[i+1]) == 0)
+			msg(ERROR_GLOBAL,
+				"Duplicate vocabulary entry: %s",ParamList[i]->Name());
 }
 
 ParamBase *VocabularyBase::Locate(char *key, int *match_type) 
@@ -50,7 +56,7 @@ void VocabularyBase::Parse(char *s)
 	}
 }	
 
-void VocabularyBase::Assign(const char *key)
+void VocabularyBase::Assign(const char *key, int warn)
 {
 	char *buffer=new char[strlen(key)+1];
 	char *ptr;
@@ -58,11 +64,14 @@ void VocabularyBase::Assign(const char *key)
 	int match_type;
 	ParamBase *param;
 	
-	if(!(ptr=strchr(buffer,'='))) msg(ABORT,"Invalid assignment: %s",buffer);
+	param_warn=warn;
+	
+	ptr=strchr(buffer,'=');
+	if(!ptr) msg(ERROR_GLOBAL,"Invalid assignment: %s",buffer);
 	*ptr=0;
 	
 	param=Locate(buffer,&match_type);
-	if(check_match(match_type,"command",buffer)) param->SetStr(++ptr);
+	if(check_match(match_type,"command",buffer,warn)) param->SetStr(++ptr);
 	delete [] buffer;
 }
 
@@ -72,7 +81,7 @@ static int ParamCompare(const void *a, const void *b)
 	return strcmp((*(ParamBase **)a)->Name(),(*(ParamBase **)b)->Name());
 }
 
-static int ParamKeyCompare(const void*key, const void *p, const size_t n)
+static int ParamKeyCompare(const void* key, const void *p, const size_t n)
 {
 	return strcmpn((char *) key,(*(ParamBase **)p)->Name(),n);
 }

@@ -5,20 +5,13 @@
 #include <errno.h>
 #include <time.h>
 #include <string.h>
-#include <strstream.h>
 
 char* run="";
-Exit_code exit_signal=COMPLETE;
+ExitCode exit_signal=COMPLETE;
 
 const double pi=PI;
 const double twopi=2.0*pi;
 const double twopi2=twopi*twopi;
-
-char beep='\a';
-
-extern int override;
-extern int sys_nerr;
-extern const char *const sys_errlist[];
 
 char *upcase(const char *s, char *s2)
 {
@@ -155,85 +148,17 @@ void *bsearch2(register const void *key,
 	return (void *) base;
 }
 
-int check_match(int match_type, char *object, char *key)
+int check_match(int match_type, char *object, char *key, int warn)
 {
 	switch(match_type) {
 	case -1:
-		msg(OVERRIDE, "Unknown %s: %s",object,key);
+		if(warn) msg(OVERRIDE_GLOBAL, "Unknown %s: %s",object,key);
 		return 0;
 	case 0:
-		msg(ABORT, "Ambiguous %s: %s",object,key);
+		if(warn) msg(ERROR_GLOBAL, "Ambiguous %s: %s",object,key);
 		return 0;
 	}
 	return 1;
-}
-
-int abort_flag=1; 	// If nonzero, abort program after a fatal error.
-int beep_enabled=1; // If nonzero, enable terminal beeping during errors.
-
-#if __unix
-#include <unistd.h>
-#endif
-
-void msg(int fatal, char *file, int line, char *format,...)
-{
-	int tty_override=0;
-	char c;
-	va_list vargs;
-
-	cout << endl;
-	if(beep_enabled) {beep_enabled=0; cout << beep;}
-	
-	if(fatal == -1) {
-#if __unix
-		int errno_save=errno;
-		if(isatty(STDIN_FILENO)) {fatal=0; tty_override=1;}
-		else errno=errno_save;
-#endif	
-		if(override) {fatal=0; tty_override=0;}
-	}
-
-	if(fatal) cout << "ERROR: ";
-	else cout << "WARNING: ";
-	cout << flush;
-	
-	va_start(vargs,format);
-	vprintf(format,vargs);
-	fflush(stdout);
-	va_end(vargs);
-	
-	if(*file) cout << " (\"" << file << "\":" << line << ")" << ".";
-	cout << endl;
-	
-	if(errno && errno < sys_nerr) cout << sys_errlist[errno] << "." << endl;
-	
-	if(tty_override) {
-		cout << "Override (y/n)? ";
-		cin >> c;
-		if(c != 'Y' && c !='y') fatal=1;
-	}
-
-	if(fatal && abort_flag) {
-		cout << endl;
-		strstream buf;
-		buf << "terminated with error from \"" << file << "\":" << line << "."
-			<< newl;
-#ifdef __GNUC__ 	
-		strstream vbuf;
-		va_start(vargs,format);
-		vbuf.vform(format,vargs);
-		va_end(vargs);
-		vbuf << ends;
-		buf << vbuf.str();
-#else
-		buf << format;
-#endif		
-		buf << ends;
-		mailuser(buf.str());
-		exit(FATAL);
-	}
-	errno=0;
-	cout << flush;
 }
 
 Complex atoc(const char *s)

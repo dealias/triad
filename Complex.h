@@ -322,7 +322,7 @@ inline istream& operator >> (istream& s, Complex& y)
 
 inline ostream& operator << (ostream& s, const Complex& y)
 {
-	s << "(" << y.re << ", " << y.im << ")";
+	s << "(" << y.re << "," << y.im << ")";
 	return s;
 }
 

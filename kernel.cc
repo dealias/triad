@@ -1,6 +1,6 @@
 /*                          T R I A D    
 An object-oriented C++ package for integrating initial value problems.
-Copyright (C) 1997 John C. Bowman (bowman@math.ualberta.ca)
+Copyright (C) 1998 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <iomanip.h>
 
 const char PROGRAM[]="TRIAD";
-const char VERSION[]="1.1";
+const char VERSION[]="1.2";
 
 // Global variables
 double t;
@@ -141,10 +141,12 @@ void adjust_parameters(double& dt, double& dtmax, double& tmax, int& itmax)
 int main(int argc, char *argv[])
 {
 	int i;
+	
+	inform=mailuser;
 	cout.precision(REAL_DIG);
 	
-	cout << newl << PROGRAM << " version " << VERSION << 
-		" [(C) John C. Bowman and B. A. Shadwick 1997]" << newl;
+	cout << newl << PROGRAM << " version " << VERSION
+		 << " [(C) John C. Bowman 1998]" << newl;
 	
 	cout << newl << "MACHINE: " << machine() << " [" << date() << "]" << newl;
 	
@@ -154,7 +156,10 @@ int main(int argc, char *argv[])
 	for(i=1; i < argc; i++) cout << argv[i] << " ";
 	cout << endl;
 	
-	for(i=1; i < argc; i++) Vocabulary->Assign(argv[i]);
+	Vocabulary->Sort();
+	
+	// Do a preliminary parse of command line to obtain parameter file name.
+	for(i=1; i < argc; i++) Vocabulary->Assign(argv[i],0);
 	
 	// Allow time step to be overridden from command line (even on restarts).
 	if(dt) explicit_dt=1; 
@@ -185,13 +190,15 @@ int main(int argc, char *argv[])
 		}
 		fparam.close();
 	} else {
-		if(!testing) msg(OVERRIDE,"Parameter file %s could not be opened",
-						 pname); 
+		if(!testing)
+			msg(OVERRIDE_GLOBAL,"Parameter file %s could not be opened",
+				pname); 
 		errno=0;
 		mkdir(Vocabulary->FileName("",""),0xFFFF);
 	}
 	
 	for(i=1; i < argc; i++) Vocabulary->Assign(argv[i]);
+	msg_override=override;
 	adjust_parameters(dt,dtmax,tmax,itmax);
 	cout << newl << "PARAMETERS:" << newl << newl;
 	Vocabulary->List(cout);
@@ -204,7 +211,7 @@ int main(int argc, char *argv[])
 	if(!(restart || initialize)) {
 		fin.open(rname);
 		if(fin && !clobber) 
-			msg(OVERRIDE,"Restart file %s already exists",rname);
+			msg(OVERRIDE_GLOBAL,"Restart file %s already exists",rname);
 		fin.close();	
 		errno=0;
 	}
@@ -215,7 +222,7 @@ int main(int argc, char *argv[])
 		char *sname=Vocabulary->FileName(dirsep,"stat");
 		fin.open(sname);
 		if(fin && !clobber)
-			msg(OVERRIDE,"Statistics file %s already exists",sname);
+			msg(OVERRIDE_GLOBAL,"Statistics file %s already exists",sname);
 		fin.close();
 		errno=0;
 	}
@@ -299,7 +306,7 @@ void read_init()
 		finit >> t0 >> dt0 >> final_iteration;
 		for(i=0; i < ncputime; i++) finit >> cpu[i];
 		finit >> ny0;
-		if(ny0 != ny) msg(OVERRIDE,ny_msg,ny,ny0,rname);
+		if(ny0 != ny) msg(OVERRIDE_GLOBAL,ny_msg,ny,ny0,rname);
 		for(i=0; i < min(ny,ny0); i++) finit >> y[i];
 		if(!finit)	msg(ERROR,"Cannot read from %s file %s",type,rname);
 	} else msg(ERROR,"Could not open %s file %s",type,rname);
@@ -312,10 +319,7 @@ void lock()
 {
 	if(testing) return;
 	flock.open(lname);
-	if(!flock) {
-		msg(WARNING,"Could not create lock file %s",lname);
-		errno=0;
-	} 
+	if(!flock) msg(WARNING,"Could not create lock file %s",lname);
 }
 
 void unlock()
@@ -323,10 +327,8 @@ void unlock()
 	if(testing) return;
 	if(flock) {
 		flock.close();
-		if(remove(lname) == -1) {
+		if(remove(lname) == -1) 
 			msg(WARNING,"Could not remove lock file %s",lname);
-			errno=0;
-		}
 	}
 }
 
@@ -335,12 +337,10 @@ void testlock()
 	ifstream ftest;
 	ftest.open(lname);
 	if(ftest) {
-		msg(OVERRIDE,
+		msg(OVERRIDE_GLOBAL,
 			"Lock file %s exists.\nOutput files may be corrupted",lname);
-		if(remove(lname) == -1) {
+		if(remove(lname) == -1)
 			msg(WARNING,"Could not remove lock file %s",lname);
-			errno=0;
-		}
 	} else errno=0;
 }
 

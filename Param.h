@@ -8,6 +8,7 @@
 #include "kernel.h"
 
 extern int NParam;
+extern int param_warn;
 
 inline void VocabularyBase::ParamAdd(ParamBase *p)
 {
@@ -30,22 +31,13 @@ class Param : public ParamBase {
 	int dump;
 public:
 	Param(T *address, char *s, int n, T min0, T max0, int dump0) {
-		int match_type;
-
-		Vocabulary->Locate(s,&match_type);
-		if(match_type==2) {
-			cout << beep << "Duplicate vocabulary entry: " << s << endl;
-			return;
-		}
-		
 		name=s; nvar=n; var=address; min=min0; max=max0; dump=dump0;
 		Vocabulary->ParamAdd(this);
-		Vocabulary->Sort();
 	}
 
 	virtual ~Param() {}
-	void Set(T x) {int i; for(i=0; i<nvar; i++) var[i]=x;}
-	void Set(T *x) {int i; for(i=0; i<nvar; i++) var[i]=x[i];}
+	void Set(T x) {int i; for(i=0; i < nvar; i++) var[i]=x;}
+	void Set(T *x) {int i; for(i=0; i < nvar; i++) var[i]=x[i];}
 	
 	void SetStr(char *);
 	
@@ -67,7 +59,7 @@ public:
 	
 	void GraphicsOutput(ostream& os) {
 		if(!dump) return; // Don't dump control parameters
-		if(nvar==1) os << "define " << name << " \"" << var[0] << "\"";
+		if(nvar == 1) os << "define " << name << " \"" << var[0] << "\"";
 		else {
 			os << "set " << name << "={";
 			for(int i=0; i < nvar; i++) os << var[i] << " ";
@@ -80,30 +72,32 @@ public:
 	
 	void get_values(char *optarg, T (*rtn)(const char *))
 	{
-		int i;
-		char *ptr,*optarg0;
+		int i=0;
+		char *ptr;
 		T value;
 
-		i=0;
 		do {
-			if(!(optarg0=strchr(optarg,')'))) optarg0=optarg;
-			if((ptr=strchr(optarg0,','))) *ptr=0;
+			char *optarg0=strchr(optarg,')');
+			if(!optarg0) optarg0=optarg;
+			ptr=strchr(optarg0,',');
+			if(ptr) *ptr=0;
 			else ptr=optarg;
-			if(i >= nvar) {
-				cout << beep << "Warning: excess initializer " << optarg <<
-					" to " << name << " discarded." << endl;
-			}
+			if(i >= nvar && param_warn) 
+				msg(OVERRIDE_GLOBAL,"Excess initializer \"%s\" to %s",
+					optarg,name);
 			else {
 				value=(*rtn)(optarg);
 
 				if(InRange(value)) var[i++]=value;
-				else {
-					cout << beep << "Value " << value << " for " <<
-						name << " is invalid: Limits are " <<
-						min << " to " << max << "." << endl;
+				else if(param_warn) {
+					strstream buf;
+					buf << "Value \"" << value << "\" for "
+						<< name << " is invalid. Limits are "
+						<< min << " to " << max << ends;
+                    msg(OVERRIDE_GLOBAL,"%s",buf.str());
 				}
 			}	
-		} while ((ptr==optarg) ? 0 : (optarg=ptr+1));
+		} while ((ptr == optarg) ? 0 : (optarg=ptr+1));
 	}
 	
 };

@@ -4,66 +4,78 @@
 #include <iostream.h>
 #include <errno.h>
 #include <time.h>
-
-char beep='\a';
-
-extern int sys_nerr;
-#if  !__alpha__
-extern char *sys_errlist[];
-#endif
-
-int abort_flag=1; 	// If nonzero, abort program after a fatal error.
-int beep_enabled=1; // If nonzero, enable terminal beeping during errors.
-
-#ifdef __GNUC__ 	
-#define	vform(os,format,vargs) os.vform(format,vargs);
-#else
-#define vform(os,format,vargs) \
-{os.flush(); vprintf(format,vargs); fflush(stdout);}
-#endif			
+#include <strstream.h>
 
 #if __unix
 #include <unistd.h>
 #endif
 
-void msg(int fatal, char *file, int line, char *format,...)
+char beep='\a';
+
+extern int sys_nerr;
+extern const char *sys_errlist[];
+
+int abort_flag=1; 	// If nonzero, abort program after a fatal error.
+int beep_enabled=1; // If nonzero, enable terminal beep for errors.
+int msg_override=0;
+void (*inform)(char *)=NULL;
+
+void msg(int severity, char *file, int line, char *format,...)
 {
 	int tty_override=0;
 	char c;
 	va_list vargs;
-
-	cout << endl;
-	if(beep_enabled) {beep_enabled=0; cout << beep;}
 	
-	if(fatal == -1) {
+	cout << endl;
+	if(beep_enabled) {
+		if(severity == WARNING_) beep_enabled=0;
+		cout << beep;
+	}
+	
+	if(severity == OVERRIDE_) {
 #if __unix
 		int errno_save=errno;
-		if(isatty(STDIN_FILENO)) {fatal=0; tty_override=1;}
+		if(isatty(STDIN_FILENO)) {severity=WARNING_; tty_override=1;}
 		else errno=errno_save;
 #endif	
+		if(msg_override) {severity=WARNING_; tty_override=0;}
 	}
 
-	if(fatal) cout << "ERROR: ";
+	if(severity == ERROR_) cout << "ERROR: ";
 	else cout << "WARNING: ";
+	cout << flush;
 	
 	va_start(vargs,format);
-	vform(cout,format,vargs);
+	vform(format,vargs);
 	va_end(vargs);
 	
-	if(*file) cout << " (\"" << file << "\":" << line << ")" << ".";
-	cout << endl;
+	if(*file) cout << " (\"" << file << "\":" << line << ")";
+	cout << "." << endl;
 	
 	if(errno && errno < sys_nerr) cout << sys_errlist[errno] << "." << endl;
 	
 	if(tty_override) {
 		cout << "Override (y/n)? ";
 		cin >> c;
-		if(c != 'Y' && c !='y') fatal=1;
+		if(c != 'Y' && c !='y') severity=ERROR_;
 	}
 
-	if(fatal && abort_flag) {
+	if(severity == ERROR_ && abort_flag) {
+		if(inform) {
+			strstream buf,vbuf;
+			va_start(vargs,format);
+			vform(format,vargs,vbuf);
+			va_end(vargs);
+			vbuf << ends;
+			buf << "terminated with error";
+			if(*file) buf << " from \"" << file << "\":" << line;
+			buf << "." << newl << vbuf.str() << ends;
+			(*inform)(buf.str());
+		}
 		cout << endl;
 		exit(FATAL);
 	}
+	
+	errno=0;
 	cout << flush;
 }
