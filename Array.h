@@ -185,7 +185,8 @@ public:
 	}
 	array1<T>& operator /= (T a) {
 		unsigned int size=Size0();
-		for(unsigned int i=0; i < size; i++) v[i] /= a;
+		T ainv=1.0/a;
+		for(unsigned int i=0; i < size; i++) v[i] *= ainv;
 		return *this;
 	}
 	
