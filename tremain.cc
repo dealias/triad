@@ -16,7 +16,7 @@ int poll()
 	double seconds;
 	if(!tlimit) TREMAIN(tlimit);
 	SECOND(seconds);
-	if(2*seconds-last_seconds < 0.95tlimit) {
+	if(2*seconds-last_seconds < 0.95*tlimit) {
 		last_seconds=seconds;
 		return 0;
 	}
