@@ -301,8 +301,10 @@ void unlock()
 {
 	if(flock) {
 		flock.close();
-		if(remove(lname) == -1)
-			msg(ERROR,"Could not remove lock file %s",lname);
+		if(remove(lname) == -1) {
+			msg(WARNING,"Could not remove lock file %s",lname);
+			errno=0;
+		}
 	}
 }
 
