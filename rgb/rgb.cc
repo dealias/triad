@@ -336,7 +336,7 @@ int main(int argc, char *const argv[])
 	int lower=0, upper=INT_MAX;
 	int make_mpeg=0;
 	int trans=0;
-	int palette=NOPALETTE;
+	int palette=BWRAINBOW;
 	int nobar=0;
 	
 	int syntax=0;
@@ -382,8 +382,6 @@ int main(int argc, char *const argv[])
                {0, 0, 0, 0}
              };
 	
-	if(palette == NOPALETTE) palette=(trans == IDENTITY ? BWRAINBOW : RAINBOW);
-		
 #ifdef __GNUC__	
 	optind=0;
 #endif	
