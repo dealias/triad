@@ -513,7 +513,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 	if(strcmp(type,"yuv3") != 0)
 #endif
 		buf << "." << type;
-	if(!verbose) buf << " >& /dev/null";
+	if(!verbose) buf << " >& /dev/null 2>&1";
 	buf << ends;
 	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;
