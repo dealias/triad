@@ -26,19 +26,18 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #include "DynVector.h"
 #include "rgb.h"
 
-static double *vminf, *vmaxf;
-static char *rgbdir;
-static strstream rgbdirbuf;
-static int xsize,ysize;
+void cleanup();
 
 template<class T>
 void openfield(T& fin, char *fieldname, int& nx, int& ny, int& nz)
 {
 	fin.open(fieldname);
-	if(!fin) msg(ERROR,"Cannot open input file %s",fieldname);
+	if(!fin) {cleanup(); msg(ERROR,"Cannot open input file %s",fieldname);}
 	if(implicit) {
 		fin >> nx >> ny >> nz;
-		if(fin.eof()) msg(ERROR,"End of file during processing");
+		if(fin.eof()) {
+			cleanup(); msg(ERROR,"End of file during processing");
+		}
 	}
 }
 
@@ -67,8 +66,10 @@ int readframe(T& fin, int nx, int ny, int nz, float **value,
 		for(int i=0; i < nxy; i++) {
 			float v=get_value(fin);
 			if(fin.eof()) {
-				if(implicit || i > 0) 
+				if(implicit || i > 0) {
+					cleanup();
 					msg(WARNING,"End of file during processing");
+				}
 				return EOF;
 			}
 			if(v < vmin) vmin=v;
@@ -84,8 +85,10 @@ int readframe(T& fin, int nx, int ny, int nz, float **value,
 		int nx0,ny0,nz0;
 		fin >> nx0 >> ny0 >> nz0;
 		if(fin.eof()) return 1;
-		if(nx0 != nx || ny0 != ny || nz0 != nz)
+		if(nx0 != nx || ny0 != ny || nz0 != nz) {
+			cleanup();
 			msg(ERROR,"Inconsistent image size");
+		}
 	}
 	return 0;
 }
@@ -101,19 +104,25 @@ void animate(int argc, char *const argf[], int n, char *const type,
 void manimate(int argc, char *const argf[], int n, char *const type,
 			  int xsize, int ysize);
 	
-int verbose=0;
-int floating_scale=0;
-int byte=0;
-int implicit=1;
-int zero=0;
+static double *vminf, *vmaxf;
+static char *rgbdir;
+static strstream rgbdirbuf;
+static int xsize,ysize;
+
+static int verbose=0;
+static int floating_scale=0;
+static int byte=0;
+static int implicit=1;
+static int zero=0;
+static int preserve=0;
 
 extern "C" int getopt(int argc, char *const argv[], const char *optstring);
 
 void usage(char *program)
 {
 	cerr << "Usage: " << program
-		 << " [-bfghlmpvz] [-x mag] [-H hmag] [-V vmag] [-B begin] [-E end]"
-		 << endl 
+		 << " [-bfghlmpvz] [-x mag] [-H hmag] [-V vmag] "
+		<< "[-B begin] [-E end] [-S skip]" << endl 
 		 << "           [-X xsize -Y ysize [-Z zsize]] file1 [file2 ...]"
 		 << endl;
 }
@@ -137,6 +146,7 @@ void options()
 	cerr << "-V vmag\t\t vertical magnification factor" << endl;
 	cerr << "-B begin\t\t first frame to process" << endl;
 	cerr << "-E end\t\t last frame to process" << endl;
+	cerr << "-S skip\t\t interval between processed frames" << endl;
 	cerr << "-X xsize\t explicit horizontal size" << endl;
 	cerr << "-Y ysize\t explicit vertical size" << endl;
 	cerr << "-Z zsize\t explicit number of cross-sections/frame"
@@ -147,8 +157,7 @@ int main(int argc, char *const argv[])
 {
 	int nx=1,ny=1,nz=1;
 	int nset=0, mx=1, my=1;
-	int n,begin=0, end=INT_MAX;
-	int preserve=0;
+	int n,begin=0, skip=1, end=INT_MAX;
 	int gray=0;
 	int label=0;
 	int make_mpeg=0;
@@ -159,8 +168,9 @@ int main(int argc, char *const argv[])
 #ifdef __GNUC__	
 	optind=0;
 #endif	
+	errno=0;
 	while (1) {
-		int c = getopt(argc,argv,"bfghlmpvzx:H:V:B:E:X:Y:Z:");
+		int c = getopt(argc,argv,"bfghlmpvzx:H:V:B:E:S:X:Y:Z:");
 		if (c == -1) break;
 		switch (c) {
 		case 'b':
@@ -207,6 +217,10 @@ int main(int argc, char *const argv[])
 		case 'E':
 			end=atoi(optarg);
 			break;
+		case 'S':
+			skip=atoi(optarg);
+			if(skip <= 0) msg(ERROR,"skip value must be positive");
+			break;
 		case 'X':
 			nx=atoi(optarg);
 			implicit=0;
@@ -232,7 +246,9 @@ int main(int argc, char *const argv[])
 			 << " -h' for a descriptions of options." << endl;
 		exit(1);
 	}
+	
 	if(nfiles > 1) label=1;
+	
 	char *const *argf=argv+optind;
 		
 	if(!floating_scale) {
@@ -275,16 +291,21 @@ int main(int argc, char *const argv[])
 		if(!floating_scale)	{
 			n=0;
 			int rc;
+			int s=skip;
+			int set=0;
 			do {
 				double vmin,vmax;
 				rc=byte ? readframe(fin,nx,ny,nz,value,vmin,vmax) :
 					readframe(xin,nx,ny,nz,value,vmin,vmax);
 				if(rc == EOF) break;
 				if(n < begin) continue;
+				if(--s) continue;
+				s=skip;
+				set++;
 				if(vmin < gmin) gmin=vmin;
 				if(vmax > gmax) gmax=vmax;
 			} while (n++ < end && rc == 0);
-			nset=nset ? min(nset,n-begin) : n-begin;
+			nset=nset ? min(nset,set) : set;
 			
 			if(zero && gmin < 0 && gmax > 0) {
 				gmax=max(-gmin,gmax);
@@ -299,22 +320,30 @@ int main(int argc, char *const argv[])
 		
 		n=0;
 		int rc;
+		int s=skip;
+		int set=0;
 		do {
 			double vmin,vmax;
 			rc=byte ? readframe(fin,nx,ny,nz,value,vmin,vmax) :
 				readframe(xin,nx,ny,nz,value,vmin,vmax);
 			if(rc == EOF) break;
 			if(n < begin) continue;
+			if(--s) continue;
+			s=skip;
+			set++;
 			
 			if(!floating_scale) {vmin=gmin;	vmax=gmax;}
 			double step=(vmax == vmin) ? 0.0 : PaletteMax/(vmax-vmin);
 			
 			strstream buf;
 			buf << rgbdir << "/" << fieldname << setfill('0') << setw(4)
-				<< n << "." << format << ends;
+				<< set << "." << format << ends;
 			char *oname=buf.str();
 			ofstream fout(oname);
-			if(!fout) msg(ERROR,"Cannot open output file %s",oname);
+			if(!fout) {
+				cleanup();
+				msg(ERROR,"Cannot open output file %s",oname);
+			}
 			
 			for(int k=0; k < nz; k++) {
 				for(int j=0; j < ny; j++)  {
@@ -350,9 +379,12 @@ int main(int argc, char *const argv[])
 			}
 			
 			fout.close();
-			if(!fout) msg(ERROR,"Cannot write to output file %s",oname);
+			if(!fout) {
+				cleanup();
+				msg(ERROR,"Cannot write to output file %s",oname);
+			}
 		} while (n++ < end && rc == 0);
-		nset=nset ? min(nset,n-begin) : n-begin;
+		nset=nset ? min(nset,set) : set;
 	}
 	
 	if(label || make_mpeg) { 
@@ -365,6 +397,11 @@ int main(int argc, char *const argv[])
 		else manimate(nfiles,argf,nset-1,"miff",xsize,ysize);
 	} else animate(nfiles,argf,nset-1,format,xsize,ysize);
 	
+	cleanup();
+}
+
+void cleanup()
+{
 	if(!preserve) {
 		strstream buf;
 		buf << "rm -r " << rgbdir << " > /dev/null 2>&1" << ends;
@@ -389,7 +426,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 	for(int f=0; f < nfiles; f++) {
 		char *fieldname=argf[f];
 		buf << " -label \"";
-		if(!floating_scale) 
+		if(!(floating_scale || byte)) 
 			buf << setprecision(2) << vminf[f]
 				<< separator << setprecision(2) << vmaxf[f] << "\\n";
 		buf << fieldname << "\" " << rgbdir
@@ -415,12 +452,15 @@ void identify(int, char *const argf[], int n, char *const type,
 	if(verbose) cout << cmd << endl;
 	system(cmd);
 	ifstream fin(iname);
-	if(!fin) msg(ERROR,"Cannot open identify file %s",iname);
+	if(!fin) {cleanup(); msg(ERROR,"Cannot open identify file %s",iname);}
 	char c='x';
 	while(fin && c != ' ') fin.get(c);
 	fin >> xsize;
 	fin.get(c);
-	if(c != 'x') msg(ERROR,"Parse error in reading combined image size");
+	if(c != 'x') {
+		cleanup();
+		msg(ERROR,"Parse error in reading combined image size");
+	}
 	fin >> ysize;
 }
 
