@@ -236,6 +236,9 @@ int main(int argc, char *argv[])
     mkdir(buf.str(),0xFFFF);
   }
 					
+  t=0.0;
+  Problem->InitialConditions();
+  
   open_output(gparam,dirsep,"param",0);
   Vocabulary->GraphicsDump(gparam);
   gparam.close();
@@ -250,8 +253,6 @@ int main(int argc, char *argv[])
   }	
   else msg(WARNING,"Cannot write to parameter file %s",ptemp);
 	
-  t=0.0;
-  Problem->InitialConditions();
   y=Problem->Vector();
   ny=Problem->Size();
   if(restart || initialize) read_init();

@@ -47,7 +47,7 @@ class Param : public ParamBase {
   const char *Name() {return name;}
 	
   void Display(ostream& os) {
-    os << name << " = ";
+    os << name << "=";
     for(int i=0; i < nvar-1; i++) os << var[i] << ", ";
     os << var[nvar-1] << endl;
   }
