@@ -63,30 +63,27 @@ template<class T>
 class Hash {
 	int n;
 	T first, last;
-public:
 	int *table;
+public:
 	virtual inline int hash(T value) {return (n-1)*(value-first)/(last-first);}
 	
 	Hash(int n0, T value(int)) {
 		n=n0; first=value(0); last=value(n-1);
-		table=new int[n];
+		table=new int[n+1];
 		int j=0;
 		for(int i=0; i < n; i++) {
-			while (j < n && hash(value(j)) < i) j++;
+			while (hash(value(j)) < i) j++;
+			if(j >= n) msg(ERROR,"Hash table index is out of bounds");
 			table[i]=j;
 		}
-	}
-	
-	inline int Index(int hash) {
-		if (hash < 0) return 0;
-		if (hash >= n) return n;
-		return table[hash];
+		table[n]=n;
 	}
 	
 	inline void Limits(const T kpq, int *l,int *u) {
 		int h=hash(kpq);
-		*l=Index(h);
-		*u=Index(h+1);
+		if(h < 0 || h >= n) {*l=*u=0; return;}
+		*l=table[h];
+		*u=table[h+1];
 	}
 };
 	
@@ -213,20 +210,18 @@ inline Mc Partition<T>::FindWeight(int k, int p, int q) {
 	Index_t kpq=WeightIndex(k,p,q);
 	hash->Limits(kpq,&l,&u);
 	
-	while(l < u) {
-		int i=(l+u)/2;
-		int cmp=kpq-weight[i].Index();
-		if(cmp < 0) u=i;
-		else {
-			if(cmp > 0) l=i+1;
-			else {
-				Mc value=weight[i].Value();
-				if(conjflag) value=conj(value);
-				return sign*value*Ckpq(bin[k0].cen,bin[p0].cen,bin[q0].cen);
-			}
+	if(u-l != 1) {
+		int i;
+		for(i=l; i < u; i++) {
+			if(kpq == weight[i].Index()) break;
 		}
+		if(i==u) return 0.0; // no match found.
+		l=i;
 	}
-	return 0.0;	// no match found.
+	
+	Mc value=weight[l].Value();
+	if(conjflag) value=conj(value);
+	return sign*value*Ckpq(bin[k0].cen,bin[p0].cen,bin[q0].cen);
 }
 
 template<class T>
@@ -256,7 +251,7 @@ void Partition<T>::ComputeTriads() {
 	}
 	
 	if(fin) {
-		weight.Resize(Nweight-1);
+		weight.Resize(Nweight);
 		if(formatted) for(i=0; i < Nweight; i++) fin >> weight[i];
 		else fin.read((char *) weight.Base(),Nweight*sizeof(Weight));
 		fin.close();
