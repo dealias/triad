@@ -94,7 +94,8 @@ char *extract=NULL;
 
 enum Parameters {RFACTOR=256,THETA,PHI,YXASPECT,ZXASPECT,POINTSIZE,AVGX,AVGY,\
 				 EXTRACT,NCOLORS,BACKGROUND,XMIN,XMAX,YMIN,YMAX,ZMIN,ZMAX,
-				 LABEL,ALPHA,CROP,XRANGE,YRANGE,ZRANGE,CONST,RATE};
+				 LABEL,ALPHA,CROP,XRANGE,YRANGE,ZRANGE,XSLICE,YSLICE,ZSLICE,
+				 CONST,RATE};
 
 Real Rfactor=2.0;
 Real Theta=0.9;
@@ -109,6 +110,10 @@ Real ymin=0.0;
 Real ymax=1.0;
 Real zmin=0.0;
 Real zmax=1.0;
+
+int xslice=4;
+int yslice=8;
+int zslice=8;
 
 int begin=0;
 int skip=1; 
@@ -438,6 +443,9 @@ int main(int argc, char *argv[])
                {"xrange", 1, 0, XRANGE},
                {"yrange", 1, 0, YRANGE},
                {"zrange", 1, 0, ZRANGE},
+               {"xslice", 1, 0, XRANGE},
+               {"yslice", 1, 0, YRANGE},
+               {"zslice", 1, 0, ZRANGE},
                {"xmin", 1, 0, XMIN},
                {"xmax", 1, 0, XMAX},
                {"ymin", 1, 0, YMIN},
@@ -625,6 +633,15 @@ int main(int argc, char *argv[])
 			break;
 		case ZMAX:
 			zmax=atof(optarg);
+			break;
+		case XSLICE:
+			xslice=atoi(optarg);
+			break;
+		case YSLICE:
+			yslice=atoi(optarg);
+			break;
+		case ZSLICE:
+			zslice=atoi(optarg);
 			break;
 		case AVGX:
 			sx=atoi(optarg);
@@ -1291,13 +1308,9 @@ void Torus(Array2<Ivec>& Index)
 	Ayx=-cosTheta*sinPhi; Ayy=cosTheta*cosPhi; Ayz=sinTheta;
 	Azx=sinTheta*sinPhi; Azy=-sinTheta*cosPhi; Azz=cosTheta;
 	
-	int mini=128;
-	int minj=128;
-	int mink=128;
-	
-	int Mini=4;
-	int Minj=8;
-	int Mink=8;
+	int mini=256;
+	int minj=256;
+	int mink=256;
 	
 	int maxk=cutoff ? min(nz,(int) ((cutoff/twopibynz)+1.5)) : nz;
 	
@@ -1328,7 +1341,7 @@ void Torus(Array2<Ivec>& Index)
 								}
 							}
 							if((!define2 && num2 >= minj) ||
-							   (!refine2 && num2 >= Minj)) break;
+							   (!refine2 && num2 >= yslice)) break;
 							num2 *= 2;
 							denom2 *= 0.5;
 						}
@@ -1336,7 +1349,7 @@ void Torus(Array2<Ivec>& Index)
 						refine1 += refine2;
 					}
 					if((!define1 && num1 >= mink) ||
-					   (!refine1 && num1 >= Mink)) break;
+					   (!refine1 && num1 >= zslice)) break;
 					num1 *= 2;
 					denom1 *= 0.5;
 				}
@@ -1371,7 +1384,7 @@ void Torus(Array2<Ivec>& Index)
 								}
 							}
 							if((!define2 && num2 >= mini) ||
-							   (!refine2 && num2 >= Mini)) break;
+							   (!refine2 && num2 >= xslice)) break;
 							num2 *= 2;
 							denom2 *= 0.5;
 						}
@@ -1379,7 +1392,7 @@ void Torus(Array2<Ivec>& Index)
 						refine1 += refine2;
 					}
 					if((!define1 && num1 >= minj) ||
-					   (!refine1 && num1 >= Minj)) break;
+					   (!refine1 && num1 >= yslice)) break;
 					num1 *= 2;
 					denom1 *= 0.5;
 				}
