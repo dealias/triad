@@ -69,6 +69,12 @@ public:
 	virtual inline int hash(T value) {
 		return (int) (value*factor+constant);
 	}
+	virtual inline int hash_verify(T value) {
+		int h=hash(value);
+		if(h < 0 || h >= n) 
+			msg(ERROR,"Hash for %d is outside the interval [0,%d]",value,n-1);
+		return h;
+	}
 	
 	Hash(int nhash, int nvalue, T value(int)) {
 		n=nhash; first=value(0); last=value(nvalue-1);
@@ -76,8 +82,9 @@ public:
 		table=new int[n+1];
 		int j=0;
 		for(int i=0; i < n; i++) {
-			while (j < nvalue && hash(value(j)) < i) j++;
-			if(j >= nvalue) msg(ERROR,"Hash table index is out of bounds");
+			while (hash_verify(value(j)) < i) j++;
+			if(j >= nvalue)
+				msg(ERROR,"Hash table entry %d is out of bounds",j);
 			table[i]=j;
 		}
 		table[n]=nvalue;
