@@ -321,13 +321,12 @@ int main(int argc, char *const argv[])
 	if(rgbdir) rgbdirbuf << rgbdir;
 	else rgbdirbuf << "/tmp/" << getenv("USER");
 	unsigned int process=getpid();
-	rgbdirbuf << "/rgb." << process << ends;
+	rgbdirbuf << "/rgb." << process << "/" << ends;
 	strstream buf;
 	buf << "mkdirhier " << rgbdirbuf.str() << ends;
 	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;
 	system(cmd);
-	rgbdirbuf << "/" << ends;
 	rgbdir=rgbdirbuf.str();
 	
 	char *const format=gray ? "gray" : "rgb";
