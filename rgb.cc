@@ -415,7 +415,7 @@ int main(int argc, char *const argv[])
 			vminf[f]=gmin;
 			vmaxf[f]=gmax;
 			
-			if(verbose) cout << nset << " frames found." << endl;
+			if(verbose && f==0) cout << nset << " frames found." << endl;
 		}
 		
 		if(byte) {fin.close(); openfield(fin,fieldname,nx,ny,nz);}
@@ -493,13 +493,10 @@ int main(int argc, char *const argv[])
 			set++;
 		} while (n++ < end && rc == 0);
 		nset=nset ? min(nset,set) : set;
-		if(verbose) cout << nset << " frames found." << endl;
-
+		if(verbose && f==0 && floating_scale)
+			cout << nset << " frames found." << endl;
 	}
 	
-	if(verbose && floating_scale) 
-		cout << nset << " frames found." << endl;
-
 	if(nset == 1) msg(ERROR, "More than one frame required");
 	
 	if((remote || !pointsize) && make_mpeg) putenv("DISPLAY=");
