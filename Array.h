@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.10
+#define __ARRAY_H_VERSION__ 1.10J
 
 // Defining NDEBUG improves optimization but disables argument checking.
 
@@ -189,6 +189,30 @@ public:
 		return *this;
 	}
 	
+	Real L1() {
+		unsigned int size=Size0();
+		Real norm=0.0;
+		for(unsigned int i=0; i < size; i++) norm += abs(v[i]);
+		return norm/size;
+	}
+	Real L2() {
+		unsigned int size=Size0();
+		Real norm=0.0;
+		for(unsigned int i=0; i < size; i++) norm += abs2(v[i]);
+		return sqrt(norm/size);
+	}
+	Real LInfinity() {
+		unsigned int size=Size0();
+		Real norm=0.0;
+		for(unsigned int i=0; i < size; i++) norm=max(norm,abs(v[i]));
+		return norm;
+	}
+	Real LMinusInfinity() {
+		unsigned int size=Size0();
+		Real norm=REAL_MAX;
+		for(unsigned int i=0; i < size; i++) norm=min(norm,abs(v[i]));
+		return norm;
+	}
 };
 
 template<class T>
