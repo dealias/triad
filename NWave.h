@@ -54,8 +54,7 @@ public:
 		ny=n; source=new Var[n]; y=new Var[n]; lastdiff=new Real[n];
 	}
 	char *Name() {return "Conservative Euler";}
-	Solve_RC Solve(Real *, double, double);
-	Solve_RC Solve(Complex *, double, double);
+	Solve_RC Solve(double, double);
 };
 
 class CorrectC_PC {

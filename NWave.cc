@@ -209,18 +209,20 @@ void ConstantForcing(Var *source, Var *, double t)
 
 Solve_RC C_Euler::Solve(double t, double dt)
 {
+#if COMPLEX	
+	msg(ERROR,"Complex C_Euler has not been implemented");
+	return UNSUCCESSFUL;
+#else
 	int j,iter,cont,jfix=-1;
-	Real *rsource=(Real *) source, *ry=(Real *) y;
-	Var *vy0=(Var *) y0;
 	Real yj;
 	double tau,mu,temp;
 	
 	tau=dt;
-	Source(source,vy0,t);
+	Source(source,y0,t);
 	
 	mu=temp=0.0;
 	for(j=0; j < nyprimary; j++) {
-		if(y0[j] != 0.0) temp=tau*rsource[j]/y0[j];
+		if(y0[j] != 0.0) temp=tau*source[j]/y0[j];
 		else jfix=j;
 		if(fabs(temp) > fabs(mu)) {mu=temp;	if(fabs(mu) >= 0.5) jfix=j;}
 	}
@@ -228,22 +230,22 @@ Solve_RC C_Euler::Solve(double t, double dt)
 	
 	if(jfix == -1)	// Evolve forwards.
 		for(j=0; j < nyprimary; j++)
-			y0[j]=sgn(y0[j])*sqrt(y0[j]*(y0[j]+mu*tau*rsource[j]));
+			y0[j]=sgn(y0[j])*sqrt(y0[j]*(y0[j]+mu*tau*source[j]));
 	else {			// Iterate backwards.
-		set(ry,y0,nyprimary);
+		set(y,y0,nyprimary);
 		iter=0;
 		for(j=0; j < nyprimary; j++) lastdiff[j]=0.0;
-		y0[jfix]=ry[jfix]+tau*rsource[jfix];
-		temp=(ry[jfix]/y0[jfix]+1.0)*rsource[jfix];
+		y0[jfix]=y[jfix]+tau*source[jfix];
+		temp=(y[jfix]/y0[jfix]+1.0)*source[jfix];
 		do {
 			cont=0;
-			Source(source,vy0,t);
-			mu=temp/rsource[jfix];
+			Source(source,y0,t);
+			mu=temp/source[jfix];
 			for(j=0; j < nyprimary; j++) {
 				yj=y0[j];
 				if(j !=jfix) {
-					Real discr=ry[j]*ry[j]+mu*tau*rsource[j]*y0[j];
-					if(discr >= 0.0) y0[j]=sgn(ry[j])*sqrt(discr);
+					Real discr=y[j]*y[j]+mu*tau*source[j]*y0[j];
+					if(discr >= 0.0) y0[j]=sgn(y[j])*sqrt(discr);
 					else msg(ERROR,"Negative discriminant encountered");
 				}
 				Real diff=abs(y0[j]-yj);
@@ -254,15 +256,10 @@ Solve_RC C_Euler::Solve(double t, double dt)
 			if(++iter == 100) msg(ERROR,"Iteration did not converge");
 		} while (cont);
 	}
-	for(j=nyprimary; j < ny; j++) y0[j] += dt*rsource[j];
+	for(j=nyprimary; j < ny; j++) y0[j] += dt*source[j];
 	return SUCCESSFUL;
+#endif	
 }
-
-Solve_RC C_Euler::Solve(double, double)
-{
-	msg(ERROR,"Complex C_Euler has not been implemented");
-	return UNSUCCESSFUL;
-}		
 
 inline int CorrectC_PC::Correct(const Real y0, const Real y1, Real& y,
 								const Real source0, const Real source,
