@@ -7,12 +7,12 @@
 template<class T>
 class DynVector
 {
- protected:	
+protected:	
   T *v;
   mutable unsigned int size;
   mutable unsigned int alloc;
   mutable int state;
- public:
+public:
   enum alloc_state {normal=0, temporary=1};
   void Allocate(unsigned int s) {v=new T[alloc=s]; size=0;}
   void Deallocate() const {
@@ -26,7 +26,7 @@ class DynVector
 	
   DynVector() : v(NULL), size(0), alloc(0), state(normal) {}
   DynVector(const DynVector<T>& A) : v(A.v), size(A.size),
-    alloc(A.alloc), state(A.test(temporary)) {}
+				     alloc(A.alloc), state(A.test(temporary)) {}
   DynVector(unsigned int s) {Allocate(s);}
   ~DynVector() {Deallocate();}
 
@@ -52,8 +52,8 @@ class DynVector
   }
 
   void SetTop(unsigned int i){
-      if (alloc < i) Resize(i);
-      size=i;
+    if (alloc < i) Resize(i);
+    size=i;
   }
 
   T& operator [] (unsigned int i) {
@@ -77,10 +77,10 @@ class DynVector
   }
   
   void Pop(unsigned int i) {
-      if(size) {
-	  for (unsigned int j=i; j < size; j++) v[j-1]=v[j];
-	  size--;
-      }
+    if(size) {
+      for (unsigned int j=i; j < size; j++) v[j-1]=v[j];
+      size--;
+    }
   }
 
   void Expand(unsigned int i) {if (i > alloc) Resize(i);}
