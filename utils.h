@@ -123,31 +123,31 @@ void *bsearch2(register const void *key,
 int check_match(int match_type, const char *object, const char *s, int warn=1);
 			   
 #ifdef __GNUC__ 	
-inline void vform(char *format, va_list& vargs, ostream& os=cout)
+inline void vform(const char *format, va_list& vargs, ostream& os=cout)
 {
 	os.vform(format,vargs);
 	os.flush();
 }
 #else
 // Lacking vsnprintf, formatting of arguments is available only for stdout.
-inline void vform(char *format, va_list& vargs, ostream& os)
+inline void vform(const char *format, va_list& vargs, ostream& os)
 {
 	os << format; 
 	os.flush();
 }
-inline void vform(char *format, va_list& vargs)
+inline void vform(const char *format, va_list& vargs)
 {
 	vprintf(format,vargs);
 	fflush(stdout);
 }
 #endif
 
-void msg(int severity, char *file, int line, char *format,...);
+void msg(int severity, const char *file, int line, const char *format,...);
 
 extern int abort_flag;
 extern int beep_enabled;
 extern int msg_override;
-extern void (*inform)(char *);
+extern void (*inform)(const char *);
 
 enum ErrorCode {WARNING_,OVERRIDE_,SLEEP_,ERROR_};
 

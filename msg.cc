@@ -19,7 +19,7 @@ extern const char *const sys_errlist[];
 int abort_flag=1; 	// If nonzero, abort program after a fatal error.
 int beep_enabled=1; // If nonzero, enable terminal beep for errors.
 int msg_override=0;
-void (*inform)(char *)=NULL;
+void (*inform)(const char *)=NULL;
 
 #if __unix
 void wakeup(int)
@@ -28,7 +28,7 @@ cout << "waking up!" << endl;
 }
 #endif
 
-void msg(int severity, char *file, int line, char *format,...)
+void msg(int severity, const char *file, int line, const char *format,...)
 {
 	int tty_override=0;
 	char c;
