@@ -25,7 +25,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 using namespace Array;
 
 const char PROGRAM[]="TRIAD";
-const char VERSION[]="1.42";
+const char VERSION[]="1.43";
 const int RestartVersion=2;
 Real RestartProblemVersion=0;
 
@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
     mkdir(buf.str().c_str(),0xFFFF);
   }
 					
-  save_parameters();
+  SaveParameters();
   t=0.0; nout=0;
   Problem->InitialConditions();
   
@@ -246,7 +246,6 @@ int main(int argc, char *argv[])
   if(restart || initialize) read_init();
   if(restart && dynamic < 0) dynamic=1;
   if(!restart) Problem->Initialize();
-  save_parameters(); // Save once more in case parameters have changed
   
   open_output(gparam,dirsep,"param",0);
   Vocabulary->GraphicsDump(gparam);
@@ -356,7 +355,7 @@ void dump(double t, int it, int final, double tmax)
   }
 }
 
-void save_parameters() {
+void SaveParameters() {
   fdump.open(ptemp);
   fdump.precision(REAL_DIG);
   Vocabulary->Dump(fdump);

@@ -117,8 +117,8 @@ void lock();
 void unlock();
 void testlock();
 void dump(double t, int it, int final, double tmax);
-void save_parameters();
-
+void SaveParameters();
+  
 #include "Param.h"
 
 #endif
