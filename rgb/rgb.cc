@@ -293,8 +293,8 @@ void options()
 	cerr << "Options: " << endl;
 	cerr << "-b\t\t single-byte (unsigned char instead of float) input"
 		 << endl;
-	cerr << "-d\t\t display single frame with xv"
-		 << " (to obtain cropping parameters)" << endl;
+	cerr << "-d\t\t double spectral palettes and apply intensity gradient" 
+		 << endl; 
 	cerr << "-f\t\t use a floating scale for each frame" << endl;
 	cerr << "-g\t\t produce grey-scale output" << endl;
 	cerr << "-h\t\t help" << endl;
@@ -329,7 +329,8 @@ void options()
 	cerr << "-nobar\t\t inhibit palette bar" << endl;
 	cerr << "-extract format\t extract individual images as tiff, gif, etc." 
 		 << endl;
-	cerr << "-crop geometry\t crop to specified geometry" << endl;
+	cerr << "-crop geometry\t crop to specified X geometry"
+		 << " (specify 0 to invoke xv)" << endl;
 	cerr << "-rescale\t rescale palette to cropped region" << endl; 
 	cerr << "-xrange x1,x2\t limit x-range to [x1,x2]" << endl; 
 	cerr << "-yrange y1,y2\t limit y-range to [y1,y2]" << endl; 
@@ -337,10 +338,9 @@ void options()
 	cerr << "-reverse\t reverse palette direction" << endl;
 	cerr << "-ncolors n\t maximum number of colors to generate (default 65536)"
 		 << endl; 
+	cerr << "-display\t display single frame with xv" << endl;
 	cerr << "-background n\t background color" << endl; 
 	cerr << "-gradient\t apply intensity gradient to spectral palettes" 
-		 << endl; 
-	cerr << "-double\t\t double spectral palette and apply intensity gradient" 
 		 << endl; 
 	cerr << "-damp\t\t apply color intensity damping" << endl; 
 	cerr << endl;
@@ -423,7 +423,7 @@ int main(int argc, char *const argv[])
                {"reverse", 0, &reverse, 1},
                {"symmetric", 0, &symmetric, 1},
                {"rescale", 0, &rescale, 1},
-               {"double", 0, &two, 1},
+               {"display", 0, &display, 1},
                {"gradient", 0, &gradient, 1},
                {"damp", 0, &damp, 1},
                {"nobar", 0, &nobar, 1},
@@ -461,12 +461,15 @@ int main(int argc, char *const argv[])
 #ifdef __GNUC__	
 	optind=0;
 #endif	
+	int croparg=-1;
 	errno=0;
 	while (1) {
 		int c = getopt_long_only(argc,argv,
 								 "bdfghbilmprvFo:x:H:V:B:E:L:O:U:S:X:Y:Z:",
 								 long_options,&option_index);
 		if (c == -1) break;
+		int nargs;
+		
 		switch (c) {
 		case 0:
 			break;
@@ -474,7 +477,7 @@ int main(int argc, char *const argv[])
 			byte=1;
 			break;
  		case 'd':
-			display=1;
+			two=1;
 			break;
 		case 'f':
 			floating_scale=1;
@@ -573,11 +576,16 @@ int main(int argc, char *const argv[])
 				msg(ERROR,"Invalid color rate: %s",optarg);
 			break;
 		case CROP:
-			crop=1;
-			if(sscanf(optarg,"%dx%d+%d+%d",&istop,&jstop,&istart,&jstart) != 4)
-				msg(ERROR,"Invalid geometry: %s",optarg);
-			istop += istart;
-			jstop += jstart;
+			nargs=sscanf(optarg,"%dx%d+%d+%d",&croparg,&jstop,&istart,&jstart);
+			if(nargs == 1 && croparg == 0) {
+				display=1;
+			} else {
+				if(nargs != 4) msg(ERROR,"Invalid geometry: %s",optarg);
+				crop=1;
+				istop=croparg+istart;
+				jstop += jstart;
+				croparg=-1;
+			}
 			break;
 		case XRANGE:
 			if(sscanf(optarg,"%d,%d",&xstart,&xstop) != 2)
@@ -666,6 +674,11 @@ int main(int argc, char *const argv[])
 			 << " -h' for a descriptions of options." << endl;
 		exit(1);
 	}
+	
+	if(croparg == 0) {
+		mx=my=1;
+		lower=upper=0;
+	}	
 	
 	option << ends;
 	convertprog=(nfiles > 1 || label) ? "montage" : "convert";
@@ -827,7 +840,7 @@ int main(int argc, char *const argv[])
 		
 		if(begin < 0) begin += nset;
 		if(end < 0) end += nset;
-		if(display) {end=begin; mx=my=1;}
+		if(display) end=begin;
 		
 		n=0;
 		int rc;
