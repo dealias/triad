@@ -37,9 +37,14 @@ extern char beep;
 inline ostream& newl(ostream& s) {s << '\n'; return s;}
 inline oxstream& newl(oxstream& s) {return s;}
 
+inline Real sgn1(const Real x)
+{
+	return x >= 0.0 ? 1.0 : -1.0;
+}
+
 inline int isgn(const Real x)
 {
-	return ((x) == 0.0 ? 0 : ((x) > 0.0 ? 1 : -1));
+	return x == 0.0 ? 0 : (x > 0.0 ? 1 : -1);
 }
 
 // x mod n in [0,n) where n > 0 (implementation-independent definition)
