@@ -36,6 +36,7 @@ int main(int argc, char *const argv[])
 	int c;
 	int label=0;
 	int make_mpeg=0;
+	int syntax=0;
 	extern int optind;
 	extern char *optarg;
 	
@@ -43,9 +44,19 @@ int main(int argc, char *const argv[])
 	optind=0;
 #endif	
 	while (1) {
-		c = getopt(argc,argv,"lmvx:H:V:");
+		c = getopt(argc,argv,"hlmvx:H:V:");
 		if (c == -1) break;
 		switch (c) {
+		case 'h':
+			cerr << "Options: " << endl;
+			cerr << "-h\t\t help" << endl;
+			cerr << "-l\t\t label frames with file names and values" << endl;
+			cerr << "-m\t\t generate .mpg mpeg file" << endl;
+			cerr << "-v\t\t verbose output" << endl;
+			cerr << "-x <mag>\t overall magnifcation factor" << endl;
+			cerr << "-H <hmag>\t horizontal magnifcation factor" << endl;
+			cerr << "-V <vmag>\t vertical magnifcation factor" << endl;
+			exit(0);
 		case 'l':
 			label=1;
 			break;
@@ -65,15 +76,19 @@ int main(int argc, char *const argv[])
 			my=atoi(optarg);
 			break;
 		default:
-			cerr << "Usage: " << argv[0]
-				 << "[-lmv -x <mag> -H <hmag> -V <vmag>] file1 file2 ..." 
-				 << endl;
-			exit(1);
+			syntax=1;
 		}
 	}
 	
+	errno=0;
 	int nfiles=argc-optind;
-	if(nfiles < 1) msg(ERROR,"File name required");
+	if(syntax || nfiles < 1) {
+		cerr << "Usage: " << argv[0]
+			 << "[-hlmv -x <mag> -H <hmag> -V <vmag>] file1 file2 ..." << endl
+			 << endl << "Use '" << argv[0]
+			 << " -h' for a descriptions of options." << endl;
+		exit(1);
+	}
 	if(nfiles > 1) label=1;
 	char *const *argf=argv+optind;
 		

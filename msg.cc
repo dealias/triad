@@ -65,4 +65,3 @@ void msg(int fatal, char *file, int line, char *format,...)
 	}
 	cout << flush;
 }
-
