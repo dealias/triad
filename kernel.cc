@@ -299,8 +299,7 @@ void read_init()
 	
   ixstream finit(rname);
   if(finit) {
-    cout << newl << "READING " << upcase(type) << " DATA FROM FILE "
-	 << rname 
+    cout << newl << "READING " << upcase(type) << " DATA FROM FILE " << rname;
     if(!oldversion) finit >> init_version >> nout0;
     if(init_version > 1) {
       finit >> restart_problem_version;
