@@ -15,7 +15,9 @@ extern int damp;
 static int k,incr;
 
 int ColorByte(double r) {
-	return (int)(255.0*r+0.5);
+	a=(int)(255.0*r+0.5);
+	if(a < 0 || a > 255) msg(ERROR,"Invalid color: %d",a);
+	return a;
 }
 
 void AddColor(double r, double g, double b) {
@@ -129,14 +131,17 @@ void MakePalette(int palette)
 		return;
 		
 	case BLUE: 
-		for(i=0; i <= n; i++) AddColor(i*ninv,i*ninv,1.0);
+		for(i=0; i <= n; i++) AddColor(0.0,0.0,(n-i)*ninv);
 		return;
+		
+	case GENERAL:
+		for(i=0; i <= n; i++) AddColor(r1+r2*i*ninv,g1+g2*i*ninv,b1+b2*i*ninv);
 		
 	case YELLOW: 
 		for(i=0; i <= n; i++) AddColor((n-i)*ninv,(n-i)*ninv,0.0);
 		return;
 
-	case CYAN: 
+	case CYAN:
 		for(i=0; i <= n; i++) AddColor(0.0,(n-i)*ninv,(n-i)*ninv);
 		return;
 		

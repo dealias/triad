@@ -2,7 +2,7 @@
 
 enum Palette {RAINBOW,BRAINBOW,WRAINBOW,BWRAINBOW,WHEEL,RGREYB,
 			  RED,GREEN,BLUE,YELLOW,CYAN,MAGENTA,REDBLUE,REDGREEN,GREENBLUE,
-			  NPalette};
+			  GENERAL,NPalette};
 
 enum AllColors {BLACK,WHITE,FirstColor};
 extern int NColors;

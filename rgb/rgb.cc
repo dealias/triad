@@ -538,6 +538,14 @@ int main(int argc, char *const argv[])
 		case BACKGROUND:
 			background=atoi(optarg);
 			break;
+		case CONST:
+			palette=GENERAL;
+			if(sscanf(optarg,"%d,%d,%d",&r1,&g1,&b1)
+			   != 3) msg(ERROR,"Invalid color constant: %s",optarg);
+		case RATE:
+			palette=GENERAL;
+			if(sscanf(optarg,"%d,%d,%d",&r2,&g2,&b2)
+			   != 3) msg(ERROR,"Invalid color rate: %s",optarg);
 		case CROP:
 			crop=1;
 			if(sscanf(optarg,"%dx%d+%d+%d",&istop,&jstop,&istart,&jstart)
