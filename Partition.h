@@ -50,7 +50,7 @@ public:
 	Real Y() {return cen.Y();}
 	
 	int InBin(const D& m) {return InInterval(m,min,max);}
-	void Count(const D& m) {if(InBin(m)) mode.Set(nmode++,m);}
+	void Count(const D& m) {if(InBin(m)) mode[nmode++]=m;}
 	void MakeModes();
 };
 
@@ -318,7 +318,7 @@ void Partition<T,D>::ComputeTriads() {
 	triad.Resize(Nmode*n);
 	for(k=0; k < Nmode; k++) {
 		norm=Area(k);
-		if(norm != 0.0); norm=1.0/norm;
+		if(norm != 0.0) norm=1.0/norm;
 		pq=pqbuffer;
 		for(p=0; p < n; p++) {
 			for(q=max(NmodeR,p); q < n; q++, pq++) {

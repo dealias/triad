@@ -20,10 +20,6 @@ public:
 		if (i >= sz) v=new(v,sz=max(i+1,2*sz)) (T);
 		return v[i];
 	}
-	T Set (int i, T m) {
-		if (i >= sz) v=new(v,sz=max(i+1,2*sz)) (T);
-		return v[i]=m;
-	}
 	
 	void Resize(int i) {v=new(v,sz=i) (T);}
 
