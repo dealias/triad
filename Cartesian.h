@@ -87,8 +87,8 @@ inline int Basis<Cartesian>::InGrid(Cartesian& m)
 }
 
 #if _CRAY || 1
-void CartesianPad(Var * restrict to, Var *from);
-void CartesianUnPad(Var * restrict to, Var *from);
+void CartesianPad(Var *to, Var *from);
+void CartesianUnPad(Var *to, Var *from);
 #else
 inline void CartesianPad(Var *to, const Var *from)
 {
