@@ -276,7 +276,7 @@ extern "C" void putenv(const char *);
 void usage(char *program)
 {
 	cerr << PROGRAM << " version " << VERSION
-		 << " [(C) John C. Bowman <bowman@math.ualberta.ca> 1998]" << endl
+		 << " [(C) John C. Bowman <bowman@math.ualberta.ca> 1999]" << endl
 		 << "Usage: " << program << " [options] file1 [file2 ...]"
 		 << endl;
 }
