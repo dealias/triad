@@ -103,6 +103,10 @@ public:
     return v[i];
   }
 	
+  T& operator [] (int i) {
+    return (*this)[(unsigned int) i];
+  }
+	
   T *operator + (unsigned int i) {return v+i;}
   T *operator + (int i) {return v+i;}
   T *operator () () const {return v;}
@@ -173,6 +177,10 @@ public:
   T& operator [] (unsigned int i) {
     if (i >= size) DynVectorExit("Attempt to access past end of StackVector");
     return v[i];
+  }
+	
+  T& operator [] (int i) {
+    return (*this)[(unsigned int) i];
   }
 	
   StackVector<T>& operator = (T a) {Load(a); return *this;}
