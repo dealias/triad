@@ -251,8 +251,8 @@ inline void Mult(const array2<T>& A, const array2<U>& B, const array2<V>& C)
     }
     B.Purge();
   } else {
-    static typename array1<T>::opt work(cny);
-    static unsigned int worksize=cny;
+    static typename array1<T>::opt work;
+    static unsigned int worksize=0;
     if(cny > worksize) {Reallocate(work,cny); worksize=cny;}
 		
     for(unsigned int i=0; i < bnx; i++) {
@@ -276,8 +276,8 @@ inline void Mult(const array1<T>& A, const array1<U>& B, const array2<V>& C)
 {
   unsigned int n=C.Size();
   
-  static typename array1<V>::opt temp(n);
-  static unsigned int tempsize=n;
+  static typename array1<V>::opt temp;
+  static unsigned int tempsize=0;
   if(n > tempsize) {Reallocate(temp,n); tempsize=n;}
   
   unsigned int bny=B.Nx();
@@ -300,8 +300,8 @@ inline void Mult(const array1<T>& A, const array1<U>& B, const array2<V>& C)
     }
     B.Purge();
   } else {
-    static typename array1<T>::opt work(cny);
-    static unsigned int worksize=cny;
+    static typename array1<T>::opt work;
+    static unsigned int worksize=0;
     if(cny > worksize) {Reallocate(work,cny); worksize=cny;}
     
     unsigned int k;
@@ -323,8 +323,8 @@ inline void MultAdd(const array1<T>& A, const array1<U>& B, const array2<V>& C,
 {
   unsigned int n=C.Size();
   
-  static typename array1<V>::opt temp(n);
-  static unsigned int tempsize=n;
+  static typename array1<V>::opt temp;
+  static unsigned int tempsize=0;
   if(n > tempsize) {Reallocate(temp,n); tempsize=n;}
   
   unsigned int bny=B.Nx();
@@ -347,8 +347,8 @@ inline void MultAdd(const array1<T>& A, const array1<U>& B, const array2<V>& C,
     }
     B.Purge();
   } else {
-    static typename array1<T>::opt work(cny);
-    static unsigned int worksize=cny;
+    static typename array1<T>::opt work;
+    static unsigned int worksize=0;
     if(cny > worksize) {Reallocate(work,cny); worksize=cny;}
 		
     unsigned int k;
@@ -411,8 +411,8 @@ inline void MultAdd(const array2<T>& A, const array2<U>& B, const array2<V>& C,
   assert(bny == C.Nx());
   unsigned int n=C.Size();
   
-  static typename array1<V>::opt temp(n);
-  static unsigned int tempsize=n;
+  static typename array1<V>::opt temp;
+  static unsigned int tempsize=0;
   if(n > tempsize) {Reallocate(temp,n); tempsize=n;}
 	
   unsigned int cny=C.Ny();
@@ -441,8 +441,8 @@ inline void MultAdd(const array2<T>& A, const array2<U>& B, const array2<V>& C,
     }
     B.Purge();
   } else {
-    static typename array1<T>::opt work(cny);
-    static unsigned int worksize=cny;
+    static typename array1<T>::opt work;
+    static unsigned int worksize=0;
     if(cny > worksize) {Reallocate(work,cny); worksize=cny;}
 		
     for(unsigned int i=0; i < bnx; i++) {
@@ -555,10 +555,10 @@ void GaussJordan(const array2<T>& a, const array2<T>& b)
   unsigned int m=b.Ny();
   assert(&a != &b && n == a.Ny() && n == b.Nx());
 	
-  static typename array1<int>::opt indx_c(n);
-  static typename array1<int>::opt indx_r(n);
-  static typename array1<int>::opt pivot(n);
-  static unsigned int tempsize=n;
+  static typename array1<int>::opt indx_c;
+  static typename array1<int>::opt indx_r;
+  static typename array1<int>::opt pivot;
+  static unsigned int tempsize=0;
   if(n > tempsize) {
     Reallocate(indx_c,n);
     Reallocate(indx_r,n);
@@ -655,8 +655,8 @@ inline void Divide(const array2<T>& A, const array2<T>& C, const array2<T>& B)
 	
   unsigned int n=C.Size();
   
-  static typename array1<T>::opt temp(n);
-  static unsigned int tempsize=n;
+  static typename array1<T>::opt temp;
+  static unsigned int tempsize=0;
   if(n > tempsize) {Reallocate(temp,n); tempsize=n;}
 	
   array2<T> D(C.Nx(),C.Ny(),temp);
@@ -676,8 +676,8 @@ inline void Divide(const array1<T>& A, const array2<T>& C, const array1<T>& B)
 	
   unsigned int n=C.Size();
   
-  static typename array1<T>::opt temp(n);
-  static unsigned int tempsize=n;
+  static typename array1<T>::opt temp;
+  static unsigned int tempsize=0;
   if(n > tempsize) {Reallocate(temp,n); tempsize=n;}
 	
   array2<T> D(C.Nx(),C.Ny(),temp);
@@ -948,10 +948,10 @@ inline void Exp(array2<T>& B, const array2<U>& A)
   }
   q--;
 	
-  static typename array1<T>::opt Dtemp(n2);
-  static typename array1<T>::opt Ntemp(n2);
-  static typename array1<T>::opt Xtemp(n2);
-  static unsigned int tempsize=n2;
+  static typename array1<T>::opt Dtemp;
+  static typename array1<T>::opt Ntemp;
+  static typename array1<T>::opt Xtemp;
+  static unsigned int tempsize=0;
   if(n2 > tempsize) {
     Reallocate(Dtemp,n2);
     Reallocate(Ntemp,n2);

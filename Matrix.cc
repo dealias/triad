@@ -2,6 +2,11 @@
 
 using namespace Array;
 
+inline double abs2(double x)
+{
+  return x*x;
+}
+
 int main()
 {
   array2<double> A(3,3);
