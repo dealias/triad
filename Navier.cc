@@ -1,11 +1,11 @@
+#include <sys/stat.h>
+
 #include "options.h"
 #include "NWave.h"
 #include "Polar.h"
 #include "PolarBin.h"
 #include "Cartesian.h"
 #include "fft.h"
-
-#include <sys/stat.h>
 
 LinearityBase *Linearity;
 

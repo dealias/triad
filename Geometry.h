@@ -4,7 +4,7 @@
 #include "Mode.h"
 
 #if _CFRONT
-#include "options.h" // Work around CRAY template instantiation problem
+#include "options.h" // Work around Cfront template instantiation problem
 #endif
 #include "kernel.h"
 

@@ -5,18 +5,20 @@ POLL = poll
 
 include $(TRI)/config/Common
 
-triad:
-
 INCL = 
 
 POLAR = Polar PolarAverage simpfast
-NWAVE = NWave Geometry Cartesian $(FFT) rfft $(CORE) $(UTILS)
-NAVIER = Navier $(NWAVE) $(POLAR)
-THREEWAVE = ThreeWave $(NWAVE)
+RFFT = rfft $(FFT) $(CORE) $(UTILS)
+NAVIER = Navier NWave Geometry $(POLAR) Cartesian $(RFFT)
+THREEWAVE = ThreeWave NWave Geometry $(POLAR) Cartesian $(RFFT)
+BURGER = Burger Geometry Cartesian1 $(RFFT)
 POLARAVG = PolarAverageTest PolarAverage simpfast
 TRIAD = $(NAVIER) $(THREEWAVE) $(POLARAVG)
 
-triad: $(NAVIER:=.o)
+burger: $(BURGER:=.o)
+	$(C++) $(OPT) -o triad $(BURGER:=.o) $(LIB) 
+
+nw: $(NAVIER:=.o)
 	$(C++) $(OPT) -o triad $(NAVIER:=.o) $(LIB) 
 
 w3:	$(THREEWAVE:=.o)

@@ -13,9 +13,7 @@
 #include <malloc.h>
 #include <sys/utsname.h>
 
-#include "arch/unix.h"
-
-#if _CRAYMVP
+#if _CRAY && !_CRAYMPP
 #include <sys/types.h>
 #include <sys/jtab.h>
 #endif
@@ -25,7 +23,7 @@ static const double init_time=time(NULL);
 
 void cputime(double *cpu)
 {
-#if _CRAYMVP
+#if _CRAY && !_CRAYMPP
 	struct jtab jbuf;
 	getjtab(&jbuf);
 	
