@@ -28,11 +28,9 @@ const Array2<T> exp(const Array2<T>& A)
 {
 //	double tolmax=1e-7;
 //	double tolmin=9e-8;
-	double tolmax=1e-8;
-	double tolmin=9e-9;
-	
-//	double tolmax=1e-4;
-//	double tolmin=9e-5;
+	double tolmax=1e-9;
+	double tolmin=9e-10;
+
 	MatExp MatExpProblem(A);
 
 	MatExpProblem.InitialConditions();
@@ -53,7 +51,7 @@ const Array2<T> exp(const Array2<T>& A)
 		y[j]=1.0;
 		for(unsigned int i=j+1; i < n; i++) y[i]=0.0;
 		
-		Real dt=1.0e-10;
+		Real dt=1.0e-12;
 		Real t=0.0;
 		int iteration=0;
 		Int.Integrate(MatExpProblem,y,t,1.0,dt,-1.0,iteration);
