@@ -65,14 +65,16 @@ class Hash {
 	T first, last;
 	int *table;
 public:
-	virtual inline int hash(T value) {return (n-1)*(value-first)/(last-first);}
+	virtual inline int hash(T value) {
+		return (int) ((n-1)*((double)(value-first)/(last-first)));
+	}
 	
 	Hash(int n0, T value(int)) {
 		n=n0; first=value(0); last=value(n-1);
 		table=new int[n+1];
 		int j=0;
 		for(int i=0; i < n; i++) {
-			while (hash(value(j)) < i) j++;
+			while (j < n && hash(value(j)) < i) j++;
 			if(j >= n) msg(ERROR,"Hash table index is out of bounds");
 			table[i]=j;
 		}
@@ -87,10 +89,10 @@ public:
 	}
 };
 	
-extern DynVector<Weight> *weight_ptr;
-inline Index_t HashValue(int j)
+extern Weight *weightBase;
+inline Index_t HashWeightIndex(int j)
 {
-	return (*weight_ptr)[j].Index();
+	return weightBase[j].Index();
 }
 
 template<class T>
@@ -285,6 +287,7 @@ void Partition<T>::ComputeTriads() {
 		if(!fout.good()) msg(ERROR,"Error writing to weight file %s",filename);
 	}
 	
+	errno=0;
 	int npq=reality ? Nmode*(3*Nmode+1)/2 : pq(n,n);
 	pqbuffer=new Var[npq];
 	pqIndex=new Var*[n];
@@ -299,9 +302,9 @@ void Partition<T>::ComputeTriads() {
 			if(n > m) pq += n-m;
 	}
 	
-	weight_ptr=&weight;
+	weightBase=weight.Base();
 
-	hash=new Hash<Index_t>(Nweight,HashValue);
+	hash=new Hash<Index_t>(Nweight,HashWeightIndex);
 	cout << endl << "HASH TABLE CONSTRUCTED." << endl;
 
 	triad.Resize(Nmode*n);
@@ -320,6 +323,8 @@ void Partition<T>::ComputeTriads() {
 		ntriad[k]=Ntriad;
 	}
 	triad.Resize(Ntriad);
+	
+	delete hash;
 	
 	triadLimits[0].start=triad.Base();
 	for(k=0; k < Nmode-1; k++) {
