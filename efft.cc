@@ -4,15 +4,15 @@ extern "C" void dcft(const int& init,
 					 Complex *x, const int& inc1x, const int& inc2x,
 					 Complex *y, const int& inc1y, const int& inc2y,
 					 const int& n, const int& m, const int& isign,
-					 const double& scale, double *aux1, const int& naux1,
-					 double *aux2, const int& naux2); 
+					 const double& scale, double *aux1, const int& naux,
+					 double *aux2, const int& naux); 
 
 static int zero=0, one=1;
 static double scale=1.0;
 
 void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		  unsigned int inc1, unsigned int inc2, int) {
-	static int naux1,naux2,nlast=0, nklast=0, inc1last=0, inc2last=0;	
+	static int naux,nlast=0, nklast=0, inc1last=0, inc2last=0;	
 	static double *aux1,*aux2;
 	unsigned int n=1 << log2n;
 	isign = -isign;
@@ -26,12 +26,12 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		else naux=20000+2.28*n;
 		if(inc2 == 1 || n >= 252) naux += (2*n+256)*min(64,nk);
 	
-		aux1=new(aux1,naux1) Real;
-		aux2=new(aux2,naux2) Real;
+		aux1=new(aux1,naux) Real;
+		aux2=new(aux2,naux) Real;
 		dcft(one,data,inc1,inc2,data,inc1,inc2,n,nk,isign,scale,
-			 aux1,naux1,aux2,naux2);
+			 aux1,naux,aux2,naux);
 	}
 	dcft(zero,data,inc1,inc2,data,inc1,inc2,n,nk,isign,scale,
-		 aux1,naux1,aux2,naux2);
+		 aux1,naux,aux2,naux);
 }
 
