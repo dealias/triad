@@ -9,7 +9,7 @@
 #include "DynVector.h"
 #include "rgb.h"
 
-static float *vminf, *vmaxf;
+static double *vminf, *vmaxf;
 static char *rgbdir;
 static strstream rgbdirbuf;
 static int xsize,ysize;
@@ -41,9 +41,9 @@ inline float get_value(ixstream& fin)
 
 template<class T>
 int readframe(T& fin, int nx, int ny, int nz, float **value,
-			  float& vmin, float& vmax)
+			  double& vmin, double& vmax)
 {
-	vmin=FLT_MAX, vmax=-FLT_MAX;
+	vmin=DBL_MAX, vmax=-DBL_MAX;
 	int nxy=nx*ny;
 	for(int k=0; k < nz; k++) {
 		float *valuek=value[k];
@@ -105,7 +105,7 @@ int main(int argc, char *const argv[])
 {
 	int nx=1,ny=1,nz=1;
 	int nset=0, mx=1, my=1;
-	int c;
+	int n,nmax=INT_MAX;
 	int gray=0;
 	int label=0;
 	int make_mpeg=0;
@@ -117,7 +117,7 @@ int main(int argc, char *const argv[])
 	optind=0;
 #endif	
 	while (1) {
-		c = getopt(argc,argv,"bfghlmvzx:H:V:X:Y:Z:");
+		char c = getopt(argc,argv,"bfghlmvzx:H:V:N:X:Y:Z:");
 		if (c == -1) break;
 		switch (c) {
 		case 'b':
@@ -142,12 +142,13 @@ int main(int argc, char *const argv[])
 			cerr << "-v\t\t verbose output" << endl;
 			cerr << "-z\t\t make color palette symmetric about zero" <<
 				" (if possible)" << endl;
-			cerr << "-x <mag>\t overall magnification factor" << endl;
-			cerr << "-H <hmag>\t horizontal magnification factor" << endl;
-			cerr << "-V <vmag>\t vertical magnification factor" << endl;
-			cerr << "-X <xsize>\t explicit horizontal size" << endl;
-			cerr << "-Y <ysize>\t explicit vertical size" << endl;
-			cerr << "-Z <zsize>\t explicit number of cross-sections/frame"
+			cerr << "-x mag\t overall magnification factor" << endl;
+			cerr << "-H hmag\t horizontal magnification factor" << endl;
+			cerr << "-V vmag\t vertical magnification factor" << endl;
+			cerr << "-N nmax\t maximum number of frames to process" << endl;
+			cerr << "-X xsize\t explicit horizontal size" << endl;
+			cerr << "-Y ysize\t explicit vertical size" << endl;
+			cerr << "-Z zsize\t explicit number of cross-sections/frame"
 				 << endl;
 			exit(0);
 		case 'l':
@@ -170,6 +171,9 @@ int main(int argc, char *const argv[])
 			break;
 		case 'V':
 			my=atoi(optarg);
+			break;
+		case 'N':
+			nmax=atoi(optarg);
 			break;
 		case 'X':
 			nx=atoi(optarg);
@@ -200,8 +204,8 @@ int main(int argc, char *const argv[])
 	char *const *argf=argv+optind;
 		
 	if(!floating_scale) {
-		vminf=new float[nfiles];
-		vmaxf=new float[nfiles];
+		vminf=new double[nfiles];
+		vmaxf=new double[nfiles];
 	}
 	
 	rgbdir=getenv("RGB_DIR");
@@ -228,22 +232,24 @@ int main(int argc, char *const argv[])
 		ysize=my*ny*nz+msep*nz+mpal;
 		
 		float **value=new float* [nz];
-		float gmin=FLT_MAX, gmax=-FLT_MAX; // Global min and max
+		double gmin=DBL_MAX, gmax=-DBL_MAX; // Global min and max
 		for(int k=0; k < nz; k++) value[k]=new float[nx*ny];
 		
 		cleanup(fieldname,gray ? "*.gray" : "*.rgb");
 		cleanup(fieldname,".*.*");
 		
 		if(!floating_scale)	{
+			n=0;
 			int rc;
 			do {
-				float vmin,vmax;
+				double vmin,vmax;
 				rc=byte ? readframe(fin,nx,ny,nz,value,vmin,vmax) :
 					readframe(xin,nx,ny,nz,value,vmin,vmax);
 				if(rc == EOF) break;
 				if(vmin < gmin) gmin=vmin;
 				if(vmax > gmax) gmax=vmax;
-			} while (rc == 0);
+				n++;
+			} while (rc == 0 && n < nmax);
 			
 			if(zero && gmin < 0 && gmax > 0) {
 				gmax=max(-gmin,gmax);
@@ -256,9 +262,10 @@ int main(int argc, char *const argv[])
 		if(byte) {fin.close(); openfield(fin,fieldname,nx,ny,nz);}
 		else {xin.close(); openfield(xin,fieldname,nx,ny,nz);}
 		
-		int rc, n=0;
+		n=0;
+		int rc;
 		do {
-			float vmin,vmax;
+			double vmin,vmax;
 			rc=byte ? readframe(fin,nx,ny,nz,value,vmin,vmax) :
 				readframe(xin,nx,ny,nz,value,vmin,vmax);
 			if(rc == EOF) break;
@@ -309,13 +316,13 @@ int main(int argc, char *const argv[])
 			fout.close();
 			if(!fout) msg(ERROR,"Cannot write to output file %s",oname);
 			n++;
-		} while (rc == 0);
+		} while (rc == 0 && n < nmax);
 		nset=nset ? min(nset,n) : n;
 	}
 	
 	if(label || make_mpeg) { 
 		if(make_mpeg) montage(nfiles,argf,0,format,"miff");
-		for(int n=0; n < nset; n++) 
+		for(n=0; n < nset; n++) 
 			montage(nfiles,argf,n,format,make_mpeg ? "yuv3" : "miff");
 		identify(nfiles,argf,0,"miff",xsize,ysize);
 		
