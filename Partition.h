@@ -83,11 +83,13 @@ INLINE ostream& operator << (ostream& os, const Bin<T,D>& y) {
 	return os;
 }
 
+typedef unsigned short int Index_t;
+
 class WeightIndex {
-	unsigned short int k,p,q;
+	Index_t k,p,q;
 public:
 	WeightIndex() {}
-	WeightIndex(int k0, int p0, int q0) : k(k0), p(p0), q(q0) {}
+	WeightIndex(Index_t k0, Index_t p0, Index_t q0) : k(k0), p(p0), q(q0) {}
 	inline operator double();
 	friend inline int operator > (const WeightIndex& a, const WeightIndex& b);
 	friend inline int operator < (const WeightIndex& a, const WeightIndex& b);
@@ -246,7 +248,8 @@ int out_weights(oxstream& fout, Weight* w, int lastindex, int n);
 template<class T, class D>
 INLINE void Partition<T,D>::GenerateWeights() {
 	Mc binaverage;
-	int k,p,q,first;
+	Index_t k,p,q;
+	int first;
 	int lastindex=0;
 	WeightIndex kpq,previous,lastkpq=WeightIndex(0,0,0);
 	double realtime,lasttime=time(NULL);
@@ -268,6 +271,7 @@ INLINE void Partition<T,D>::GenerateWeights() {
 	}
 	
 	cout << newl << "GENERATING WEIGHT FACTORS." << endl;
+	if(n > USHRT_MAX) msg(ERROR, "Too many bins.");	
 	
 	for(k=0; k < Nmode; k++) {	// Loop for k < p < q
 		for(p=k+1; p < Nmode; p++) {
@@ -388,6 +392,7 @@ INLINE void Partition<T,D>::Initialize() {
 	for(p=0; p < n; p++) qStart[p]=max(p,NmodeR);
 	
 	triad.Resize(Nmode*n);
+
 	for(k=0; k < Nmode; k++) {
 		norm=Area(k);
 		if(norm != 0.0) norm=1.0/norm;
