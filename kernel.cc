@@ -1,6 +1,6 @@
+#include "xstream.h"
 #include "options.h"
 #include "kernel.h"
-#include "xstream.h"
 
 #include <iomanip.h>
 

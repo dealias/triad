@@ -329,5 +329,18 @@ void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
 void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
 			   int log2n);
 
+
+inline ixstream& operator >> (ixstream& s, Complex& y)
+{
+	s >> y.re >> y.im;
+	return s;
+}
+
+inline oxstream& operator << (oxstream& s, const Complex& y)
+{
+	s << y.re << y.im;
+	return s;
+}
+
 #endif
 

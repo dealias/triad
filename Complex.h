@@ -20,11 +20,11 @@
 
 #define __ATT_complex__
 
+#include "xstream.h"
 #include <iostream.h>
 #include <math.h>
 
 #include "precision.h"
-#include "xstream.h"
 
 class Complex
 {

@@ -1,3 +1,4 @@
+#include "xstream.h"
 #include "options.h"
 #include "NWave.h"
 #include "Polar.h"

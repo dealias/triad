@@ -1,18 +1,12 @@
 #ifndef __xstream_h__
 #define __xstream_h__ 1
 
+#define _ALL_SOURCE 1
+#include <rpc/rpc.h>
+#undef _ALL_SOURCE
+
 #include <stdio.h>
 #include <iostream.h>
-
-/* typedefs for BSD unsigned things */
-typedef	unsigned char	u_char;
-typedef	unsigned short	u_short;
-typedef	unsigned int	u_int;
-typedef	unsigned long	u_long;
-typedef	char *caddr_t;	/* "core" (i.e. memory) address */
-#define	NBBY	8		/* number of bits in a byte */
-
-#include <rpc/rpc.h>
 
 class xios {
 public:
@@ -65,16 +59,18 @@ public:
 	typedef ixstream& (*imanip)(ixstream&);
     ixstream& operator << (imanip func) { return (*func)(*this); }
 	
-	IXSTREAM(int,int)
-	IXSTREAM(unsigned int,u_int)
-	IXSTREAM(long,long)
-	IXSTREAM(unsigned long,u_long)
-	IXSTREAM(short,short)
-	IXSTREAM(unsigned short,u_short)
-	IXSTREAM(char,char)
-	IXSTREAM(unsigned char,u_char)
-	IXSTREAM(float,float)
-	IXSTREAM(double,double)
+	IXSTREAM(int,int);
+	IXSTREAM(unsigned int,u_int);
+	IXSTREAM(long,long);
+	IXSTREAM(unsigned long,u_long);
+	IXSTREAM(short,short);
+	IXSTREAM(unsigned short,u_short);
+	IXSTREAM(char,char);
+#ifndef _CRAY		
+	IXSTREAM(unsigned char,u_char);
+#endif		
+	IXSTREAM(float,float);
+	IXSTREAM(double,double);
 };
 
 class oxstream : public xstream {
@@ -93,19 +89,21 @@ public:
 	typedef oxstream& (*omanip)(oxstream&);
     oxstream& operator << (omanip func) { return (*func)(*this); }
 	
-	OXSTREAM(int,int)
-	OXSTREAM(unsigned int,u_int)
-	OXSTREAM(long,long)
-	OXSTREAM(unsigned long,u_long)
-	OXSTREAM(short,short)
-	OXSTREAM(unsigned short,u_short)
-	OXSTREAM(char,char)
-	OXSTREAM(unsigned char,u_char)
-	OXSTREAM(float,float)
-	OXSTREAM(double,double)
+	OXSTREAM(int,int);
+	OXSTREAM(unsigned int,u_int);
+	OXSTREAM(long,long);
+	OXSTREAM(unsigned long,u_long);
+	OXSTREAM(short,short);
+	OXSTREAM(unsigned short,u_short);
+	OXSTREAM(char,char);
+#ifndef _CRAY		
+	OXSTREAM(unsigned char,u_char);
+#endif		
+	OXSTREAM(float,float);
+	OXSTREAM(double,double);
 };
 
 inline oxstream& endl(oxstream& s) {return s;}
-inline oxstream& flush(oxstream& s) {return s; s.flush();}
+inline oxstream& flush(oxstream& s) {s.flush(); return s;}
 
 #endif
