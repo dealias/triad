@@ -238,7 +238,7 @@ void identify(int argc, char *const argf[], int n, char *const type,
 void mpeg(int argc, char *const argf[], int n, char *const type,
 		  int xsize, int ysize);
 void animate(int argc, char *const argf[], int n, char *const type,
-			 char *pattern, int xsize, int ysize);
+			 const char *pattern, int xsize, int ysize);
 	
 #ifdef __i386__
 extern "C" void putenv(const char *);
@@ -851,8 +851,8 @@ void mpeg(int, char *const argf[], int n, char *const type,
 	system(cmd);
 }
 
-void animate(int, char *const argf[], int n, char *const type, char *pattern
-			 int xsize, int ysize)
+void animate(int, char *const argf[], int n, char *const type, 
+			 const char *pattern, int xsize, int ysize)
 {
 	strstream buf;
 	buf << "animate -scene 0-" << n << " -size " << xsize << "x" << ysize
