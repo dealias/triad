@@ -47,7 +47,7 @@ static int total_invert_cnt=0;
 
 static char *pname,*rname,*ptemp,*rtemp,*lname;
 static ifstream fparam,fin;
-static ofstream fdump,fstats,flock;
+static ofstream gparam,fdump,fstats,flock;
 
 // Global vocabulary declarations and default values
 int itmax=-1;
@@ -179,8 +179,10 @@ int main(int argc, char *argv[])
 		}
 		fparam.close();
 	} else {
-		if(!testing) msg(ERROR,"Parameter file %s could not be opened",pname); 
+		if(!testing) msg(OVERRIDE,"Parameter file %s could not be opened",
+						 pname); 
 		errno=0;
+		mkdir(Vocabulary->FileName("",""),0xFFFF);
 	}
 	
 	for(i=1; i < argc; i++) Vocabulary->Assign(argv[i]);
@@ -218,6 +220,10 @@ int main(int argc, char *argv[])
 		mkdir(buf.str(),0xFFFF);
 	}
 					
+	open_output(gparam,dirsep,"param",0);
+	Vocabulary->GraphicsDump(gparam);
+	gparam.close();
+	
 	t=0.0;
 	Problem->InitialConditions();
 	y=Problem->Vector();

@@ -118,7 +118,7 @@ Solve_RC Euler::Solve(double t, double dt)
 {
 	Source(source,y0,t);
 	Problem->Transform(y0,t,dt,yi);
-	for(int j=0; j < ny; j++) y0[j] += dt*source[j];
+	for(int j=0; j < nyprimary; j++) y0[j] += dt*source[j];
 	Problem->BackTransform(y0,t+dt,dt,yi);
 	return SUCCESSFUL;
 }

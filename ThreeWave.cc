@@ -17,14 +17,14 @@ char *integrator="PC";
 
 LinearityBase *Linearity=new LinearityBase[1];
 
-// Global variables
+// Global vocabulary declarations and default values
 int randomIC=0;
 Real tauforce=0.0;
-
-// Local variables
 static Mc Mk[]={1.0,1.0,-2.0};
 static Nu nu0[]={0.0,0.0,0.0};
 static Var IC[]={sqrt(1.5),0.0,sqrt(1.5)};
+
+// Local variables
 static Real *K;
 
 ThreeWaveVocabulary::ThreeWaveVocabulary()

@@ -1,7 +1,7 @@
 C++ = $(HOME)/bin/CC -D_POSIX_SOURCE -D_CFRONT
 OPT = $(CFLAGS)
 LIB = $(LFLAGS) -lsci -lm
-MAKEDEPEND = /lib/cpp -M
+MAKEDEPEND = /lib/cpp -M -DDEPEND
 MDOPTS = -I $(HOME)/include/CC
 
 FFT = cfft

@@ -81,7 +81,9 @@ public:
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, int, int, int);
-	void Source(Var *src, Var *Y, double t) {Problem->NonLinearSrc(src,Y,t);}
+	void Source(Var *src, Var *Y, double t) {
+		Problem->NonLinearSrc(src,Y,t);
+	}
 };
 
 #if _CFRONT

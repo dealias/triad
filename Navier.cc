@@ -10,6 +10,12 @@
 
 #include <sys/stat.h> // On the sun this must come after xstream.h
 
+#ifndef DEPEND
+#if !COMPLEX
+#error Navier requires COMPLEX=1 in options.h
+#endif
+#endif
+
 LinearityBase *Linearity;
 GeometryBase *Geometry;
 
@@ -249,10 +255,8 @@ void Convolution::NonLinearSrc(Var *source, Var *psi, double)
 	ConstantForcing(source,t);
 }
 
-
 void PS::NonLinearSrc(Var *source, Var *psi, double)
 {
-#if COMPLEX
 	const int bitreverse=1; // If 1, use faster bit-reversed FFT's.
 	int i;
 	
@@ -322,11 +326,8 @@ void PS::NonLinearSrc(Var *source, Var *psi, double)
 	for(i=0; i < Nmode; i++) source[i] *= kfactor[i];
 	if(Nmoment) ComputeMoments(source,psi);
 	ConstantForcing(source,t);
-#else	
-	msg(ERROR,"Pseudospectral approximation requires COMPLEX=1");
-#endif
 }
-	
+
 void Basis<Cartesian>::Initialize()
 {
 	knorm2=new Real[Nmode];
@@ -364,7 +365,7 @@ static Real equilibrium(int i)
 }
 
 static ifstream ftin;
-static ofstream fparam,fevt,fyvt,ft,favgy,fprolog;
+static ofstream fevt,fyvt,ft,favgy,fprolog;
 static oxstream fpsi,fweiss;
 
 Real continuum_factor=1.0;
@@ -422,7 +423,6 @@ void NWave::InitialConditions()
 		ftin.close();
 	}
 	
-	open_output(fparam,dirsep,"param",0);
 	open_output(fevt,dirsep,"evt");
 	open_output(fyvt,dirsep,"yvt");
 	open_output(ft,dirsep,"t");
@@ -446,9 +446,6 @@ void NWave::InitialConditions()
 		avgyre[n] << "y.re^" << n << ends;
 		avgyim[n] << "y.im^" << n << ends;
 	}
-	
-	Vocabulary->GraphicsDump(fparam);
-	fparam.close();
 	
 	if(movie && strcmp(method,"SR") == 0) {
 		if(discrete && truefield) {
@@ -644,7 +641,7 @@ void NWave::Output(int)
 			out_field(fweiss,(Real *) psix);
 		}
 	}
-	
+				
 	tcount++;
 	ft << t << endl;
 }

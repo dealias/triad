@@ -2,7 +2,7 @@ C++ = CC -D_POSIX_SOURCE
 OPT = $(CFLAGS)
 INCL = -I . -I $(TRI)
 LIB = $(LFLAGS) -lsci -lm
-MAKEDEPEND = $(C++) -M
+MAKEDEPEND = $(C++) -M -DDEPEND
 
 FFT = tfft
 POLL = poll

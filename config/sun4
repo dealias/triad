@@ -1,5 +1,5 @@
 C++ = CC -D_POSIX_SOURCE -xtarget=native
 OPT = $(CFLAGS)
-MAKEDEPEND = $(C++) -xM
+MAKEDEPEND = $(C++) -xM -DDEPEND
 INCL = -I$(TRI)
 LIB = $(LFLAGS) -lm -lnsl

@@ -37,30 +37,32 @@ void NWave::ConstantForcing(Var *source, double t)
 void NWave::ComputeMoments(Var *source, Var *psi)
 {
 	Var *p=source, *q=source+Nmode;
-#pragma ivdep
-	double randre=random_factor.re, randim=random_factor.im;
-	for(int i=0; i < Nmode; i++) {
 #if COMPLEX
+	double randre=random_factor.re, randim=random_factor.im;
+#pragma ivdep
+	for(int i=0; i < Nmode; i++) {
 		double psire=psi[i].re;
 		double psiim=psi[i].im;
 		double sumre=p[i].re*psire;
 		double sumim=p[i].im*psiim;
 		q[i].re=sumre+sumim;                // S_k*psi_k
 		q[i].im=randre*psire+randim*psiim;  // w_k*psi_k
-#else
-		q[i]=realproduct(p[i],psi[i]);        // S_k*psi_k
-#endif		
 	}
+#else
+	for(int i=0; i < Nmode; i++) {
+		q[i]=p[i]*psi[i];        // S_k*psi_k
+	}
+#endif	
 	q += Nmode;
 	if(Nmoment > 1) {
 #pragma ivdep
 		set(q,psi,Nmode);
 		q += Nmode;
-		Complex *kstop=psi+Nmode;
+		Var *kstop=psi+Nmode;
 #pragma ivdep
 		for(int n=2; n < Nmoment; n++) { // psi_k^n
 #pragma ivdep
-			for(Complex *k=psi; k < kstop; k++, q++) *q=product(*(q-Nmode),*k);
+			for(Var *k=psi; k < kstop; k++, q++) *q=product(*(q-Nmode),*k);
 		}
 	}
 }
