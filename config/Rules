@@ -4,6 +4,9 @@
 clean:
 	rm -f *.o *mon.out $(ALL)
 
+rgb: rgb.cc msg.cc new.cc
+	$(C++) $(OPT) $(INCL) -o ~/bin/rgb rgb.cc msg.cc new.cc
+
 %.$(D): %.cc
 	$(MAKEDEPEND) $(INCL) $(MDOPTS) $< > $@
 

@@ -5,6 +5,10 @@
 #include <string.h>
 #include <strstream.h>
 #include <iomanip.h>
+#include <unistd.h>
+#if __GNUC__
+#include <getopt.h>
+#endif
 
 #include "DynVector.h"
 #include "rgb.h"
