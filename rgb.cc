@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.1";
+const char VERSION[]="1.02";
 
 #define NEW_IMAGEMAGICK 1
 
@@ -414,6 +414,8 @@ int main(int argc, char *const argv[])
 			}
 			vminf[f]=gmin;
 			vmaxf[f]=gmax;
+			
+			if(verbose) cout << nset << " frames found." << endl;
 		}
 		
 		if(byte) {fin.close(); openfield(fin,fieldname,nx,ny,nz);}
@@ -491,12 +493,17 @@ int main(int argc, char *const argv[])
 			set++;
 		} while (n++ < end && rc == 0);
 		nset=nset ? min(nset,set) : set;
+		if(verbose) cout << nset << " frames found." << endl;
+
 	}
 	
-	if((remote || !pointsize) && make_mpeg) putenv("DISPLAY=");
+	if(!floating_scale && verbose) 
+		cout << nset << " frames found." << endl;
 
 	if(nset == 1) msg(ERROR, "More than one frame required");
 	
+	if((remote || !pointsize) && make_mpeg) putenv("DISPLAY=");
+
 	if(nset) {
 		if(pointsize || make_mpeg) { 
 			if(make_mpeg) montage(nfiles,argf,0,format,"miff");
