@@ -228,8 +228,11 @@ void Partition<T>::ComputeTriads() {
 					if(!*index) *index=pair[Npair++].Store(&psibuffer[p],
 														   &psibuffer[q]);
 					sym=(p==q) ? 0.5 : 1.0;
+					if(verbose > 3) cout << denom << endl;
+
 					nkpq *= sym/denom;
 					
+					if(verbose > 3) cout << *index << ": " << nkpq << endl;
 					triad[Ntriad++].Store(*index,nkpq);
 				}
 			}
