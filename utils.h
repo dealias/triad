@@ -199,7 +199,7 @@ inline Complex operator / (const Complex& x, const Complex& y)
 	return Complex(t4*t2+t3*t1,t4*t1-t3*t2);
 }
 
-inline Complex operator / (const Complex& x, Real y)
+inline Complex operator / (const Complex& x, const Real y)
 {
 	return Complex(x.re/y,x.im/y);
 }

@@ -46,7 +46,7 @@ public:
 
 				   Complex();
 				   Complex(const Complex& y);
-				   Complex(const Real r, Real i=0);
+				   Complex(const Real r, const Real i=0);
 
 				  ~Complex();
 
