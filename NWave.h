@@ -27,8 +27,6 @@ public:
 	GeometryBase *NewGeometry(char *key) {return GeometryTable->Locate(key);}
 };
 
-extern NWaveVocabulary *NWave_Vocabulary;
-
 class NWave : public ProblemBase {
 public:
 	NWave() {}

@@ -38,7 +38,6 @@ int randomIC=1;
 NWaveVocabulary::NWaveVocabulary()
 {
 	Vocabulary=this;
-	NWave_Vocabulary=this;
 	
 	VOCAB(reality,0,1);
 	VOCAB(geometry,"","");
@@ -76,8 +75,8 @@ NWaveVocabulary::NWaveVocabulary()
 	VOCAB(krmax,0.0,DBL_MAX);
 	VOCAB(kthmin,0.0,twopi);
 	
-	GeometryTable=new Table<GeometryBase>("Geometry",GeometryCompare,
-										  GeometryKeyCompare);
+	GeometryTable=new Table<GeometryBase>("Geometry");
+
 	PROBLEM(SR);
 	PROBLEM(Convolution);
 	PROBLEM(PS);
@@ -98,8 +97,7 @@ NWaveVocabulary::NWaveVocabulary()
 	BASIS(Cartesian);
 }
 
-NWaveVocabulary NWaveVocabulary0;
-NWaveVocabulary *NWave_Vocabulary;
+NWaveVocabulary NWave_Vocabulary;
 
 Real force_re(const Polar& v) 
 {
@@ -151,7 +149,7 @@ void NWave::InitialConditions()
 {
 	int i,n;
 	
-	Geometry=NWave_Vocabulary->NewGeometry(geometry);
+	Geometry=NWave_Vocabulary.NewGeometry(geometry);
 	if(!Geometry->Valid(Problem->Abbrev()))
 		msg(ERROR,"Geometry \"%s\" is incompatible with Problem \"%s\"",
 			Geometry->Name(),Problem->Abbrev());

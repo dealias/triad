@@ -23,8 +23,20 @@ class Table {
 	DynVector<EntryBase<B> *>list;
 	int n;
 public:
-	Table(char *name0,Compare_t Compare0, KeyCompare_t KeyCompare0) {
+	static int DefaultCompare(const void *a, const void *b) {
+		return strcasecmp((*(EntryBase<B> **)a)->Key(),
+						  (*(EntryBase<B> **)b)->Key());
+	}
+	static int DefaultKeyCompare(const void *key, const void *p,
+								 const size_t n) {
+		return strcasecmpn((char *) key, (*(EntryBase<B> **)p)->Key(), n);
+	}
+	
+	Table(char *name0, Compare_t Compare0, KeyCompare_t KeyCompare0) {
 		name=name0; n=0; Compare=Compare0; KeyCompare=KeyCompare0;
+	}
+	Table(char *name0) {
+		name=name0; n=0; Compare=DefaultCompare; KeyCompare=DefaultKeyCompare;
 	}
 	void Add(EntryBase<B> *ptr) {list[n++]=ptr;}
 	int Size() {return n;}
@@ -45,13 +57,6 @@ public:
 		p=e->New();
 		cout << newl << upcase(name) << ": " << p->Name() << endl;
 		return p;
-	}
-	int DefaultCompare(const void *a, const void *b) {
-		return strcasecmp((*(EntryBase<B> **)a)->Key(),
-						  (*(EntryBase<B> **)b)->Key());
-	}
-	int DefaultKeyCompare(const void *key, const void *p, const size_t n) {
-		return strcasecmpn((char *) key, (*(EntryBase<B> **)p)->Key(), n);
 	}
 	B *New() {return NULL;}
 };

@@ -1,15 +1,5 @@
 #include "kernel.h"
 
-int IntegratorCompare(const void *a, const void *b)
-{
-	return Vocabulary->IntegratorTable->DefaultCompare(a,b);
-}	
-
-int IntegratorKeyCompare(const void *key, const void *p, const size_t n)
-{
-	return Vocabulary->IntegratorTable->DefaultKeyCompare(key,p,n);
-}
-
 inline void IntegratorBase::ChangeTimestep(double& dt, const double dtnew,
 										   const double t)
 {

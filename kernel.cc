@@ -89,10 +89,9 @@ VocabularyBase::VocabularyBase()
 	VOCAB_NODUMP(average,0,1); // Obsolete
 	VOCAB_NODUMP(approximation,"",""); // Obsolete
 		
-	ProblemTable=new Table<ProblemBase>("problem",ProblemCompare,
-										ProblemKeyCompare);
-	IntegratorTable=new Table<IntegratorBase>("integrator",IntegratorCompare,
-											  IntegratorKeyCompare);
+	ProblemTable=new Table<ProblemBase>("problem");
+	IntegratorTable=new Table<IntegratorBase>("integrator");
+	
 	INTEGRATOR(Exact);
 	INTEGRATOR(Euler);
 	INTEGRATOR(PC);
