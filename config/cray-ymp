@@ -1,4 +1,5 @@
 C++ = CC -D_POSIX_SOURCE
 OPT = $(CFLAGS)
 MDOPT = -I /usr/include/CC
+ARCH = unix.o cfft.o
 

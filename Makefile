@@ -2,7 +2,7 @@ LIB = $(LFLAGS) -lm
 OPT = -g $(CFLAGS)
 MAKEDEPEND = makedepend
 
-ARCH = unix.o
+ARCH = unix.o fft.o
 POLL = poll.o
 
 include config/$(HOSTTYPE)
@@ -41,7 +41,7 @@ clean:
 depend:
 	$(MAKEDEPEND) $(MDOPT) -I /usr/local/include \
 	kernel.cc Approx.cc Integrator.cc Param.cc ThreeWave.cc \
-	Navier.cc NWave.cc Geometry.cc Cartesian.cc convolve.cc \
+	Navier.cc NWave.cc Geometry.cc Cartesian.cc convolve.cc fft.cc \
 	Polar.cc PolarAverage.cc simpfast.cc \
 	Kepler.cc Lotka.cc utils.cc strcasecmp.cc new.cc poll.cc \
 	idle.cc unix.cc

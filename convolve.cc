@@ -1,74 +1,16 @@
 #include "utils.h"
 
-static Complex *wpTablep,*wpTablen;
+Complex *wpTablep,*wpTablen;
 static Complex *WTablep,*WTablen;
 static unsigned int TableSize=0,WTablepSize=0,WTablenSize=0;
 
-void fft_br(Complex *data, unsigned int log2n)
-{
-	unsigned int n=1 << log2n;
-	unsigned int mmax=1;
-	Complex *pstop=data+n,*wp=wpTablep;
+void fft_br(Complex *data, unsigned int log2n);
+void fft_brinv(Complex *data, unsigned int log2n);
 	
- 	while (mmax < n) {
-		unsigned int istep=mmax << 1;
-		Real c=1.0, s=0.0;
-		Real wpre=wp->re, wpim=wp->im;
-		wp++;
-		for (unsigned int m=0; m < mmax; m++) {
-			Complex *p,*q;
-#pragma ivdep			
-			for (p=data+m; p < pstop; p += istep) {
-				q=p+mmax;
-				Real tempre=c*q->re-s*q->im;
-				Real tempim=c*q->im+s*q->re;
-				q->re=p->re-tempre;
-				p->re += tempre;
-				q->im=p->im-tempim;
-				p->im += tempim;
-			}
-			Real wtemp=c;
-			c += c*wpre-s*wpim;
-			s += s*wpre+wtemp*wpim;
-		}
-		mmax=istep;
-	}
-}
-
-void fft_brinv(Complex *data, unsigned int log2n)
-{
-	unsigned int n=1 << log2n;
-	unsigned int istep=n;
-	Complex *pstop=data+n,*wp=wpTablen+log2n-1;
-
- 	while (istep > 1) {
-		unsigned int mmax=istep >> 1;
-		Real c=1.0, s=0.0;
-		Real wpre=wp->re, wpim=wp->im;
-		wp--;
-		for (unsigned int m=0; m < mmax; m++) {
-			Complex *p,*q;
-#pragma ivdep			
-			for (p=data+m; p < pstop; p += istep) {
-				q=p+mmax;
-				Real tempre=p->re-q->re;
-				p->re += q->re;
-				Real tempim=p->im-q->im;
-				p->im += q->im;
-			    q->re=c*tempre-s*tempim;
-				q->im=c*tempim+s*tempre;
-			}
-			Real wtemp=c;
-			c += c*wpre-s*wpim;
-			s += s*wpre+wtemp*wpim;
-		}
-		istep=mmax;
-	}
-}
-
 void rfft_br(Complex *data, unsigned int log2n)
 {		 
 	unsigned int i;
+	
 	fft_br(data,log2n);
 	
 	unsigned int n2=1 << log2n;
@@ -165,7 +107,6 @@ void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
 	unsigned int i,mmax;
 
 //	if(m > n/3) msg(ERROR, "Insufficient room for dealiasing");
-	if(m > n/3) cout << "Insufficient room for dealiasing" << endl;
 	
 	if(log2n > TableSize) {
 		wpTablep=new(wpTablep,log2n) Complex;
