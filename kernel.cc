@@ -329,7 +329,6 @@ void dump(int it, int final, double tmax)
 		if((tmax-t >= 1.0E-6*tmax || final) && t > last_dump) {
 			Problem->Output(it); last_dump=t;
 		}
-		statistics();
 		if(!testing) unlock();
 	}
 	
@@ -387,6 +386,7 @@ void set_timer()
 
 void statistics()
 {
+	if(restart && it == 0) return;
 	fstats << setw(w) << final_iteration+iteration << " " <<
 		setw(e) << t << " " << setw(e) << dt << " " << setw(w) << 
 		invert_cnt << " ";

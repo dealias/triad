@@ -46,14 +46,17 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 			cout << "[" << it << flush;
 		}
 		
-		if(sample > 0.0 && (forwards ? t >= tstop : t <= tstop)) {
-			nout++;
-			tstop=tstart+sign*nout*sample;
-			if(forwards ? tstop > tmax : tstop < tmax) tmax=tstop=t;
-			else dump(it,0,tmax);
-			if(dtorig) {ChangeTimestep(dt,dtorig,t,sample); dtorig=0.0;}
+		if(sample >= 0.0) {
+			if(sample == 0.0) {dump(it,0,tmax); statistics();}
+			else if((forwards ? t >= tstop : t <= tstop)) {
+				nout++;
+				tstop=tstart+sign*nout*sample;
+				if(forwards ? tstop > tmax : tstop < tmax) tmax=tstop=t;
+				else dump(it,0,tmax);
+				statistics();
+				if(dtorig) {ChangeTimestep(dt,dtorig,t,sample); dtorig=0.0;}
+			}
 		}
-		else if(sample == 0.0) dump(it,0,tmax);
 		
 		for(itx=0; itx < microsteps; itx++) {
 			if(microprocess) Problem->Microprocess();
@@ -100,7 +103,7 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 	
 	if(verbose) cout << endl;
 	if(dtorig) ChangeTimestep(dt,dtorig,t,sample);
-	if(sample >= 0.0) dump(it,final,tmax);
+	if(sample >= 0.0) {dump(it,final,tmax); statistics();}
 	dt *= sign;
 }	
 
