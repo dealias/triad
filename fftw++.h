@@ -247,10 +247,10 @@ public:
     : fftw(nx,sign), nx(nx) {Setup(in,out);} 
   
 #ifdef __Array_h__
-  fft1d(int sign, array1<Complex>& in, array1<Complex>& out=NULL1) 
+  fft1d(int sign, const array1<Complex>& in, const array1<Complex>& out=NULL1) 
     : fftw(in.Nx(),sign), nx(in.Nx()) {Setup(in,out);} 
   
-  fft1d(int sign, Array1<Complex>& in, Array1<Complex>& out=NULL1) 
+  fft1d(int sign, const Array1<Complex>& in, const Array1<Complex>& out=NULL1) 
     : fftw(in.Nx(),sign), nx(in.Nx()) {Setup(in,out);} 
 #endif  
   
@@ -331,10 +331,10 @@ public:
     : fftw(nx/2+1,-1,nx), nx(nx) {Setup(in,out);} 
   
 #ifdef __Array_h__
-  rcfft1d(array1<Complex>& in, array1<Complex>& out=NULL1)
+  rcfft1d(const array1<Complex>& in, const array1<Complex>& out=NULL1)
     : fftw(in.Nx(),-1,2*(in.Nx()-1)), nx(2*(in.Nx()-1)) {Setup(in,out);} 
   
-  rcfft1d(Array1<Complex>& in, Array1<Complex>& out=NULL1)
+  rcfft1d(const Array1<Complex>& in, const Array1<Complex>& out=NULL1)
     : fftw(in.Nx(),-1,2*(in.Nx()-1)), nx(2*(in.Nx()-1)) {Setup(in,out);} 
 #endif  
   
@@ -375,10 +375,10 @@ public:
     : fftw(realsize(nx,in,out),1,nx), nx(nx) {Setup(in,out);} 
   
 #ifdef __Array_h__
-  crfft1d(array1<Complex>& in, array1<Complex>& out=NULL1) 
+  crfft1d(const array1<Complex>& in, const array1<Complex>& out=NULL1) 
     : fftw(in.Nx(),1,2*(in.Nx()-1)), nx(2*(in.Nx()-1)) {Setup(in,out);} 
   
-  crfft1d(Array1<Complex>& in, Array1<Complex>& out=NULL1) 
+  crfft1d(const Array1<Complex>& in, const Array1<Complex>& out=NULL1) 
     : fftw(in.Nx(),1,2*(in.Nx()-1)), nx(2*(in.Nx()-1)) {Setup(in,out);} 
 #endif  
   
@@ -527,10 +527,10 @@ public:
     : fftw(nx*ny,sign), nx(nx), ny(ny) {Setup(in,out);} 
   
 #ifdef __Array_h__
-  fft2d(int sign, array2<Complex>& in, array2<Complex>& out=NULL2) 
+  fft2d(int sign, const array2<Complex>& in, const array2<Complex>& out=NULL2) 
     : fftw(in.Nx()*in.Ny(),sign), nx(in.Nx()), ny(in.Ny()) {Setup(in,out);} 
   
-  fft2d(int sign, Array2<Complex>& in, Array2<Complex>& out=NULL2) 
+  fft2d(int sign, const Array2<Complex>& in, const Array2<Complex>& out=NULL2) 
     : fftw(in.Nx()*in.Ny(),sign), nx(in.Nx()), ny(in.Ny()) {Setup(in,out);} 
 #endif  
   
@@ -574,11 +574,11 @@ public:
     : fftw(nx*(ny/2+1),-1,nx*ny), nx(nx), ny(ny), shift(true) {Setup(in,out);} 
   
 #ifdef __Array_h__
-  rcfft2d(array2<Complex>& in, array2<Complex>& out=NULL2)
+  rcfft2d(const array2<Complex>& in, const array2<Complex>& out=NULL2)
     : fftw(in.Nx()*in.Ny(),-1,in.Nx()*2*(in.Ny()-1)),
       nx(in.Nx()), ny(2*(in.Ny()-1)), shift(true) {Setup(in,out);} 
   
-  rcfft2d(Array2<Complex>& in, Array2<Complex>& out=NULL2)
+  rcfft2d(const Array2<Complex>& in, const Array2<Complex>& out=NULL2)
     : fftw(in.Nx()*in.Ny(),-1,in.Nx()*2*(in.Ny()-1)),
       nx(in.Nx()), ny(2*(in.Ny()-1)), shift(true) {Setup(in,out);} 
 #endif  
@@ -635,11 +635,11 @@ public:
   {Setup(in,out);} 
   
 #ifdef __Array_h__
-  crfft2d(array2<Complex>& in, array2<Complex>& out=NULL2)
+  crfft2d(const array2<Complex>& in, const array2<Complex>& out=NULL2)
     : fftw(in.Nx()*in.Ny(),1,in.Nx()*2*(in.Ny()-1)),
       nx(in.Nx()), ny(2*(in.Ny()-1)), shift(true) {Setup(in,out);} 
   
-  crfft2d(Array2<Complex>& in, Array2<Complex>& out=NULL2)
+  crfft2d(const Array2<Complex>& in, const Array2<Complex>& out=NULL2)
     : fftw(in.Nx()*in.Ny(),1,in.Nx()*2*(in.Ny()-1)),
       nx(in.Nx()), ny(2*(in.Ny()-1)), shift(true) {Setup(in,out);} 
 #endif  
@@ -697,11 +697,11 @@ public:
     : fftw(nx*ny*nz,sign), nx(nx), ny(ny), nz(nz) {Setup(in,out);} 
   
 #ifdef __Array_h__
-  fft3d(int sign, array3<Complex>& in=NULL3, array3<Complex>& out=NULL3)
+  fft3d(int sign, const array3<Complex>& in=NULL3, const array3<Complex>& out=NULL3)
     : fftw(in.Nx()*in.Ny()*in.Nz(),sign),
       nx(in.Nx()), ny(in.Ny()), nz(in.Nz()) {Setup(in,out);} 
   
-  fft3d(int sign, Array3<Complex>& in=NULL3, Array3<Complex>& out=NULL3)
+  fft3d(int sign, const Array3<Complex>& in=NULL3, const Array3<Complex>& out=NULL3)
     : fftw(in.Nx()*in.Ny()*in.Nz(),sign),
       nx(in.Nx()), ny(in.Ny()), nz(in.Nz()) {Setup(in,out);} 
 #endif  
@@ -748,11 +748,11 @@ public:
 			       shift(true) {Setup(in,out);} 
   
 #ifdef __Array_h__
-  rcfft3d(array3<Complex>& in=NULL3, array3<Complex>& out=NULL3) :
+  rcfft3d(const array3<Complex>& in=NULL3, const array3<Complex>& out=NULL3) :
     fftw(in.Nx()*in.Ny()*in.Nz(),-1,in.Nx()*in.Ny()*2*(in.Nz()-1)),
     nx(in.Nx()), ny(in.Ny()), nz(2*(in.Nz()-1)), shift(true) {Setup(in,out);} 
   
-  rcfft3d(Array3<Complex>& in=NULL3, Array3<Complex>& out=NULL3) :
+  rcfft3d(const Array3<Complex>& in=NULL3, const Array3<Complex>& out=NULL3) :
     fftw(in.Nx()*in.Ny()*in.Nz(),-1,in.Nx()*in.Ny()*2*(in.Nz()-1)),
     nx(in.Nx()), ny(in.Ny()), nz(2*(in.Nz()-1)), shift(true) {Setup(in,out);} 
 #endif  
@@ -810,11 +810,11 @@ public:
 			       shift(true) {Setup(in,out);} 
   
 #ifdef __Array_h__
-  crfft3d(array3<Complex>& in=NULL3, array3<Complex>& out=NULL3) :
+  crfft3d(const array3<Complex>& in=NULL3, const array3<Complex>& out=NULL3) :
     fftw(in.Nx()*in.Ny()*in.Nz(),1,in.Nx()*in.Ny()*2*(in.Nz()-1)),
     nx(in.Nx()), ny(in.Ny()), nz(2*(in.Nz()-1)), shift(true) {Setup(in,out);} 
   
-  crfft3d(Array3<Complex>& in=NULL3, Array3<Complex>& out=NULL3) :
+  crfft3d(const Array3<Complex>& in=NULL3, const Array3<Complex>& out=NULL3) :
     fftw(in.Nx()*in.Ny()*in.Nz(),1,in.Nx()*in.Ny()*2*(in.Nz()-1)),
     nx(in.Nx()), ny(in.Ny()), nz(2*(in.Nz()-1)), shift(true) {Setup(in,out);} 
 #endif  
