@@ -23,8 +23,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #define _ALL_SOURCE 1
 #endif
 
-#include <rpc/types.h>
-
 #ifdef _POSIX_SOURCE
 #undef _POSIX_SOURCE
 #include <rpc/rpc.h>
