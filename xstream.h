@@ -86,7 +86,7 @@ class xstream : virtual public xios {
 #define IXSTREAM(T,N) ixstream& operator >> (T& x) \
 {if(!xdr_##N(&xdrs, &x)) set(eofbit); return *this;}
 
-#if __i386__ && !__ELF__
+#if __linux__ && !__ELF__
 // Due to a i386-linuxaout bug, cannot generate xdr output for a.out systems.
 #define OXSTREAM(T,N) oxstream& operator << (T) {return *this;}
 #else
