@@ -52,6 +52,7 @@ void NWave::InitialConditions()
 
 	nyconserve=Npsi=3; 
 	psibuffer=new Var[Npsi];
+	psibufferStop=psibuffer+Npsi;
 	ny=(average ? Nmoment+1 : 1)*Npsi;
 	y=new Var[ny];
 	y2=new Real[Npsi];
@@ -63,22 +64,15 @@ void NWave::InitialConditions()
 	
 	nu=nu0;
 
-	Npair=3;
-	pqbuffer=new Var[Npair];
-	pair[0].Store(&psibuffer[1],&psibuffer[2]);
-	pair[1].Store(&psibuffer[2],&psibuffer[0]);
-	pair[2].Store(&psibuffer[0],&psibuffer[1]);
-	pairBase=pair.Base();
-
+	pqbuffer=new Var[Npsi*(Npsi+1)/2];
 	triadStop=new Triad*[Npsi];
-	Triad *triadBase0=triad.Base();
-	for(k=0; k < Npsi; k++) {
-		triad[k].Store(pqbuffer+k,Mkpq[k]);
-		triadStop[k]=triadBase0+k+1;
-	}
 	
+	triad[0].Store(pqbuffer+4,Mkpq[0]);
+	triad[1].Store(pqbuffer+2,Mkpq[1]);
+	triad[2].Store(pqbuffer+1,Mkpq[2]);
+
 	triadBase=triad.Base();
-	for(k=0; k < Npsi; k++) triadStop[k] += triadBase-triadBase0;
+	for(k=0; k < Npsi; k++) triadStop[k]=triadBase+k+1;
 	
 	for(k=0; k < Npsi; k++) y[k]=IC[k];
 	if(randomIC) {

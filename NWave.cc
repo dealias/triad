@@ -19,7 +19,7 @@ Real *forcing;
 #if _AIX && COMPLEX
 // Special case to help xlC with optimization:
 
-inline Var spdot(Triad *tstart, const Triad *tstop)
+inline Complex spdot(Triad *tstart, const Triad *tstop)
 {
 	Triad *t=tstart;
 	Real sumre, sumim;
@@ -27,7 +27,16 @@ inline Var spdot(Triad *tstart, const Triad *tstop)
 		sumre += t->Mkpq * (*t->pq).re;
 		sumim -= t->Mkpq * (*t->pq).im;
 	}
-	return Complex(sumre,sumim);
+	return sumre+I*sumim;
+}
+
+inline void multpq(Var *& pq, Var *p)
+{
+	Real psipre=p->re, psipim=p->im;
+	for(Var *q=p; q < psibufferStop; q++, pq++) {
+		pq->re=psipre*q->re-psipim*q->im;
+		pq->im=psipre*q->im+psipim*q->re;
+	}
 }
 
 #else
@@ -36,10 +45,15 @@ inline Var spdot(Triad *tstart, const Triad *tstop)
 {
 	Triad *t=tstart;
 	Var sum;
-	for(sum=0.0; t < tstop; t++) {
-		sum += t->Mkpq * conj(*(t->pq));
-	}
+	for(sum=0.0; t < tstop; t++) sum += t->Mkpq * conj(*(t->pq));
 	return sum;
+}
+
+inline void multpq(Var *& pq, Var *p)
+{
+	Var psip=*p;
+#pragma ivdep		
+	for(Var *q=p; q < psibufferStop; q++, pq++) *pq=psip*(*q);
 }
 
 #endif
@@ -56,25 +70,19 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 	}
 	
 	Var *pq=pqbuffer;
-	for(Var *p=psibuffer; p < psibufferStop; p++) {
-		Var psip=*p;
-#pragma ivdep		
-		for(Var *q=p; q < psibufferStop; q++, pq++) *pq=psip*(*q);
-	}
+	for(Var *p=psibuffer; p < psibufferStop; p++) multpq(pq,p);
 	
 	Triad *t=triadBase,**tstop=triadStop;
 	Var *kstop=source+Npsi;
 	
-	for(Var *k=source; k < kstop; k++) {
+	for(Var *k=source; k < kstop; k++,tstop++) {
 		*k=spdot(t,*tstop);
-		t=*(tstop++);
+		t=*tstop;
 	}
 	
 	// Compute moments
 	if(average && Nmoment > 0) {
-		Var *k;
-		Var *q=source+Npsi;
-		Var *kstop=psi+Npsi;
+		Var *k, *q=source+Npsi, *kstop=psi+Npsi;
 #if 1
 #pragma ivdep
 		for(k=psi; k < kstop; k++, q++) *q=product(*k,*k);   // psi^2
@@ -84,7 +92,7 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 		}
 #else
 		for(k=psi; k < kstop; k++) {
-			Var prod,psi=*k;
+			Var prod, psi=*k;
 			*(q++)=prod=product(psi,psi);		// psi^2
 			for(int n=1; n < Nmoment; n++)
 				*(q++)=prod=product(prod,psi);	// psi^n

@@ -88,13 +88,6 @@ public:
 		return n*k*(n-k+2)/2+k*(k-1)*(k-2)/6+(2*n-k-p-1)*(p-k)/2+q-k-(p+1)
 			-(2*n-1)*(k+1)+k*(k+1)+n; // Index to element k < p < q
 	}
-	
-	Mc Central(int k, int p, int q)	{
-		int sign=1;
-		// Ensure that p < q
-		sort2(p,q,sign);
-		return sign*Ckpq(bin[k].cen,bin[p].cen,bin[q].cen);
-	}
 };
 
 template<class T>
@@ -159,35 +152,34 @@ void Partition<T>::GenerateWeights() {
 
 template<class T>
 inline Mc Partition<T>::FindWeight(int k, int p, int q) {
-	// Exploit the full antisymmetry of the weight factors: reorder so that
-	// $k\prime\le p\prime\le q\prime$.
-	unsigned int kpq;
-	int l,u,i,cmp,sign,conjflag=0;
-	
 	if(k==p || p==q || q==k) return 0.0;
-	sign=1;
-	int k0=k, p0=p, q0=q;
 	
-	// Ensure that k <= p <= q
-	sort2(p,q,sign);
+	int sign=1, conjflag=0, k0=k, dummy;
+	
+	// Exploit the full antisymmetry of the weight factors: reorder so that
+	// k <= p <= q.
+
+	sort2(p,q,dummy);
+	int p0=p, q0=q;
+	
 	sort2(k,p,sign);
 	sort2(p,q,sign);
 
 	if(p >= Nmode) {int K=k; k=p-Nmode; p=q-Nmode; q=K+Nmode; conjflag=1;}
 	
-	kpq=WeightIndex(k,p,q);
-	l=0;
-	u=Nweight;
+	unsigned int kpq=WeightIndex(k,p,q);
+	int l=0;
+	int u=Nweight;
 	while(l < u) {
-		i=(l+u)/2;
-		cmp=kpq-weight[i].Index();
+		int i=(l+u)/2;
+		int cmp=kpq-weight[i].Index();
 		if(cmp < 0) u=i;
 		else {
 			if(cmp > 0) l=i+1;
 			else {
 				Mc value=weight[i].Value();
 				if(conjflag) value=conj(value);
-				return sign*value*Central(k0,p0,q0);
+				return sign*value*Ckpq(bin[k0].cen,bin[p0].cen,bin[q0].cen);
 			}
 		}
 	}
@@ -254,7 +246,7 @@ void Partition<T>::ComputeTriads() {
 	
 	pqbuffer=new Var[pq(n,n)];
 	triadStop=new Triad*[Nmode];
-	Triad *triadBase0=triad.Base();
+	int *ntriad=new int[Nmode];
 	
 	for(k=0; k < Nmode; k++) {
 		norm=1.0/(twopi2*Area(k));
@@ -269,12 +261,13 @@ void Partition<T>::ComputeTriads() {
 				}
 			}
 		}
-		triadStop[k]=triadBase0+Ntriad;
+		ntriad[k]=Ntriad;
 	}
 	
 	triadBase=triad.Base();
-	for(k=0; k < Nmode; k++) triadStop[k] += triadBase-triadBase0;
+	for(k=0; k < Nmode; k++) triadStop[k] = triadBase+ntriad[k];
 
+	delete [] ntriad;
 	weight.~DynVector();
 
 	cout << endl << Ntriad-Nmode << " WAVENUMBER TRIADS ALLOCATED." << endl;
