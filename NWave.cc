@@ -96,6 +96,7 @@ void PrimitiveNonlinearitySR(Var *source, Var *psi, double)
 
 void PrimitiveNonlinearity(Var *source, Var *psi, double)
 {
+	int i;
 	Cartesian mk,mp;
 	extern Cartesian *CartesianMode;
 
@@ -105,9 +106,9 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 #pragma ivdep		
 	for(Var *k=psibuffer; k < psibufferR; k++) conjugate(*(k+Npsi),*k);
 	
-	for(int i=0; i < Npsi; i++) source[i]=0.0;
+	for(i=0; i < Npsi; i++) source[i]=0.0;
 		
-	for(int i=0; i < Nchainp; i++) {
+	for(i=0; i < Nchainp; i++) {
 		Chain *c=chainpBase+i;
 		mk=CartesianMode[c->k]; mp=CartesianMode[c->p];
 		Real kx=mk.Kx(), ky=mk.Ky(), py=mp.Ky();
@@ -119,7 +120,7 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 		source[c->k] += sum;
 	}
 	
-	for(int i=0; i < Nchainn; i++) {
+	for(i=0; i < Nchainn; i++) {
 		Chain *c=chainnBase+i;
 		mk=CartesianMode[c->k]; mp=CartesianMode[c->p];
 		Real kx=mk.Kx(), ky=mk.Ky(), py=mp.Ky();
@@ -131,7 +132,7 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 		source[c->k] += sum;
 	}
 	
-	for(int i=0; i < Npsi; i++) source[i] *= kinv2[i];
+	for(i=0; i < Npsi; i++) source[i] *= kinv2[i];
 
 	// Compute moments
 	if(average && Nmoment > 0) {
