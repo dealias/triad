@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Arrayp_h__
 #define __Arrayp_h__ 1
 
-#define __ARRAYP_H_VERSION__ 1.12
+#define __ARRAYP_H_VERSION__ 1.13
 
 // Defining NDEBUG improves optimization.
 
@@ -43,9 +43,6 @@ public:
 	Array1p() {}
 	Array1p(unsigned int nx0) {Allocate(nx0);}
 	Array1p(unsigned int nx0, T *v0) {Dimension(nx0,v0);}
-	Array1p(const Array1p<T>& A) {
-		v=A(); size=A.Size(); state=A.test(temporary);
-	}
 	T& operator [] (int ix) const {Mod(ix,size); return v[ix];}
 	T& operator () (int ix) const {Mod(ix,size); return v[ix];}
 	Array1p<T>& operator = (T a) {Load(a); return *this;}
@@ -57,9 +54,6 @@ public:
 	Array2p() {}
 	Array2p(unsigned int nx0, unsigned int ny0) {Allocate(nx0,ny0);}
 	Array2p(unsigned int nx0, unsigned int ny0, T *v0) {Dimension(nx0,ny0,v0);}
-	Array2p(const array2<T>& A) {
-		v=A(); size=A.Size(); state=A.test(temporary);
-	}
 	Array1p<T> operator [] (int ix) const {
 		Mod(ix,nx);
 		return Array1p<T>(ny,v+ix*ny);
