@@ -633,8 +633,8 @@ class array5 : public array1<T> {
     Dimension(nx0,ny0,nz0,nw0,nv0,nv0);
   }
 
-  unsigned int Nw() const {return nw;}
-  unsigned int N5() const {return nw;}
+  unsigned int Nv() const {return nv;}
+  unsigned int N5() const {return nv;}
   array4<T> operator [] (int ix) const {
     __check(ix,nx,4,1);
     return array4<T>(ny,nz,nw,nv,v+ix*nyzwv);
@@ -1060,16 +1060,16 @@ class Array5 : public array5<T> {
   }
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 unsigned int nw0, unsigned int nv0, T *v0,
-		 int ox0=0, int oy0=0, int oz0=0, int ow0=0) {
-    Dimension(nx0,ny0,nz0,nw0,ox0,oy0,oz0,ow0);
+		 int ox0=0, int oy0=0, int oz0=0, int ow0=0, int ov0=0) {
+    Dimension(nx0,ny0,nz0,nw0,nv0,ox0,oy0,oz0,ow0,ov0);
     v=v0;
     Offsets();
     clear(allocated);
   }
   void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		unsigned int nw0, unsigned int nv0,
-		int ox0=0, int oy0=0, int oz0=0, int ow0=0) {
-    Dimension(nx0,ny0,nz0,nw0,ox0,oy0,oz0,ow0);
+		int ox0=0, int oy0=0, int oz0=0, int ow0=0, int ov0=0) {
+    Dimension(nx0,ny0,nz0,nw0,nv0,ox0,oy0,oz0,ow0,ov0);
     __checkActivate(5); 
     Offsets();
   }
@@ -1078,12 +1078,12 @@ class Array5 : public array5<T> {
   Array5(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 	 unsigned int nw0, unsigned int nv0,
 	 int ox0=0, int oy0=0, int oz0=0, int ow0=0, int ov0=0) {
-    Allocate(nx0,ny0,nz0,nw0,ox0,oy0,oz0,ow0,ov0);
+    Allocate(nx0,ny0,nz0,nw0,nv0,ox0,oy0,oz0,ow0,ov0);
   }
   Array5(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 	 unsigned int nw0, unsigned int nv0, T *v0,
 	 int ox0=0, int oy0=0, int oz0=0, int ow0=0, int ov0=0) {
-    Dimension(nx0,ny0,nz0,nw0,v0,ox0,oy0,oz0,ow0,ov0);
+    Dimension(nx0,ny0,nz0,nw0,nv0,v0,ox0,oy0,oz0,ow0,ov0);
   }
 
   Array4<T> operator [] (int ix) const {
