@@ -16,13 +16,14 @@ struct TriadLimits {
 	Triad *stop;
 };
 
-extern int Npsi; /* number of explictly evolved modes */
-extern int NpsiR; /* total number of modes, including reflected modes */
+extern int Npsi;   /* number of explictly evolved modes */
+extern int NpsiR;  /* number of reflected modes */
+extern int Ntotal; /* total number of (evolved+reflected) modes */
 extern int Ntriad;
 
 extern int reality;
 
-extern Var *psibuffer,*psibufferStop,*pqbuffer;
+extern Var *psibuffer,*psibufferR,*psibufferStop,*pqbuffer;
 extern Var **pqIndex;
 extern DynVector<Triad> triad;
 extern TriadLimits *triadLimits;

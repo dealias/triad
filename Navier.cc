@@ -152,7 +152,8 @@ void NWave::InitialConditions()
 	
 	Geometry=GeometryProblem->NewGeometry(geometry);
 	nyconserve=Npsi=Geometry->Create();
-	NpsiR=Geometry->TotalNumber();
+	Ntotal=Geometry->TotalNumber();
+	NpsiR=Ntotal-Npsi;
 	ny=(average ? Nmoment+1 : 1)*Npsi;
 	y=new Var[ny];
 	moment=new Var[Npsi];
@@ -240,11 +241,7 @@ void NWave::Output(int)
 	fekvt.flush();
 	
 	if(average) for(n=0; n < Nmoment; n++) {
-#if 1
 		for(i=0; i < Npsi; i++) moment[i] = y[Npsi+Npsi*n+i];
-#else
-		for(i=0; i < Npsi; i++) moment[i] = y[Npsi+Nmoment*i+n];
-#endif
 		out_curve(favgy[n],t,"t");
 		out_curve(favgy[n],moment,"",Npsi);
 		favgy[n].flush();

@@ -96,6 +96,7 @@ int Partition<T>::Create()
 {
 	MakeBins();
 	psibuffer=new Var[n];
+	psibufferR=(reality ? psibuffer+Nmode : psibuffer);
 	psibufferStop=psibuffer+n;
 
 	if(verbose > 2) {
@@ -120,7 +121,7 @@ void Partition<T>::GenerateWeights() {
 	Nweight=0;
 	nkpq=WeightIndex(Nmode,Nmode,n);
 	
-	for(k=0; k < Nmode; k++) {	// Loop for k <= p <= q
+	for(k=0; k < Nmode; k++) {	// Loop for k < p < q
 		for(p=k+1; p < Nmode; p++) {
 			for(q=p+1; q < n; q++) {
 				if((coangular(&bin[k],&bin[p]) ||
@@ -245,21 +246,27 @@ void Partition<T>::ComputeTriads() {
 		if(!fout.good()) msg(ERROR,"Error writing to weight file %s",filename);
 	}
 	
-	pqbuffer=new Var[pq(n,n)];
+	int npq=reality ? Nmode*(3*Nmode+1)/2 : pq(n,n);
+	pqbuffer=new Var[npq];
 	pqIndex=new Var*[n];
 	triadLimits=new TriadLimits[Nmode];
 	int *ntriad=new int[Nmode];
 	
-	for(p=0; p < n; p++) pqIndex[p]=pqbuffer+p*(2*n-1-p)/2;
-							 
+	int NmodeR=psibufferR-psibuffer;
+	Var *pq=pqbuffer;
+	for(p=0; p < n; p++) {
+			int m=max(NmodeR,p);
+			pqIndex[p]=pq-m;
+			if(n > m) pq += n-m;
+	}
+	
 	triad.Resize(Nmode*n);
 	for(k=0; k < Nmode; k++) {
 		norm=1.0/(twopi2*Area(k));
-		Var *pq=pqbuffer;
+		pq=pqbuffer;
 		for(p=0; p < n; p++) {
-			for(q=p; q < n; q++, pq++) {
+			for(q=max(NmodeR,p); q < n; q++, pq++) {
 				nkpq=FindWeight(k,p,q);
-				
 				if(nkpq != 0.0)	{
 					if(p==q) nkpq *= 0.5;
 					triad[Ntriad++].Store(pq,nkpq*norm);

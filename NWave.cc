@@ -2,13 +2,14 @@
 
 int Npsi;
 int NpsiR;
+int Ntotal;
 int Ntriad;
 
 // Reality condition flag 
 // (0 => evolve all modes, 1 => evolve only half of the modes).
 int reality=1;	
 
-Var *psibuffer,*psibufferStop,*pqbuffer;
+Var *psibuffer,*psibufferR,*psibufferStop,*pqbuffer;
 Var **pqIndex;
 DynVector<Triad> triad;
 TriadLimits *triadLimits;
@@ -22,15 +23,19 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 	set(psibuffer,psi,Npsi);
 	
 	// Compute reflected psi's
-	if(reality) {
-		Var *kstop=psibuffer+Npsi;
 #pragma ivdep		
-		for(Var *k=psibuffer; k < kstop; k++) conjugate(*(k+Npsi),*k);
-	}
+	for(Var *k=psibuffer; k < psibufferR; k++) conjugate(*(k+Npsi),*k);
 	
 #if (_AIX || __GNUC__) && COMPLEX
 	Var *pq=pqbuffer;
-	for(Var *p=psibuffer; p < psibufferStop; p++) {
+	for(Var *p=psibuffer; p < psibufferR; p++) {
+		Real psipre=p->re, psipim=p->im;
+		for(Var *q=psibufferR; q < psibufferStop; q++, pq++) {
+			pq->re=psipre*q->re-psipim*q->im;
+			pq->im=psipre*q->im+psipim*q->re;
+		}
+	}
+	for(Var *p=psibufferR; p < psibufferStop; p++) {
 		Real psipre=p->re, psipim=p->im;
 		for(Var *q=p; q < psibufferStop; q++, pq++) {
 			pq->re=psipre*q->re-psipim*q->im;
@@ -38,12 +43,20 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 		}
 	}
 #else
-#pragma _CRI taskloop private(ip) value(psibuffer,NpsiR,pqIndex)
-	for(int ip=0; ip < NpsiR; ip++) {
+	int ip,iq;
+#pragma _CRI taskloop private(ip) value(psibuffer,Ntotal,pqIndex,NpsiR)
+	for(ip=0; ip < NpsiR; ip++) {
 		Var psip=psibuffer[ip];
 		Var *pq=pqIndex[ip]; 
 #pragma ivdep		
-		for(int iq=ip; iq < NpsiR; iq++) pq[iq]=psip*psibuffer[iq];
+		for(iq=NpsiR; iq < Ntotal; iq++) pq[iq]=psip*psibuffer[iq];
+	}
+#pragma _CRI taskloop private(ip) value(psibuffer,Ntotal,pqIndex,NpsiR)
+	for(ip=NpsiR; ip < Ntotal; ip++) {
+		Var psip=psibuffer[ip];
+		Var *pq=pqIndex[ip]; 
+#pragma ivdep		
+		for(iq=ip; iq < Ntotal; iq++) pq[iq]=psip*psibuffer[iq];
 	}
 #endif		
 	
@@ -67,22 +80,13 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 	
 	// Compute moments
 	if(average && Nmoment > 0) {
-		Var *k, *q=source+Npsi, *kstop=psi+Npsi;
-#if 1
+		Var *k, *q=source+Npsi, *kstop=psibuffer+Npsi;
 #pragma ivdep
-		for(k=psi; k < kstop; k++, q++) *q=product(*k,*k);   // psi^2
+		for(k=psibuffer; k < kstop; k++, q++) *q=product(*k,*k);   // psi^2
 		for(int n=1; n < Nmoment; n++) {
 #pragma ivdep
-			for(k=psi; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);  // psi^n
+			for(k=psibuffer; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);  // psi^n
 		}
-#else
-		for(k=psi; k < kstop; k++) {
-			Var prod, psi=*k;
-			*(q++)=prod=product(psi,psi);		// psi^2
-			for(int n=1; n < Nmoment; n++)
-				*(q++)=prod=product(prod,psi);	// psi^n
-		}
-#endif		
 	}
 }
 
