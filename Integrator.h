@@ -53,8 +53,9 @@ public:
 	char *Name() {return "Predictor-Corrector";}
 	Solve_RC Solve(double, double);
 	virtual void ExtrapolateTimestep () {
-		if(errmax < tolmin2) {if(errmax) growfactor=pow(tolmin2/errmax,pgrow);}
-		else if(tolmin2) shrinkfactor=growfactor=pow(tolmin2/errmax,pshrink);
+		if(errmax < tolmin2) {
+			if(errmax) growfactor=pow(tolmin2/errmax,pgrow);
+		} else if(tolmin2) shrinkfactor=growfactor=pow(tolmin2/errmax,pshrink);
 		growfactor=min(growfactor,stepfactor);
 		shrinkfactor=max(shrinkfactor,stepinverse);
 		if(errmax <= tolmax2) errmax=0.0; // Force a time step adjustment.

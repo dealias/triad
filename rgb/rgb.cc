@@ -85,13 +85,22 @@ int invert=0;
 char *extract=NULL;
 
 enum Parameters {RFACTOR=256,THETA,PHI,YXASPECT,ZXASPECT,POINTSIZE,AVGX,AVGY,\
-				 EXTRACT,NXFINE,NYFINE,NZFINE};
+				 EXTRACT,XMIN,XMAX,YMIN,YMAX,ZMIN,ZMAX,ALPHA,
+				 NXFINE,NYFINE,NZFINE};
 
 Real Rfactor=2.0;
 Real Theta=0.9;
 Real Phi=0.9;
 Real yxaspect=1.0;
 Real zxaspect=1.0;
+
+Real alpha=0.0;
+Real xmin=0.0;
+Real xmax=1.0;
+Real ymin=0.0;
+Real ymax=1.0;
+Real zmin=0.0;
+Real zmax=1.0;
 
 int Nxfine=4;
 int Nyfine=5;
@@ -346,6 +355,13 @@ int main(int argc, char *const argv[])
                {"torus", 0, &trans, TORUS},
                {"symmetric", 0, &symmetric, 1},
                {"extract", 1, 0, EXTRACT},
+               {"shear", 1, 0, ALPHA},
+               {"xmin", 1, 0, XMIN},
+               {"xmax", 1, 0, XMAX},
+               {"ymin", 1, 0, YMIN},
+               {"ymax", 1, 0, YMAX},
+               {"zmin", 1, 0, ZMIN},
+               {"zmax", 1, 0, ZMAX},
                {"avgx", 1, 0, AVGX},
                {"avgy", 1, 0, AVGY},
                {"Nxfine", 1, 0, NXFINE},
@@ -450,6 +466,27 @@ int main(int argc, char *const argv[])
 			break;
 		case EXTRACT:
 			extract=strdup(optarg);
+			break;
+		case ALPHA:
+			alpha=atof(optarg);
+			break;
+		case XMIN:
+			xmin=atof(optarg);
+			break;
+		case XMAX:
+			xmax=atof(optarg);
+			break;
+		case YMIN:
+			ymin=atof(optarg);
+			break;
+		case YMAX:
+			ymax=atof(optarg);
+			break;
+		case ZMIN:
+			zmin=atof(optarg);
+			break;
+		case ZMAX:
+			zmax=atof(optarg);
 			break;
 		case AVGX:
 			sx=atoi(optarg);
@@ -740,7 +777,7 @@ int main(int argc, char *const argv[])
 		if(nset == 1 && !extract) msg(ERROR, "More than one frame required");
 		if(verbose && f==0 && floating_scale) {
 			cout << nset << " frame";
-			if(nset > 1) cout << "s";
+			if(nset != 1) cout << "s";
 			cout << " found." << endl;
 		}
 	}
@@ -955,10 +992,10 @@ void Torus(Array2<Ivec> Index)
 	Real twopibyny=twopi/ny;
 	Real twopibynz=twopi/nz;
 	
-	Array2<Real> zmax(Nx,Ny);
+	Array2<Real> maxz(Nx,Ny);
 	for(int u=0; u < Nx; u++)
 		for(int v=0; v < Ny; v++)
-			zmax(u,v)=-REAL_MAX;
+			maxz(u,v)=-REAL_MAX;
 									
 	Real cosPhi,sinPhi;
 	Real cosTheta,sinTheta;
@@ -976,15 +1013,23 @@ void Torus(Array2<Ivec> Index)
 	Real xoffset=0.5+Rp*1.2;
 	Real yoffset=0.5+Rp*1.5;
 	
+	Real deltax=(xmax-xmin)/nx;
+	Real deltaz=(zmax-zmin)/nz;
+	
+	Real yfactor=twopi/(ymax-ymin);
+	
 	for(int j=0; j < ny; j++)  {
 		for(int j2=-Nyfine; j2 <= Nyfine; j2++)  {
 			Real xj=j+j2*yfinestep;
-			Real theta=xj*twopibyny;
+			Real theta0=xj*twopibyny;
 			Real sintheta,costheta;
-			sincos(theta,&sintheta,&costheta);
+			if(!alpha) sincos(theta0,&sintheta,&costheta);
 			for(int k=0; k < nz; k++)  {
 				for(int k2=-Nzfine;	k2 <= Nzfine; k2++)  {
 					Real xk=k+k2*zfinestep;
+					Real factor=(zmin+xk*deltaz)*alpha*yfactor;
+					Real factormin=factor*xmin;
+					Real factordelta=factor*deltax;
 					Real phi=xk*twopibynz;
 					if(phi >= 0 && phi <= cutoff) {
 						Real cosphi,sinphi;
@@ -993,6 +1038,10 @@ void Torus(Array2<Ivec> Index)
 							for(int i2=(i == 0 ? 0 : -Nxfine);
 								i2 <= (i == nx-1 ? 0 : Nxfine); i2++)  {
 								Real xi=i+i2*xfinestep;
+								if(alpha) {
+									Real theta=theta0+factormin+xi*factordelta;
+									sincos(theta,&sintheta,&costheta);
+								}
 								Real r=a0+xi;
 								Real rperp=R0+r*costheta;
 								Real x=rperp*cosphi;
@@ -1007,8 +1056,8 @@ void Torus(Array2<Ivec> Index)
 								int u=(int)(xp*projection+xoffset);
 								int v=Ny-((int)(yp*projection+yoffset));
 								if(u >= 0 && u < Nx && v >=0 && v < Ny
-								   && zp > zmax(u,v)) {
-									zmax(u,v)=zp;
+								   && zp > maxz(u,v)) {
+									maxz(u,v)=zp;
 									Index(u,v)=Ivec(xi,xj,xk);
 								}	
 							}

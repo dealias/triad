@@ -101,6 +101,8 @@ char *dashify(const char *s, char *s2=NULL);
 char *undashify(const char *s, char *s2=NULL);
 char *convert(const char *s, char from, char to, char *s2);
 
+extern "C" char *strdup(const char *);
+
 extern "C" int strcasecmp (const char *s1, const char *s2);
 extern "C" int strncasecmp (const char *s1, const char *s2, size_t n);
 
