@@ -229,7 +229,7 @@ void out_function(ostream& os, T (*f)(int), char *text, int n, int nperline)
 		os << (*f)(i);
 		if(++i % nperline) os << "\t"; else os << " \\" << newl;
 	}
-	os << (*f)(n-1) << endl;
+	os << (*f)(n-1) << newl;
 }
 
 #if _CRAY
@@ -246,7 +246,7 @@ void out_curve(ostream& os, T *f, char *text, int n, int nperline)
 		os << f[i];
 		if(++i % nperline) os << "\t"; else os << " \\" << newl;
 	}
-	os << f[n-1] << endl;
+	os << f[n-1] << newl;
 }
 
 inline void out_function(ostream& os, Real (*f)(int), char *text, int n)
