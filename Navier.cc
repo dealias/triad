@@ -147,6 +147,8 @@ static Avgylabel *avgyre,*avgyim;
 static char tempbuffer[30];
 static int tcount=0;
 
+extern "C" int mkdir(const char *, mode_t); 
+
 void NWave::InitialConditions()
 {
 	int i,n;
@@ -201,7 +203,6 @@ void NWave::InitialConditions()
 	avgyim=new Avgylabel[Nmoment];
 	for(n=0; n < Nmoment; n++) {
 		sprintf(tempbuffer,"avgy%d",n);
-		extern "C" int mkdir(const char *, mode_t); 
 
 		mkdir(Vocabulary->FileName(dirsep,tempbuffer),0xFFFF);
 		errno=0;
