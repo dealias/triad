@@ -384,6 +384,8 @@ idle.o: /usr/include/gnu/types.h /usr/include/confname.h
 idle.o: /usr/include/sys/types.h /usr/include/linux/types.h
 idle.o: /usr/include/asm/types.h /usr/lib/g++-include/string.h
 idle.o: /usr/lib/g++-include/cstring /usr/lib/g++-include/std/cstring.h
+tremain.o: /usr/lib/g++-include/iostream.h /usr/lib/g++-include/streambuf.h
+tremain.o: /usr/lib/g++-include/libio.h /usr/lib/g++-include/_G_config.h
 unix.o: /usr/include/stdlib.h /usr/include/features.h
 unix.o: /usr/include/sys/cdefs.h /usr/lib/g++-include/std/stddef.h
 unix.o: /usr/lib/g++-include/_G_config.h /usr/lib/g++-include/std/cstddef.h

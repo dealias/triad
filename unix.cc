@@ -27,8 +27,11 @@ void cputime(double *cpu)
 		double seconds,tseconds;
 		SECOND(seconds);
 		TSECND(tseconds);
+		double child=seconds-tseconds;
+		if(child < 0.0) child=0.0;
+		
 		cpu[0] = tseconds;
-		cpu[1] = seconds-tseconds;
+		cpu[1] = child;
 		cpu[2] = 0.0;
 		return;
 	}
