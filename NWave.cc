@@ -489,10 +489,10 @@ int I_RK2::Corrector(double dt, double& errmax, int start, int stop)
 }
 
 inline int C_RK2::Correct(const Real Y0, const Real Y1, Real& Y,
-						  const Real, const Real source,
+						  const Real, const Real Source,
 						  const double)
 {
-	Real temp=dt*source;
+	Real temp=dt*Source;
 	Real discr=Y0*Y0+2.0*Y1*temp;
 	if(discr < 0.0) return 0;
 	Y=sgn(Y0+temp)*sqrt(discr);
@@ -500,11 +500,11 @@ inline int C_RK2::Correct(const Real Y0, const Real Y1, Real& Y,
 }
 
 inline int C_RK2::Correct(const Complex Y0, const Complex Y1, Complex& Y,
-						  const Complex source0, const Complex source,
+						  const Complex Source0, const Complex Source,
 						  const double dt)
 {
-	if(!Correct(Y0.re,Y1.re,Y.re,source0.re,source.re,dt)) return 0;
-	if(!Correct(Y0.im,Y1.im,Y.im,source0.im,source.im,dt)) return 0;
+	if(!Correct(Y0.re,Y1.re,Y.re,Source0.re,Source.re,dt)) return 0;
+	if(!Correct(Y0.im,Y1.im,Y.im,Source0.im,Source.im,dt)) return 0;
 	return 1;
 }
 
@@ -512,9 +512,9 @@ int C_RK2::Corrector(double dt, double& errmax, int start, int stop)
 {
 	int j;
 	for(j=start; j < stop; j++)
-		if(!Correct(y0[j],y1[j],y[j],source0[j],source[j],dt)) return 0;
+		if(!Correct(y0[j],y1[j],y[j],Source0[j],Source[j],dt)) return 0;
 	if(dynamic) for(j=start; j < stop; j++)
-		calc_error(y0[j],y[j],y0[j]+dt*source0[j],y[j],errmax);
+		calc_error(y0[j],y[j],y0[j]+dt*Source0[j],y[j],errmax);
 	return 1;
 }
 
@@ -563,25 +563,25 @@ void C_RK4::TimestepDependence(double dt)
 	sixthdt2=sixthdt*dt;
 }
 
-inline int C_RK4::Correct(const Real Y0, Real& Y, const Real source0,
-						  const Real source1, const Real source2,
-						  const Real source, const double)
+inline int C_RK4::Correct(const Real Y0, Real& Y, const Real Source0,
+						  const Real Source1, const Real Source2,
+						  const Real Source, const double)
 {			
-	Real temp=sixthdt*(source0+2.0*(source1+source2)+source);
-	Real discr=Y0*Y0+2.0*(Y0*temp+sixthdt2*(source1*(source0+source2)+
-											source2*source));
+	Real temp=sixthdt*(Source0+2.0*(Source1+Source2)+Source);
+	Real discr=Y0*Y0+2.0*(Y0*temp+sixthdt2*(Source1*(Source0+Source2)+
+											Source2*Source));
 	if(discr < 0.0) return 0;
 	Y=sgn(Y0+temp)*sqrt(discr);
 	return 1;
 }
 
-inline int C_RK4::Correct(const Complex Y0, Complex& Y, const Complex source0,
-						  const Complex source1, const Complex source2,
-						  const Complex source, const double dt)
+inline int C_RK4::Correct(const Complex Y0, Complex& Y, const Complex Source0,
+						  const Complex Source1, const Complex Source2,
+						  const Complex Source, const double dt)
 {			
-	if(!Correct(Y0.re,Y.re,source0.re,source1.re,source2.re,source.re,dt))
+	if(!Correct(Y0.re,Y.re,Source0.re,Source1.re,Source2.re,Source.re,dt))
 		return 0;
-	if(!Correct(Y0.im,Y.im,source0.im,source1.im,source2.im,source.im,dt))
+	if(!Correct(Y0.im,Y.im,Source0.im,Source1.im,Source2.im,Source.im,dt))
 		return 0;
 	return 1;
 }
@@ -725,36 +725,36 @@ int I_RK5::Corrector(double dt, double& errmax, int start, int stop)
 
 inline void C_RK5::Correct(const Real Y0, Real& Y2, Real& Y3,
 						   const Real Y4, Real& Y,
-						   const Real source0, const Real source2, 
-						   const Real source3, const Real source4,
-						   const Real source, const double, int& invertible)
+						   const Real Source0, const Real Source2, 
+						   const Real Source3, const Real Source4,
+						   const Real Source, const double, int& invertible)
 {
-	Real discr=Y0*Y0+2.0*(c0*Y0*source0+c2*Y2*source2+c3*Y3*source3+
-						  c5*Y*source);
+	Real discr=Y0*Y0+2.0*(c0*Y0*Source0+c2*Y2*Source2+c3*Y3*Source3+
+						  c5*Y*Source);
 	if(discr < 0.0) invertible=0;
 	else {
 // Put discr in Y2, pred in Y3 for deferred error analysis
-		Y3=Y0*Y0+2.0*(d0*Y0*source0+d2*Y2*source2+d3*Y3*source3+
-					  d4*Y4*source4+d5*Y*source);
+		Y3=Y0*Y0+2.0*(d0*Y0*Source0+d2*Y2*Source2+d3*Y3*Source3+
+					  d4*Y4*Source4+d5*Y*Source);
 		Y2=discr;
-		Y=sgn(Y0+c0*source0+c2*source2+c3*source3+c5*source)*sqrt(discr);
+		Y=sgn(Y0+c0*Source0+c2*Source2+c3*Source3+c5*Source)*sqrt(discr);
 	}
 }
 
 inline void C_RK5::Correct(const Complex Y0, Complex& Y2, Complex& Y3,
 						   const Complex Y4, Complex& Y,
-						   const Complex source0, const Complex source2, 
-						   const Complex source3, const Complex source4,
-						   const Complex source, const double dt,
+						   const Complex Source0, const Complex Source2, 
+						   const Complex Source3, const Complex Source4,
+						   const Complex Source, const double dt,
 						   int& invertible)
 {
-	Correct(Y0.re,Y2.re,Y3.re,Y4.re,Y.re,source0.re,source2.re,
-			source3.re,source4.re,source.re,dt,invertible);
+	Correct(Y0.re,Y2.re,Y3.re,Y4.re,Y.re,Source0.re,Source2.re,
+			Source3.re,Source4.re,Source.re,dt,invertible);
 #ifndef _CRAY		
 	if(!invertible) return;
 #endif			
-	Correct(Y0.im,Y2.im,Y3.im,Y4.im,Y.im,source0.im,source2.im,
-			source3.im,source4.im,source.im,dt,invertible);
+	Correct(Y0.im,Y2.im,Y3.im,Y4.im,Y.im,Source0.im,Source2.im,
+			Source3.im,Source4.im,Source.im,dt,invertible);
 }
 
 int C_RK5::Corrector(double, double& errmax, int start, int stop)
