@@ -23,6 +23,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #include <stdlib.h>
 #include <iostream.h>
 
+namespace Array {
+  
 inline void ArrayExit(char *x);
 
 #ifndef __ExternalArrayExit
@@ -181,5 +183,7 @@ public:
     return *this;
   }
 };
+
+}
 
 #endif

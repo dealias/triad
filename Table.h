@@ -6,6 +6,8 @@
 
 #include "DynVector.h"
 
+namespace Array {
+  
 template<class B>
 class EntryBase {
  protected:	
@@ -70,5 +72,7 @@ class Entry : public EntryBase<B> {
   Entry(char *key0,Table<B> *t) {key=key0; t->Add(this);}
   B *New() {return new T;}
 };
+
+}
 
 #endif
