@@ -746,8 +746,11 @@ int main(int argc, char *const argv[])
 			
 			if(make_mpeg) mpeg(nfiles,argf,nset-1,"mpg",xsize,ysize);
 			else animate(nfiles,argf,nset-1,"miff","%d",xsize,ysize);
-		} else animate(nfiles,argf,nset-1,format,"%0" << NDIGITS << "d",
-					   xsize,ysize);
+		} else {
+			strstream buf;
+			buf << "%0" << NDIGITS << "d" << ends;
+			animate(nfiles,argf,nset-1,format,buf.str(),xsize,ysize);
+		}
 	}
 	
 	cleanup();
