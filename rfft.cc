@@ -197,8 +197,8 @@ void crfft(Complex *data, unsigned int log2n, int isign, Real scale,
 //                         -1 for a bit-reversed fft of data (faster).]
 // On exit:  data contains the n/2+1 Complex Fourier values.
 
-void mrcfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
-			unsigned int inc1, unsigned int inc2, Real scale, int bitreverse)
+void mrcfft0(Complex *data, unsigned int log2n, int isign, unsigned int nk,
+			 unsigned int inc1, unsigned int inc2, Real scale, int bitreverse)
 {		 
 	if(log2n == 0) return;
 	log2n--;
@@ -278,8 +278,8 @@ void mrcfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 // stored as a Complex array of length n/2.
 // Note: To compute a true inverse transform, set scale=1.0/n.
 
-void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
-			unsigned int inc1, unsigned int inc2, Real scale, int bitreverse)
+void mcrfft0(Complex *data, unsigned int log2n, int isign, unsigned int nk,
+			 unsigned int inc1, unsigned int inc2, Real scale, int bitreverse)
 {		 
 	if(log2n == 0) return;
 	log2n--;
@@ -392,8 +392,6 @@ void rcfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	unsigned int ny=1 << log2ny;
 	const unsigned int nyp=ny/2+1;
 
-	mrcfft(data,log2ny,isign,nx,1,nyp,scale,bitreverse);
-
 	Complex *pstop=data+nx*nyp;
 	int pinc=2*nyp;
 	for(Complex *p=data+nyp; p < pstop; p += pinc) {
@@ -401,6 +399,7 @@ void rcfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 		for(unsigned int j=0; j < nyp; j++) p[j]=-p[j];
 	}
 	
+	mrcfft(data,log2ny,isign,nx,1,nyp,scale,bitreverse);
 	mfft(data,log2nx,isign,nyp,nyp,1);
 }
 
@@ -429,8 +428,9 @@ void crfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	unsigned int nx=1 << log2nx;
 	unsigned int ny=1 << log2ny;
 	const unsigned int nyp=ny/2+1;
-
+	
 	mfft(data,log2nx,isign,nyp,nyp,1);
+	mcrfft(data,log2ny,isign,nx,1,nyp,scale,bitreverse);
 	
 	Complex *pstop=data+nx*nyp;
 	int pinc=2*nyp;
@@ -438,8 +438,6 @@ void crfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 #pragma ivdep
 		for(unsigned int j=0; j < nyp; j++) p[j]=-p[j];
 	}
-	
-	mcrfft(data,log2ny,isign,nx,1,nyp,scale,bitreverse);
 }
 
 // Call crfft2d but first enforce reality condition by symmetrizing data.
@@ -483,7 +481,7 @@ void rcfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	const int nx1=nx+offset;
 	Complex *p;
 
-	mrcfft(data,log2ny,isign,nx,nx1,1,scale,bitreverse);
+	mrcfft0(data,log2ny,isign,nx,nx1,1,scale,bitreverse);
 	
 	Complex *pstop=data+nx1*nyp;
 #if _CRAY
@@ -525,10 +523,10 @@ void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	unsigned int ny=1 << log2ny;
 	const unsigned int nyp=ny/2+1;
 	const int nx1=nx+offset;
-	Complex *p;
 
 	mfft(data,log2nx,isign,nyp,1,nx1);
-
+	
+	Complex *p;
 	Complex *pstop=data+nx1*nyp;
 #if _CRAY
 	for(unsigned int i=1; i < nx; i += 2) {
@@ -541,7 +539,7 @@ void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	}
 #endif	
 	
-	mcrfft(data,log2ny,isign,nx,nx1,1,scale,bitreverse);
+	mcrfft0(data,log2ny,isign,nx,nx1,1,scale,bitreverse);
 }
 
 // Call crfft2dT but first enforce reality condition by symmetrizing data.
@@ -670,7 +668,7 @@ void crfft3d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	
 	for(i=0; i < nx; i++)
 		mfft(data+i*nyzp,log2ny,isign,nzp,nzp,1);
-		
+	
 	mfft(data,log2nx,isign,nyzp,nyzp,1);
 	
 	int pinc=2*nzp;
@@ -684,7 +682,7 @@ void crfft3d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 			for(unsigned int k=0; k < nzp; k++) p[k]=-p[k];
 		}
 	}
-		
+	
 	mcrfft(data,log2nz,isign,nx*ny,1,nzp,scale,bitreverse);
 }
 
@@ -710,3 +708,4 @@ void crfft3d_sym(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	
 	crfft3d(data,log2nx,log2ny,log2nz,isign,scale,bitreverse);
 }
+

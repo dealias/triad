@@ -82,3 +82,17 @@ void fft(Complex *data, unsigned int log2n, int isign, Real scale, int)
 	
 	CCFFT(isign,n,scale,data,data,table[j],work[j],isys);
 }
+
+void mrcfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
+			unsigned int inc1, unsigned int inc2, Real scale, int bitreverse)
+{		 
+	if(inc1 == 1) mrcfft0(data,log2n,isign,nk,inc1,inc2,scale,bitreverse);
+	else exit(1); // Not implemented.
+}
+
+void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
+			unsigned int inc1, unsigned int inc2, Real scale, int bitreverse)
+{		 
+	if(inc1 == 1) mcrfft0(data,log2n,isign,nk,inc1,inc2,scale,bitreverse);
+	else exit(1); // Not implemented.
+}

@@ -1,5 +1,5 @@
 C++ = g++ -Wall -Wno-uninitialized
-LIB = $(LFLAGS) -lfftw -lm
+LIB = $(LFLAGS) -lrfftw -lfftw -lm
 MAKEDEPEND = $(C++) -M -DDEPEND
 FFT = wfft
 

@@ -41,6 +41,12 @@ void mrcfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 			unsigned int inc1=0, unsigned int inc2=1, Real scale=1.0,
 			int bitreverse=0);
+void mrcfft0(Complex *data, unsigned int log2n, int isign, unsigned int nk,
+			 unsigned int inc1=0, unsigned int inc2=1, Real scale=1.0,
+			 int bitreverse=0);
+void mcrfft0(Complex *data, unsigned int log2n, int isign, unsigned int nk,
+			 unsigned int inc1=0, unsigned int inc2=1, Real scale=1.0,
+			 int bitreverse=0);
 
 void fft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 		   int isign, Real scale=1.0, int bitreverse=0);
