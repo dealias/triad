@@ -245,7 +245,9 @@ void read_init()
 {
 	int i,ny0;
 	double t0,dt0;
-	char *type= (restart ? "restart" : "initialization");
+	char *type;
+	if(restart) type="restart";
+	else type="initialization";
 	char *ny_msg=
 		"Current value of ny (%d) disagrees with value (%d) in file\n%s";
 	

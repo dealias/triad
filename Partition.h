@@ -212,7 +212,7 @@ class Partition : public GeometryBase {
 public:
 	char *Name();
 	int Valid(char *s) {return strcmp(s,"SR")==0;}
-	char *WeightFileName(char *suffix);
+	char *WeightFileName();
 	void MakeBins();
 	INLINE void List(ostream &os);
 	Mc ComputeBinAverage(Bin<T,D> *k, Bin<T,D> *p, Bin<T,D> *q);
@@ -253,7 +253,7 @@ INLINE void Partition<T,D>::GenerateWeights() {
 	double interval=15.0;
 	oxstream fout;
 	
-	char *filename=WeightFileName("");
+	char *filename=WeightFileName();
 	fout.open(filename);
 	if(!fout) msg(ERROR,"Weight file %s could not be opened",filename);
 	fout << lastindex;
@@ -355,7 +355,7 @@ INLINE void Partition<T,D>::Initialize() {
 	psibufferR=(reality ? psibuffer+Nmode : psibuffer);
 	psibufferStop=psibuffer+n;
 		
-	char *filename=WeightFileName("");
+	char *filename=WeightFileName();
 	
 	WeightN=WeightIndex(Nmode,Nmode,n);
 	if(!get_weights(weight,&Nweight,filename)) {
