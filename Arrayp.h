@@ -31,7 +31,6 @@ class ArrayMod {
   inline void Mod(int& i, unsigned int n) const {
     i %= (int) n;
     if(i < 0) i += (int) n;
-    return i;
   }
 };
 
