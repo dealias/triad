@@ -2,13 +2,12 @@
 #define __xstream_h__ 1
 
 #define _ALL_SOURCE 1
-#if _CRAY
+#ifdef _POSIX_SOURCE
 #undef _POSIX_SOURCE
-#endif
 #include <rpc/rpc.h>
-#undef _ALL_SOURCE
-#if _CRAY
 #define _POSIX_SOURCE
+#else
+#include <rpc/rpc.h>
 #endif
 
 #include <stdio.h>

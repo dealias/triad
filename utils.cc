@@ -4,6 +4,7 @@
 #include <iostream.h>
 #include <errno.h>
 #include <time.h>
+#include <string.h>
 
 char* run="";
 Exit_code exit_signal=COMPLETE;
