@@ -336,7 +336,7 @@ int main(int argc, char *const argv[])
 			double step=(vmax == vmin) ? 0.0 : PaletteMax/(vmax-vmin);
 			
 			strstream buf;
-			buf << rgbdir << "/" << fieldname << setfill('0') << setw(4)
+			buf << rgbdir << fieldname << setfill('0') << setw(4)
 				<< set << "." << format << ends;
 			char *oname=buf.str();
 			ofstream fout(oname);
@@ -433,7 +433,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 		buf << fieldname << "\" " << rgbdir
 			<< fieldname << setfill('0') << setw(4) << n << "." << format;
 	}
-	buf << " " << type << ":" << rgbdir << "/" << argf[0];
+	buf << " " << type << ":" << rgbdir << argf[0];
 	if(type != "yuv3") buf << "." << type;
 	buf << "." << n << ends;
 	char *cmd=buf.str();

@@ -85,7 +85,9 @@ void SR::NonLinearSrc(Var *source, Var *psi, double)
 		}
 	}
 #else
+#if _CRAYMVP
 #pragma _CRI taskloop private(ip) value(psibuffer,Ntotal,pqIndex,qStart)
+#endif	
 	for(int ip=0; ip < Ntotal; ip++) {
 		Var psip=psibuffer[ip];
 		Var *pq=pqIndex[ip]; 
@@ -94,7 +96,9 @@ void SR::NonLinearSrc(Var *source, Var *psi, double)
 	}
 #endif		
 	
+#if _CRAYMVP
 #pragma _CRI taskloop private(i) value(source,triadLimits,Npsi)
+#endif	
 	for(int i=0; i < Npsi; i++) {
 		Triad *t=triadLimits[i].start, *tstop=triadLimits[i].stop;
 #if !_CRAYMVP && COMPLEX && MCREAL

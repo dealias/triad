@@ -1,5 +1,6 @@
 C++ = CC -D_POSIX_SOURCE
 OPT = $(CFLAGS)
+INCL = -I . -I $(TRI)
 LIB = $(LFLAGS) -lsci -lm
 MAKEDEPEND = cpp -M
 MDOPTS = -I /opt/ctl/CC/CC/include/
