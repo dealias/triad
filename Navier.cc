@@ -158,6 +158,7 @@ typedef char Avgylabel[20];
 static Avgylabel *avgyre,*avgyim;
 static int tcount=0;
 static Complex *xcoeff, *ycoeff;
+static Real *norm_factor;
 
 void NWave::InitialConditions()
 {
@@ -234,6 +235,11 @@ void NWave::InitialConditions()
 		if(discrete && truefield) {
 			set_fft_parameters();
 			psix=new Var[nfft];
+			norm_factor=new Real[Npsi];
+			for(int m=0; m < Npsi; m++) {
+				norm_factor[m]=sqrt(Geometry->Normalization(m)/
+									Geometry->K2(m));
+			}
 		} else {
 			int m;
 			Real k0=REAL_MAX;
@@ -361,7 +367,7 @@ void NWave::Output(int)
 			}
 		} else {
 			fpsi << Nxb << Nyb << 1;
-			if(discrete) DiscretePad(psix,y);
+			if(discrete) DiscretePad(psix,y,norm_factor);
 			else CartesianPad(psix,y);
 			
 			crfft2dT(psix,log2Nxb,log2Nyb,1);

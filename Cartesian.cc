@@ -78,7 +78,7 @@ void set_fft_parameters()
 	NPadTop=(Nyp-(Ny+1)/2)*Nxb1+Nxb1-((Nx+1)/2+xoffset);
 }
 
-void DiscretePad(Var *to, Var *from)
+void DiscretePad(Var *to, Var *from, Real *norm)
 {
 	int k=0;
 	to += xoffset;
@@ -87,7 +87,7 @@ void DiscretePad(Var *to, Var *from)
 #pragma ivdep		
 	for(; to < tostop; to++) {
 		int index=ModeBin[k++];
-		if(index >= 0) *to=from[index];
+		if(index >= 0) *to=from[index]*norm[index];
 		else *to=0.0;
 	}
     for(int j=0; j < NRows-1; j++) {
@@ -98,7 +98,7 @@ void DiscretePad(Var *to, Var *from)
 #pragma ivdep		
 		for(; to < tostop; to++) {
 			int index=ModeBin[k++];
-			if(index >= 0) *to=from[index];
+			if(index >= 0) *to=from[index]*norm[index];
 			else *to=0.0;
 		}
     }
