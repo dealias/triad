@@ -102,6 +102,8 @@ class IntegratorBase {
   int microprocess;
   int verbose;
   int dynamic;
+  int order;
+  double pgrow, pshrink;
  public:	
   void SetAbbrev(const char *abbrev0) {abbrev=abbrev0;}
   const char *Abbrev() {return abbrev;}
@@ -120,6 +122,14 @@ class IntegratorBase {
     microsteps=microsteps0*Microfactor();
     verbose=verbose0;
     dynamic=dynamic0;
+  }
+  virtual void ExtrapolateTimestep () {
+    if(errmax < tolmin2) {
+      if(errmax) growfactor=pow(tolmin2/errmax,pgrow);
+    } else if(tolmin2) shrinkfactor=growfactor=pow(tolmin2/errmax,pshrink);
+    growfactor=min(growfactor,stepfactor);
+    shrinkfactor=max(shrinkfactor,stepinverse);
+    if(errmax <= tolmax2) errmax=0.0; // Force a time step adjustment.
   }
   void Integrate(ProblemBase& problem, Var *const y, double& t, double tmax,
 		 double& dt, const double sample, int& iteration);
