@@ -39,7 +39,7 @@ inline void SetIdentity(Array2<T>& A)
 }
 
 template<class T>
-inline Array2<T> Identity(unsigned int n, unsigned int m, T var)
+inline Array2<T> Identity(unsigned int n, unsigned int m, T var=(T) 0.0)
 {
 	Array2<T> A(n,m);
 	SetIdentity(A);
