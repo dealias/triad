@@ -19,6 +19,7 @@ Real gammaf=0.0;
 Real nu0=0.0;
 
 Real force=0.0;
+Real tauforce=0.0;
 
 Real kL=0.0;
 Real kH=0.9*DBL_MAX;
@@ -49,6 +50,7 @@ NWave::NWave()
 	VOCAB(gammaf,0.0,REAL_MAX);
 	
 	VOCAB(force,0.0,REAL_MAX);
+	VOCAB(tauforce,0.0,REAL_MAX);
 	
 	VOCAB(kL,0.0,REAL_MAX);
 	VOCAB(kH,0.0,REAL_MAX);
@@ -162,7 +164,6 @@ void NWave::InitialConditions()
 	nu=new Nu[Npsi];
 	nuC=new Complex[Npsi];
 	forcing=new Real[Npsi];
-	randomforce=new Var[Npsi];
 	
 	K=new Real[Npsi];
 	Th=new Real[Npsi];
@@ -241,7 +242,7 @@ void NWave::Output(int)
 	fekvt.flush();
 	
 	if(average) for(n=0; n < Nmoment; n++) {
-		for(i=0; i < Npsi; i++) moment[i] = y[Npsi+Npsi*n+i];
+		for(i=0; i < Npsi; i++) moment[i] = y[Npsi*(n+1)+i];
 		out_curve(favgy[n],t,"t");
 		out_curve(favgy[n],moment,"",Npsi);
 		favgy[n].flush();

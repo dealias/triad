@@ -7,7 +7,6 @@
 extern Nu *nu,*nu_inv;
 extern Real *nuR_inv,*nuI;
 extern Real *forcing;
-extern Var *randomforce;
 
 const int Nmoment=7;	
 

@@ -18,6 +18,7 @@ TriadLimits *triadLimits;
 Nu *nu,*nu_inv;
 Real *nuR_inv,*nuI;
 Real *forcing;
+extern Real tauforce;
 
 void PrimitiveNonlinearity(Var *source, Var *psi, double)
 {
@@ -111,23 +112,14 @@ void ConservativeExponentialLinearity(Complex *source, Complex *psi, double)
 	}
 }
 
-static int last_iteration=-1;
-Var *randomforce;
+static Real last_t=-REAL_MAX;
+static Complex randomfactor=0.0;
 
-void ConstantForcing(Var *source, Var *, double)
+void ConstantForcing(Var *source, Var *, double t)
 {
-	if(iteration > last_iteration) {
-		last_iteration=iteration;
-		for(int k=0; k < Npsi; k++) {
-			if(forcing[k]) {
-				Var w;
-				crand_gauss(w);
-				randomforce[k] = w;
-			}
-		}
-	}
+	if(t-last_t > tauforce) {last_t=t; crand_gauss(randomfactor);}
 #pragma ivdep
-	for(int k=0; k < Npsi; k++) source[k] += forcing[k]*randomforce[k];
+	for(int k=0; k < Npsi; k++) source[k] += forcing[k]*randomfactor;
 }
 
 Solve_RC C_Euler::Solve(Real *y0, double t, double dt)
