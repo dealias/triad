@@ -63,16 +63,16 @@ template<class T>
 class Hash {
 	int n;
 	T first, last;
-	double reciprocal;
+	double factor,constant;
 	int *table;
 public:
 	virtual inline int hash(T value) {
-		return (int) ((value-first)*reciprocal*(n-1));
+		return (int) (value*factor+constant);
 	}
 	
 	Hash(int nhash, int nvalue, T value(int)) {
 		n=nhash; first=value(0); last=value(nvalue-1);
-		reciprocal=1.0/(last-first);
+		factor=((double) n-1)/(last-first); constant=0.5-first*factor;
 		table=new int[n+1];
 		int j=0;
 		for(int i=0; i < n; i++) {

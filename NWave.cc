@@ -43,21 +43,24 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 		}
 	}
 #else
-	int ip,iq;
+#pragma parallel	
 #pragma _CRI taskloop private(ip) value(psibuffer,Ntotal,pqIndex,NpsiR)
-	for(ip=0; ip < NpsiR; ip++) {
+	for(int ip=0; ip < NpsiR; ip++) {
 		Var psip=psibuffer[ip];
 		Var *pq=pqIndex[ip]; 
 #pragma ivdep		
-		for(iq=NpsiR; iq < Ntotal; iq++) pq[iq]=psip*psibuffer[iq];
+		for(int iq=NpsiR; iq < Ntotal; iq++) pq[iq]=psip*psibuffer[iq];
 	}
+#pragma endparallel	
+#pragma parallel	
 #pragma _CRI taskloop private(ip) value(psibuffer,Ntotal,pqIndex,NpsiR)
-	for(ip=NpsiR; ip < Ntotal; ip++) {
-		Var psip=psibuffer[ip];
-		Var *pq=pqIndex[ip]; 
+	for(int iP=NpsiR; iP < Ntotal; iP++) {
+		Var psip=psibuffer[iP];
+		Var *pq=pqIndex[iP]; 
 #pragma ivdep		
-		for(iq=ip; iq < Ntotal; iq++) pq[iq]=psip*psibuffer[iq];
+		for(int iq=iP; iq < Ntotal; iq++) pq[iq]=psip*psibuffer[iq];
 	}
+#pragma endparallel	
 #endif		
 	
 #pragma _CRI taskloop private(i) value(source,triadLimits,Npsi)
