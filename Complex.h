@@ -41,11 +41,11 @@ class Complex
 
  public:
 
-  Complex() {std::cout << "construct " << this << std::endl;}
+  Complex() {}
   Complex(Real r, Real i=0) : re(r), im(i) {}
   Complex(const Complex& y) : re(y.re), im(y.im) {}
 	
-  ~Complex() {std::cout << "deconstruct " << this << std::endl;}
+  ~Complex() {}
 
   Real real() const {return re;}
   Real imag() const {return im;}

@@ -1,4 +1,3 @@
-#include "../Complex.h"
 #include "fftw++.h"
 
 // Compilation: g++ example0r.cc fftw++.cc -lfftw3
