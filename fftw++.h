@@ -613,9 +613,22 @@ public:
 			      effort);
   }
   
-  void fft(Complex *in, Complex *out=NULL, bool shift0=false) {
+  void fft(Complex *in, Complex *out=NULL) {
+    fftw::fft(in,out);
+  }
+    
+  void fft(Complex *in, bool shift0, Complex *out=NULL) {
     shift=shift0;
     fftw::fft(in,out);
+  }
+    
+  void fftNormalized(Complex *in, Complex *out=NULL) {
+    fftw::fftNormalized(in,out);
+  }
+    
+  void fftNormalized(Complex *in, bool shift0, Complex *out=NULL) {
+    shift=shift0;
+    fftw::fftNormalized(in,out);
   }
     
   void Execute(Complex *in, Complex *out) {
@@ -680,9 +693,22 @@ public:
 			      effort);
   }
   
-  void fft(Complex *in, Complex *out=NULL, bool shift0=false) {
+  void fft(Complex *in, Complex *out=NULL) {
+    fftw::fft(in,out);
+  }
+    
+  void fft(Complex *in, bool shift0, Complex *out=NULL) {
     shift=shift0;
     fftw::fft(in,out);
+  }
+    
+  void fftNormalized(Complex *in, Complex *out=NULL) {
+    fftw::fftNormalized(in,out);
+  }
+    
+  void fftNormalized(Complex *in, bool shift0, Complex *out=NULL) {
+    shift=shift0;
+    fftw::fftNormalized(in,out);
   }
     
   void Execute(Complex *in, Complex *out) {
@@ -798,9 +824,22 @@ public:
 			      effort);
   }
   
-  void fft(Complex *in, Complex *out=NULL, bool shift0=false) {
+  void fft(Complex *in, Complex *out=NULL) {
+    fftw::fft(in,out);
+  }
+    
+  void fft(Complex *in, bool shift0, Complex *out=NULL) {
     shift=shift0;
     fftw::fft(in,out);
+  }
+    
+  void fftNormalized(Complex *in, Complex *out=NULL) {
+    fftw::fftNormalized(in,out);
+  }
+    
+  void fftNormalized(Complex *in, bool shift0, Complex *out=NULL) {
+    shift=shift0;
+    fftw::fftNormalized(in,out);
   }
     
   void Execute(Complex *in, Complex *out) {
@@ -862,9 +901,22 @@ public:
 			      effort);
   }
   
-  void fft(Complex *in, Complex *out=NULL, bool shift0=false) {
+  void fft(Complex *in, Complex *out=NULL) {
+    fftw::fft(in,out);
+  }
+    
+  void fft(Complex *in, bool shift0, Complex *out=NULL) {
     shift=shift0;
     fftw::fft(in,out);
+  }
+    
+  void fftNormalized(Complex *in, Complex *out=NULL) {
+    fftw::fftNormalized(in,out);
+  }
+    
+  void fftNormalized(Complex *in, bool shift0, Complex *out=NULL) {
+    shift=shift0;
+    fftw::fftNormalized(in,out);
   }
     
   void Execute(Complex *in, Complex *out) {
