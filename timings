@@ -16,4 +16,4 @@ crunch:  86.2 (fftw)           117 Mflops
 crunch: 120.3 (fft.cc)          84 Mflops
 merlin: 108.1 (fft.cc)          93 Mflops
 merlin:  87.5 (fftw)           115 Mflops
-wizard: 338.4 (fftw)           30 MFlops
+wizard: 338.4 (fftw)            30 MFlops
