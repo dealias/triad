@@ -1,9 +1,6 @@
 .cc.o:
 	$(C++) $(OPT) $(INCL) -o $@ -c $<
 
-.c.o:
-	$(CC) $(OPT) $(INCL) -o $@ -c $<
-
 default: $(CLEAN) dependencies
 	make -f $(TRI)/config/Compile files
 
