@@ -4,9 +4,8 @@
 #include "precision.h"
 #include "Complex.h"
 
-#ifndef COMPLEX
 #define COMPLEX 1
-#endif
+#define MCREAL 1
 
 #if(COMPLEX)
 typedef Complex Var;
@@ -16,7 +15,12 @@ typedef Real Var;
 const Real I=0.0;
 #endif
 
-typedef Real Nu;
+#if(MCREAL)
 typedef Real Mc;
+#else
+typedef Complex Mc;
+#endif
+
+typedef Real Nu;
 
 #endif

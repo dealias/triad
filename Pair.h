@@ -24,7 +24,6 @@ extern int reality;
 
 extern Var *psibuffer,*psibufferStop,*pqbuffer;
 extern DynVector<Triad> triad;
-extern Triad *triadBase;
 extern TriadLimits *triadLimits;
 
 #endif

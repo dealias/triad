@@ -10,7 +10,6 @@ int reality=1;
 
 Var *psibuffer,*psibufferStop,*pqbuffer;
 DynVector<Triad> triad;
-Triad *triadBase;
 TriadLimits *triadLimits;
 
 Nu *nu,*nu_inv;
@@ -49,7 +48,7 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 #pragma _CRI taskloop private(i) value(source,triadLimits,Npsi)
 	for(int i=0; i < Npsi; i++) {
 		Triad *t=triadLimits[i].start, *tstop=triadLimits[i].stop;
-#if (_AIX || __GNUC__) && COMPLEX
+#if (_AIX || __GNUC__) && COMPLEX && MCREAL
 		Real sumre, sumim;
 		for(sumre=sumim=0.0; t < tstop; t++) {
 			sumre += t->Mkpq * (*t->pq).re;

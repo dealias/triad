@@ -267,12 +267,11 @@ void Partition<T>::ComputeTriads() {
 	}
 	triad.Resize(Ntriad);
 	
-	triadBase=triad.Base();
-	triadLimits[0].start=triadBase;
+	triadLimits[0].start=triad.Base();
 	for(k=0; k < Nmode-1; k++) {
-		triadLimits[k+1].start=triadLimits[k].stop=triadBase+ntriad[k];
+		triadLimits[k+1].start=triadLimits[k].stop=triad.Base()+ntriad[k];
 	}
-	triadLimits[Nmode-1].stop=triadBase+Ntriad;
+	triadLimits[Nmode-1].stop=triad.Base()+Ntriad;
 
 	delete [] ntriad;
 	weight.~DynVector();
