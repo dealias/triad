@@ -148,7 +148,7 @@ public:
     if((size_t) p % sizeof(Complex) == 0) return;
     cerr << "ERROR: " << s << " array is not " << sizeof(Complex) 
 	 << "-byte aligned" << endl;
-//    exit(1);
+    exit(1);
   }
   
   void Setup(Complex *in, Complex *out=NULL) {
