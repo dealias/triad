@@ -3,8 +3,6 @@
 #include "options.h"
 #include "fft.h"
 
-static int zero=0;
-
 extern "C" void CFTFAX(const int& n, int* ifax, Real *trigs);
 						
 extern "C" void CFFTMLT(Real *ar, Real *ai, Real *work, Real *trigs,
@@ -18,7 +16,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	static unsigned int nlast=0;
 	static Real *trigs;
 	static int ifax[19];
-	static Realo *work;
+	static Real *work;
 	
 	if(n != nlast) {
 		nlast=n;
@@ -41,6 +39,8 @@ void fft(Complex *data, unsigned int log2n, int isign, int)
 	static double *table,*work;
 	unsigned int n=1 << log2n;
 	static int nlast=0, isys[1]={0};
+	int zero=0;
+
 	Real scale=1.0;
 	if(n != nlast) {
 		nlast=n;
