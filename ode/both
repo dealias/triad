@@ -1,0 +1,43 @@
+reset
+execute getrun
+location 7900 25500 4000 31000
+
+if($?m==0) {define m "c-pc"}
+define m ? {integrator ?}
+
+data "$!run/$!m"
+read {t 1 r 2 v 3 th 4 E 5 A 6}
+set x=r*cos(th)
+set y=r*sin(th)
+
+autolimits x y
+limits -1 2 -1 1
+box 1 2 4 4
+xlabel x
+ylabel y
+ptype 20 3
+expand 0.5
+points x y
+
+pause
+
+set all=E concat A
+autolimits t all
+expand $expand0
+box 4 4 0 2
+ylabel2 E,A
+ltype 0
+connectlabel "E" t E
+ltype 2
+connectlabel "A" t A
+#connectlabel "r" t r
+#connectlabel "v" t v
+#connectlabel "x" t x
+#connectlabel "y" t y
+#connectlabel "th" t th
+
+expand $expand0/1.4
+if('$m'=='pc') {title "Predictor Corrector (PC)"}
+if('$m'=='c-pc') {title "Conservative Predictor Corrector (C-PC)"}
+
+id

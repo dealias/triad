@@ -1,0 +1,53 @@
+loadcursor "yall.coord"
+reset
+execute getrun
+reset
+
+data "$!run/pc"
+read {tpc 1 ypc 2}
+
+data "$!run/rk2"
+read {trk2 1 yrk2 2}
+
+data "$!run/i_pc"
+read {ti_pc 1 yi_pc 2}
+
+data "$!run/e_pc"
+read {te_pc 1 ye_pc 2}
+
+data "$!run/exact"
+read {texact 1 yexact 2}
+
+set ypc=ypc-yexact
+set yrk2=yrk2-yexact
+set yi_pc=yi_pc-yexact
+set ye_pc=ye_pc-yexact
+
+set y=ypc concat yrk2 concat yi_pc concat ye_pc
+set t=tpc concat trk2 concat ti_pc concat te_pc
+
+autolimits t y
+expand $expand0
+box
+xlabel t
+ylabel error
+ltype 0
+
+abscissa
+
+ctype red
+connectlegend "\0" "PC" tpc ypc
+ctype magenta
+#connectlegend "\0" "RK-2" trk2 yrk2
+ctype blue
+connectlegend "\0" "I-PC" ti_pc yi_pc
+ctype green
+connectlegend "\0" "E-PC" te_pc ye_pc
+#ctype magenta
+#connectlegend "\0" "exact" texact yexact
+
+expand $expand0/1.4
+ctype purple
+title "Comparison of 2nd-Order Integrators"
+
+id

@@ -1,0 +1,7 @@
+#!/bin/csh -f
+testcase exact $*
+testcase pc $*
+testcase rk2 $*
+testcase i-pc $*
+testcase e-pc $*
+

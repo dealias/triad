@@ -1,0 +1,3 @@
+if($?run==0) {define run test
+	define run ? {run? }}
+

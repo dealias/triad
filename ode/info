@@ -1,0 +1,2 @@
+triad dt=.105 tmax=105 dynamic=0 verbose=0
+triad dt=.080 tmax=105 int=pc dynamic=0 verbose=0

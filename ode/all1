@@ -1,0 +1,8 @@
+#!/bin/csh -f
+testcase exact $*
+testcase euler $*
+testcase i-euler $*
+testcase e-euler $*
+testcase rb1 $*
+
+

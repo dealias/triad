@@ -1,0 +1,54 @@
+loadcursor "yall.coord"
+reset
+execute getrun
+reset
+
+data "$!run/euler"
+read {teuler 1 yeuler 2}
+
+data "$!run/i_euler"
+read {ti_euler 1 yi_euler 2}
+
+data "$!run/e_euler"
+read {te_euler 1 ye_euler 2}
+
+data "$!run/rb1"
+read {trb1 1 yrb1 2}
+
+data "$!run/exact"
+read {texact 1 yexact 2}
+
+set yeuler=yeuler-yexact
+set yi_euler=yi_euler-yexact
+set ye_euler=ye_euler-yexact
+set yrb1=yrb1-yexact
+
+set y=yeuler concat yi_euler concat ye_euler concat yrb1
+set t=teuler concat ti_euler concat te_euler concat trb1
+
+autolimits t y
+expand $expand0
+notation -4 4 -4 4
+box
+xlabel t
+ylabel error
+ltype 0
+
+abscissa
+
+lctype 5 magenta
+connectlegend "\0" "RB1" trb1 yrb1
+lctype 2 green
+connectlegend "\0" "E-Euler" te_euler ye_euler
+lctype 0 red
+connectlegend "\0" "Euler" teuler yeuler
+lctype 1 blue
+connectlegend "\0" "I-Euler" ti_euler yi_euler
+#ctype purple
+#connectlegend "\0" "exact" texact yexact
+
+expand $expand0/1.4
+ctype purple
+title "Comparison of 1st-Order Integrators"
+
+id

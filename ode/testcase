@@ -1,0 +1,2 @@
+#!/bin/csh -f
+triad nu=1 dt=.01 tmax=10 int=$*
