@@ -14,7 +14,7 @@ class IntegratorBase {
   double dt;
   double sample;
   double errmax;
-  int *errmask;
+  ivector errmask;
   double tolmax2,tolmin2;
   double stepfactor,stepinverse,stepnoninverse;
   double growfactor,shrinkfactor;
@@ -58,7 +58,6 @@ class IntegratorBase {
   
   void Alloc0(vector2& Y, const vector& y);
   void Alloc(vector2& Y, vector& y);
-  void Alloc(vector2& Y);
   
   void Alloc(vector2& A, vector& a, const vector2& B, const vector& b) {
     A.Dimension(B);
@@ -115,20 +114,24 @@ class SYM1 : public IntegratorBase {
 
 class Midpoint : public IntegratorBase {
  protected:	
-  vector2 Y0,Src0;
+  vector y0;
+  vector2 Y0;
   double halfdt;
  public:
   void Allocate() {
     IntegratorBase::Allocate();
-    Alloc(Y0);
-    Alloc(Src0);
+    Alloc(Y0,y0);
     halfdt=0.5*dt;
   }
   const char *Name() {return "Midpoint Rule";}
+  void TimestepDependence() {
+    halfdt=0.5*dt;
+  }
   Solve_RC Solve();
 };
 
 class AdamsBashforth : public IntegratorBase {
+  vector y0,source0,source1;
   vector2 Y0,Src0,Src1;
   double a0,a1,a2;
   double b0,b1,b2;
@@ -136,9 +139,9 @@ class AdamsBashforth : public IntegratorBase {
  public:
   void Allocate() {
     IntegratorBase::Allocate();
-    Alloc(Y0);
-    Alloc(Src0);
-    Alloc(Src1);
+    Alloc(Y0,y0);
+    Alloc(Src0,source0);
+    Alloc(Src1,source1);
     init=2;
   }
   const char *Name() {return "Third-Order Adams-Bashforth";}
@@ -200,8 +203,8 @@ class LeapFrog : public PC {
   }
   void TimestepDependence() {
     if(lasthalfdt == 0.0) {
-      vector yp=YP[0];
-      vector y=Y[0];
+      Set1(yp,YP[0]);
+      Set1(y,Y[0]);
       for(unsigned int j=0; j < ny; j++) yp[j] = y[j];
     }
     halfdt=0.5*dt;

@@ -1,6 +1,8 @@
 #include "options.h"
 #include "kernel.h"
 
+using namespace Array;
+
 inline void IntegratorBase::ChangeTimestep(double dtnew)
 {
   // New time step must be <= sample.
@@ -128,8 +130,7 @@ void IntegratorBase::SetProblem(ProblemBase& problem)
   Problem=&problem;
 }
 
-void IntegratorBase::Alloc0(vector2& Y,
-			    const vector& y)
+void IntegratorBase::Alloc0(vector2& Y,const vector& y)
 {
   DynVector<unsigned int> *NY=Problem->Index();
   unsigned int nfields=NY->Size();
@@ -142,16 +143,8 @@ void IntegratorBase::Alloc0(vector2& Y,
   }
 }
 
-void IntegratorBase::Alloc(vector2& Y,
-			   vector& y)
+void IntegratorBase::Alloc(vector2& Y, vector& y)
 {
-  Allocate1(y,ny);
-  Alloc0(Y,y);
-}
-
-void IntegratorBase::Alloc(vector2& Y)
-{
-  Var *y;
   Allocate1(y,ny);
   Alloc0(Y,y);
 }
@@ -166,6 +159,7 @@ void IntegratorBase::Allocate()
   for(unsigned int i=0; i < nfields; i++) ny += (*NY)[i];
   Alloc(Src,source);
   
+  Dimension1(errmask,Problem->ErrorMask());
   Dimension1(y,Problem->Vector());
   Dimension1(Y,Problem->Vector2());
   Dimension1(Yout,Problem->Vector2());
@@ -200,7 +194,6 @@ Solve_RC PC::Solve()
   Solve_RC flag;
   
   errmax=0.0;
-  errmask=Problem->ErrorMask();
 	
   if(new_y0) {
     swaparray(Y0,Y);
@@ -223,7 +216,7 @@ Solve_RC PC::Solve()
   if(new_y0) {
     Problem->BackTransform(Y,t+dt,dt,YI);
     Problem->Stochastic(Y,t,dt);
-  } else if(YI.Size()) {
+  } else if(Active(YI)) {
     swaparray(Y0,YI);
     Set1(y0,Y0[0]);
   }
@@ -243,10 +236,11 @@ int PC::Corrector()
   if(dynamic) {
     for(unsigned int j=0; j < ny; j++) {
       y[j]=y0[j]+halfdt*(source0[j]+source[j]);
-      if(!errmask || errmask[j]) CalcError(y0[j],y[j],
-					   y0[j]+dt*source0[j],y[j]);
+      if(!Active(errmask) || errmask[j])
+	CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
     }
     ExtrapolateTimestep();
+    errmax=0;
   } else for(unsigned int j=0; j < ny; j++) {
     y[j]=y0[j]+halfdt*(source0[j]+source[j]);
   }
@@ -274,8 +268,8 @@ int SYM2::Corrector()
   if(dynamic) {
     for(unsigned int j=0; j < ny; j += 2) {
       y[j] += halfdt*source[j];
-      if(!errmask || errmask[j]) CalcError(y0[j],y[j],
-					   y0[j]+dt*source0[j],y[j]);
+      if(!Active(errmask) || errmask[j])
+	CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
     }
     ExtrapolateTimestep();
   } else for(unsigned int j=0; j < ny; j += 2) {
@@ -290,16 +284,16 @@ int SYM2::Corrector()
 Solve_RC AdamsBashforth::Solve()
 {
   swaparray(Y0,Y);
-  vector y0=Y0[0];
-  vector y=Y[0];
+  Set1(y,Y[0]);
+  Set1(y0,Y0[0]);
   
   switch(init) {
   case 0:
     {
     leftshiftarray(Src,Src1,Src0);
-    vector source0=Src0[0];
-    vector source1=Src1[0];
-    vector source=Src[0];
+    Set1(source0,Src0[0]);
+    Set1(source1,Src1[0]);
+    Set1(source,Src[0]);
     Source(Src0,Y0,t);
     for(unsigned int j=0; j < ny; j++) 
       y[j]=y0[j]+a0*source0[j]+a1*source1[j]+a2*source[j];
@@ -312,8 +306,8 @@ Solve_RC AdamsBashforth::Solve()
     swaparray(Src1,Src);
   case 2:
     {
-    vector source0=Src0[0];
-    vector source=Src[0];
+    Set1(source0,Src0[0]);
+    Set1(source,Src[0]);
     // Initialize with 2nd-order predictor-corrector
     Source(Src0,Y0,t);
     for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+dt*source0[j];
@@ -335,8 +329,8 @@ Solve_RC Midpoint::Solve()
 {
   int niterations=10;
   swaparray(Y0,Y);
-  vector y0=Y0[0];
-  vector y=Y[0];
+  Set1(y,Y[0]);
+  Set1(y0,Y0[0]);
   
   if(verbose > 1) cout << endl;
   Source(Src,Y0,t);
@@ -370,7 +364,7 @@ int LeapFrog::Corrector()
   if(dynamic) {
     for(unsigned int j=0; j < ny; j++) {
       y[j]=y0[j]+dt*source[j];
-      if(!errmask || errmask[j]) 
+      if(!Active(errmask) || errmask[j]) 
 	CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
     }
     ExtrapolateTimestep();
@@ -391,7 +385,7 @@ int RK2::Corrector()
   if(dynamic) {
     for(unsigned int j=0; j < ny; j++) {
       y[j]=y0[j]+dt*source[j];
-      if(!errmask || errmask[j])
+      if(!Active(errmask) || errmask[j])
 	CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
     }
     ExtrapolateTimestep();
@@ -411,11 +405,11 @@ void RK4::Predictor()
   for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+halfdt*source0[j];
   Problem->BackTransform(Y,t+halfdt,halfdt,YI);
   Source(Src1,Y,t+halfdt);
-  if(YI.Size()) {swaparray(YI,Y); Set1(y,Y[0]);}
+  if(Active(YI)) {swaparray(YI,Y); Set1(y,Y[0]);}
   for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+halfdt*source1[j];
   Problem->BackTransform(Y,t+halfdt,halfdt,YI);
   Source(Src2,Y,t+halfdt);
-  if(YI.Size()) {swaparray(YI,Y); Set1(y,Y[0]);}
+  if(Active(YI)) {swaparray(YI,Y); Set1(y,Y[0]);}
   for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+dt*source2[j];
   Problem->BackTransform(Y,t+dt,dt,YI);
 }
@@ -423,11 +417,11 @@ void RK4::Predictor()
 int RK4::Corrector()
 {
   Source(Src,Y,t+dt);
-  if(YI.Size()) {swaparray(YI,Y); Set1(y,Y[0]);}
+  if(Active(YI)) {swaparray(YI,Y); Set1(y,Y[0]);}
   if(dynamic) {
     for(unsigned int j=0; j < ny; j++) {
       y[j]=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+source[j]);
-      if(!errmask || errmask[j])
+      if(!Active(errmask) || errmask[j])
 	CalcError(y0[j],y[j],y0[j]+dt*source2[j],y[j]);
     }
     ExtrapolateTimestep();
@@ -456,24 +450,24 @@ void RK5::Predictor()
   for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+b10*source0[j];
   Problem->BackTransform(Y,t+a1,a1,YI);
   Source(Src,Y,t+a1);
-  if(YI.Size()) {swaparray(YI,Y); Set1(y,Y[0]);}
+  if(Active(YI)) {swaparray(YI,Y); Set1(y,Y[0]);}
   //#pragma ivdep		
   for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+b20*source0[j]+b21*source[j];
   Problem->BackTransform(Y,t+a2,a2,YI);
   Source(Src2,Y,t+a2);
-  if(YI.Size()) {swaparray(YI,Y); Set1(y,Y[0]);}
+  if(Active(YI)) {swaparray(YI,Y); Set1(y,Y[0]);}
   //#pragma ivdep		
   for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+b30*source0[j]+b31*source[j]+
 				b32*source2[j];
   Problem->BackTransform(Y,t+a3,a3,YI);
   Source(Src3,Y,t+a3);
-  if(YI.Size()) {swaparray(YI,Y); Set1(y,Y[0]);}
+  if(Active(YI)) {swaparray(YI,Y); Set1(y,Y[0]);}
   //#pragma ivdep		
   for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+b40*source0[j]+b41*source[j]+
 				b42*source2[j]+b43*source3[j];
   Problem->BackTransform(Y,t+a4,a4,YI);
   Source(Src4,Y,t+a4);
-  if(YI.Size()) {swaparray(YI,Y); Set1(y,Y[0]);}
+  if(Active(YI)) {swaparray(YI,Y); Set1(y,Y[0]);}
   //#pragma ivdep		
   for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+b50*source0[j]+b51*source[j]+
 				b52*source2[j]+b53*source3[j]+
@@ -484,12 +478,12 @@ void RK5::Predictor()
 int RK5::Corrector()
 {
   Source(Src,Y,t+a5);
-  if(YI.Size()) {swaparray(YI,Y); Set1(y,Y[0]);}
+  if(Active(YI)) {swaparray(YI,Y); Set1(y,Y[0]);}
   if(dynamic) {
     //#pragma ivdep		
     for(unsigned int j=0; j < ny; j++) {
       y[j]=y0[j]+c0*source0[j]+c2*source2[j]+c3*source3[j]+c5*source[j];
-      if(!errmask || errmask[j]) {
+      if(!Active(errmask) || errmask[j]) {
 	Var pred=y0[j]+d0*source0[j]+d2*source2[j]+
 	  d3*source3[j]+d4*source4[j]+d5*source[j];
 	CalcError(y0[j],y[j],pred,y[j]);

@@ -63,9 +63,9 @@ class ProblemBase {
   array1<vector > Y; // array of dependent fields
   unsigned int ny;
   const char *abbrev;
-  int *errmask;
+  ivector errmask;
  public:	
-  ProblemBase() {errmask=NULL;}
+  ProblemBase() {}
   virtual ~ProblemBase() {}
   void SetAbbrev(const char *abbrev0) {abbrev=abbrev0;}
   const char *Abbrev() {return abbrev;}
@@ -74,7 +74,7 @@ class ProblemBase {
   unsigned int Size() {return ny;}
   DynVector<unsigned int> *Index() {return &NY;}
 
-  int *ErrorMask() {return errmask;}
+  const ivector& ErrorMask() {return errmask;}
   
   void Allocate() {
     unsigned int nfields=NY.Size();

@@ -1,5 +1,5 @@
 /* Array.h:  A high-performance multi-dimensional C++ array class
-Copyright (C) 2001 John C. Bowman (bowman@math.ualberta.ca)
+Copyright (C) 2001-2003 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,29 +18,31 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.25
+#define __ARRAY_H_VERSION__ 1.26
 
 // Defining NDEBUG improves optimization but disables argument checking.
 // Defining __NOARRAY2OPT inhibits special optimization of Array2[].
-
-#ifdef NDEBUG
-#define __check(i,n,dim,m)
-#define __checkSize()
-#define __checkActivate(i) CheckActivate(i)
-#else
-#ifndef __NOARRAY2OPT
-#define __NOARRAY2OPT
-#endif
-#define __check(i,n,dim,m) Check(i,n,dim,m)
-#define __checkSize() CheckSize()
-#define __checkActivate(i) Activate()
-#endif
 
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
 #include <climits>
 #include <cstdlib>
+
+#ifdef NDEBUG
+#define __check(i,n,dim,m)
+#define __checkSize()
+#define __checkActivate(i) CheckActivate(i)
+#define __NULLARRAY NULL;
+#else
+#define __check(i,n,dim,m) Check(i,n,dim,m)
+#define __checkSize() CheckSize()
+#define __checkActivate(i) Activate()
+#define __NULLARRAY (void *) 0;
+#ifndef __NOARRAY2OPT
+#define __NOARRAY2OPT
+#endif
+#endif
 
 using std::istream;
 using std::ostream;
@@ -103,7 +105,7 @@ class array1 {
     Dimension(nx0); v=v0; clear(allocated);
   }
   void Dimension(const array1<T>& A) {
-     Dimension(A.size,A.v);
+    Dimension(A.size,A.v); state=A.test(temporary);
   }
 
   void Allocate(unsigned int nx0) {
@@ -112,6 +114,7 @@ class array1 {
   }
   
   array1() : size(0), state(unallocated) {}
+  array1(const void *) : size(0), state(unallocated) {}
   array1(unsigned int nx0) : state(unallocated) {Allocate(nx0);}
   array1(unsigned int nx0, T *v0) : state(unallocated) {Dimension(nx0,v0);}
   array1(T *v0) : state(unallocated) {Dimension(INT_MAX,v0);}
@@ -161,7 +164,7 @@ class array1 {
   void Load(const T *a) const {memcpy(v,a,sizeof(T)*size);}
   void Store(T *a) const {memcpy(a,v,sizeof(T)*size);}
   void Set(T *a) {v=a; clear(allocated);}
-  void Set(const array1<T> &A) {v=A.v; state=A.test(temporary);}
+
   istream& Input (istream &s) const {
     __checkSize();
     for(unsigned int i=0; i < size; i++) s >> v[i];
@@ -171,13 +174,6 @@ class array1 {
   array1<T>& operator = (T a) {Load(a); return *this;}
   array1<T>& operator = (const T *a) {Load(a); return *this;}
   array1<T>& operator = (const array1<T>& A) {
-#if 0		
-    Dimension(A.Nx());
-    if(A.Size() > size) {
-      Deallocate();
-      __checkActivate(1);
-    }
-#endif		
     Load(A());
     A.Purge();
     return *this;
@@ -306,6 +302,8 @@ class array2 : public array1<T> {
     clear(allocated);
   }
   
+  void Dimension(const array1<T> &A) {ArrayExit("Operation not implemented");} 
+  
   void Allocate(unsigned int nx0, unsigned int ny0) {
     Dimension(nx0,ny0);
     __checkActivate(2);
@@ -343,13 +341,6 @@ class array2 : public array1<T> {
   array2<T>& operator = (T a) {Load(a); return *this;}
   array2<T>& operator = (T *a) {Load(a); return *this;}
   array2<T>& operator = (const array2<T>& A) {
-#if 0		
-    Dimension(A.Nx(),A.Ny());
-    if(A.Size() > size) {
-      Deallocate();
-      __checkActivate(2);
-    }
-#endif		
     Load(A());
     A.Purge();
     return *this;
@@ -778,7 +769,7 @@ class Array1 : public array1<T> {
     clear(allocated);
   }
   void Dimension(const Array1<T>& A) {
-    Dimension(A.size,A.v,A.ox);
+    Dimension(A.size,A.v,A.ox); state=A.test(temporary);
   }
   void Allocate(unsigned int nx0, int ox0=0) {
     Dimension(nx0,ox0);
@@ -823,6 +814,8 @@ class Array1 : public array1<T> {
     A.Purge();
     return *this;
   }
+  
+  unsigned int Ox() const {return ox;}
 };
 
 template<class T>
@@ -895,13 +888,6 @@ class Array2 : public array2<T> {
     return *this;
   }
   Array2<T>& operator = (const array2<T>& A) {
-#if 0		
-    Dimension(A.Nx(),A.Ny());
-    if(A.Size() > size) {
-      Deallocate();
-      __checkActivate(2);
-    }
-#endif		
     Load(A());
     A.Purge();
     return *this;
@@ -1163,75 +1149,105 @@ class Array5 : public array5<T> {
 };
 
 template<class T>
-void Set1(T *&A, T *v)
+inline bool Active(array1<T>& A)
+{
+  return A.Size();
+}
+
+template<class T>
+inline bool Active(T *A)
+{
+  return A;
+}
+
+template<class T>
+inline void Set1(T *&A, T *v)
 {
   A=v;
 }
 
 template<class T>
-void Set1(array1<T>& A, T *v)
+inline void Set1(array1<T>& A, T *v)
 {
   A.Set(v);
 }
 
 template<class T>
-void Set1(array1<T>& A, const array1<T> &v)
+inline void Set1(array1<T>& A, const array1<T>& B)
 {
-  A.Set(v);
+  A.Set(B());
 }
 
 template<class T>
-void Dimension1(T *&A, unsigned int, T *v)
+inline void Dimension1(T *&A, unsigned int, T *v)
 {
   A=v;
 }
 
 template<class T>
-void Dimension1(array1<T>& A, unsigned int n, T *v)
+inline void Dimension1(array1<T>& A, unsigned int n, T *v)
 {
   A.Dimension(n,v);
 }
 
 template<class T>
-void Dimension1(T *&A, T *v)
+inline void Dimension1(T *&A, T *v)
 {
   A=v;
 }
 
 template<class T>
-void Dimension1(array1<T>& A, const array1<T>& B)
+inline void Dimension1(array1<T>& A, const array1<T>& B)
 {
   A.Dimension(B);
 }
 
 template<class T>
-void Dimension1(Array1<T>& A, unsigned int n, T *v, int o)
+inline void Dimension1(Array1<T>& A, unsigned int n, T *v, int o)
 {
   A=Dimension(n,v,o);
 }
 
 template<class T>
-void Allocate1(T *&A, unsigned int n)
+inline void Allocate1(T *&A, unsigned int n)
 {
   A=new T[n];
 }
 
 template<class T>
-void Allocate1(T *&A, unsigned int n, int o)
+inline void Allocate1(T *&A, unsigned int n, int o)
 {
   A=new T[n]-o;
 }
 
 template<class T>
-void Allocate1(array1<T>& A, unsigned int n)
+inline void Allocate1(array1<T>& A, unsigned int n)
 {  
   A.Allocate(n);
 }
 
 template<class T>
-void Allocate1(Array1<T>& A, unsigned int n, int o)
+inline void Allocate1(Array1<T>& A, unsigned int n, int o)
 {  
   A.Allocate(n,o);
+}
+
+template<class T>
+inline void Deallocate1(T *A)
+{
+  delete A;
+}
+
+template<class T>
+inline void Deallocate1(T *A, int o)
+{
+  delete (A+o);
+}
+
+template<class T>
+inline void Deallocate1(array1<T>& A)
+{  
+  A.Deallocate();
 }
 
 }
@@ -1241,6 +1257,7 @@ void Allocate1(Array1<T>& A, unsigned int n, int o)
 #define Array1(T) Array1<T>::opt
 
 #undef __check
+#undef __checkSize
 #undef __checkActivate
 
 #endif

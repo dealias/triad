@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <memory>
+#include <cerrno>
 
 #ifdef _MAC
 #include ":arch:mac.h"
@@ -145,7 +146,6 @@ char *convert(const char *s, char from, char to, char *s2);
 
 int RealCompare(const void *a, const void *b);
 
-const char null[1]="";
 extern "C" char *strdup(const char *);
 
 extern "C" int strcasecmp (const char *s1, const char *s2);
@@ -196,8 +196,8 @@ enum ErrorCode {WARNING_,OVERRIDE_,RETRY_,SLEEP_,ERROR_};
 #define SLEEP_GLOBAL SLEEP_,"",0
 #define ERROR_GLOBAL ERROR_,"",0
 
-inline void Array::ArrayExit(const char *x) {msg(ERROR_GLOBAL,x);}
-inline void DynVectorExit(const char *x) {msg(ERROR_GLOBAL,x);}
+inline void Array::ArrayExit(const char *x) {errno=0; msg(ERROR_GLOBAL,x);}
+inline void DynVectorExit(const char *x) {errno=0; msg(ERROR_GLOBAL,x);}
 	
 enum ExitCode {FATAL=-1,CONTINUE,COMPLETE};
 extern ExitCode exit_signal;
