@@ -42,7 +42,12 @@ public:
 		if(buf) xdrstdio_create(&xdrs, buf, xop);
 		else set(badbit);
 	}
-	void close() {if(buf) fclose(buf); buf=NULL;}
+	void close() {
+		if(buf) {
+			xdr_destroy(&xdrs);
+			fclose(buf); buf=NULL;
+		}
+	}
 };
 
 #define IXSTREAM(T,N) ixstream& operator >> (T& x) \
