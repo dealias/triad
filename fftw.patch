@@ -1,14 +1,5 @@
 --- /usr/local/include/fftw.h	Sun Nov 15 10:11:32 1998
 +++ ./fftw.h	Mon Nov 16 17:39:56 1998
-@@ -20,7 +20,7 @@
-  */
- 
- /* fftw.h -- system-wide definitions */
--/* $Id$ */
-+/* $Id$ */
- 
- #ifndef FFTW_H
- #define FFTW_H
 @@ -293,11 +293,13 @@
  					   fftw_complex *in, int istride,
  					 fftw_complex *out, int ostride);
