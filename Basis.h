@@ -12,6 +12,7 @@ extern int Nxb,Nxb1,Nyb,Nyp;
 
 extern Var *psix,*psiy,*vort;
 extern Real *knorm2,*kfactor;
+extern Real krmin2;
 
 template<class T>
 class Basis : public GeometryBase {
@@ -29,7 +30,7 @@ public:
 	INLINE void Initialize();
 	
 	int InGrid(T &);
-	Real Area(int) {return 1.0;}
+	Real Area(int) {return krmin2;}
 	
 	Real K(int k) {return mode[k].K();}
 	Real K2(int k) {return mode[k].K2();}

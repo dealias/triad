@@ -412,7 +412,7 @@ int main(int argc, char *const argv[])
 	if(label || make_mpeg) { 
 		if(make_mpeg) montage(nfiles,argf,0,format,"miff");
 		for(n=0; n < nset; n++) 
-			montage(nfiles,argf,n,format,make_mpeg ? "yuv3" : "miff");
+			montage(nfiles,argf,n,format,make_mpeg ? "yuv" : "miff");
 		identify(nfiles,argf,0,"miff",xsize,ysize);
 		
 		if(make_mpeg) mpeg(nfiles,argf,nset-1,"mpg",xsize,ysize);
@@ -454,9 +454,8 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 		buf << fieldname << "\" " << rgbdir
 			<< fieldname << setfill('0') << setw(4) << n << "." << format;
 	}
-	buf << " " << type << ":" << rgbdir << argf[0];
-	if(type != "yuv3") buf << "." << type;
-	buf << "." << n << ends;
+	buf << " -interlace partition " << type << ":" << rgbdir << argf[0] << n
+		<< "." << type << ends;
 	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;
 	system(cmd);
@@ -467,9 +466,8 @@ void identify(int, char *const argf[], int n, char *const type,
 {
 	strstream buf;
 	char *iname=".identify";
-	buf << "identify " << rgbdir << argf[0] << "." << type << "." << n 
-		<< " > " << iname  
-		<< ends;
+	buf << "identify " << rgbdir << argf[0] << n << "." << type
+		<< " > " << iname << ends;
 	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;
 	system(cmd);
@@ -491,7 +489,7 @@ void mpeg(int, char *const argf[], int n, char *const type,
 {
 	strstream buf;
 	buf << "mpeg -a 0 -b " << n << " -h " << xsize << " -v " << ysize
-		<< " -PF " << rgbdir << argf[0] << "." << " -s " << argf[0]
+		<< " -PF " << rgbdir << argf[0] << " -s " << argf[0]
 		<< "." << type;
 	if(!verbose) buf << " > /dev/null";
 	buf << ends;
