@@ -247,7 +247,7 @@ int main(int argc, char *argv[])
   if(restart && dynamic < 0) dynamic=1;
   if(!restart) Problem->Initialize();
   
-  open_output(gparam,dirsep,"param",0);
+  open_output(gparam,dirsep,"param.asy",0);
   Vocabulary->GraphicsDump(gparam);
   gparam.close();
 

@@ -8,8 +8,8 @@ vpath %.cc $(TRI)
 
 include $(TRI)/config/$(HOSTTYPE)
 
-ifdef Cpp
-C++ = $(Cpp)
+ifdef CXX
+C++ = $(CXX)
 endif
 
 UTILS = utils msg strcasecmp new $(ARCH) $(POLL)

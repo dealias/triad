@@ -139,6 +139,23 @@ class Param : public ParamBase {
     os << var[nvar-1] << endl;
   }
 	
+  void Out(ostream& os, const char *type, const char *delim="") 
+  {
+    if(!dump) return; // Don't dump control parameters
+    if(strcmp(name,"dynamic")==0) // An asy keyword; don't need anyway.
+      return;
+    if(nvar == 1) {
+      os << type << " " << name << "=" << delim << var[0] << delim << ";";
+    }
+    else {
+      os << type << "[] " << name << "={" << delim << var[0] << delim;
+      for(int i=1; i < nvar; i++) os << "," << delim << var[i] << delim;
+      os << "};";
+    }
+    os << endl;
+  }
+
+#if 0 // For sm 
   void GraphicsOutput(ostream& os) {
     if(!dump) return; // Don't dump control parameters
     if(nvar == 1) os << "define " << name << " \"" << var[0] << "\"";
@@ -149,7 +166,10 @@ class Param : public ParamBase {
     }
     os << endl;
   }
+#endif  
 	
+  void GraphicsOutput(ostream& os);
+  
   inline int InRange(T);
 	
   inline void get_values(const char *arg, T (*rtn)(const char *));
@@ -232,4 +252,12 @@ inline void Param<T>::get_values(const char *arg, T (*rtn)(const char *))
   } while ((ptr == optarg) ? 0 : (optarg=ptr+1));
 }
 	
+inline void Param<unsigned int>::GraphicsOutput(ostream& os) {Out(os,"int");}
+inline void Param<int>::GraphicsOutput(ostream& os) {Out(os,"int");}
+inline void Param<double>::GraphicsOutput(ostream& os) {Out(os,"real");}
+inline void Param<Complex>::GraphicsOutput(ostream& os) {Out(os,"pair");}
+inline void Param<const char *>::GraphicsOutput(ostream& os) {
+  Out(os,"string","\"");
+}
+
 #endif

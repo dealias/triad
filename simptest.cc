@@ -28,6 +28,6 @@ double f(double x)
 //  return 1.0/(sqrt(1.0-K*K*sx*sx));
 //  return 1.0/((1+n*sx*sx)*sqrt(1.0-K*K*sx*sx));
 //  return 4.0*sqrt(1.0-x*x);
-  if(x == 0) return 0.0;
+  if(x == 1.0) return 0.0;
   return 2.0/sqrt(1.0-x*x);
 }
