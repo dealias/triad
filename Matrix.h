@@ -1,5 +1,4 @@
 /* Matrix.h:  A matrix class build upon Array.h
-   Version 1.0
 Copyright (C) 1999 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
@@ -19,9 +18,17 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Matrix_h__
 #define __Matrix_h__ 1
 
+#define __MATRIX_H_VERSION__ 1.06
+
 #include "DynVector.h"
 #include "Array.h"
 #include <assert.h>
+
+template<class T>
+inline void MatrixSwap(T& p, T& q)
+{
+	T temp; temp=p; p=q; q=temp;
+}
 
 template<class T>
 inline void SetIdentity(Array2<T>& A)
@@ -291,7 +298,7 @@ inline Array2<T>& Array2<T>::operator *= (T A)
 // Compute A=C^{-1} B
 
 template<class T>
-inline void GaussJordan(const Array2<T>& a, const Array2<T>& b)
+void GaussJordan(const Array2<T>& a, const Array2<T>& b)
 {
 // Linear equation solution by Gauss-Jordan elimination.
 // a[1..n][1..n] is the input matrix.
@@ -313,21 +320,21 @@ inline void GaussJordan(const Array2<T>& a, const Array2<T>& b)
 	unsigned int col=0, row=0;
 	for(unsigned int i=0; i < n; i++) {
 		// This is the main loop over the columns to be reduced.
-		Real big=0.0;
+		double big=0.0;
 		for(unsigned int j=0; j < n; j++) {
 			Array1(T) aj=a[j];
 			// This is the outer loop of the search for a pivot element.
 			if(pivot[j] != 1) {
 				for(unsigned int k=0; k < n; k++) {
 					if(pivot[k] == 0) {
-						Real temp=abs2(aj[k]);
+						double temp=abs2(aj[k]);
 						if(temp >= big) {
 							big=temp;
 							row=j;
 							col=k;
 						}
 					} else if(pivot[k] > 1) 
-						msg(ERROR,"Singular matrix");
+					{__ARRAY_EXIT("Singular matrix");}
 				}
 			}
 		}
@@ -346,14 +353,14 @@ inline void GaussJordan(const Array2<T>& a, const Array2<T>& b)
 		if(row != col) {
 			Array1(T) arow=a[row];
 			Array1(T) brow=b[row];
-			for(unsigned int l=0; l < n; l++) swap(arow[l], acol[l]);
-			for(unsigned int l=0; l < m; l++) swap(brow[l], bcol[l]);
+			for(unsigned int l=0; l < n; l++) MatrixSwap(arow[l], acol[l]);
+			for(unsigned int l=0; l < m; l++) MatrixSwap(brow[l], bcol[l]);
 		}
 		indx_r[i]=row; 
 		// We are now ready to divide the pivot row by the pivot element,
 		// located at row and col. 
 		indx_c[i]=col;
-		if(acol[col] == 0.0) msg(ERROR,"Singular matrix");
+		if(acol[col] == 0.0) {__ARRAY_EXIT("Singular matrix");}
 		T pivinv=1.0/acol[col];
 		acol[col]=1.0;
 		for(unsigned int l=0; l < n; l++) acol[l] *= pivinv;
@@ -379,7 +386,7 @@ inline void GaussJordan(const Array2<T>& a, const Array2<T>& b)
 	for(int l=n-1; l >= 0; l--) {
 		if(indx_r[l] != indx_c[l]) {
 			for(unsigned int k=0; k < n; k++) 
-				swap(a[k][indx_r[l]], a[k][indx_c[l]]);
+				MatrixSwap(a[k][indx_r[l]], a[k][indx_c[l]]);
 		}
 	}
 }
