@@ -184,8 +184,7 @@ int copy(const char *oldname, const char *newname);
 
 char *machine(), *date(), *tempdir();
 
-const int ncputime=3;
-void cputime(double *cpu);
+double cputime();
 
 char *output_filename(char *basename, char *suffix);
 

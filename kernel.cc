@@ -41,7 +41,7 @@ static Var *y;
 static int ny;
 static int explicit_dt=0;
 static int testing=0;
-static double cpu[ncputime],cpu0[ncputime];
+static double cpu,cpu0,cpu_restart;
 static int final_iteration=0;
 static int total_invert_cnt=0;
 
@@ -265,8 +265,8 @@ int main(int argc, char *argv[])
 	
 	Integrator->Integrate(y,t,tmax,dt,sample);
 	
-	cputime(cpu);
-	for(i=0; i < ncputime; i++) cpu[i] -= cpu0[i];
+	cpu=cputime();
+	cpu -= cpu0;
 
 	Problem->FinalOutput();
 	
@@ -280,8 +280,7 @@ int main(int argc, char *argv[])
 		"." << newl;
 	
 	cout << newl;
-	cout << "INTEGRATION TIMING STATISTICS:" << newl <<	"            CPU = "
-		 << cpu[0] << ", CHILD = " << cpu[1] <<  ", SYS = " << cpu[2] << newl;
+	cout << "INTEGRATION CPU TIME: " << cpu << " seconds" << newl;
 	
 	cout << newl << "DYNAMIC MEMORY ALLOCATED: " << memory() << " bytes ["
 		 << date() << "]" << newl << endl; 
@@ -294,6 +293,7 @@ void read_init()
 {
 	int i,ny0;
 	double t0,dt0;
+	double dummy;
 	const char *type=restart ? "restart" : "initialization";
 	char *ny_msg=
 		"Current value of ny (%d) disagrees with value (%d) in file\n%s";
@@ -303,7 +303,7 @@ void read_init()
 		cout << newl << "READING " << upcase(type) << " DATA FROM FILE "
 			 << rname << "." << endl; 
 		finit >> t0 >> dt0 >> final_iteration;
-		for(i=0; i < ncputime; i++) finit >> cpu[i];
+		finit >> cpu_restart >> dummy >> dummy;
 		finit >> ny0;
 		if(ny0 != ny) msg(OVERRIDE_GLOBAL,ny_msg,ny,ny0,rname);
 		for(i=0; i < min(ny,ny0); i++) finit >> y[i];
@@ -360,12 +360,10 @@ void set_timer()
 {
 	e=digits+5;
 	open_output(fstats,dirsep,"stat");
-	cputime(cpu0);
-	if(restart) for(int i=0; i < ncputime; i++) cpu0[i] -= cpu[i];
-	else fstats << setw(w) << "iteration" << " " << setw(e) << "t" << " " <<
-		setw(e) << "dt" << " " << setw(w) << "invert_cnt" << " " <<
-		setw(w) << "CPU" << " " << setw(w) << "CHILD" << " " <<
-		setw(w) << "SYS" <<	endl;
+	cpu0=cputime();
+	if(!restart) fstats << setw(w) << "iteration" << " " << setw(e) << "t"
+						<< " " << setw(e) << "dt" << " " << setw(w) 
+						<< "invert_cnt" << " " << setw(w) << "CPU" << endl;
 }
 
 void statistics(int it)
@@ -375,11 +373,15 @@ void statistics(int it)
 	static int last_iter=0;
 	int iter=final_iteration+iteration;
 
+	cpu=cputime();
+	cpu -= cpu0;
+	if(restart) cpu += cpu_restart;
+	
 	oxstream frestart(rtemp);
 	if(frestart) {
 		int i;
 		frestart << t << newl << dt << newl << iter << newl;
-		for(i=0; i < ncputime; i++) frestart << cpu[i] << newl;
+		frestart << cpu << newl << 0.0 << newl << 0.0;
 		frestart << ny << newl;
 		for(i=0; i < ny; i++) frestart << y[i] << newl;
 		frestart.close();
@@ -412,11 +414,7 @@ void statistics(int it)
 
 	total_invert_cnt += invert_cnt;
 	invert_cnt=0;
-	cputime(cpu);
-	for(int i=0; i < ncputime; i++) {
-		cpu[i] -= cpu0[i];
-		fstats << setw(w) << cpu[i] << " ";
-	}
+	fstats << setw(w) << cpu << " ";
 	fstats << endl;
 	if(!fstats) msg(WARNING,"Cannot write to statistics file");
 	unlock();

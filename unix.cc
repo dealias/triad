@@ -20,29 +20,14 @@
 
 extern char* run;
 static const double init_time=time(NULL);
+static const int firstcall=0;
+static clock_t cpu0;
+static const double clockinv=1.0/CLOCKS_PER_SEC;
 
-void cputime(double *cpu)
+double cputime()
 {
-#if _CRAY && !_CRAYMPP
-	struct jtab jbuf;
-	getjtab(&jbuf);
-	
-	cpu[0] = ((double) jbuf.j_ucputime)/CLOCKS_PER_SEC;
-	cpu[1] = 0.0;
-	cpu[2] = ((double) jbuf.j_scputime)/CLOCKS_PER_SEC;
-#else
-#if 0	
-	struct tms buf;
-	times(&buf);
-	cpu[0] = ((double) buf.tms_utime)/CLOCKS_PER_SEC;
-	cpu[1] = ((double) buf.tms_cutime)/CLOCKS_PER_SEC;
-	cpu[2] = ((double) (buf.tms_stime+buf.tms_cstime))/CLOCKS_PER_SEC;
-#else	
-	static const double clockinv=1.0/CLOCKS_PER_SEC;
-	cpu[0]=clock()*clockinv;
-	cpu[1]=cpu[2]=0.0;
-#endif
-#endif
+	if(firstcall) cpu0=clock();
+	return (clock()-cpu0)*clockinv;
 }
 
 // Don't notify user about runs shorter than this many seconds.
