@@ -68,7 +68,7 @@ public:
 		if(k <= kL) gamma -= pow(k,pL)*nuL*pow(k,pL);
 		if(abs(k-kforce) < 0.5*deltaf) gamma += gammaf/deltaf;
 		if(k > kH) gamma -= pow(k,pH)*nuH*pow(k,pH);
-		return gamma/Denominator(v);
+		return gamma;
 	}
 };
 

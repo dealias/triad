@@ -45,7 +45,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 			isign);
 }
 
-extern "C" void CCFFT(const int& isign, const int& n, Real& scale,
+extern "C" void CCFFT(const int& isign, const int& n, const Real& scale,
 					 Complex *x, Complex *y, Real *table, Real *work, 
 					 const int& isys);
 		 
