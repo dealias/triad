@@ -198,6 +198,7 @@ void lock();
 void unlock();
 void testlock();
 void dump(int it, int final, double tmax);
+void save_parameters();
 
 template<class T>
 inline void open_output(T& fout, const char *delimiter, const char *suffix,

@@ -236,22 +236,14 @@ int main(int argc, char *argv[])
     mkdir(buf.str(),0xFFFF);
   }
 					
+  save_parameters();
   t=0.0;
   Problem->InitialConditions();
+  save_parameters(); // Save once more in case parameters have changed
   
   open_output(gparam,dirsep,"param",0);
   Vocabulary->GraphicsDump(gparam);
   gparam.close();
-	
-  fdump.open(ptemp);
-  fdump.precision(REAL_DIG);
-  Vocabulary->Dump(fdump);
-  fdump.close();
-  if(fdump) {
-    if(rename(ptemp,pname)) 
-      msg(WARNING,"Cannot rename parameter file %s",ptemp);
-  }	
-  else msg(WARNING,"Cannot write to parameter file %s",ptemp);
 	
   y=Problem->Vector();
   ny=Problem->Size();
@@ -353,6 +345,18 @@ void dump(int it, int final, double tmax)
     Problem->Output(it); last_dump=t;
     unlock();
   }
+}
+
+void save_parameters() {
+  fdump.open(ptemp);
+  fdump.precision(REAL_DIG);
+  Vocabulary->Dump(fdump);
+  fdump.close();
+  if(fdump) {
+    if(rename(ptemp,pname)) 
+      msg(WARNING,"Cannot rename parameter file %s",ptemp);
+  }	
+  else msg(WARNING,"Cannot write to parameter file %s",ptemp);
 }
 
 static const int w=10;
