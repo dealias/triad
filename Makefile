@@ -7,7 +7,7 @@ POLL = poll.o
 
 include config/$(HOSTTYPE)
 
-UTILS = utils.o strcasecmp.o new.o $(ARCH) $(POLL)
+UTILS = utils.o strcasecmp.o new.o $(POLL) $(ARCH)
 CORE = kernel.o Approx.o Integrator.o Param.o $(UTILS)
 POLAR = Polar.o PolarAverage.o simpfast.o
 TRIAD = $(CORE) NWave.o Geometry.o $(POLAR)
@@ -41,15 +41,15 @@ depend:
 	$(MAKEDEPEND) $(MDOPT) -I /usr/local/include \
 	kernel.cc Approx.cc Integrator.cc Param.cc ThreeWave.cc \
 	Navier.cc NWave.cc Geometry.cc Polar.cc PolarAverage.cc simpfast.cc \
-	Kepler.cc Lotka.cc utils.cc strcasecmp.cc new.cc arch/idle.cc
+	Kepler.cc Lotka.cc utils.cc strcasecmp.cc new.cc poll.cc \
+	arch/idle.cc arch/unix.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-kernel.o: /usr/lib/g++-include/iomanip.h /usr/lib/g++-include/iostream.h
+kernel.o: kernel.h /usr/lib/g++-include/iostream.h
 kernel.o: /usr/lib/g++-include/streambuf.h /usr/lib/g++-include/libio.h
-kernel.o: /usr/lib/g++-include/_G_config.h kernel.h
-kernel.o: /usr/lib/g++-include/fstream.h /usr/include/stdio.h
-kernel.o: /usr/local/lib/gcc-include/limits.h
+kernel.o: /usr/lib/g++-include/_G_config.h /usr/lib/g++-include/fstream.h
+kernel.o: /usr/include/stdio.h /usr/local/lib/gcc-include/limits.h
 kernel.o: /usr/local/lib/gcc-include/syslimits.h /usr/include/errno.h
 kernel.o: /usr/include/features.h /usr/include/sys/cdefs.h
 kernel.o: /usr/include/linux/errno.h /usr/include/time.h
@@ -65,6 +65,7 @@ kernel.o: /usr/include/nan.h /usr/local/lib/gcc-include/float.h
 kernel.o: /usr/include/values.h /usr/local/include/i386/__math.h arch/i386.h
 kernel.o: /usr/local/include/i386/extensions.h new.h precision.h Complex.h
 kernel.o: pow.h types.h DynVector.h Table.h Param.h Integrator.h Approx.h
+kernel.o: /usr/lib/g++-include/iomanip.h
 Approx.o: kernel.h /usr/lib/g++-include/iostream.h
 Approx.o: /usr/lib/g++-include/streambuf.h /usr/lib/g++-include/libio.h
 Approx.o: /usr/lib/g++-include/_G_config.h /usr/lib/g++-include/fstream.h
@@ -239,7 +240,8 @@ PolarAverage.o: /usr/include/errno.h /usr/include/linux/errno.h
 PolarAverage.o: /usr/include/alloca.h /usr/lib/g++-include/fstream.h
 PolarAverage.o: arch/i386.h /usr/local/include/i386/extensions.h new.h pow.h
 PolarAverage.o: /usr/local/lib/gcc-include/limits.h
-PolarAverage.o: /usr/local/lib/gcc-include/syslimits.h
+PolarAverage.o: /usr/local/lib/gcc-include/syslimits.h Geometry.h Pair.h
+PolarAverage.o: DynVector.h
 simpfast.o: /usr/include/math.h /usr/include/features.h
 simpfast.o: /usr/include/sys/cdefs.h /usr/include/huge_val.h
 simpfast.o: /usr/include/endian.h /usr/include/bytesex.h
@@ -313,24 +315,27 @@ new.o: /usr/lib/g++-include/std/cstddef.h /usr/include/errno.h
 new.o: /usr/include/linux/errno.h /usr/include/alloca.h
 new.o: /usr/lib/g++-include/iostream.h /usr/lib/g++-include/streambuf.h
 new.o: /usr/lib/g++-include/libio.h new.h
-idle.o: /usr/include/unistd.h /usr/include/features.h
-idle.o: /usr/include/sys/cdefs.h /usr/include/posix_opt.h
-idle.o: /usr/include/gnu/types.h /usr/lib/g++-include/std/stddef.h
-idle.o: /usr/lib/g++-include/_G_config.h /usr/lib/g++-include/std/cstddef.h
-idle.o: /usr/include/confname.h /usr/include/sys/types.h
-idle.o: /usr/include/linux/types.h /usr/include/asm/types.h kernel.h
-idle.o: /usr/lib/g++-include/iostream.h /usr/lib/g++-include/streambuf.h
-idle.o: /usr/lib/g++-include/libio.h /usr/lib/g++-include/fstream.h
-idle.o: /usr/include/stdio.h /usr/local/lib/gcc-include/limits.h
-idle.o: /usr/local/lib/gcc-include/syslimits.h /usr/include/errno.h
-idle.o: /usr/include/linux/errno.h /usr/include/time.h
-idle.o: /usr/lib/g++-include/string.h /usr/lib/g++-include/cstring
-idle.o: /usr/lib/g++-include/std/cstring.h utils.h
-idle.o: /usr/local/lib/gcc-include/stdarg.h /usr/include/stdlib.h
-idle.o: /usr/include/alloca.h /usr/include/math.h /usr/include/huge_val.h
-idle.o: /usr/include/endian.h /usr/include/bytesex.h
-idle.o: /usr/include/linux/version.h /usr/include/asm/byteorder.h
-idle.o: /usr/include/nan.h /usr/local/lib/gcc-include/float.h
-idle.o: /usr/include/values.h /usr/local/include/i386/__math.h arch/i386.h
-idle.o: /usr/local/include/i386/extensions.h new.h precision.h Complex.h
-idle.o: pow.h types.h DynVector.h Table.h Param.h Integrator.h Approx.h
+arch/idle.o: /usr/include/stdio.h /usr/lib/g++-include/libio.h
+arch/idle.o: /usr/lib/g++-include/_G_config.h /usr/include/stdlib.h
+arch/idle.o: /usr/include/features.h /usr/include/sys/cdefs.h
+arch/idle.o: /usr/lib/g++-include/std/stddef.h
+arch/idle.o: /usr/lib/g++-include/std/cstddef.h /usr/include/errno.h
+arch/idle.o: /usr/include/linux/errno.h /usr/include/alloca.h
+arch/idle.o: /usr/include/unistd.h /usr/include/posix_opt.h
+arch/idle.o: /usr/include/gnu/types.h /usr/include/confname.h
+arch/idle.o: /usr/include/sys/types.h /usr/include/linux/types.h
+arch/idle.o: /usr/include/asm/types.h /usr/lib/g++-include/string.h
+arch/idle.o: /usr/lib/g++-include/cstring /usr/lib/g++-include/std/cstring.h
+arch/unix.o: /usr/include/stdlib.h /usr/include/features.h
+arch/unix.o: /usr/include/sys/cdefs.h /usr/lib/g++-include/std/stddef.h
+arch/unix.o: /usr/lib/g++-include/_G_config.h
+arch/unix.o: /usr/lib/g++-include/std/cstddef.h /usr/include/errno.h
+arch/unix.o: /usr/include/linux/errno.h /usr/include/alloca.h
+arch/unix.o: /usr/include/unistd.h /usr/include/posix_opt.h
+arch/unix.o: /usr/include/gnu/types.h /usr/include/confname.h
+arch/unix.o: /usr/include/sys/types.h /usr/include/linux/types.h
+arch/unix.o: /usr/include/asm/types.h /usr/include/stdio.h
+arch/unix.o: /usr/lib/g++-include/libio.h /usr/include/pwd.h
+arch/unix.o: /usr/include/sys/times.h /usr/include/time.h
+arch/unix.o: /usr/include/linux/times.h /usr/lib/g++-include/string.h
+arch/unix.o: /usr/lib/g++-include/cstring /usr/lib/g++-include/std/cstring.h

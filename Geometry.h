@@ -48,7 +48,7 @@ class Partition : public GeometryBase {
 	Bin<T> *bin; // pointer to table of bins
 	int n; // total number of bins, including reflected bins
 public:
-	Partition();
+	Partition() {}
 	char *Name();
 	char *WeightFileName();
 	int Create();
@@ -85,7 +85,7 @@ public:
 };
 
 template<class T>
-inline int Partition<T>::Create()
+int Partition<T>::Create()
 {
 	MakeBins();
 	psibuffer=new Var[reality ? 2*Nmode : Nmode];
@@ -102,7 +102,7 @@ inline int Partition<T>::Create()
 }
 
 template<class T>
-inline void Partition<T>::GenerateWeights() {
+void Partition<T>::GenerateWeights() {
 	Mc binaverage;
 	int k,p,q;
 	unsigned int kpq,nkpq,lastkpq=0;
@@ -176,7 +176,7 @@ inline Mc Partition<T>::FindWeight(int k, int p, int q) {
 }
 
 template<class T>
-inline void Partition<T>::ComputeTriads() {
+void Partition<T>::ComputeTriads() {
 	Mc nkpq;
 	Var **pqindex,**index;
 	Real sym,denom;
@@ -244,7 +244,7 @@ inline void Partition<T>::ComputeTriads() {
 }
 
 template<class T>
-inline void Partition<T>::ListTriads() {
+void Partition<T>::ListTriads() {
 	int j;
 	cout << endl << Npair << " Pairs:" << endl;
 	for(j=0; j < Npair; j++) { 
@@ -257,7 +257,7 @@ inline void Partition<T>::ListTriads() {
 }
 
 template<class T>
-inline void Partition<T>::ListBins(ostream &os)
+void Partition<T>::ListBins(ostream &os)
 {
 	os << "         " << Name() << " Bin Geometry:" << endl;
 	for(int i=0; i < n; i++) os << bin[i];

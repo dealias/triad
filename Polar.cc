@@ -13,8 +13,6 @@ Real kthmin=0.0;
 Real kthmax;
 Real kthneg;
 
-Partition<Polar>::Partition() {}
-
 char *Partition<Polar>::Name() {return "Polar";}
 
 char *Partition<Polar>::WeightFileName() {

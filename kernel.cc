@@ -1,6 +1,6 @@
-#include <iomanip.h>
-
 #include "kernel.h"
+
+#include <iomanip.h>
 
 const char PROGRAM[]="TRIAD";
 const char VERSION[]="1.0";

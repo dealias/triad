@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "Bin.h"
+#include "Geometry.h"
 
 // Polar vocabulary
 extern int Nr;

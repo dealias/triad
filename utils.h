@@ -36,20 +36,8 @@ const double twopi2=twopi*twopi;
 const char beep='\a';
 
 template<class T>
-inline void swap_ptr(T*& p, T*& q) {
-	T *temp; temp=p; p=q; q=temp;
-}
-
-template<class T>
 inline void swap(T& p, T& q) {
 	T temp; temp=p; p=q; q=temp;
-}
-
-// sort 2 elements p and q so that p <= q
-template<class T>
-inline void sort2(T*& p, T*& q, int& sign)
-{
-	if(p > q) {swap_ptr(p,q); sign *= -1;}
 }
 
 template<class T>

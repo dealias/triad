@@ -67,7 +67,7 @@ class C_PC : public PC, public CorrectC_PC {
 public:
 	void Allocate(int n) {PC::Allocate(n); if(hybrid) y1=new Var[n];}
 	char *Name() {return "Conservative Predictor-Corrector";}
-	Corrector_t Corrector;
+	int Corrector(Var *, double, double&, int, int);
 };
 
 class E_PC : public PC {
@@ -79,9 +79,9 @@ public:
 	void TimestepDependence(double);
 	void Predictor(Var *, double, double);
 	int Corrector(Var *, double, double&, int start, int stop);
-	void Source(Var *source, Var *y, double t) {
-		if(NonlinearSrc) (*NonlinearSrc)(source,y,t);
-		ExponentialLinearity(source,y,t);
+	void Source(Var *src, Var *var, double t) {
+		if(NonlinearSrc) (*NonlinearSrc)(src,var,t);
+		ExponentialLinearity(src,var,t);
 	}
 };
 
@@ -115,10 +115,10 @@ public:
 	char *Name() {return "Conservative Exponential Predictor-Corrector";}
 	void TimestepDependence(double);
 	void Predictor(Var *, double, double);
-	int Corrector(Var *, double, double&, int start, int stop);
-	void Source(Var *source, Var *y, double t) {
-		if(NonlinearSrc) (*NonlinearSrc)(source,y,t);
-		ConservativeExponentialLinearity(source,y,t);
+	int Corrector(Var *, double, double&, int, int);
+	void Source(Var *src, Var *var, double t) {
+		if(NonlinearSrc) (*NonlinearSrc)(src,var,t);
+		ConservativeExponentialLinearity(src,var,t);
 	}
 };
 
@@ -126,7 +126,7 @@ class C_RK2 : public RK2, public CorrectC_PC {
 public:
 	void Allocate(int n) {RK2::Allocate(n); if(hybrid) y1=new Var[n];}
 	char *Name() {return "Conservative Second-Order Runge-Kutta";}
-	Corrector_t Corrector;
+	int Corrector(Var *, double, double&, int, int);
 	int Correct(const Real y0, const Real y1, Real& y,
 				const Real source0, const Real source, const double dt);
 	int Correct(const Complex y0, const Complex y1, Complex& y,
@@ -139,7 +139,7 @@ protected:
 public:
 	char *Name() {return "Conservative Fourth-Order Runge-Kutta";}
 	void TimestepDependence(double);
-	Corrector_t Corrector;
+	int Corrector(Var *, double, double&, int, int);
 	int Correct(const Real y0, Real& y, const Real source0,
 				const Real source1, const Real source2, 
 				const Real source, const double dt);
@@ -153,7 +153,7 @@ public:
 	void Allocate(int n) {RK5::Allocate(n); y4=new Var[n];
 	if(hybrid) y5=new Var[n];}
 	char *Name() {return "Conservative Fifth-Order Runge-Kutta";}
-	Corrector_t Corrector;
+	int Corrector(Var *, double, double&, int, int);
 	int Correct(const Real y0, const Real y2, const Real y3,
 				const Real y4, const Real y5, Real& y,
 				const Real source0, const Real source2, 

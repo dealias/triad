@@ -13,7 +13,7 @@ inline void SortBins(Bin<Polar> *& k, Bin<Polar> *& q, int level) {
 	volatile Polar Dk=k->Delta(), Dq=q->Delta();
 
 	if(Dk.th > Dq.th || (Dk.th == Dq.th && Dk.r > Dq.r)) { 
-		swap_ptr(k,q); cnt+=level;
+		swap(k,q); cnt+=level;
 	}
 }
 
@@ -23,12 +23,11 @@ static int perm; // index to our permutation of the original input parameters.
 static double ComputeAverage(Bin<Polar> *k, Bin<Polar> *p, Bin<Polar> *q);
 
 static POLAR_FCN *f; // pointer to function $\fkpq$
+static int permcnt[]= {0,3,1,2,5,4,2,1};
 
 Real BinAverage(Bin<Polar> *k, Bin<Polar> *p, Bin<Polar> *q,
 				POLAR_FCN *f0, Real acc0)
 {
-	int permcnt[]= {0,3,1,2,5,4,2,1};
-	
 	f=f0; acc=acc0;
 	
 	eps=100.0*DBL_EPSILON;
@@ -39,7 +38,7 @@ Real BinAverage(Bin<Polar> *k, Bin<Polar> *p, Bin<Polar> *q,
 	SortBins(p,q,2);
 
 	// w.l.o.g. $\Db\ge\Da$
-	if(k->Delta().th > p->Delta().th) {swap_ptr(k,p); cnt++;}
+	if(k->Delta().th > p->Delta().th) {swap(k,p); cnt++;}
 
 	perm=permcnt[cnt]; // index to permutation obtained from above sorts.
 	return ComputeAverage(k,p,q);

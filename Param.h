@@ -20,12 +20,6 @@ inline void ProblemBase::ParamAdd(ParamBase *p)
 #define VOCAB_ARRAY(var) \
 Vocabulary(var, #var, *var-*var, *var-*var, (int) (sizeof(var)/sizeof(*var)),1)
 	
-	template<class T>
-inline void Vocabulary(T *var, char *s, T min, T max, int n, int dump)
-{
-	new Param<T>(var,s,n,min,max,dump);
-}
-
 template<class T>
 class Param : public ParamBase {
 	char *name;
@@ -81,7 +75,7 @@ public:
 		os << endl;
 	}
 	
-	int InRange(T);
+	inline int InRange(T);
 	
 	void get_values(char *optarg, T (*rtn)(const char *))
 	{
@@ -113,6 +107,11 @@ public:
 	
 };
 
+template<class T>
+inline void Vocabulary(T *var, char *s, T min, T max, int n, int dump)
+{
+	new Param<T>(var,s,n,min,max,dump);
+}
 
 char *atos(const char *s);
 
@@ -120,5 +119,18 @@ inline void Param<char *>::SetStr(char *s) {get_values(s,&atos);}
 inline void Param<double>::SetStr(char *s) {get_values(s,&atof);}
 inline void Param<int>::SetStr(char *s) {get_values(s,&atoi);}
 inline void Param<Complex>::SetStr(char *s) {get_values(s,&atoc);}
+
+inline int Param<double>::InRange(double value)
+{
+	return (min == max) || (value >= min && value <= max);
+}
+
+inline int Param<int>::InRange(int value)
+{
+	return (min == max) || (value >= min && value <= max);
+}
+
+inline int Param<char *>::InRange(char *) {return 1;}
+inline int Param<Complex>::InRange(Complex) {return 1;}
 
 #endif

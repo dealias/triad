@@ -4,17 +4,6 @@
 ProblemBase *Problem;
 int NParam=0;
 
-int Param<double>::InRange(double value)
-{
-	return (min == max) || (value >= min && value <= max);
-}
-int Param<int>::InRange(int value)
-{
-	return (min == max) || (value >= min && value <= max);
-}
-int Param<char *>::InRange(char *) {return 1;}
-int Param<Complex>::InRange(Complex) {return 1;}
-
 static int ParamCompare(const void *a, const void *b);
 static int ParamKeyCompare(const void*key, const void *p, const size_t n);
 
