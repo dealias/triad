@@ -39,6 +39,7 @@ char yuvinterlace[]="";
 #include <sys/wait.h>
 
 #include "DynVector.h"
+#include "Array.h"
 #include "rgb.h"
 
 #ifndef PI
@@ -78,6 +79,7 @@ class Ivec {
 public:
 	int i;
 	int j;
+	Ivec() {}
 	Ivec(int i0, int j0) : i(i0), j(j0) {}
 };
 
@@ -85,7 +87,7 @@ typedef Ivec Ivec_fcn(Ivec);
 Ivec_fcn linear,circle;
 
 Ivec_fcn *transform;
-Ivec_fcn *Transform[]={linear,circle};
+Ivec_fcn *Transform[]={NULL,circle};
 unsigned int NTransform=sizeof(Transform)/sizeof(Ivec_fcn *);
 
 template<class T>
@@ -202,12 +204,11 @@ void usage(char *program)
 	cerr << PROGRAM << " version " << VERSION
 		 << " [(C) John C. Bowman <bowman@math.ualberta.ca> 1998]" << endl
 		 << endl << "Usage: " << program
-		 << " [-bfFghimprvz] [-l pointsize] [-x mag] [-H hmag] [-V vmag] " 
-		 << endl
+		 << " [-bfghimprvzF] [-l pointsize] [-o option]" << endl
+		 << "           [-x mag] [-H hmag] [-V vmag] " << endl
 		 << "           [-B begin] [-E end] [-L lower] [-U upper]" << endl
          << "           [-P palette] [-S skip] [-T transform]" << endl
-		 << "           [-X xsize -Y ysize [-Z zsize]]" << endl
-         << "           [-o option] file1 [file2 ...]"
+		 << "           [-X xsize -Y ysize [-Z zsize]] file1 [file2 ...]"
 		 << endl;
 }
 
@@ -217,11 +218,11 @@ void options()
 	cerr << "-b\t\t single-byte (unsigned char instead of float) input"
 		 << endl;
 	cerr << "-f\t\t use a floating scale for each frame" << endl;
-	cerr << "-F\t\t use a floating scale for each section" << endl;
 	cerr << "-g\t\t produce gray-scale output" << endl;
 	cerr << "-h\t\t help" << endl;
 	cerr << "-i\t\t invert vertical axis (y-origin at bottom)" << endl;
 	cerr << "-m\t\t generate mpeg (.mpg) file" << endl;
+	cerr << "-o option\t option to pass to convert" << endl;
 	cerr << "-p\t\t preserve temporary output files" << endl;
 	cerr << "-r\t\t remote X-server (substitute Postscript fonts)" << endl;
 	cerr << "-v\t\t verbose output" << endl;
@@ -229,6 +230,7 @@ void options()
 		 << " (if possible)" << endl;
 	cerr << "-l pointsize\t label frames with file names and values" << endl;
 	cerr << "-x mag\t\t overall magnification factor" << endl;
+	cerr << "-F\t\t use a floating scale for each section" << endl;
 	cerr << "-H hmag\t\t horizontal magnification factor" << endl;
 	cerr << "-V vmag\t\t vertical magnification factor" << endl;
 	cerr << "-B begin\t first frame to process" << endl;
@@ -238,12 +240,11 @@ void options()
 	cerr << "-P palette\t palette (integer between 0 and " << NPalette-1
 		 << ")" << endl;
 	cerr << "-S skip\t\t interval between processed frames" << endl;
-	cerr << "-T transform\t\t 2D transformation (integer between 0 and " 
+	cerr << "-T transform\t 2D transformation (integer between 0 and " 
 		 << NTransform-1 << ")" << endl;
 	cerr << "-X xsize\t explicit horizontal size" << endl;
 	cerr << "-Y ysize\t explicit vertical size" << endl;
 	cerr << "-Z zsize\t explicit number of sections/frame" << endl;
-	cerr << "-o option\t option to pass to convert" << endl;
 }
 
 int main(int argc, char *const argv[])
@@ -424,8 +425,6 @@ int main(int argc, char *const argv[])
 		int mpal=max(5,my);
 		int msep=max(2,my);
 		
-		transform=Transform[trans];
-		
 		switch(trans) {
 		case 0: 
 			Nx=nx; Ny=ny;
@@ -435,6 +434,19 @@ int main(int argc, char *const argv[])
 			R=(R0+nx);
 			Nx=Ny=2*R+1;
 			break;
+		}
+		
+		Array2<Ivec> Index;
+		
+		if(trans) {
+			transform=Transform[trans];
+		
+			Index.Allocate(Nx,Ny);
+			for(int j=0; j < Ny; j++)  {
+				for(int i=0; i < Nx; i++)  {
+					Index(i,j)=transform(Ivec(i,j));
+				}
+			}
 		}
 		
 		xsize=mx*Nx;
@@ -507,7 +519,9 @@ int main(int argc, char *const argv[])
 				for(int j=0; j < Ny; j++)  {
 					for(int j2=0; j2 < my; j2++) {
 						for(int i=0; i < Nx; i++)  {
-							Ivec x=transform(Ivec(i,j));
+							Ivec x;
+							if(trans) x=Index(i,j);
+							else x=Ivec(i,j);
 							int index=(step == 0.0 || 
 									   x.i < 0 || x.i >= nx ||
 									   x.j < 0 || x.j >= ny) ? 
@@ -623,6 +637,21 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;
 	system(cmd);
+	
+	if(n > 0) {
+		strstream buf;
+		buf << "rm ";
+		for(int f=0; f < nfiles; f++) {
+			char *fieldname=argf[f];
+			buf << rgbdir << fieldname << setfill('0') << setw(4) << n << "."
+				<< format << " ";
+		}
+		if(!verbose) buf << " > /dev/null 2>&1";
+		buf << ends;
+		cmd=buf.str();
+		if(verbose) cout << cmd << endl;
+		system(cmd);
+	}
 }
 
 void identify(int, char *const argf[], int n, char *const type,
@@ -716,11 +745,6 @@ int system (char *command) {
 			return status;
 		}
 	} while(1);
-}
-
-Ivec linear(Ivec x)
-{
-	return Ivec(x.i,x.j);
 }
 
 Ivec circle(Ivec x)
