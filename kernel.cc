@@ -33,7 +33,7 @@ static ofstream fdump,fstat,fout,flock;
 int itmax=100;
 double tmax=0.0;
 double dt=0.0;
-int average=1;
+int Nmoment=0;
 int dynamic=1;
 double tolmax=0.005;
 double tolmin=0.0;
@@ -63,7 +63,6 @@ ProblemBase::ProblemBase()
 	VOCAB(microsteps,1,INT_MAX);
 	VOCAB(tmax,-DBL_MAX,DBL_MAX);
 	VOCAB(dt,0.0,DBL_MAX);
-	VOCAB(average,0,1);
 	VOCAB(dynamic,0,1);
 	VOCAB(tolmax,0.0,DBL_MAX);
 	VOCAB(tolmin,0.0,DBL_MAX);
@@ -203,8 +202,8 @@ int main(int argc, char *argv[])
 	Integrator->Allocate(ny);
 	adjust_parameters(dt,dtmax,tmax,itmax);
 	
-	Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,
-						 dtmax,itmax,microsteps,Problem->Nconserve(),verbose);
+	Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,dtmax,itmax,
+						 microsteps,verbose);
 	
 	cout << newl << "INTEGRATING:" << endl;
 	set_timer();
@@ -239,12 +238,14 @@ void read_init()
 {
 	ifstream finit;
 	double t0,dt0;
-	int formatted=0;
+	int ny0,formatted=0;
+	char ny_msg[]=
+		"Current value of ny (%d) disagrees with value (%d) in file\n%s";
 	
 	iname=rname;
 	finit.open(iname);
+	errno=0;
 	if(!finit) {
-		errno=0;
 		formatted=1;
 		iname=Problem->FileName(dirsep,"restartf");
 		finit.open(iname);
@@ -258,15 +259,19 @@ void read_init()
 	if(formatted) {
 		int i;
 		finit >> t0 >> dt0;
-		for(i=0; i < ny; i++) finit >> y[i];
 		finit >> final_iteration;
 		for(i=0; i < ncputime; i++) finit >> cpu[i];
+		finit >> ny0;
+		if(ny0 != ny) msg(OVERRIDE,ny_msg,ny,ny0,iname);
+		for(i=0; i < min(ny,ny0); i++) finit >> y[i];
 	} else {
 		finit.read((char *) &t0,sizeof(double));
 		finit.read((char *) &dt0,sizeof(double));
-		finit.read((char *) y,ny*sizeof(Var));
 		finit.read((char *) &final_iteration,sizeof(int));
 		finit.read((char *) cpu,sizeof(cpu));
+		finit.read((char *) &ny0,sizeof(int));
+		if(ny0 != ny) msg(OVERRIDE,ny_msg,ny,ny0,iname);
+		finit.read((char *) y,min(ny,ny0)*sizeof(Var));
 	}
 	
 	finit.close();
@@ -321,9 +326,10 @@ void dump(int it, int final, double tmax)
 	if(fdump) {
 		fdump.write((char *) &t,sizeof(double));
 		fdump.write((char *) &dt,sizeof(double));
-		fdump.write((char *) y,ny*sizeof(Var));
 		fdump.write((char *) &iter,sizeof(int));
 		fdump.write((char *) cpu,sizeof(cpu));
+		fdump.write((char *) &ny,sizeof(int));
+		fdump.write((char *) y,ny*sizeof(Var));
 		fdump.close();
 		if(fdump.good()) rename(rtemp,rname);
 		else msg(WARNING,"Cannot write to restart file %s",rtemp);
@@ -337,9 +343,10 @@ void dump(int it, int final, double tmax)
 		if(fout) {
 			int i;
 			fout << t << newl << dt << newl;
-			for(i=0; i < ny; i++) fout << y[i] << newl;
 			fout << iter << newl;
 			for(i=0; i < ncputime; i++) fout << cpu[i] << newl;
+			fout << ny << newl;
+			for(i=0; i < ny; i++) fout << y[i] << newl;
 			fout.close();
 		}
 		if(!fout.good()) msg(WARNING,"Cannot write to output file %s",oname);

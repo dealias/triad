@@ -14,7 +14,7 @@ inline void IntegratorBase::ChangeTimestep(double& dt, const double dtnew,
 										   const double t)
 {
 	if(verbose > 1) cout << newl << "Time step changed from " << dt <<
-		" to " << dtnew << " at t=" << t << "." << endl;
+						" to " << dtnew << " at t=" << t << "." << endl;
 	if(dtnew == 0.0) msg(ERROR,"Zero time step encountered");
 	TimestepDependence(dt=dtnew);
 }
@@ -22,7 +22,7 @@ inline void IntegratorBase::ChangeTimestep(double& dt, const double dtnew,
 static clock_t realtime,lasttime=0;
 static const int nperline=10;
 
-void IntegratorBase::Integrate(Var *const y0, double& t, double tmax,
+void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 							   Source_t *const LinearSrc0,
 							   Source_t *const NonlinearSrc0,
 							   Source_t *const ConstantSrc0,
@@ -35,6 +35,8 @@ void IntegratorBase::Integrate(Var *const y0, double& t, double tmax,
 	int nout=0;
 	const int forwards=(tmax >= t);
 	const double sign=(forwards ? 1.0 : -1.0);
+	
+	y0=y;
 	
 	double tstop=((sample > 0.0) ? 0.0 : tmax);
 	dt=min(dt/Microfactor(),dtmax);
@@ -81,25 +83,24 @@ void IntegratorBase::Integrate(Var *const y0, double& t, double tmax,
 			}
 			cont=1;
 			do {
-				switch(Solve(y0,t,dt))
-					{
-					case ADJUST:
-						t += dt;
-						ChangeTimestep(dt,sign*min(sign*dt*stepfactor,dtmax),
-									   t);
-						cont=0;	break;
-					case SUCCESSFUL:
-						t += dt;
-						if(invert_flag) {
-							ChangeTimestep(dt,dtold,t); invert_flag=0;
-						}   
-						cont=0;	break;
-					case NONINVERTIBLE:
-						dtold=dt; invert_flag=1; invert_cnt++;
-						ChangeTimestep(dt,dt*stepnoninverse,t); break;
-					case UNSUCCESSFUL:
-						ChangeTimestep(dt,dt*stepinverse,t);
-					}
+				switch(Solve(t,dt))
+				{
+				case ADJUST:
+					t += dt;
+					ChangeTimestep(dt,sign*min(sign*dt*stepfactor,dtmax),t);
+					cont=0;	break;
+				case SUCCESSFUL:
+					t += dt;
+					if(invert_flag) {
+						ChangeTimestep(dt,dtold,t); invert_flag=0;
+					}   
+					cont=0;	break;
+				case NONINVERTIBLE:
+					dtold=dt; invert_flag=1; invert_cnt++;
+					ChangeTimestep(dt,dt*stepnoninverse,t); break;
+				case UNSUCCESSFUL:
+					ChangeTimestep(dt,dt*stepinverse,t);
+				}
 			} while(cont);
 			iteration++;
 		}
@@ -112,29 +113,38 @@ void IntegratorBase::Integrate(Var *const y0, double& t, double tmax,
 	dt *= sign;
 }	
 
-Solve_RC Euler::Solve(Var *y0, double t, double dt)
+void IntegratorBase::Allocate(int n)
+{
+	ny=n; source=new Var[n];
+	nyprimary=ny/(Nmoment+1);
+	if(nyprimary*(Nmoment+1) != ny) 
+		msg(ERROR, "ny=%d is incompatible with Nmoment=%d",ny,Nmoment);
+}
+
+Solve_RC Euler::Solve(double t, double dt)
 {
 	Source(source,y0,t);
 	for(int j=0; j < ny; j++) y0[j] += dt*source[j];
 	return SUCCESSFUL;
 }
 
-Solve_RC PC::Solve(Var *y0, double t, double dt)
+Solve_RC PC::Solve(double t, double dt)
 {
 	double errmax=0.0;
 	
 	if(new_y0) Source(source0,y0,t);
-	Predictor(y0,t,dt);
-	if(!Corrector(y0,dt,errmax,0,nyconserve)) {
-		if(hybrid) StandardCorrector(y0,dt,errmax,0,nyconserve);
+	Predictor(t,dt,0,nyprimary);
+	if(!Corrector(dt,errmax,0,nyprimary)) {
+		if(hybrid) StandardCorrector(dt,errmax,0,nyprimary);
 		else return NONINVERTIBLE;
 	}
 	
 	// Disregard averaging error
-	if(average) {
+	if(Nmoment) {
+		StandardPredictor(t,dt,nyprimary,ny);
 		int dynamic_value=dynamic;
 		dynamic=0;
-		StandardCorrector(y0,dt,errmax,nyconserve,ny);
+		StandardCorrector(dt,errmax,nyprimary,ny);
 		dynamic=dynamic_value;
 	}
 
@@ -144,16 +154,15 @@ Solve_RC PC::Solve(Var *y0, double t, double dt)
 	return flag;
 }
 
-void PC::Predictor(Var *y0, double t, double dt)
+void PC::Predictor(double t, double dt, int start, int stop)
 {
-	for(int j=0; j < ny; j++) y1[j]=y0[j]+dt*source0[j];
+	for(int j=start; j < stop; j++) y1[j]=y0[j]+dt*source0[j];
 	Source(source,y1,t+dt);
 }
 
-int PC::Corrector(Var *y0, double dt, double& errmax, int start, int stop)
+int PC::Corrector(double dt, double& errmax, int start, int stop)
 {
 	const double halfdt=0.5*dt;
-	
 	if(dynamic) for(int j=start; j < stop; j++) {
 		Var pred=y[j];
 		y[j]=y0[j]+halfdt*(source0[j]+source[j]);
@@ -169,52 +178,49 @@ void RK2::TimestepDependence(double dt)
 	halfdt=0.5*dt;
 }
 
-void RK2::Predictor(Var *y0, double t, double)
+void RK2::Predictor(double t, double, int start, int stop)
 {
-	for(int j=0; j < ny; j++) y1[j]=y0[j]+halfdt*source0[j];
+	for(int j=start; j < stop; j++) y1[j]=y0[j]+halfdt*source0[j];
 	Source(source,y1,t+halfdt);
 }
 
-int RK2::Corrector(Var *y0, double dt, double& errmax, int start, int stop)
+int RK2::Corrector(double dt, double& errmax, int start, int stop)
 {
-	if(dynamic) for(int j=start; j < stop; j++) {
-		y[j]=y0[j]+dt*source[j];
+	for(int j=start; j < stop; j++) y[j]=y0[j]+dt*source[j];
+	if(dynamic) for(int j=start; j < stop; j++)
 		calc_error(y0[j],y[j],y0[j]+dt*source0[j],y[j],errmax);
-	} else for(int j=start; j < stop; j++) {
-		y[j]=y0[j]+dt*source[j];
-	}
 	return 1;
 }
 
 void RK4::TimestepDependence(double dt)
 {
 	halfdt=0.5*dt;
-	sixthdt=1.0/6.0*dt;
+	sixthdt=dt/6.0;
 }
 
-void RK4::Predictor(Var *y0, double t, double dt)
+void RK4::Predictor(double t, double dt, int start, int stop)
 {
 	int j;
 	
-	for(j=0; j < ny; j++) y[j]=y0[j]+halfdt*source0[j];
+	for(j=start; j < stop; j++) y[j]=y0[j]+halfdt*source0[j];
 	Source(source1,y,t+halfdt);
-	for(j=0; j < ny; j++) y[j]=y0[j]+halfdt*source1[j];
+	for(j=start; j < stop; j++) y[j]=y0[j]+halfdt*source1[j];
 	Source(source2,y,t+halfdt);
-	for(j=0; j < ny; j++) y[j]=y0[j]+dt*source2[j];
+	for(j=start; j < stop; j++) y[j]=y0[j]+dt*source2[j];
 	Source(source,y,t+dt);
 }
 
-int RK4::Corrector(Var *y0, double, double& errmax, int start, int stop)
+int RK4::Corrector(double, double& errmax, int start, int stop)
 {
 	Var pred;
 	
 	if(dynamic) for(int j=start; j < stop; j++) {
 		pred=y[j];
-		y[j]=y0[j]+sixthdt*(source0[j]+2.0*source1[j]+2.0*source2[j]+
+		y[j]=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+
 							source[j]);
 		calc_error(y0[j],y[j],pred,y[j],errmax);
 	} else for(int j=start; j < stop; j++) {
-		y[j]=y0[j]+sixthdt*(source0[j]+2.0*source1[j]+2.0*source2[j]+
+		y[j]=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+
 							source[j]);
 	}
 	return 1;
@@ -222,7 +228,7 @@ int RK4::Corrector(Var *y0, double, double& errmax, int start, int stop)
 
 void RK5::TimestepDependence(double dt)
 {
-	a1=0.2*dt; a2=0.3*dt; a3=0.6*dt; a4=1.0*dt; a5=0.875*dt;
+	a1=0.2*dt; a2=0.3*dt; a3=0.6*dt; a4=dt; a5=0.875*dt;
 	b10=0.2*dt;
 	b20=3.0/40.0*dt; b21=9.0/40.0*dt;
 	b30=0.3*dt; b31=-0.9*dt; b32=1.2*dt;
@@ -236,24 +242,24 @@ void RK5::TimestepDependence(double dt)
 
 #if COMPLEX
 
-void RK5::Predictor(Var *y0, double t, double)
+void RK5::Predictor(double t, double, int start, int stop)
 {
 	int j;
 	
 #pragma ivdep		
-	for(j=0; j < ny; j++) {
+	for(j=start; j < stop; j++) {
 		y[j].re=y0[j].re+b10*source0[j].re;
 		y[j].im=y0[j].im+b10*source0[j].im;
 	}
 	Source(source,y,t+a1);
 #pragma ivdep		
-	for(j=0; j < ny; j++) {
+	for(j=start; j < stop; j++) {
 		y2[j].re=y0[j].re+b20*source0[j].re+b21*source[j].re;
 		y2[j].im=y0[j].im+b20*source0[j].im+b21*source[j].im;
 	}
 	Source(source2,y2,t+a2);
 #pragma ivdep		
-	for(j=0; j < ny; j++) {
+	for(j=start; j < stop; j++) {
 		y3[j].re=y0[j].re+b30*source0[j].re+b31*source[j].re+
 			b32*source2[j].re;
 		y3[j].im=y0[j].im+b30*source0[j].im+b31*source[j].im+
@@ -261,7 +267,7 @@ void RK5::Predictor(Var *y0, double t, double)
 	}
 	Source(source3,y3,t+a3);
 #pragma ivdep		
-	for(j=0; j < ny; j++) {
+	for(j=start; j < stop; j++) {
 		y4[j].re=y0[j].re+b40*source0[j].re+b41*source[j].re+
 			b42*source2[j].re+b43*source3[j].re;
 		y4[j].im=y0[j].im+b40*source0[j].im+b41*source[j].im+
@@ -269,7 +275,7 @@ void RK5::Predictor(Var *y0, double t, double)
 	}
 	Source(source4,y4,t+a4);
 #pragma ivdep		
-	for(j=0; j < ny; j++) {
+	for(j=start; j < stop; j++) {
 		y[j].re=y0[j].re+b50*source0[j].re+b51*source[j].re+
 			b52*source2[j].re+b53*source3[j].re+b54*source4[j].re;
 		y[j].im=y0[j].im+b50*source0[j].im+b51*source[j].im+
@@ -280,27 +286,27 @@ void RK5::Predictor(Var *y0, double t, double)
 	
 #else // COMPLEX
 	
-void RK5::Predictor(Var *y0, double t, double)
+void RK5::Predictor(double t, double, int start, int stop)
 {
 	int j;
 	
 #pragma ivdep		
-	for(j=0; j < ny; j++) y[j]=y0[j]+b10*source0[j];
+	for(j=start; j < stop; j++) y[j]=y0[j]+b10*source0[j];
 	Source(source,y,t+a1);
 #pragma ivdep		
-	for(j=0; j < ny; j++) y2[j]=y0[j]+b20*source0[j]+b21*source[j];
+	for(j=start; j < stop; j++) y2[j]=y0[j]+b20*source0[j]+b21*source[j];
 	Source(source2,y2,t+a2);
 #pragma ivdep		
-	for(j=0; j < ny; j++) y3[j]=y0[j]+b30*source0[j]+b31*source[j]+
-		b32*source2[j];
+	for(j=start; j < stop; j++) y3[j]=y0[j]+b30*source0[j]+b31*source[j]+
+									b32*source2[j];
 	Source(source3,y3,t+a3);
 #pragma ivdep		
-	for(j=0; j < ny; j++) y4[j]=y0[j]+b40*source0[j]+b41*source[j]+
-		b42*source2[j]+b43*source3[j];
+	for(j=start; j < stop; j++) y4[j]=y0[j]+b40*source0[j]+b41*source[j]+
+									b42*source2[j]+b43*source3[j];
 	Source(source4,y4,t+a4);
 #pragma ivdep		
-	for(j=0; j < ny; j++) y[j]=y0[j]+b50*source0[j]+b51*source[j]+
-		b52*source2[j]+b53*source3[j]+b54*source4[j];
+	for(j=start; j < stop; j++) y[j]=y0[j]+b50*source0[j]+b51*source[j]+
+									b52*source2[j]+b53*source3[j]+b54*source4[j];
 	Source(source,y,t+a5);
 }
 
@@ -344,11 +350,9 @@ inline void RK5::CalcError(const Complex y0, Complex& y,
 			  source.im,dt);
 }
 
-int RK5::Corrector(Var *y0, double, double& errmax, int start, int stop)
+int RK5::Corrector(double, double& errmax, int start, int stop)
 {
 	int j;
-	Var pred;
-
 #pragma ivdep		
 	for(j=start; j < stop; j++)
 		Correct(y0[j],y[j],source0[j],source2[j],source3[j],source4[j],
@@ -364,4 +368,3 @@ int RK5::Corrector(Var *y0, double, double& errmax, int start, int stop)
 	}
 	return 1;
 }
-

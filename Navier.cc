@@ -68,6 +68,7 @@ NWave::NWave()
 	VOCAB(pH,0,0);
 	
 	VOCAB(randomIC,0,1);
+	VOCAB(Nmoment,0,INT_MAX);
 	
 	VOCAB(Nx,1,INT_MAX);
 	VOCAB(Ny,1,INT_MAX);
@@ -91,11 +92,10 @@ NWave::NWave()
 	INTEGRATOR(CE_PC);
 	INTEGRATOR(I_RK2);
 	INTEGRATOR(C_RK2);
-	INTEGRATOR(E_RK2);
+	INTEGRATOR(I_RK4);
 	INTEGRATOR(C_RK4);
-	INTEGRATOR(E_RK4);
+	INTEGRATOR(I_RK5);
 	INTEGRATOR(C_RK5);
-	INTEGRATOR(E_RK5);
 	
 	PARTITION(Polar,Cartesian);
 	BASIS(Cartesian);
@@ -169,7 +169,8 @@ static Real equilibrium(int i)
 static ifstream ftin;
 static ofstream fparam,fevt,fyvt,ft,favgy,fprolog;
 Real continuum_factor=1.0;
-static char avgylabel[Nmoment][20];
+typedef char Avgylabel[20];
+static Avgylabel *avgylabel;
 static char tempbuffer[30];
 static int tcount=0;
 
@@ -181,10 +182,10 @@ void NWave::InitialConditions()
 	if(!Geometry->ValidApproximation(Approximation->Abbrev()))
 		msg(ERROR,"Geometry \"%s\" is incompatible with Approximation \"%s\"",
 			Geometry->Name(),Approximation->Name());
-	nyconserve=Npsi=Geometry->Create();
+	Npsi=Geometry->Create();
+	ny=Npsi*(1+Nmoment);
 	Ntotal=Geometry->TotalNumber();
 	NpsiR=Ntotal-Npsi;
-	ny=(average ? Nmoment+1 : 1)*Npsi;
 	y=new Var[ny];
 	nu=new Nu[Npsi];
 	forcing=new Real[Npsi];
@@ -223,13 +224,12 @@ void NWave::InitialConditions()
 	open_output(ft,dirsep,"t");
 	open_output(fprolog,dirsep,"prolog");
 	
-	for(n=0; n < Nmoment; n++) 
-	
-	if(average) for(n=0; n < Nmoment; n++) {
-		sprintf(tempbuffer,"avgy%d",n+2);
+	avgylabel=new Avgylabel[Nmoment];
+	for(n=0; n < Nmoment; n++) {
+		sprintf(tempbuffer,"avgy%d",n);
 		mkdir(Problem->FileName(dirsep,tempbuffer),0xFFFF);
 		errno=0;
-		sprintf(avgylabel[n],"y%%s^%d",n+2);
+		sprintf(avgylabel[n],"y%%s^%d",n);
 	}
 	
 	Problem->GraphicsDump(fparam);
@@ -253,13 +253,14 @@ void NWave::Initialize()
 	out_function(fprolog,Area,"Area",Npsi);
 	out_function(fprolog,nu_re,"nu.re",Npsi);
 	out_function(fprolog,nu_im,"nu.im",Npsi);
+	out_curve(fprolog,forcing,"f",Npsi);
 	out_function(fprolog,equilibrium,"equil",Npsi);
 	out_function(fprolog,Normalization,"normalization",Npsi);
 
 	fevt << "#   t\t\t E\t\t Z\t\t P" << endl;
 
 	// Initialize time integrals to zero.
-	if(average) for(i=Npsi; i < ny; i++) y[i]=0.0;
+	for(i=Npsi; i < ny; i++) y[i]=0.0;
 }
 
 void compute_invariants(Var *y, int Npsi, Real& E, Real& Z, Real& P)
@@ -294,11 +295,12 @@ void NWave::Output(int)
 	out_real(fyvt,y,"y%s",Npsi);
 	fyvt.flush();
 	
-	if(average) for(n=0; n < Nmoment; n++) {
-		sprintf(tempbuffer,"avgy%d%st%d",n+2,dirsep,tcount);
+	Var *yavg=y+Npsi;
+	for(n=0; n < Nmoment; n++) {
+		sprintf(tempbuffer,"avgy%d%st%d",n,dirsep,tcount);
 		open_output(favgy,dirsep,tempbuffer,0);
 		out_curve(favgy,t,"t");
-		out_real(favgy,y+Npsi*(n+1),avgylabel[n],Npsi);
+		out_real(favgy,yavg+Npsi*n,avgylabel[n],Npsi);
 		favgy.close();
 	}
 	tcount++;

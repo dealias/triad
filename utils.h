@@ -99,6 +99,7 @@ void check_match(int match_type, char *object, char *s);
 #define OVERRIDE -1,__FILE__,__LINE__
 #define WARNING 0,__FILE__,__LINE__
 #define ERROR 1,__FILE__,__LINE__
+#define CONDITIONAL -1:1,__FILE__,__LINE__
 #define ABORT 1,"",0
 
 void msg(int fatal, char *file, int line, char *format,...);

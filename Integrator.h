@@ -36,9 +36,8 @@ inline void set(T *to, const T * from, int n) {
 class Euler : public IntegratorBase {
 protected:	
 public:
-	void Allocate(int n) {ny=n; source=new Var[n];}
 	char *Name() {return "Euler";}
-	Solve_RC Solve(Var *, double, double);
+	Solve_RC Solve(double, double);
 };
 
 class PC : public IntegratorBase {
@@ -46,14 +45,21 @@ protected:
 	int new_y0;
 	Var *y,*y1,*source0;
 public:
-	void Allocate(int n) {ny=n; source=new Var[n];
-						  y1=y=new Var [n]; source0=new Var [n]; new_y0=1;}
+	void Allocate(int n) {
+		IntegratorBase::Allocate(n);
+		y1=y=new Var [n]; source0=new Var [n]; new_y0=1;
+	}
 	char *Name() {return "Predictor-Corrector";}
-	Solve_RC Solve(Var *, double, double);
-	virtual void Predictor(Var *, double, double);
-	virtual int Corrector(Var *, double, double&, int, int);
-	virtual int StandardCorrector(Var *y0, double dt, double& errmax, int start, int stop) {
-		return PC::Corrector(y0,dt,errmax,start,stop);
+	Solve_RC Solve(double, double);
+	virtual void Predictor(double, double, int, int);
+	virtual int Corrector(double, double&, int, int);
+	virtual void StandardPredictor(double t, double dt, int start,
+								   int stop) {
+		PC::Predictor(t,dt,start,stop);
+	}
+	virtual int StandardCorrector(double dt, double& errmax,
+								  int start, int stop) {
+		return PC::Corrector(dt,errmax,start,stop);
 	}
 };
 
@@ -63,10 +69,15 @@ protected:
 public:
 	char *Name() {return "Second-Order Runge-Kutta";}
 	void TimestepDependence(double);
-	void Predictor(Var *, double, double);
-	int Corrector(Var *, double, double&, int, int);
-	int StandardCorrector(Var *y0, double dt, double& errmax, int start, int stop) {
-		return RK2::Corrector(y0,dt,errmax,start,stop);
+	void Predictor(double, double, int, int);
+	int Corrector(double, double&, int, int);
+	void StandardPredictor(double t, double dt, int start,
+						   int stop) {
+		RK2::Predictor(t,dt,start,stop);
+	}
+	int StandardCorrector(double dt, double& errmax, int start,
+						  int stop) {
+		return RK2::Corrector(dt,errmax,start,stop);
 	}
 };
 
@@ -75,14 +86,20 @@ protected:
 	Var *source1,*source2;
 	double halfdt,sixthdt;
 public:
-	void Allocate(int n) {PC::Allocate(n);
-						  source1=new Var [n]; source2=new Var [n];}
+	void Allocate(int n) {
+		PC::Allocate(n); source1=new Var [n]; source2=new Var [n];
+	}
 	char *Name() {return "Fourth-Order Runge-Kutta";}
 	void TimestepDependence(double);
-	void Predictor(Var *, double, double);
-	int Corrector(Var *, double, double&, int, int);
-	int StandardCorrector(Var *y0, double dt, double& errmax, int start, int stop) {
-		return RK4::Corrector(y0,dt,errmax,start,stop);
+	void Predictor(double, double, int, int);
+	int Corrector(double, double&, int, int);
+	void StandardPredictor(double t, double dt, int start,
+						   int stop) {
+		RK4::Predictor(t,dt,start,stop);
+	}
+	int StandardCorrector(double dt, double& errmax, int start,
+						  int stop) {
+		return RK4::Corrector(dt,errmax,start,stop);
 	}
 };
 
@@ -100,10 +117,11 @@ protected:
 	double d0,d2,d3,d4,d5;
 	double pgrow, pshrink;
 public:
-	void Allocate(int n) {RK4::Allocate(n);
-						  y2=y4=y; y3=new Var [n];
-						  source3=source1; source1=NULL; source4=new Var [n];
-						  pgrow=0.5*0.2; pshrink=0.5*0.25;}
+	void Allocate(int n) {
+		RK4::Allocate(n); y2=y4=y; y3=new Var [n];
+		source3=source1; source1=NULL; source4=new Var [n];
+		pgrow=0.5*0.2; pshrink=0.5*0.25;
+	}
 	char *Name() {return "Fifth-Order Runge-Kutta";}
 	void TimestepDependence(double);
 	void ExtrapolateTimestep (double errmax) {
@@ -111,10 +129,13 @@ public:
 		else if(tolmin2) stepinverse=stepfactor=pow(tolmin2/errmax,pshrink);
 		if(errmax <= tolmax2) errmax=0.0; // Force a time step adjustment.
 	}
-	void Predictor(Var *, double, double);
-	int Corrector(Var *, double, double&, int, int);
-	int StandardCorrector(Var *y0, double dt, double& errmax, int start, int stop) {
-		return RK5::Corrector(y0,dt,errmax,start,stop);
+	void Predictor(double, double, int, int);
+	int Corrector(double, double&, int, int);
+	void StandardPredictor(double t, double dt, int start,int stop) {
+		RK5::Predictor(t,dt,start,stop);
+	}
+	int StandardCorrector(double dt, double& errmax, int start,int stop) {
+		return RK5::Corrector(dt,errmax,start,stop);
 	}
 	inline void Correct(const Real y0, Real& y,
 						const Real source0, const Real source2, 

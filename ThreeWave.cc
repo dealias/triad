@@ -5,6 +5,7 @@ char *NWave::Abbrev() {return "w3";}
 
 char *approximation="Convolution";
 char *integrator="PC";
+const int MaxMoment=INT_MAX;
 
 // Three-wave variables
 int randomIC=0;
@@ -21,6 +22,7 @@ NWave::NWave()
 	reality=0;
 	
 	VOCAB(randomIC,0,1);
+	VOCAB(Nmoment,0,INT_MAX);
 	
 	VOCAB_ARRAY(Mk);
 	VOCAB_ARRAY(IC);
@@ -35,11 +37,10 @@ NWave::NWave()
 	INTEGRATOR(CE_PC);
 	INTEGRATOR(I_RK2);
 	INTEGRATOR(C_RK2);
-	INTEGRATOR(E_RK2);
+	INTEGRATOR(I_RK4);
 	INTEGRATOR(C_RK4);
-	INTEGRATOR(E_RK4);
+	INTEGRATOR(I_RK5);
 	INTEGRATOR(C_RK5);
-	INTEGRATOR(E_RK5);
 }
 
 void Convolution::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
@@ -57,11 +58,11 @@ void NWave::InitialConditions()
 {
 	int k,p;
 
-	nyconserve=Npsi=Ntotal=3;
+	Npsi=Ntotal=3;
+	ny=Npsi*(1+Nmoment);
 	NpsiR=Ntotal-Npsi;
 	psibuffer=psibufferR=new Var[Npsi];
 	psibufferStop=psibuffer+Npsi;
-	ny=(average ? Nmoment+1 : 1)*Npsi;
 	y=new Var[ny];
 	K=new Real [Npsi];
 	
@@ -110,7 +111,7 @@ void NWave::Initialize()
 	int i;
 
 	// Initialize time integrals to zero.
-	if(average) for(i=Npsi; i < ny; i++) y[i]=0.0;
+	for(i=Npsi; i < ny; i++) y[i]=0.0;
 }
 
 void compute_invariants(Var *y, int Npsi, Real& E, Real& Z, Real& P)

@@ -31,23 +31,27 @@ class C_PC : public PC {
 public:
 	char *Name() {return "Conservative Predictor-Corrector";}
 	char *Abbrev() {return "C-PC";}
-	int Corrector(Var *, double, double&, int, int);
+	int Corrector(double, double&, int, int);
 };
 
 Lotka::Lotka()
 {
 	Problem=this;
-	ny=2; 
+	ny=2;
+	Nmoment=0;
 	y=new Var[ny];
 	
 	VOCAB(x0,0.0,0.0);
 	VOCAB(y0,0.0,0.0);
 	VOCAB(mu,0.0,0.0);
 	
-	NonlinearSrc=LotkaSource;
-	
 	APPROXIMATION(None);
 	INTEGRATOR(C_PC);
+}
+
+void None::SetSrcRoutines(Source_t **, Source_t **NonlinearSrc, Source_t **)
+{
+	*NonlinearSrc=LotkaSource;
 }
 
 Lotka LotkaProblem;
@@ -58,14 +62,12 @@ Real Mu[2];
 
 void Lotka::InitialConditions()
 {
-	char *filename;
-	
 	y[X]=x0;
 	y[Y]=y0;
 	
 	Mu[0]=1.0;
 	Mu[1]=mu;
-	open_output(fout,".",downcase(undashify(Integrator->Abbrev())));
+	open_output(fout,dirsep,downcase(undashify(Integrator->Abbrev())));
 
 }
 
@@ -90,7 +92,7 @@ void LotkaSource(Var *source, Var *y, double)
 	source[Y]=y[Y]*(1.0-y[X]);
 }
 
-int C_PC::Corrector(Var *y0, double dt, double&, int, int)
+int C_PC::Corrector(double dt, double&, int, int)
 {
 	Real DE,f,diff,lastdiff,old;
 	Real xi[2];

@@ -21,14 +21,14 @@ extern int iteration;
 extern int invert_cnt;
 
 extern char *run;
-extern char *integrator;
 extern char *approximation;
+extern char *integrator;
 
 // Global vocabulary
 extern int itmax; 
 extern double tmax;
 extern double dt;
-extern int average;
+extern int Nmoment;
 extern int dynamic;
 extern int digits;
 extern int restart;
@@ -57,8 +57,8 @@ typedef void Source_t(Var *, Var *, double);
 class IntegratorBase {
 protected:
 	char *abbrev;
-	int ny,nyconserve;
-	Var *source;
+	int ny,nyprimary;
+	Var *y0, *source;
 	double tolmax2,tolmin2;
 	double stepfactor,stepinverse,stepnoninverse;
 	double dtmax;
@@ -73,7 +73,7 @@ public:
 	char *Abbrev() {return abbrev;}
 	void SetParam(double tolmax, double tolmin, double stepfactor0,
 				  double stepnoninvert, double dtmax0, int itmax0,
-				  int microsteps0, int nyconserve0, int verbose0) {
+				  int microsteps0, int verbose0) {
 		if(tolmax < tolmin) msg(ABORT,"tolmax < tolmin"); 
 		tolmax2=tolmax*tolmax;
 		tolmin2=tolmin*tolmin;
@@ -83,7 +83,6 @@ public:
 		dtmax=dtmax0;
 		itmax=itmax0;
 		microsteps=microsteps0*Microfactor();
-		nyconserve=nyconserve0;
 		verbose=verbose0;
 	}
 	void Integrate(Var *const y, double& t, double tmax,
@@ -93,9 +92,9 @@ public:
 	void ChangeTimestep(double& dt, const double dtnew, const double t);
 	
 	Solve_RC CheckError(double errmax);
-	virtual void Allocate(int)=0;
+	virtual void Allocate(int n);
 	virtual char *Name()=0;
-	virtual Solve_RC Solve(Var *, double, double)=0;
+	virtual Solve_RC Solve(double, double)=0;
 	virtual void Source(Var *, Var *, double);
 	virtual int Microfactor() {return 1;}
 	virtual void TimestepDependence(double) {}
@@ -124,7 +123,7 @@ class ProblemBase {
 protected:
 	Var *y;
 	DynVector<ParamBase *> ParamList;
-	int ny,nyconserve;
+	int ny;
 public:	
 	Table<IntegratorBase> *IntegratorTable;
 	Table<ApproximationBase> *ApproximationTable;
@@ -155,7 +154,6 @@ public:
 	
 	Var *Vector() {return y;}
 	int Size() {return ny;}
-	int Nconserve() {return nyconserve;}
 	virtual char *Name()=0;
 	virtual char *Abbrev()=0;
 	virtual void InitialConditions()=0;

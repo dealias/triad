@@ -25,6 +25,19 @@ Real *nuR_inv,*nuI;
 Real *forcing;
 extern Real tauforce;
 
+void ComputeMoments(Var *source, Var *psi) {
+	Var *k, *q=source+Npsi, *kstop=psi+Npsi;
+	for(k=psi; k < kstop; k++, q++) *q=product(*(q-Npsi),*k); // S_k*psi_k
+#pragma ivdep
+	if(Nmoment > 1) {
+		for(k=psi; k < kstop; k++, q++) *q=*k; // psi_k
+		for(int n=2; n < Nmoment; n++) { // psi_k^n
+#pragma ivdep
+			for(k=psi; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);
+		}
+	}
+}
+
 void PrimitiveNonlinearitySR(Var *source, Var *psi, double)
 {
 	set(psibuffer,psi,Npsi);
@@ -76,17 +89,7 @@ void PrimitiveNonlinearitySR(Var *source, Var *psi, double)
 		source[i]=sum;
 #endif		
 	}
-	
-	// Compute moments
-	if(average && Nmoment > 0) {
-		Var *k, *q=source+Npsi, *kstop=psi+Npsi;
-#pragma ivdep
-		for(k=psi; k < kstop; k++, q++) *q=product(*k,*k);   // psi^2
-		for(int n=1; n < Nmoment; n++) { // psi^n
-#pragma ivdep
-			for(k=psi; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);
-		}
-	}
+	if(Nmoment) ComputeMoments(source,psi);
 }
 
 Cartesian *CartesianMode;
@@ -119,17 +122,7 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 	}
 
 	for(i=0; i < Npsi; i++) source[i] *= kinv2[i];
-	
-	// Compute moments
-	if(average && Nmoment > 0) {
-		Var *k, *q=source+Npsi, *kstop=psi+Npsi;
-#pragma ivdep
-		for(k=psi; k < kstop; k++, q++) *q=product(*k,*k);   // psi^2
-		for(int n=1; n < Nmoment; n++) { // psi^n
-#pragma ivdep
-			for(k=psi; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);
-		}
-	}
+	if(Nmoment) ComputeMoments(source,psi);
 }
 
 
@@ -168,17 +161,7 @@ void PrimitiveNonlinearityFFT(Complex *source, Complex *psi, double)
 		source[i].im = kinv2[i]*(CartesianMode[i].Y()*psibuffer[i].re-
 								 CartesianMode[i].X()*psitemp[i].re);
 	}
-	
-	// Compute moments
-	if(average && Nmoment > 0) {
-		Var *k, *q=source+Npsi, *kstop=psi+Npsi;
-#pragma ivdep
-		for(k=psi; k < kstop; k++, q++) *q=product(*k,*k);   // psi^2
-		for(int n=1; n < Nmoment; n++) { // psi^n
-#pragma ivdep
-			for(k=psi; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);
-		}
-	}
+	if(Nmoment) ComputeMoments(source,psi);
 }
 
 void PrimitiveNonlinearityFFT(Real *, Real *, double)
@@ -236,7 +219,7 @@ Solve_RC C_Euler::Solve(Real *y0, double t, double dt)
 	Source(source,vy0,t);
 	
 	mu=temp=0.0;
-	for(j=0; j < nyconserve; j++) {
+	for(j=0; j < nyprimary; j++) {
 		if(y0[j] != 0.0) temp=tau*rsource[j]/y0[j];
 		else jfix=j;
 		if(fabs(temp) > fabs(mu)) {mu=temp;	if(fabs(mu) >= 0.5) jfix=j;}
@@ -244,19 +227,19 @@ Solve_RC C_Euler::Solve(Real *y0, double t, double dt)
 	mu += 2.0;
 	
 	if(jfix == -1)	// Evolve forwards.
-		for(j=0; j < nyconserve; j++)
+		for(j=0; j < nyprimary; j++)
 			y0[j]=sgn(y0[j])*sqrt(y0[j]*(y0[j]+mu*tau*rsource[j]));
 	else {			// Iterate backwards.
-		set(ry,y0,nyconserve);
+		set(ry,y0,nyprimary);
 		iter=0;
-		for(j=0; j < nyconserve; j++) lastdiff[j]=0.0;
+		for(j=0; j < nyprimary; j++) lastdiff[j]=0.0;
 		y0[jfix]=ry[jfix]+tau*rsource[jfix];
 		temp=(ry[jfix]/y0[jfix]+1.0)*rsource[jfix];
 		do {
 			cont=0;
 			Source(source,vy0,t);
 			mu=temp/rsource[jfix];
-			for(j=0; j < nyconserve; j++) {
+			for(j=0; j < nyprimary; j++) {
 				yj=y0[j];
 				if(j !=jfix) {
 					Real discr=ry[j]*ry[j]+mu*tau*rsource[j]*y0[j];
@@ -271,7 +254,7 @@ Solve_RC C_Euler::Solve(Real *y0, double t, double dt)
 			if(++iter == 100) msg(ERROR,"Iteration did not converge");
 		} while (cont);
 	}
-	for(j=nyconserve; j < ny; j++) y0[j] += dt*rsource[j];
+	for(j=nyprimary; j < ny; j++) y0[j] += dt*rsource[j];
 	return SUCCESSFUL;
 }
 
@@ -300,29 +283,25 @@ inline int CorrectC_PC::Correct(const Complex y0, const Complex y1, Complex& y,
 	return 1;
 }
 
-int C_PC::Corrector(Var *y0, double dt, double& errmax, int start, int stop)
+int C_PC::Corrector(double dt, double& errmax, int start, int stop)
 {
 	int j;
-	if(dynamic) for(j=start; j < stop; j++) {
-		Var pred=y1[j];
+	for(j=start; j < stop; j++)
 		if(!Correct(y0[j],y1[j],y[j],source0[j],source[j],dt)) return 0;
-		calc_error(y0[j],y[j],pred,y[j],errmax);
-	}
-	else for(j=start; j < stop; j++) {
-		if(!Correct(y0[j],y1[j],y[j],source0[j],source[j],dt)) return 0;
-	}
+	if(dynamic) for(j=start; j < stop; j++)
+		calc_error(y0[j],y[j],y1[j],y[j],errmax);
 	return 1;
 }
 
 void E_PC::Allocate(int n)
 {
 	PC::Allocate(n);
-	expinv=new Nu[Npsi];
-	onemexpinv=new Nu[Npsi];
+	expinv=new Nu[nyprimary];
+	onemexpinv=new Nu[nyprimary];
 	
-	nu_inv=new Nu[Npsi];
+	nu_inv=new Nu[nyprimary];
 
-	for(int j=0; j < Npsi; j++) {
+	for(int j=0; j < nyprimary; j++) {
 		if(nu[j] != 0.0) nu_inv[j]=1.0/nu[j];
 		else nu_inv[j]=1.0;
 	}
@@ -330,150 +309,60 @@ void E_PC::Allocate(int n)
 
 void E_PC::TimestepDependence(double dt)
 {
-	for(int j=0; j < Npsi; j++) {
+	for(int j=0; j < nyprimary; j++) {
 		onemexpinv[j]=-expm1(-nu[j]*dt);
 		expinv[j]=1.0-onemexpinv[j];
 		if(nu[j] == 0.0) onemexpinv[j]=dt;
 	}
+	dtinv=1.0/dt;
 }
 
-void E_PC::Predictor(Var *y0, double t, double)
+void E_PC::Predictor(double t, double, int start, int stop)
 {
-	for(int j=0; j < Npsi; j++)	y1[j]=expinv[j]*y0[j]+onemexpinv[j]*source0[j];
-	for(int j=Npsi; j < ny; j++) y1[j]=y0[j]+dt*source0[j];
+	for(int j=start; j < stop; j++)	
+		y1[j]=expinv[j]*y0[j]+onemexpinv[j]*source0[j];
 	Source(source,y1,t+dt);
 }
 
-int E_PC::Corrector(Var *y0, double, double& errmax, int start, int stop)
+int E_PC::Corrector(double, double& errmax, int start, int stop)
 {
 	int j;
-	if(dynamic)	for(j=start; j < stop; j++) {
-		Var corr=0.5*(source0[j]+source[j]);
-		y[j]=expinv[j]*y0[j]+onemexpinv[j]*corr;
-		calc_error(source0[j],corr,source0[j],corr,errmax);
+	for(j=start; j < stop; j++) {
+		source[j]=0.5*(source0[j]+source[j]);
+		y[j]=expinv[j]*y0[j]+onemexpinv[j]*source[j];
 	}
-	else for(j=start; j < stop; j++) {
-		y[j]=expinv[j]*y0[j]+onemexpinv[j]*0.5*(source0[j]+source[j]);
-	}
+	if(dynamic) for(j=start; j < stop; j++)
+		calc_error(y0[j]*dtinv,source[j],source0[j],source[j],errmax);
 	return 1;
 }
 
 void I_PC::Allocate(int n)
 {
 	PC::Allocate(n);
-	expinv=new Nu[Npsi];
+	expinv=new Nu[nyprimary];
 }
 
 void I_PC::TimestepDependence(double dt)
 {
-	for(int j=0; j < Npsi; j++) expinv[j]=exp(-nu[j]*dt);
+	for(int j=0; j < nyprimary; j++) expinv[j]=exp(-nu[j]*dt);
 }
 
-void I_PC::Predictor(Var *y0, double t, double dt)
-{
-	if(new_y0) for(int j=0; j < Npsi; j++) y0[j] *= expinv[j];
-	for(int j=0; j < Npsi; j++) source0[j] *= expinv[j];
-	PC::Predictor(y0,t,dt);
-}
-
-void I_RK2::Allocate(int n)
-{
-	RK2::Allocate(n);
-	expinv=new Nu[Npsi];
-}
-
-void I_RK2::TimestepDependence(double dt)
-{
-	RK2::TimestepDependence(dt);
-	for(int j=0; j < Npsi; j++) expinv[j]=exp(-nu[j]*halfdt);
-}
-
-void I_RK2::Predictor(Var *y0, double t, double dt)
-{
-	if(new_y0) for(int j=0; j < Npsi; j++) y0[j] *= expinv[j];
-	else for(int j=0; j < Npsi; j++) y0[j] /= expinv[j];
-	for(int j=0; j < Npsi; j++) source0[j] *= expinv[j];
-	RK2::Predictor(y0,t,dt);
-	if(new_y0) for(int j=0; j < Npsi; j++) y0[j] *= expinv[j];
-}
-
-void E_RK2::Allocate(int n)
-{
-	E_PC::Allocate(n);
-	expinv1=new Nu[Npsi];
-	onemexpinv1=new Nu[Npsi];
-}
-
-void E_RK2::TimestepDependence(double dt)
-{
-	for(int j=0; j < Npsi; j++) {
-		onemexpinv[j]=-expm1(-nu[j]*dt);
-		expinv[j]=1.0-onemexpinv[j];
-		
-		Nu factor=1.0/(expinv[j]+0.5*onemexpinv[j]);
-		if(nu[j] == 0.0) onemexpinv[j]=dt;
-		
-		expinv1[j]=expinv[j]*factor;
-		onemexpinv1[j]=0.5*onemexpinv[j]*factor;
-	}
-}
-
-void E_RK2::Predictor(Var *y0, double t, double)
-{
-	for(int j=0; j < Npsi; j++)
-		y1[j]=expinv1[j]*y0[j]+onemexpinv1[j]*source0[j];
-	for(int j=Npsi; j < ny; j++) y1[j]=y0[j]+halfdt*source0[j];
-	Source(source,y1,t+halfdt);
-}
-
-int E_RK2::Corrector(Var *y0, double, double& errmax, int start, int stop)
+void I_PC::Predictor(double t, double dt, int start, int stop)
 {
 	int j;
-	for(j=start; j < stop; j++) y[j]=expinv[j]*y0[j]+onemexpinv[j]*source[j];
-	if(dynamic)	for(j=start; j < stop; j++) {
-		calc_error(source0[j],source[j],source0[j],source[j],errmax);
-	}
-	return 1;
+	for(j=start; j < stop; j++) y1[j]=(y0[j]+dt*source0[j])*expinv[j];
+	Source(source,y1,t+dt);
 }
 
-void E_RK4::Allocate(int n)
+int I_PC::Corrector(double dt, double& errmax, int start, int stop)
 {
-	E_RK2::Allocate(n);
-	source1=new Var[n];
-	source2=new Var[n];
-}
-
-
-void E_RK4::Predictor(Var *y0, double t, double dt)
-{
-	int j;
-	
-	for(j=0; j < Npsi; j++) y[j]=expinv1[j]*y0[j]+onemexpinv1[j]*source0[j];
-	for(j=Npsi; j < ny; j++) y[j]=y0[j]+halfdt*source0[j];
-	Source(source1,y,t+halfdt);
-	
-	for(j=0; j < Npsi; j++) y[j]=expinv1[j]*y0[j]+onemexpinv1[j]*source1[j];
-	for(j=Npsi; j < ny; j++) y[j]=y0[j]+halfdt*source1[j];
-	Source(source2,y,t+halfdt);
-	
-	for(j=0; j < Npsi; j++) y[j]=expinv[j]*y0[j]+onemexpinv[j]*source2[j];
-	for(j=Npsi; j < ny; j++) y[j]=y0[j]+dt*source2[j];
-	Source(source,y,t+dt);
-}
-
-int E_RK4::Corrector(Var *y0, double, double& errmax, int start, int stop)
-{
-	const double sixth=1.0/6.0;
-	int j;
-	
-	if(dynamic)	for(j=start; j < stop; j++) {
-		Var corr=sixth*(source0[j]+2.0*source1[j]+2.0*source2[j]+source[j]);
-		y[j]=expinv[j]*y0[j]+onemexpinv[j]*corr;
-		calc_error(source0[j],corr,source2[j],corr,errmax);
-	}
-	else for(j=start; j < stop; j++) {
-		y[j]=expinv[j]*y0[j]+onemexpinv[j]*sixth*(source0[j]+2.0*source1[j]+
-												  2.0*source2[j]+source[j]);
+	const double halfdt=0.5*dt;
+	if(dynamic) for(int j=start; j < stop; j++) {
+		Var pred=y[j];
+		y[j]=y0[j]*expinv[j]+halfdt*(source0[j]*expinv[j]+source[j]);
+		calc_error(y0[j]*expinv[j],y[j],pred,y[j],errmax);
+	} else for(int j=start; j < stop; j++) {
+		y[j]=y0[j]*expinv[j]+halfdt*(source0[j]*expinv[j]+source[j]);
 	}
 	return 1;
 }
@@ -481,13 +370,13 @@ int E_RK4::Corrector(Var *y0, double, double& errmax, int start, int stop)
 void CE_PC::Allocate(int n)
 {
 	PC::Allocate(n);
-	expinv=new Nu[n];
-	onemexpinv=new Real[n];
+	expinv=new Nu[nyprimary];
+	onemexpinv=new Real[nyprimary];
 	
-	nuR_inv=new Real[Npsi];
-	nuI=new Real[Npsi];
+	nuR_inv=new Real[nyprimary];
+	nuI=new Real[nyprimary];
 
-	for(int j=0; j < Npsi; j++) {
+	for(int j=0; j < nyprimary; j++) {
 		nuI[j]=imag(nu[j]);
 		if(real(nu[j]) != 0.0) nuR_inv[j]=1.0/real(nu[j]);
 		else nuR_inv[j]=1.0;
@@ -497,42 +386,62 @@ void CE_PC::Allocate(int n)
 void CE_PC::TimestepDependence(double dt)
 {
 	int j;
-	for(j=0; j < Npsi; j++) {
+	for(j=0; j < nyprimary; j++) {
 		onemexpinv[j]=-expm1(-real(nu[j])*dt);
 		expinv[j]=exp(-nu[j]*dt);
-		
 		if(real(nu[j]) == 0.0) onemexpinv[j]=dt;
 	}
-	for(j=Npsi; j < ny; j++) {
-		expinv[j]=1.0; onemexpinv[j]=dt;
-	}
+	dtinv=1.0/dt;
 }
 
-void CE_PC::Predictor(Var *y0, double t, double)
+void CE_PC::Predictor(double t, double, int start, int stop)
 {
-	for(int j=0; j < ny; j++)
+	for(int j=start; j < stop; j++)
 		y[j]=expinv[j]*y0[j]+onemexpinv[j]*source0[j];
 	Source(source,y,t+dt);
 }
 
-int CE_PC::Corrector(Var *y0, double, double& errmax, int start, int stop)
+int CE_PC::Corrector(double, double& errmax, int start, int stop)
 {
 	int j;
-	if(dynamic)	for(j=start; j < stop; j++) {
-		Var y0j=expinv[j]*y0[j];
-		Var corr=onemexpinv[j]*source[j];
-		Var corr0=onemexpinv[j]*source0[j];
-		if(!Correct(y0j,y1[j],y[j],corr0,corr,1.0)) return 0;
-		calc_error(y0j,corr,corr0,corr,errmax);
-	}
-	else for(j=start; j < stop; j++) {
+	for(j=start; j < stop; j++)
 		if(!Correct(expinv[j]*y0[j],y1[j],y[j],source0[j],source[j],
-					onemexpinv[j]))
-			return 0;
+					onemexpinv[j])) return 0;
+	if(dynamic) for(j=start; j < stop; j++) {
+		Var corr=0.5*(source0[j]+source[j]);
+		calc_error(y0[j]*dtinv,corr,source0[j],corr,errmax);
 	}
 	return 1;
 }
 
+void I_RK2::Allocate(int n)
+{
+	RK2::Allocate(n);
+	expinv=new Nu[nyprimary];
+}
+
+void I_RK2::TimestepDependence(double dt)
+{
+	RK2::TimestepDependence(dt);
+	for(int j=0; j < nyprimary; j++) expinv[j]=exp(-nu[j]*halfdt);
+}
+
+void I_RK2::Predictor(double t, double, int start, int stop)
+{
+	for(int j=start; j < stop; j++) y1[j]=(y0[j]+halfdt*source0[j])*expinv[j];
+	Source(source,y1,t+halfdt);
+}
+
+int I_RK2::Corrector(double dt, double& errmax, int start, int stop)
+{
+	for(int j=start; j < stop; j++)
+		y[j]=y0[j]*expinv[j]+dt*source[j];
+	if(dynamic) for(int j=start; j < stop; j++)
+		calc_error(y0[j]*expinv[j],y[j],
+				   (y0[j]+dt*source0[j])*expinv[j],y[j],errmax);
+	for(int j=start; j < stop; j++) y[j] *= expinv[j];
+	return 1;
+}
 
 inline int C_RK2::Correct(const Real y0, const Real y1, Real& y,
 						  const Real, const Real source,
@@ -554,18 +463,51 @@ inline int C_RK2::Correct(const Complex y0, const Complex y1, Complex& y,
 	return 1;
 }
 
-int C_RK2::Corrector(Var *y0, double dt, double& errmax, int start, int stop)
+int C_RK2::Corrector(double dt, double& errmax, int start, int stop)
 {
 	int j;
-	if(dynamic) for(j=start; j < stop; j++) {
-		Var pred=y0[j]+dt*source0[j];
+	for(j=start; j < stop; j++)
 		if(!Correct(y0[j],y1[j],y[j],source0[j],source[j],dt)) return 0;
-		calc_error(y0[j],y[j],pred,y[j],errmax);
-	}
-	else for(j=start; j < stop; j++) {
-		if(!Correct(y0[j],y1[j],y[j],source0[j],source[j],dt)) return 0;
-	}
+	if(dynamic) for(j=start; j < stop; j++)
+		calc_error(y0[j],y[j],y0[j]+dt*source0[j],y[j],errmax);
 	return 1;
+}
+
+void I_RK4::Allocate(int n)
+{
+	RK4::Allocate(n);
+	expinv=new Nu[nyprimary];
+}
+
+void I_RK4::TimestepDependence(double dt)
+{
+	RK4::TimestepDependence(dt);
+	thirddt=dt/3.0;
+	for(int j=0; j < nyprimary; j++) expinv[j]=exp(-nu[j]*halfdt);
+	dtinv=1.0/dt;
+}
+
+void I_RK4::Predictor(double t, double dt, int start, int stop)
+{
+	int j;
+	
+	for(j=start; j < stop; j++) y[j]=(y0[j]+halfdt*source0[j])*expinv[j];
+	Source(source1,y,t+halfdt);
+	for(j=start; j < stop; j++) y[j]=y0[j]*expinv[j]+halfdt*source1[j];
+	Source(source2,y,t+halfdt);
+	for(j=start; j < stop; j++) y[j]=(y0[j]*expinv[j]+dt*source2[j])*expinv[j];
+	Source(source,y,t+dt);
+}
+
+int I_RK4::Corrector(double, double& errmax, int start, int stop)
+{
+	for(int j=start; j < stop; j++)
+		y[j]=((y0[j]+sixthdt*source0[j])*expinv[j]+
+			  thirddt*(source1[j]+source2[j]))*expinv[j]+sixthdt*source[j];
+		if(dynamic) for(int j=start; j < stop; j++)
+			calc_error(y0[j]*dtinv,source[j],source2[j]*expinv[j],source[j],
+					   errmax);
+		return 1;
 }
 
 void C_RK4::TimestepDependence(double dt)
@@ -598,7 +540,7 @@ inline int C_RK4::Correct(const Complex y0, Complex& y, const Complex source0,
 	return 1;
 }
 
-int C_RK4::Corrector(Var *y0, double dt, double& errmax, int start, int stop)
+int C_RK4::Corrector(double dt, double& errmax, int start, int stop)
 {
 	int j;
 	if(dynamic) for(j=start; j < stop; j++) {
@@ -614,6 +556,69 @@ int C_RK4::Corrector(Var *y0, double dt, double& errmax, int start, int stop)
 	return 1;
 }
 
+void I_RK5::Allocate(int n)
+{
+	RK5::Allocate(n);
+	expinv1=new Nu[nyprimary];
+	expinv2=new Nu[nyprimary];
+	expinv3=new Nu[nyprimary];
+	expinv4=new Nu[nyprimary];
+	expinv5=new Nu[nyprimary];
+}
+
+void I_RK5::TimestepDependence(double dt)
+{
+	RK5::TimestepDependence(dt);
+	for(int j=0; j < nyprimary; j++) {
+		expinv1[j]=exp(-nu[j]*a1);
+		expinv2[j]=exp(-nu[j]*a2);
+		expinv3[j]=exp(-nu[j]*a3);
+		expinv4[j]=exp(-nu[j]*a4);
+		expinv5[j]=exp(-nu[j]*a5);
+	}
+}
+
+void I_RK5::Predictor(double t, double, int start, int stop)
+{
+	int j;
+#pragma ivdep		
+	for(j=start; j < stop; j++) y[j]=(y0[j]+b10*source0[j])*expinv1[j];
+	Source(source,y,t+a1);
+#pragma ivdep		
+	for(j=start; j < stop; j++) {
+		source[j] /= expinv1[j];
+		y2[j]=(y0[j]+b20*source0[j]+b21*source[j])*expinv2[j];
+	}
+	Source(source2,y2,t+a2);
+#pragma ivdep		
+	for(j=start; j < stop; j++) {
+		source2[j] /= expinv2[j];
+		y3[j]=(y0[j]+b30*source0[j]+b31*source[j]+b32*source2[j])*expinv3[j];
+	}
+	Source(source3,y3,t+a3);
+#pragma ivdep		
+	for(j=start; j < stop; j++) {
+		source3[j] /= expinv3[j];
+		y4[j]=(y0[j]+b40*source0[j]+b41*source[j]+b42*source2[j]+
+			   b43*source3[j])*expinv4[j];
+	}
+	Source(source4,y4,t+a4);
+#pragma ivdep		
+	for(j=start; j < stop; j++) {
+		source4[j] /= expinv4[j];
+		y[j]=(y0[j]+b50*source0[j]+b51*source[j]+b52*source2[j]+b53*source3[j]+
+			  b54*source4[j])*expinv5[j];
+	}
+	Source(source,y,t+a5);
+	for(j=start; j < stop; j++) source[j] /= expinv5[j];
+}
+
+int I_RK5::Corrector(double dt, double& errmax, int start, int stop)
+{
+	RK5::Corrector(dt,errmax,start,stop);
+	for(int j=start; j < stop; j++) y[j] *= expinv4[j];
+	return 1;
+}
 
 inline void C_RK5::Correct(const Real y0, Real& y2, Real& y3,
 						   const Real y4, Real& y,
@@ -634,11 +639,11 @@ inline void C_RK5::Correct(const Real y0, Real& y2, Real& y3,
 }
 
 inline void C_RK5::Correct(const Complex y0, Complex& y2, Complex& y3,
-						  const Complex y4, Complex& y,
-						  const Complex source0, const Complex source2, 
-						  const Complex source3, const Complex source4,
-						  const Complex source, const double dt,
-						  int& invertible)
+						   const Complex y4, Complex& y,
+						   const Complex source0, const Complex source2, 
+						   const Complex source3, const Complex source4,
+						   const Complex source, const double dt,
+						   int& invertible)
 {
 	Correct(y0.re,y2.re,y3.re,y4.re,y.re,source0.re,source2.re,
 			source3.re,source4.re,source.re,dt,invertible);
@@ -649,7 +654,7 @@ inline void C_RK5::Correct(const Complex y0, Complex& y2, Complex& y3,
 			source3.im,source4.im,source.im,dt,invertible);
 }
 
-int C_RK5::Corrector(Var *y0, double, double& errmax, int start, int stop)
+int C_RK5::Corrector(double, double& errmax, int start, int stop)
 {
 	int j,invertible=1;
 #pragma ivdep
@@ -672,168 +677,6 @@ int C_RK5::Corrector(Var *y0, double, double& errmax, int start, int stop)
 	return 1;
 }
 
-void E_RK5::Allocate(int n)
-{
-	RK5::Allocate(n);
-	nu_inv=new Nu[Npsi];
-
-	for(int j=0; j < Npsi; j++) {
-		if(nu[j] != 0.0) nu_inv[j]=1.0/nu[j];
-		else nu_inv[j]=1.0;
-	}
-	
-	expinv1=new Nu[Npsi];
-	expinv2=new Nu[Npsi];
-	expinv3=new Nu[Npsi];
-	expinv4=new Nu[Npsi];
-	expinv5=new Nu[Npsi];
-	expinv=expinv4;
-	onemexpinv1=new Nu[Npsi];
-	onemexpinv2=new Nu[Npsi];
-	onemexpinv3=new Nu[Npsi];
-	onemexpinv4=new Nu[Npsi];
-	onemexpinv5=new Nu[Npsi];
-	onemexpinv=onemexpinv4;
-}
-
-
-inline void E_RK5::CalcExp(Real *expinvi, Real *onemexpinvi, double a) {
-	for(int j=0; j < Npsi; j++) {
-		Nu factor=1.0/(expinv[j]+a*onemexpinv[j]);
-		expinvi[j]=expinv[j]*factor;
-		onemexpinvi[j]=onemexpinv[j]*factor;
-		if(nu[j] == 0.0) onemexpinvi[j]=dt;
-	}
-}
-
-void E_RK5::TimestepDependence(double dt)
-{
-	RK5::TimestepDependence(dt);
-	
-	for(int j=0; j < Npsi; j++) {
-		onemexpinv[j]=-expm1(-nu[j]*dt);
-		expinv[j]=1.0-onemexpinv[j];
-	}
-		
-	CalcExp(expinv1,onemexpinv1,0.2);
-	CalcExp(expinv2,onemexpinv2,0.3);
-	CalcExp(expinv3,onemexpinv3,0.6);
-	CalcExp(expinv5,onemexpinv5,0.875);
-	
-	for(int j=0; j < Npsi; j++) {
-		if(nu[j] == 0.0) onemexpinv[j]=dt;
-	}
-}
-
-void E_RK5::Predictor(Var *y0, double t, double)
-{
-	int j;
-	const double B10=0.2;
-	const double B20=3.0/40.0, B21=9.0/40.0;
-	const double B30=0.3, B31=-0.9, B32=1.2;
-	const double B40=-11.0/54.0, B41=2.5, B42=-70.0/27.0, B43=35.0/27.0;
-	const double B50=1631.0/55296.0, B51=175.0/512.0, B52=575.0/13824.0;
-	const double B53=44275.0/110592.0, B54=253.0/4096.0;
-	
-#pragma ivdep		
-	for(j=0; j < Npsi; j++)
-		y[j]=(expinv[j]*y0[j]+(nu[j] ? onemexpinv[j]: dt)*
-		B10*source0[j])/(expinv[j]+a*onemexpinv[j]);
-	for(j=Npsi; j < ny; j++) y[j]=y0[j]+b10*source0[j];
-	Source(source,y,t+a1);
-#pragma ivdep		
-	for(j=0; j < Npsi; j++)
-		y2[j]=expinv2[j]*y0[j]+onemexpinv2[j]*(B20*source0[j]+B21*source[j]);
-	for(j=Npsi; j < ny; j++) y2[j]=y0[j]+b20*source0[j]+b21*source[j];
-	Source(source2,y2,t+a2);
-#pragma ivdep		
-	for(j=0; j < Npsi; j++)
-		y3[j]=expinv3[j]*y0[j]+onemexpinv3[j]*(B30*source0[j]+B31*source[j]
-											   +B32*source2[j]);
-	for(j=Npsi; j < ny; j++) y3[j]=y0[j]+b30*source0[j]+b31*source[j]+
-		b32*source2[j];
-	Source(source3,y3,t+a3);
-#pragma ivdep		
-	for(j=0; j < Npsi; j++) 
-		y4[j]=expinv4[j]*y0[j]+onemexpinv4[j]*(B40*source0[j]+B41*source[j]+
-											   B42*source2[j]+B43*source3[j]);
-	for(j=Npsi; j < ny; j++) y4[j]=y0[j]+b40*source0[j]+b41*source[j]+
-		b42*source2[j]+b43*source3[j];
-	Source(source4,y4,t+a4);
-#pragma ivdep		
-	for(j=0; j < Npsi; j++) 
-		y[j]=expinv5[j]*y0[j]+onemexpinv5[j]*(B50*source0[j]+B51*source[j]+
-											  B52*source2[j]+B53*source3[j]+
-											  B54*source4[j]);
-	for(j=Npsi; j < ny; j++) 
-		y[j]=y0[j]+b50*source0[j]+b51*source[j]+b52*source2[j]+b53*source3[j]+
-			b54*source4[j];
-	Source(source,y,t+a5);
-}
-
-
-inline void E_RK5::Correct(const Real y0, Real& y,
-						   const Real expinv, const Real onemexpinv,
-						   const Real source0, const Real source2, 
-						   const Real source3, const Real,
-						   const Real source, const double)
-{
-	const double c0=37.0/378.0, c2=250.0/621.0, c3=125.0/594.0, c5=512.0/1771.0;
-	y=expinv*y0+onemexpinv*(c0*source0+c2*source2+c3*source3+c5*source);
-}
-
-inline void E_RK5::CalcError(const Real y0, Real& y,
-							 const Real source0, const Real source2, 
-							 const Real source3, const Real source4,
-							 const Real source, const double)
-{
-	y=y0+d0*source0+d2*source2+d3*source3+d4*source4+d5*source;
-}
-
-inline void E_RK5::Correct(const Complex y0, Complex& y,
-						   const Real expinv, const Real onemexpinv,
-						   const Complex source0, const Complex source2, 
-						   const Complex source3, const Complex source4,
-						   const Complex source, const double)
-{
-	Correct(y0.re,y.re,expinv,onemexpinv,
-			source0.re,source2.re,source3.re,source4.re,source.re,dt);
-	Correct(y0.im,y.im,expinv,onemexpinv,
-			source0.im,source2.im,source3.im,source4.im,source.im,dt);
-}
-
-inline void E_RK5::CalcError(const Complex y0, Complex& y,
-						   const Complex source0, const Complex source2, 
-						   const Complex source3, const Complex source4,
-						   const Complex source, const double)
-{
-	CalcError(y0.re,y.re,source0.re,source2.re,source3.re,source4.re,
-			  source.re,dt);
-	CalcError(y0.im,y.im,source0.im,source2.im,source3.im,source4.im,
-			  source.im,dt);
-}
-
-int E_RK5::Corrector(Var *y0, double, double& errmax, int start, int stop)
-{
-	int j;
-	Var pred;
-
-#pragma ivdep		
-	for(j=start; j < stop; j++)
-		Correct(y0[j],y[j],expinv[j],onemexpinv[j],source0[j],source2[j],
-				source3[j],source4[j],source[j],dt);
-	if(dynamic) {
-#pragma ivdep		
-		for(j=start; j < stop; j++)
-			CalcError(y0[j],y3[j],source0[j],source2[j],source3[j],source4[j],
-					  source[j],dt);
-		for(j=start; j < stop; j++)
-			calc_error(y0[j],y[j],y3[j],y[j],errmax);
-		ExtrapolateTimestep(errmax);
-	}
-	return 1;
-}
-
 void display_invariants(Real E, Real Z, Real P)
 {
 	cout << "Energy = " << E << newl;
@@ -849,17 +692,17 @@ void NWave::FinalOutput()
 	
 	cout << newl << "FINAL VALUES:" << newl << endl;
 	if(Npsi <= Nlimit || verbose > 1) {
-	for(i=0; i < Npsi; i++) cout << "psi[" << i << "] = " << y[i] << newl;
-	cout << endl;
+		for(i=0; i < Npsi; i++) cout << "psi[" << i << "] = " << y[i] << newl;
+		cout << endl;
 	}
 	
 	compute_invariants(y,Npsi,E,Z,P);
 	display_invariants(E,Z,P);
 	
-	if(average && t) {
+	if(Nmoment > 2 && t) {
 		cout << newl << "AVERAGED VALUES:" << newl << endl;
 // We overwrite y+Npsi here, since it is no longer needed.
-		Var *y2=y+Npsi;
+		Var *y2=y+3*Npsi;
 		for(i=0; i < Npsi; i++) y2[i] = (real(y2[i])+imag(y2[i]))/t;
 		
 		if(Npsi <= Nlimit || verbose > 1) {
@@ -867,7 +710,7 @@ void NWave::FinalOutput()
 				Real y2avg=y2[i].re;
 				cout << "|psi|^2 [" << i << "] = " << y2avg << newl;
 			}
-		cout << endl;
+			cout << endl;
 		}
 		
 		for(i=0; i < Npsi; i++) y2[i] = sqrt(y2[i].re);
@@ -875,4 +718,3 @@ void NWave::FinalOutput()
 		display_invariants(E,Z,P);
 	}
 }
-

@@ -30,7 +30,7 @@ public:
 class C_PC : public PC {
 public:
 	char *Name() {return "Conservative Predictor-Corrector";}
-	int Corrector(Var *, double, double&, int, int);
+	int Corrector(double, double&, int, int);
 };
 
 Kepler::Kepler()
@@ -45,10 +45,13 @@ Kepler::Kepler()
 	VOCAB(L,0.0,0.0);
 	VOCAB(m,0.0,0.0);
 	
-	NonlinearSrc=KeplerSource;
-	
 	APPROXIMATION(None);
 	INTEGRATOR(C_PC);
+}
+
+void None::SetSrcRoutines(Source_t **, Source_t **NonlinearSrc, Source_t **)
+{
+	*NonlinearSrc=KeplerSource;
 }
 
 Kepler KeplerProblem;
@@ -65,7 +68,7 @@ void Kepler::InitialConditions()
 	beta=K/A0;
 	
 	dynamic=0;
-	open_output(fout,".",downcase(undashify(Integrator->Abbrev())));
+	open_output(fout,dirsep,downcase(undashify(Integrator->Abbrev())));
 }
 
 void Kepler::Output(int it)
@@ -93,7 +96,7 @@ void KeplerSource(Var *source, Var *y, double)
 	source[Th]=L/(m*y[R]*y[R]);
 }
 
-int C_PC::Corrector(Var *y0, double dt, double&, int, int) 
+int C_PC::Corrector(double dt, double&, int, int) 
 {
 	Real DE,arg,lambda,f,diff,lastdiff,th;
 
