@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.03J";
+const char VERSION[]="1.04";
 
 #define NEW_IMAGEMAGICK 1
 
@@ -64,13 +64,21 @@ static int gray=0;
 static char *convertprog;
 static strstream option;
 static int Nx,Ny;
-static int R0,R;
+static int kmin,kmax;
+static Real Pz;
+static int a0,a;
+static int R0,R,Rp;
 
 int nx=1,ny=1,nz=1;
 int byte=0;
 int implicit=1;
 int zero=0;
 int invert=0;
+
+Real alpha=1.0;
+Real Rfactor=1.0;
+Real Theta=0.0;
+Real Phi=0.0;
 
 void cleanup();
 int system (char *command);
@@ -79,16 +87,16 @@ class Ivec {
 public:
 	int i;
 	int j;
+	int k;
 	Ivec() {}
-	Ivec(int i0, int j0) : i(i0), j(j0) {}
+	Ivec(int i0, int j0, int k0) : i(i0), j(j0), k(k0) {}
 };
 
-typedef Ivec Ivec_fcn(Ivec);
-Ivec_fcn linear,circle;
+typedef void Transform(Array3<Ivec>);
+Transform Circle,ProjectedTorus;
 
-Ivec_fcn *transform;
-Ivec_fcn *Transform[]={NULL,circle};
-unsigned int NTransform=sizeof(Transform)/sizeof(Ivec_fcn *);
+Transform *transform[]={NULL,Circle,ProjectedTorus};
+unsigned int Ntransform=sizeof(transform)/sizeof(Transform *);
 
 template<class T>
 void openfield(T& fin, char *fieldname, int& nx, int& ny, int& nz)
@@ -192,10 +200,12 @@ void usage(char *program)
 	cerr << PROGRAM << " version " << VERSION
 		 << " [(C) John C. Bowman <bowman@math.ualberta.ca> 1998]" << endl
 		 << endl << "Usage: " << program
-		 << " [-bfghimprvzF] [-l pointsize] [-o option]" << endl
-		 << "           [-x mag] [-H hmag] [-V vmag] " << endl
+		 << " [-bfghimprvzF] [-a ratio] [-c theta] [-d phi]" << endl
+	     << "           [-l pointsize] [-o option]" << endl
+		 << "           [-x mag] [-H hmag] [-V vmag]" << endl
 		 << "           [-B begin] [-E end] [-L lower] [-U upper]" << endl
-         << "           [-P palette] [-S skip] [-T transform]" << endl
+         << "           [-P palette] [-R factor]" << endl
+		 << "           [-S skip] [-T transform]" << endl
 		 << "           [-X xsize -Y ysize [-Z zsize]] file1 [file2 ...]"
 		 << endl;
 }
@@ -203,8 +213,11 @@ void usage(char *program)
 void options()
 {
 	cerr << "Options: " << endl;
+	cerr << "-a ratio\t Z/X and Z/Y aspect ratio (for 3D plots)" << endl;
 	cerr << "-b\t\t single-byte (unsigned char instead of float) input"
 		 << endl;
+	cerr << "-c theta\t radians to rotate about X axis (for 3D plots)" << endl;
+	cerr << "-d phi\t radians to rotate about Z axis (for 3D plots)" << endl;
 	cerr << "-f\t\t use a floating scale for each frame" << endl;
 	cerr << "-g\t\t produce gray-scale output" << endl;
 	cerr << "-h\t\t help" << endl;
@@ -227,9 +240,10 @@ void options()
 	cerr << "-U upper\t first section to process" << endl;
 	cerr << "-P palette\t palette (integer between 0 and " << NPalette-1
 		 << ")" << endl;
+	cerr << "-R factor\t viewpoint distance factor (for 3D plots)" << endl;
 	cerr << "-S skip\t\t interval between processed frames" << endl;
 	cerr << "-T transform\t 2D transformation (integer between 0 and " 
-		 << NTransform-1 << ")" << endl;
+		 << Ntransform-1 << ")" << endl;
 	cerr << "-X xsize\t explicit horizontal size" << endl;
 	cerr << "-Y ysize\t explicit vertical size" << endl;
 	cerr << "-Z zsize\t explicit number of sections/frame" << endl;
@@ -253,12 +267,22 @@ int main(int argc, char *const argv[])
 #endif	
 	errno=0;
 	while (1) {
-		int c = getopt(argc,argv,"bfghimprvzFl:o:x:H:V:B:E:L:U:P:S:T:X:Y:Z:");
+		int c = getopt(argc,argv,
+					   "bfghimprvzFa:c:d:l:o:x:H:V:B:E:L:U:P:R:S:T:X:Y:Z:");
 		if (c == -1) break;
 		switch (c) {
+		case 'a':
+			alpha=atof(optarg);
+		    break;
 		case 'b':
 			byte=1;
 			break;
+		case 'c':
+			Theta=atof(optarg);
+		    break;
+		case 'd':
+			Phi=atof(optarg);
+		    break;
 		case 'f':
 			floating_scale=1;
 			break;
@@ -324,13 +348,16 @@ int main(int argc, char *const argv[])
 			if(palette < 0 || palette >= NPalette)
 				msg(ERROR,"Invalid palette (%d)",palette);
 			break;
+		case 'R':
+			Rfactor=atof(optarg);
+		    break;
 		case 'S':
 			skip=atoi(optarg);
 			if(skip <= 0) msg(ERROR,"skip value must be positive");
 			break;
 		case 'T':
 			trans=atoi(optarg);
-			if(trans >= NTransform)
+			if(trans >= Ntransform)
 				msg(ERROR, "Invalid transform (%d)", trans);
 			break;
 		case 'X':
@@ -399,14 +426,13 @@ int main(int argc, char *const argv[])
 	
 		double *vmink=new double [nz], *vmaxk=new double [nz];
 		
-		int kmin=0;
-		int kmax=nz-1;
+		kmin=0;
+		kmax=nz-1;
 		if(upper < lower || lower < 0) 
 			msg(ERROR, "Invalid section range (%d,%d)",lower,upper);
 
 		if(kmin < lower) kmin=lower;
 		if(kmax > upper) kmax=upper;
-		int nz0=kmax-kmin+1;
 		
 		int mpal=max(5,my);
 		int msep=max(2,my);
@@ -416,24 +442,29 @@ int main(int argc, char *const argv[])
 			Nx=nx; Ny=ny;
 			break;
 		case 1: 
-			R0=(int) (ceil(ny/twopi)+0.5);
-			R=(R0+nx);
-			Nx=Ny=2*R+1;
+			a0=(int) (ceil(ny/twopi)+0.5);
+			a=a0+nx;
+			Nx=Ny=2*a+1;
+			break;
+		case 2:
+			kmin=kmax=0;
+			a0=(int) (ceil(ny/twopi)+0.5);
+			a=a0+nx;
+			R0=(int) (alpha*a+0.5);
+			R=R0+a;
+			Pz=R*Rfactor;
+			Rp=R;
+			Nx=Ny=(2*Rp+1)*5/4;
 			break;
 		}
 		
-		Array2<Ivec> Index;
+		int nz0=kmax-kmin+1;
+		Array3<Ivec> Index;
 		
 		if(trans) {
-			transform=Transform[trans];
-		
-			Index.Allocate(Nx,Ny);
-			for(int j=0; j < Ny; j++)  {
-				for(int i=0; i < Nx; i++)  {
-					Index(i,j)=transform(Ivec(i,j));
-				}
+			Index.Allocate(Nx,Ny,kmax-kmin+1);
+			transform[trans](Index);
 			}
-		}
 		
 		xsize=mx*Nx;
 		ysize=my*Ny*nz0+msep*nz0+mpal;
@@ -503,20 +534,22 @@ int main(int argc, char *const argv[])
 					for(int j2=0; j2 < my; j2++) {
 						for(int i=0; i < Nx; i++)  {
 							Ivec x;
-							if(trans) x=Index(i,j);
-							else x=Ivec(i,j);
+							if(trans) x=Index(i,j,k);
+							else x=Ivec(i,j,k);
 							int index=(step == 0.0 || 
 									   x.i < 0 || x.i >= nx ||
-									   x.j < 0 || x.j >= ny) ? 
-								PaletteRange/2 :
-								(int) ((value[k][x.i+nx*x.j]-vmin)*step+0.5);
-							index += PaletteMin;
+									   x.j < 0 || x.j >= ny ||
+								       x.k < 0 || x.k >= nz) ? 
+								-1 : (int) ((value[x.k][x.i+nx*x.j]-vmin)*step
+											+0.5)+PaletteMin;
 							if(gray) {
+								if(index == -1) 
+									index=PaletteMin+PaletteRange/2; 
 								for(int i2=0; i2 < mx; i2++)
 									fout << (unsigned char) index;
 							} else {
-								unsigned char r=red[index],
-									g=green[index], b=blue[index];
+								unsigned char r=red[index+1],
+									g=green[index+1], b=blue[index+1];
 								for(int i2=0; i2 < mx; i2++)
 									fout << r << g << b;
 							}
@@ -730,12 +763,97 @@ int system (char *command) {
 	} while(1);
 }
 
-Ivec circle(Ivec x)
+void Circle(Array3<Ivec> Index)
 {
-	int i=x.i-R;
-	int j=x.j-R;
-	int ip=int(sqrt(i*i+j*j)-R0+0.5);
-    int jp=int((atan2(j,i)+pi)*ny/twopi+0.5);
-	if(jp == ny) jp=0;
-	return Ivec(ip,jp);
+	for(int i=0; i < Nx; i++)  {
+		for(int j=0; j < Ny; j++)  {
+			int i0=i-a;
+			int j0=j-a;
+			int ip=int(sqrt(i0*i0+j0*j0)-a0+0.5);
+			int jp=int((atan2(j0,i0)+pi)*ny/twopi+0.5);
+			if(jp == ny) jp=0;
+			for(int k=kmin; k <= kmax; k++) Index(i,j,k)=Ivec(ip,jp,k);
+		}
+	}
+}
+
+void ProjectedTorus(Array3<Ivec> Index)
+{
+	for(int u=0; u < Nx; u++)  {
+		for(int v=0; v < Ny; v++)  {
+			Index(u,v,0)=Ivec(-1,-1,-1);
+		}
+	}
+	
+	const int Nxfine=3;
+	const int Nyfine=4;
+	const int Nzfine=30;
+
+	const Real xfinestep=1.0/(2.0*Nxfine+1.0);
+	const Real yfinestep=1.0/(2.0*Nyfine+1.0);
+	const Real zfinestep=1.0/(2.0*Nzfine+1.0);
+	
+	Real twopibyny=twopi/ny;
+	Real twopibynz=twopi/nz;
+	
+	Array2<Real> zmax(Nx,Ny);
+	for(int u=0; u < Nx; u++)
+		for(int v=0; v < Ny; v++)
+			zmax(u,v)=-REAL_MAX;
+									
+	Real cosPhi,sinPhi;
+	Real cosTheta,sinTheta;
+	sincos(-Phi,&sinPhi,&cosPhi);
+	sincos(-Theta,&sinTheta,&cosTheta);
+	
+	// Rotation matrix; Rotate about x axis by Theta, then about z axis by Phi.
+	Real Axx=cosPhi;          Real Axy=-sinPhi;         Real Axz=0.0;
+	Real Ayx=cosTheta*sinPhi; Real Ayy=cosTheta*cosPhi; Real Ayz=-sinTheta;
+	Real Azx=sinTheta*sinPhi; Real Azy=sinTheta*cosPhi; Real Azz=cosPhi;
+	
+	Real cutoff=1.75*pi;
+	
+	Real xoffset=0.5+Rp*1.2;
+	Real yoffset=0.5+Rp*1.5;
+	
+	for(int j=0; j < ny; j++)  {
+		for(int j2=-Nyfine; j2 <= Nyfine; j2++)  {
+			Real theta=(j+j2*yfinestep)*twopibyny;
+			Real sintheta,costheta;
+			sincos(theta,&sintheta,&costheta);
+			for(int k=0; k < nz; k++)  {
+				for(int k2=-Nzfine; k2 <= Nzfine; k2++)  {
+					Real phi=(k+k2*zfinestep)*twopibynz;
+					if(phi >= 0 && phi <= cutoff) {
+						Real cosphi,sinphi;
+						sincos(phi,&sinphi,&cosphi);
+						for(int i=0; i < nx; i++)  {
+							Real a0i=a0+i;
+							for(int i2=-Nxfine; i2 <= Nxfine; i2++)  {
+								Real r=a0i+i2*xfinestep;
+								Real rperp=R0+r*costheta;
+								Real x=rperp*cosphi;
+								Real y=rperp*sinphi;
+								Real z=r*sintheta;
+							
+								Real xp=Axx*x+Axy*y+Axz*z;
+								Real yp=Ayx*x+Ayy*y+Ayz*z;
+								Real zp=Azx*x+Azy*y+Azz*z;
+							
+								Real projection=Pz/(Pz-zp);
+								int u=(int)(xp*projection+xoffset);
+								int v=Ny-((int)(yp*projection+yoffset));
+								if(u >= 0 && u < Nx && v >=0 && v < Ny
+								   && zp > zmax(u,v)) {
+									zmax(u,v)=zp;
+									Index(u,v,0)=Ivec(i,j,k);
+								}	
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return;
 }
