@@ -23,7 +23,7 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 {
 	double dtold=0.0, dtorig=0.0;
 	int it,itx,cont;
-	int nout=0;
+	int nout=0, final=1;
 	const double tstart=t;
 	const int forwards=(tmax >= t);
 	const double sign=(forwards ? 1.0 : -1.0);
@@ -47,9 +47,10 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 		}
 		
 		if(sample > 0.0 && (forwards ? t >= tstop : t <= tstop)) {
-			dump(it,0,tmax);
 			nout++;
-			tstop=sign*min(tstart+nout*sample,sign*tmax);
+			tstop=tstart+sign*nout*sample;
+			if(forwards ? tstop > tmax : tstop < tmax) tmax=tstop=t;
+			else dump(it,0,tmax);
 			if(dtorig) {ChangeTimestep(dt,dtorig,t,sample); dtorig=0.0;}
 		}
 		else if(sample == 0.0) dump(it,0,tmax);
@@ -59,7 +60,7 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 			if(polltime) {
 				realtime=time(NULL);
 				if(realtime-lasttime > polltime) {
-					if (poll()) {tmax=tstop=t; exit_signal=CONTINUE;}
+					if (poll()) {tmax=tstop=t; final=0; exit_signal=CONTINUE;}
 					lasttime=realtime;
 				}
 			}
@@ -97,7 +98,7 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 	
 	if(verbose) cout << endl;
 	if(dtorig) ChangeTimestep(dt,dtorig,t,sample);
-	if(sample >= 0.0) dump(it,1,tmax);
+	if(sample >= 0.0) dump(it,final,tmax);
 	dt *= sign;
 }	
 
