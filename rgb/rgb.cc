@@ -20,7 +20,7 @@ const char VERSION[]="1.12";
 
 #include "xstream.h"
 #include <iostream>
-#include <limits>
+#include <climits>
 #include <cerrno>
 #include <sstream>
 #include <iomanip>
