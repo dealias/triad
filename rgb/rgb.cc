@@ -97,7 +97,7 @@ char *extract=NULL;
 enum Parameters {RFACTOR=256,THETA,PHI,YXASPECT,ZXASPECT,POINTSIZE,AVGX,AVGY,\
 		 EXTRACT,NCOLORS,BACKGROUND,XMIN,XMAX,YMIN,YMAX,ZMIN,ZMAX,
 		 LABEL,BAR,BAND,BANDCOLOR,ALPHA,CROP,XRANGE,YRANGE,ZRANGE,
-		 XSLICE,YSLICE,ZSLICE,CUTOFF,CONST,RATE};
+		 XSLICE,YSLICE,ZSLICE,CUTOFF,CONST,RATE,MINIMUM,MAXIMUM};
 
 Real Rfactor=2.0;
 Real Theta=0.9;
@@ -113,6 +113,9 @@ Real ymin=0.0;
 Real ymax=1.0;
 Real zmin=0.0;
 Real zmax=1.0;
+
+Real max=REAL_MAX;
+Real min=-max;
 
 int xslice=8;
 int yslice=8;
@@ -233,6 +236,9 @@ int readframe(ixstream& xin, int nx, int ny, int nz, Array3<float> value,
 	  return EOF;
 	}
 				
+	if(v > max) v=max;
+	if(v < min) v=min;
+	
 	sumv += v*(i < nx1-rx ? weightx : rweightx)*
 	  ((j-start)*incr < ny1-ry ? weighty : rweighty);
 				
@@ -478,6 +484,8 @@ int main(int argc, char *argv[])
     {"cutoff", 1, 0, CUTOFF},
     {"yxaspect", 1, 0, YXASPECT},
     {"zxaspect", 1, 0, ZXASPECT},
+    {"min", 1, 0, MINIMUM},
+    {"max", 1, 0, MAXIMUM},
     {0, 0, 0, 0}
   };
 	
@@ -663,6 +671,12 @@ int main(int argc, char *argv[])
       break;
     case ZMAX:
       zmax=atof(optarg);
+      break;
+    case MINIMUM:
+      min=atof(optarg);
+      break;
+    case MAXIMUM:
+      max=atof(optarg);
       break;
     case XSLICE:
       xslice=atoi(optarg);
