@@ -27,7 +27,7 @@ extern Real tauforce;
 
 static Complex random_factor=0.0;
 
-inline void ComputeMoments(Var *source, Var *psi) {
+void ComputeMoments(Var *source, Var *psi) {
 	Var *k, *q=source+Npsi, *kstop=psi+Npsi;
 #pragma ivdep
 	for(k=psi; k < kstop; k++, q++) *q=product(*(q-Npsi),*k); // S_k*psi_k
