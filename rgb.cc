@@ -496,7 +496,7 @@ int main(int argc, char *const argv[])
 		nset=nset ? min(nset,set) : set;
 	}
 	
-	if(remote && make_mpeg) putenv("DISPLAY");
+	if(remote && make_mpeg) putenv("DISPLAY=");
 
 	if(nset == 1) msg(ERROR, "More than one frame required");
 	

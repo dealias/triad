@@ -8,7 +8,7 @@
 char beep='\a';
 
 extern int sys_nerr;
-#if  sun || __i386__
+#if  !__alpha__
 extern char *sys_errlist[];
 #endif
 
