@@ -1,10 +1,10 @@
 C++ = xlC -+ -D_ANSI_C_SOURCE
 OPT = $(CFLAGS)
-LIB = $(LFLAGS) -lesslp2 -lm
-#LIB = $(LFLAGS) -lm
+#LIB = $(LFLAGS) -lesslp2 -lm
+LIB = $(LFLAGS) -lm
 MAKEDEPEND = $(C++) -M -P -DDEPEND
 D = u
 
-FFT = efft
-#FFT = fft
+#FFT = efft
+FFT = fft
 #POLL = idle
