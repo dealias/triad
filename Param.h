@@ -43,6 +43,7 @@ public:
 		Vocabulary->Sort();
 	}
 
+	virtual ~Param() {}
 	void Set(T x) {int i; for(i=0; i<nvar; i++) var[i]=x;}
 	void Set(T *x) {int i; for(i=0; i<nvar; i++) var[i]=x[i];}
 	
@@ -110,7 +111,7 @@ public:
 template<class T>
 inline void Vocab(T *var, char *s, T min, T max, int n, int dump)
 {
-	new Param<T>(var,s,n,min,max,dump);
+	(void) new Param<T>(var,s,n,min,max,dump);
 }
 
 char *atos(const char *s);

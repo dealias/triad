@@ -37,7 +37,7 @@ inline void Trans(Array2<T>& A, const Array2<T>& B)
 template<class T>
 inline void Conjugate(Array2<T>& A, const Array2<T>& B)
 {
-	assert(&A != &B)
+	assert(&A != &B);
 	for(int i=0; i < B.Nx(); i++) {
 		T *Bi=B[i];
 		for(int j=0; j < B.Ny(); j++) {

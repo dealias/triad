@@ -138,6 +138,7 @@ protected:
 	DynVector<ParamBase *> ParamList;
 public:	
 	VocabularyBase();
+	virtual ~VocabularyBase() {}
 	Table<ProblemBase> *ProblemTable;
 	Table<IntegratorBase> *IntegratorTable;
 	
@@ -174,7 +175,7 @@ extern VocabularyBase *Vocabulary;
 #include "Param.h"
 #include "Integrator.h"
 
-#define METHOD(key) {new Entry<key,ProblemBase> (#key,ProblemTable);}
+#define METHOD(key) {(void) new Entry<key,ProblemBase> (#key,ProblemTable);}
 
 #define PLURAL(x) ((x)==1 ? "" : "s")
 

@@ -1,7 +1,8 @@
 #ifndef __Integrator_h__
 #define __Integrator_h__ 1
 
-#define INTEGRATOR(key) {new Entry<key,IntegratorBase>(#key,IntegratorTable);}
+#define INTEGRATOR(key) \
+{(void) new Entry<key,IntegratorBase>(#key,IntegratorTable);}
 
 inline void IntegratorBase::Source(Var *src, Var *y, double t)
 {

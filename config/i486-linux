@@ -2,4 +2,3 @@ C++ = g++ -Wall -ansi
 LIB = $(LFLAGS) -lfftw -lm
 MAKEDEPEND = $(C++) -M -DDEPEND
 FFT = wfft
-
