@@ -1,5 +1,5 @@
 /* Array.h:  A high-performance multi-dimensional C++ array class
-Copyright (C) 2001-2004 John C. Bowman (bowman@math.ualberta.ca)
+Copyright (C) 1997-2004 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.29
+#define __ARRAY_H_VERSION__ 1.30
 
 // Defining NDEBUG improves optimization but disables argument checking.
 // Defining __NOARRAY2OPT inhibits special optimization of Array2[].
@@ -32,12 +32,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifdef NDEBUG
 #define __check(i,n,dim,m)
 #define __checkSize()
-#define __checkActivate(i) CheckActivate(i)
+#define __checkActivate(i) Activate()
 #define __NULLARRAY NULL;
 #else
 #define __check(i,n,dim,m) Check(i,n,dim,m)
 #define __checkSize() CheckSize()
-#define __checkActivate(i) Activate()
+#define __checkActivate(i) CheckActivate(i)
 #define __NULLARRAY (void *) 0;
 #ifndef __NOARRAY2OPT
 #define __NOARRAY2OPT
@@ -258,7 +258,8 @@ class array1 {
 };
 
 template<class T>
-void swaparray(T& A, T& B) {
+void swaparray(T& A, T& B)
+{
   T C;
   C.Dimension(A);
   A.Dimension(B);
@@ -266,12 +267,23 @@ void swaparray(T& A, T& B) {
 }
   
 template<class T>
-void leftshiftarray(T& A, T& B, T& C) {
+void leftshiftarray(T& A, T& B, T& C)
+{
   T D;
   D.Dimension(A);
   A.Dimension(B);
   B.Dimension(C);
   C.Dimension(D);
+}
+  
+template<class T>
+void rightshiftarray(T& A, T& B, T& C)
+{
+  T D;
+  D.Dimension(C);
+  C.Dimension(B);
+  B.Dimension(A);
+  A.Dimension(D);
 }
   
 template<class T>
@@ -377,6 +389,13 @@ class array2 : public array1<T> {
     __checkSize();
     for(unsigned int i=0; i < size; i++) v[i] *= a;
     return *this;
+  }
+  
+  void Identity() {
+    Load((T) 0);
+    __checkSize();
+    unsigned int inc=ny+1;
+    for(unsigned int i=0; i < size; i += inc) v[i]=(T) 1;
   }
 };
 
@@ -767,11 +786,11 @@ class Array1 : public array1<T> {
   void Dimension(unsigned int nx0, int ox0=0) {
     size=nx0;
     ox=ox0;
+    Offsets();
   }
   void Dimension(unsigned int nx0, T *v0, int ox0=0) {
-    Dimension(nx0,ox0);
     v=v0;
-    Offsets();
+    Dimension(nx0,ox0);
     clear(allocated);
   }
   void Dimension(const Array1<T>& A) {
@@ -843,12 +862,12 @@ class Array2 : public array2<T> {
     nx=nx0; ny=ny0;
     size=nx*ny;
     ox=ox0; oy=oy0;
+    Offsets();
   }
   void Dimension(unsigned int nx0, unsigned int ny0, T *v0, int ox0=0,
 		 int oy0=0) {
-    Dimension(nx0,ny0,ox0,oy0);
     v=v0;
-    Offsets();
+    Dimension(nx0,ny0,ox0,oy0);
     clear(allocated);
   }
   void Allocate(unsigned int nx0, unsigned int ny0, int ox0=0, int oy0=0) {
@@ -901,23 +920,9 @@ class Array2 : public array2<T> {
     return *this;
   }
 	
-  Array2<T>& operator *= (const Array2<T>& A);
-	
-  Array2<T>& operator *= (T a) {
-    __checkSize();
-    for(unsigned int i=0; i < size; i++) v[i] *= a;
-    return *this;
-  }
-	
   int Ox() const {return ox;}
   int Oy() const {return oy;}
   
-  void Identity() {
-    Load((T) 0.0);
-    __checkSize();
-    unsigned int inc=ny+1;
-    for(unsigned int i=0; i < size; i += inc) v[i]=1.0;
-  }
 };
 
 template<class T>
@@ -935,12 +940,12 @@ class Array3 : public array3<T> {
     nx=nx0; ny=ny0; nz=nz0; nyz=ny*nz;
     size=nx*nyz;
     ox=ox0; oy=oy0; oz=oz0;
+    Offsets();
   }
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 T *v0, int ox0=0, int oy0=0, int oz0=0) {
-    Dimension(nx0,ny0,nz0,ox0,oy0,oz0);
     v=v0;
-    Offsets();
+    Dimension(nx0,ny0,nz0,ox0,oy0,oz0);
     clear(allocated);
   }
   void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
@@ -1012,13 +1017,13 @@ class Array4 : public array4<T> {
     nx=nx0; ny=ny0; nz=nz0; nw=nw0; nzw=nz*nw; nyzw=ny*nzw;
     size=nx*nyzw;
     ox=ox0; oy=oy0; oz=oz0; ow=ow0;
+    Offsets();
   }
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 unsigned int nw0, T *v0,
 		 int ox0=0, int oy0=0, int oz0=0, int ow0=0) {
-    Dimension(nx0,ny0,nz0,nw0,ox0,oy0,oz0,ow0);
     v=v0;
-    Offsets();
+    Dimension(nx0,ny0,nz0,nw0,ox0,oy0,oz0,ow0);
     clear(allocated);
   }
   void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
@@ -1095,13 +1100,13 @@ class Array5 : public array5<T> {
     nyzwv=ny*nzwv;
     size=nx*nyzwv;
     ox=ox0; oy=oy0; oz=oz0; ow=ow0; ov=ov0;
+    Offsets();
   }
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 unsigned int nw0, unsigned int nv0, T *v0,
 		 int ox0=0, int oy0=0, int oz0=0, int ow0=0, int ov0=0) {
-    Dimension(nx0,ny0,nz0,nw0,nv0,ox0,oy0,oz0,ow0,ov0);
     v=v0;
-    Offsets();
+    Dimension(nx0,ny0,nz0,nw0,nv0,ox0,oy0,oz0,ow0,ov0);
     clear(allocated);
   }
   void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
@@ -1193,6 +1198,18 @@ inline void Set(array1<T>& A, const array1<T>& B)
 }
 
 template<class T>
+inline void Set(Array1<T>& A, T *v)
+{
+  A.Set(v);
+}
+
+template<class T>
+inline void Set(Array1<T>& A, const array1<T>& B)
+{
+  A.Set(B());
+}
+
+template<class T>
 inline void Dimension(T *&A, unsigned int, T *v)
 {
   A=v;
@@ -1205,6 +1222,12 @@ inline void Dimension(array1<T>& A, unsigned int n, T *v)
 }
 
 template<class T>
+inline void Dimension(Array1<T>& A, unsigned int n, T *v)
+{
+  A.Dimension(n,v);
+}
+
+template<class T>
 inline void Dimension(T *&A, T *v)
 {
   A=v;
@@ -1212,6 +1235,18 @@ inline void Dimension(T *&A, T *v)
 
 template<class T>
 inline void Dimension(array1<T>& A, const array1<T>& B)
+{
+  A.Dimension(B);
+}
+
+template<class T>
+inline void Dimension(Array1<T>& A, const Array1<T>& B)
+{
+  A.Dimension(B);
+}
+
+template<class T>
+inline void Dimension(Array1<T>& A, const array1<T>& B)
 {
   A.Dimension(B);
 }
@@ -1247,6 +1282,12 @@ inline void Allocate(array1<T>& A, unsigned int n)
 }
 
 template<class T>
+inline void Allocate(Array1<T>& A, unsigned int n)
+{  
+  A.Allocate(n);
+}
+
+template<class T>
 inline void Allocate(T *&A, unsigned int n, int o)
 {
   A=new T[n]-o;
@@ -1266,6 +1307,12 @@ inline void Deallocate(T *A)
 
 template<class T>
 inline void Deallocate(array1<T>& A)
+{  
+  A.Deallocate();
+}
+
+template<class T>
+inline void Deallocate(Array1<T>& A)
 {  
   A.Deallocate();
 }
@@ -1291,6 +1338,12 @@ inline void Reallocate(T *A, unsigned int n)
 
 template<class T>
 inline void Reallocate(array1<T>& A, unsigned int n)
+{  
+  A.Reallocate(n);
+}
+
+template<class T>
+inline void Reallocate(Array1<T>& A, unsigned int n)
 {  
   A.Reallocate(n);
 }

@@ -1,5 +1,5 @@
 /* Matrix.h:  A matrix class build upon Array.h
-Copyright (C) 1999 John C. Bowman (bowman@math.ualberta.ca)
+Copyright (C) 1999-2004 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 #define __MATRIX_H_VERSION__ 1.12
 
-#include "DynVector.h"
 #include "Array.h"
 #include <cassert>
 
@@ -33,32 +32,24 @@ inline void MatrixSwap(T& p, T& q)
 }
 
 template<class T>
-inline void SetIdentity(Array2<T>& A)
+inline array2<T> Identity(unsigned int n, unsigned int m)
 {
-  A=0.0;
-  unsigned int ny1=A.Ny()+1, size=A.Size();
-  for(unsigned int i=0; i < size; i += ny1) A(i)=1.0;
-}
-
-template<class T>
-inline Array2<T> Identity(unsigned int n, unsigned int m, T var)
-{
-  Array2<T> A(n,m);
-  SetIdentity(A);
+  array2<T> A(n,m);
+  A.Identity();
   A.Hold();
   return A;
 }
 
 template<class T>
-inline void Trans(const Array2<T>& A)
+inline void Trans(const array2<T>& A)
 {
   unsigned int nx=A.Nx();
   unsigned int ny=A.Ny();
   assert(nx == ny);
 	
   for(unsigned int i=1; i < nx; i++) {
-    T *ATi=A()+i;
-    T *Ai=A[i];
+    typename array1<T>::opt ATi=A()+i;
+    typename array1<T>::opt Ai=A[i];
     for(int j=0; j < i; j++) {
       T temp=Ai[j];
       Ai[j]=ATi[j*ny];
@@ -68,7 +59,7 @@ inline void Trans(const Array2<T>& A)
 }
 
 template<class T>
-inline void Conj(const Array2<T>& A)
+inline void Conj(const array2<T>& A)
 {
   unsigned int nx=A.Nx();
   unsigned int ny=A.Ny();
@@ -76,8 +67,8 @@ inline void Conj(const Array2<T>& A)
 	
   A(0)=conj(A(0));
   for(unsigned int i=1; i < nx; i++) {
-    T *ATi=A()+i;
-    T *Ai=A[i];
+    typename array1<T>::opt ATi=A()+i;
+    typename array1<T>::opt Ai=A[i];
     Ai[i]=conj(Ai[i]);
     for(unsigned int j=0; j < i; j++) {
       T temp=conj(Ai[j]);
@@ -88,15 +79,15 @@ inline void Conj(const Array2<T>& A)
 }
 
 template<class T>
-inline void Trans(const Array2<T>& A, const Array2<T>& B)
+inline void Trans(const array2<T>& A, const array2<T>& B)
 {
   unsigned int nx=A.Nx();
   unsigned int ny=A.Ny();
   assert(&A != &B && nx == B.Ny() && ny == B.Nx());
 	
   for(unsigned int i=0; i < nx; i++) {
-    T *Ai=A[i];
-    T *BTi=B()+i;
+    typename array1<T>::opt Ai=A[i];
+    typename array1<T>::opt BTi=B()+i;
     for(unsigned int j=0; j < ny; j++) {
       Ai[j]=BTi[j*nx];
     }
@@ -105,15 +96,15 @@ inline void Trans(const Array2<T>& A, const Array2<T>& B)
 }
 
 template<class T>
-inline void Conj(const Array2<T>& A, const Array2<T>& B)
+inline void Conj(const array2<T>& A, const array2<T>& B)
 {
   unsigned int nx=A.Nx();
   unsigned int ny=A.Ny();
   assert(&A != &B && nx == B.Ny() && ny == B.Nx());
 	
   for(unsigned int i=0; i < nx; i++) {
-    T *Ai=A[i];
-    T *BTi=B()+i;
+    typename array1<T>::opt Ai=A[i];
+    typename array1<T>::opt BTi=B()+i;
     for(unsigned int j=0; j < ny; j++) {
       Ai[j]=conj(BTi[j*nx]);
     }
@@ -122,7 +113,7 @@ inline void Conj(const Array2<T>& A, const Array2<T>& B)
 }
 
 template<class T>
-inline void Conj(const Array1<T>& A, const Array1<T>& B)
+inline void Conj(const array1<T>& A, const array1<T>& B)
 {
   unsigned int size=A.Size();
   assert(size == B.Size());
@@ -131,61 +122,61 @@ inline void Conj(const Array1<T>& A, const Array1<T>& B)
 }
 
 template<class T>
-inline Array1<T> conj(const Array1<T>& B)
+inline array1<T> conj(const array1<T>& B)
 {
-  Array1<T> A(B.Nx());
+  array1<T> A(B.Nx());
   Conj(A,B);
   A.Hold();
   return A;
 }
 
 template<class T>
-inline Array2<T> conj(const Array2<T>& B)
+inline array2<T> conj(const array2<T>& B)
 {
-  Array1<T> A(B.Nx(),B.Ny());
+  array1<T> A(B.Nx(),B.Ny());
   Conj(A,B);
   A.Hold();
   return A;
 }
 
 template<class T>
-inline Array2<T> trans(const Array2<T>& B)
+inline array2<T> trans(const array2<T>& B)
 {
-  Array2<T> A(B.Nx(),B.Ny());
+  array2<T> A(B.Nx(),B.Ny());
   Trans(A,B);
   A.Hold();
   return A;
 }
 
 template<class T>
-inline Array2<T> operator ~ (const Array2<T>& B)
+inline array2<T> operator ~ (const array2<T>& B)
 {
-  Array2<T> A(B.Ny(),B.Nx());
+  array2<T> A(B.Ny(),B.Nx());
   Trans(A,B);
   A.Hold();
   return A;
 }
 
 template<class T>
-inline Array1<T> operator * (const Array1<T>& B)
+inline array1<T> operator * (const array1<T>& B)
 {
-  Array1<T> A(B.Nx());
+  array1<T> A(B.Nx());
   Conj(A,B);
   A.Hold();
   return A;
 }
 
 template<class T>
-inline Array2<T> operator * (const Array2<T>& B)
+inline array2<T> operator * (const array2<T>& B)
 {
-  Array2<T> A(B.Ny(),B.Nx());
+  array2<T> A(B.Ny(),B.Nx());
   Conj(A,B);
   A.Hold();
   return A;
 }
 
 template<class T>
-inline void real(const Array1<double>& A, const Array1<T>& B)
+inline void real(const array1<double>& A, const array1<T>& B)
 {
   unsigned int size=A.Size();
   assert(size == B.Size());
@@ -195,17 +186,17 @@ inline void real(const Array1<double>& A, const Array1<T>& B)
 }
 
 template<class T>
-inline Array1<double> real(const Array1<T>& B)
+inline array1<double> real(const array1<T>& B)
 {
   unsigned int n=B.Nx();
-  Array1<double> A(n);
+  array1<double> A(n);
   real(A,B);
   A.Hold();
   return A;
 }
 
 template<class T>
-inline void imag(const Array1<double>& A, const Array1<T>& B)
+inline void imag(const array1<double>& A, const array1<T>& B)
 {
   unsigned int size=A.Size();
   assert(size == B.Size());
@@ -215,28 +206,29 @@ inline void imag(const Array1<double>& A, const Array1<T>& B)
 }
 
 template<class T>
-inline Array1<double> imag(const Array1<T>& B)
+inline array1<double> imag(const array1<T>& B)
 {
   unsigned int n=B.Nx();
-  Array1<double> A(n);
+  array1<double> A(n);
   imag(A,B);
   A.Hold();
   return A;
 }
 
 template<class T, class U, class V>
-inline void Mult(const Array2<T>& A, const Array2<U>& B, const Array2<V>& C)
+inline void Mult(const array2<T>& A, const array2<U>& B, const array2<V>& C)
 {
   unsigned int n=C.Size();
-  static typename Array1<V>::opt temp(n);
+  
+  static typename array1<V>::opt temp(n);
   static unsigned int tempsize=n;
-  if(n > tempsize) Reallocate(temp,n);
+  if(n > tempsize) {Reallocate(temp,n); tempsize=n;}
 	
   unsigned int bny=B.Ny();
   unsigned int cny=C.Ny();
   assert(bny == C.Nx() && cny == A.Ny());
 	
-  Array2<V> CT(cny,C.Nx(),temp);
+  array2<V> CT(cny,C.Nx(),temp);
 	
   Trans(CT,C);
   C.Purge();
@@ -246,11 +238,11 @@ inline void Mult(const Array2<T>& A, const Array2<U>& B, const Array2<V>& C)
 	
   if(&A != &B) {
     for(unsigned int i=0; i < bnx; i++) {
-      typename Array1<T>::opt Ai=A[i];
-      typename Array1<U>::opt Bi=B[i];
+      typename array1<T>::opt Ai=A[i];
+      typename array1<U>::opt Bi=B[i];
       for(unsigned int k=0; k < cny; k++) {
 	T sum=0.0;
-	typename Array1<V>::opt CTk=CT[k];
+	typename array1<V>::opt CTk=CT[k];
 	for(unsigned int j=0; j < bny; j++) {
 	  sum += Bi[j]*CTk[j];
 	}
@@ -259,16 +251,16 @@ inline void Mult(const Array2<T>& A, const Array2<U>& B, const Array2<V>& C)
     }
     B.Purge();
   } else {
-    static DynVector<T> temp2(cny);
-    if(cny > temp2.Alloc()) temp2.Realloc(cny);
-    T *work=temp2;
+    static typename array1<T>::opt work(cny);
+    static unsigned int worksize=cny;
+    if(cny > worksize) {Reallocate(work,cny); worksize=cny;}
 		
     for(unsigned int i=0; i < bnx; i++) {
-      typename Array1<T>::opt Ai=A[i];
+      typename array1<T>::opt Ai=A[i];
       unsigned int k;
       for(k=0; k < cny; k++) {
 	T sum=0.0;
-	typename Array1<V>::opt CTk=CT[k];
+	typename array1<V>::opt CTk=CT[k];
 	for(unsigned int j=0; j < bny; j++) {
 	  sum += Ai[j]*CTk[j];
 	}
@@ -280,17 +272,19 @@ inline void Mult(const Array2<T>& A, const Array2<U>& B, const Array2<V>& C)
 }
 
 template<class T, class U, class V>
-inline void Mult(const Array1<T>& A, const Array1<U>& B, const Array2<V>& C)
+inline void Mult(const array1<T>& A, const array1<U>& B, const array2<V>& C)
 {
   unsigned int n=C.Size();
-  static DynVector<V> temp(n);
-  if(n > temp.Alloc()) temp.Realloc(n);
-	
+  
+  static typename array1<V>::opt temp(n);
+  static unsigned int tempsize=n;
+  if(n > tempsize) {Reallocate(temp,n); tempsize=n;}
+  
   unsigned int bny=B.Nx();
   unsigned int cny=C.Ny();
   assert(bny == C.Nx() && cny == A.Nx());
 	
-  Array2<V> CT(cny,C.Nx(),temp);
+  array2<V> CT(cny,C.Nx(),temp);
 	
   Trans(CT,C);
   C.Purge();
@@ -298,7 +292,7 @@ inline void Mult(const Array1<T>& A, const Array1<U>& B, const Array2<V>& C)
   if(&A != &B) {
     for(unsigned int k=0; k < cny; k++) {
       T sum=0.0;
-      typename Array1<V>::opt CTk=CT[k];
+      typename array1<V>::opt CTk=CT[k];
       for(unsigned int j=0; j < bny; j++) {
 	sum += B[j]*CTk[j];
       }
@@ -306,14 +300,14 @@ inline void Mult(const Array1<T>& A, const Array1<U>& B, const Array2<V>& C)
     }
     B.Purge();
   } else {
-    static DynVector<T> temp2(cny);
-    if(cny > temp2.Alloc()) temp2.Realloc(cny);
-    T *work=temp2;
-		
+    static typename array1<T>::opt work(cny);
+    static unsigned int worksize=cny;
+    if(cny > worksize) {Reallocate(work,cny); worksize=cny;}
+    
     unsigned int k;
     for(k=0; k < cny; k++) {
       T sum=0.0;
-      typename Array1<V>::opt CTk=CT[k];
+      typename array1<V>::opt CTk=CT[k];
       for(unsigned int j=0; j < bny; j++) {
 	sum += A[j]*CTk[j];
       }
@@ -324,18 +318,20 @@ inline void Mult(const Array1<T>& A, const Array1<U>& B, const Array2<V>& C)
 }
 
 template<class T, class U, class V, class W>
-inline void MultAdd(const Array1<T>& A, const Array1<U>& B, const Array2<V>& C,
-		    const Array1<W>& D)
+inline void MultAdd(const array1<T>& A, const array1<U>& B, const array2<V>& C,
+		    const array1<W>& D)
 {
   unsigned int n=C.Size();
-  static DynVector<V> temp(n);
-  if(n > temp.Alloc()) temp.Realloc(n);
-	
+  
+  static typename array1<V>::opt temp(n);
+  static unsigned int tempsize=n;
+  if(n > tempsize) {Reallocate(temp,n); tempsize=n;}
+  
   unsigned int bny=B.Nx();
   unsigned int cny=C.Ny();
   assert(bny == C.Nx() && cny == A.Nx());
 	
-  Array2<V> CT(cny,C.Nx(),temp);
+  array2<V> CT(cny,C.Nx(),temp);
 	
   Trans(CT,C);
   C.Purge();
@@ -343,7 +339,7 @@ inline void MultAdd(const Array1<T>& A, const Array1<U>& B, const Array2<V>& C,
   if(&A != &B) {
     for(unsigned int k=0; k < cny; k++) {
       T sum=0.0;
-      typename Array1<V>::opt CTk=CT[k];
+      typename array1<V>::opt CTk=CT[k];
       for(unsigned int j=0; j < bny; j++) {
 	sum += B[j]*CTk[j];
       }
@@ -351,14 +347,14 @@ inline void MultAdd(const Array1<T>& A, const Array1<U>& B, const Array2<V>& C,
     }
     B.Purge();
   } else {
-    static DynVector<T> temp2(cny);
-    if(cny > temp2.Alloc()) temp2.Realloc(cny);
-    T *work=temp2;
+    static typename array1<T>::opt work(cny);
+    static unsigned int worksize=cny;
+    if(cny > worksize) {Reallocate(work,cny); worksize=cny;}
 		
     unsigned int k;
     for(k=0; k < cny; k++) {
       T sum=0.0;
-      typename Array1<V>::opt CTk=CT[k];
+      typename array1<V>::opt CTk=CT[k];
       for(unsigned int j=0; j < bny; j++) {
 	sum += A[j]*CTk[j];
       }
@@ -369,14 +365,14 @@ inline void MultAdd(const Array1<T>& A, const Array1<U>& B, const Array2<V>& C,
 }
 
 template<class T, class U, class V>
-inline void Mult(const Array1<T>& A, const Array2<U>& B, const Array1<V>& C)
+inline void Mult(const array1<T>& A, const array2<U>& B, const array1<V>& C)
 {
   unsigned int bny=B.Ny();
   unsigned int bnx=B.Nx();
   assert(bnx == A.Nx() && bny == C.Nx());
 	
   for(unsigned int i=0; i < bnx; i++) {
-    typename Array1<U>::opt Bi=B[i];
+    typename array1<U>::opt Bi=B[i];
     T sum=0.0;
     for(unsigned int j=0; j < bny; j++) {
       sum += Bi[j]*C[j];
@@ -388,15 +384,15 @@ inline void Mult(const Array1<T>& A, const Array2<U>& B, const Array1<V>& C)
 }
 
 template<class T, class U, class V, class W>
-inline void MultAdd(const Array1<T>& A, const Array2<U>& B, const Array1<V>& C,
-		    const Array1<W>& D)
+inline void MultAdd(const array1<T>& A, const array2<U>& B, const array1<V>& C,
+		    const array1<W>& D)
 {
   unsigned int bny=B.Ny();
   unsigned int bnx=B.Nx();
   assert(bny == C.Nx() && bnx == A.Nx());
 	
   for(unsigned int i=0; i < bnx; i++) {
-    typename Array1<U>::opt Bi=B[i];
+    typename array1<U>::opt Bi=B[i];
     T sum=0.0;
     for(unsigned int j=0; j < bny; j++) {
       sum += Bi[j]*C[j];
@@ -408,19 +404,20 @@ inline void MultAdd(const Array1<T>& A, const Array2<U>& B, const Array1<V>& C,
 }
 
 template<class T, class U, class V, class W>
-inline void MultAdd(const Array2<T>& A, const Array2<U>& B, const Array2<V>& C,
-		    const Array2<W>& D)
+inline void MultAdd(const array2<T>& A, const array2<U>& B, const array2<V>& C,
+		    const array2<W>& D)
 {
   unsigned int bny=B.Ny();
   assert(bny == C.Nx());
-
   unsigned int n=C.Size();
-  static DynVector<V> temp(n);
-  if(n > temp.Alloc()) temp.Realloc(n);
+  
+  static typename array1<V>::opt temp(n);
+  static unsigned int tempsize=n;
+  if(n > tempsize) {Reallocate(temp,n); tempsize=n;}
 	
   unsigned int cny=C.Ny();
   assert(cny == A.Ny() && cny == D.Ny());
-  Array2<V> CT(cny,C.Nx(),temp);
+  array2<V> CT(cny,C.Nx(),temp);
 	
   Trans(CT,C);
   C.Purge();
@@ -430,12 +427,12 @@ inline void MultAdd(const Array2<T>& A, const Array2<U>& B, const Array2<V>& C,
 	
   if(&A != &B) {
     for(unsigned int i=0; i < bnx; i++) {
-      typename Array1<T>::opt Ai=A[i];
-      typename Array1<U>::opt Bi=B[i];
-      typename Array1<W>::opt Di=D[i];
+      typename array1<T>::opt Ai=A[i];
+      typename array1<U>::opt Bi=B[i];
+      typename array1<W>::opt Di=D[i];
       for(unsigned int k=0; k < cny; k++) {
 	T sum=0.0;
-	typename Array1<T>::opt CTk=CT[k];
+	typename array1<T>::opt CTk=CT[k];
 	for(unsigned int j=0; j < bny; j++) {
 	  sum += Bi[j]*CTk[j];
 	}
@@ -444,49 +441,49 @@ inline void MultAdd(const Array2<T>& A, const Array2<U>& B, const Array2<V>& C,
     }
     B.Purge();
   } else {
-    static DynVector<T> temp2(cny);
-    if(cny > temp2.Alloc()) temp2.Realloc(cny);
-    T *work=temp2;
+    static typename array1<T>::opt work(cny);
+    static unsigned int worksize=cny;
+    if(cny > worksize) {Reallocate(work,cny); worksize=cny;}
 		
     for(unsigned int i=0; i < bnx; i++) {
-      typename Array1<T>::opt Ai=A[i];
+      typename array1<T>::opt Ai=A[i];
       unsigned int k;
       for(k=0; k < cny; k++) {
 	T sum=0.0;
-	typename Array1<V>::opt CTk=CT[k];
+	typename array1<V>::opt CTk=CT[k];
 	for(unsigned int j=0; j < bny; j++) {
 	  sum += Ai[j]*CTk[j];
 	}
 	work[k]=sum;
       }
-      typename Array1<W>::opt Di=D[i];
+      typename array1<W>::opt Di=D[i];
       for(k=0; k < cny; k++) Ai[k]=work[k]+Di[k];
     }
   }		
 }
 
 template<class T, class U>
-inline Array2<T> const operator * (const Array2<T>& B, const Array2<U>& C)
+inline array2<T> const operator * (const array2<T>& B, const array2<U>& C)
 {
-  Array2<T> A(B.Nx(),C.Ny());
+  array2<T> A(B.Nx(),C.Ny());
   Mult(A,B,C);
   A.Hold();
   return A;
 }
 
 template<class T, class U>
-inline Array1<T> const operator * (const Array2<T>& B, const Array1<U>& C)
+inline array1<T> const operator * (const array2<T>& B, const array1<U>& C)
 {
-  Array1<T> A(B.Nx());
+  array1<T> A(B.Nx());
   Mult(A,B,C);
   A.Hold();
   return A;
 }
 
 template<class T, class U>
-inline Array1<T> const operator * (const Array1<T>& B, const Array2<U>& C)
+inline array1<T> const operator * (const array1<T>& B, const array2<U>& C)
 {
-  Array1<T> A(B.Nx());
+  array1<T> A(B.Nx());
   Mult(A,B,C);
   A.Hold();
   return A;
@@ -501,59 +498,50 @@ inline void Mult(const array1<T>& A, const array1<U>& B, V C)
 }
 
 template<class T, class U>
-inline Array2<T> operator * (const Array2<T>& B, U C)
+inline array2<T> operator * (const array2<T>& B, U C)
 {
-  Array2<T> A(B.Nx(),B.Ny());
+  array2<T> A(B.Nx(),B.Ny());
   Mult(A,B,C);
   A.Hold();
   return A;
 }
 
 template<class T, class U>
-inline Array1<T> operator * (const Array1<T>& B, U C)
+inline array1<T> operator * (const array1<T>& B, U C)
 {
-  Array1<T> A(B.Nx());
+  array1<T> A(B.Nx());
   Mult(A,B,C);
   A.Hold();
   return A;
 }
 
 template<class T, class U>
-inline Array2<T> operator * (U C, const Array2<T>& B)
+inline array2<T> operator * (U C, const array2<T>& B)
 {
-  Array2<T> A(B.Nx(),B.Ny());
+  array2<T> A(B.Nx(),B.Ny());
   Mult(A,B,C);
   A.Hold();
   return A;
 }
 
 template<class T, class U>
-inline Array1<T> operator * (U C, const Array1<T>& B)
+inline array1<T> operator * (U C, const array1<T>& B)
 {
-  Array1<T> A(B.Nx());
+  array1<T> A(B.Nx());
   Mult(A,B,C);
   A.Hold();
   return A;
 }
 
 template<class T>
-inline Array2<T>& Array2<T>::operator *= (const Array2<T>& A)
+inline array2<T>& array2<T>::operator *= (const array2<T>& A)
 {
   Mult(*this,*this,A);
   return *this;
 }
 
-#if 0 // Defined in Array.h
 template<class T>
-inline Array2<T>& Array2<T>::operator *= (T A)
-{
-  Mult(*this,*this,A);
-  return *this;
-}
-#endif
-
-template<class T>
-void GaussJordan(const Array2<T>& a, const Array2<T>& b)
+void GaussJordan(const array2<T>& a, const array2<T>& b)
 {
   // Linear equation solution by Gauss-Jordan elimination.
   // a[1..n][1..n] is the input matrix.
@@ -567,10 +555,16 @@ void GaussJordan(const Array2<T>& a, const Array2<T>& b)
   unsigned int m=b.Ny();
   assert(&a != &b && n == a.Ny() && n == b.Nx());
 	
-  // Improve to reuse work arrays here: JCB
-  Array1<int> indx_c(n);
-  Array1<int> indx_r(n);
-  Array1<int> pivot(n);
+  static typename array1<int>::opt indx_c(n);
+  static typename array1<int>::opt indx_r(n);
+  static typename array1<int>::opt pivot(n);
+  static unsigned int tempsize=n;
+  if(n > tempsize) {
+    Reallocate(indx_c,n);
+    Reallocate(indx_r,n);
+    Reallocate(pivot,n);
+    tempsize=n;
+  }
 
   for(unsigned int j=0; j < n; j++) {
     pivot[j]=0;
@@ -580,7 +574,7 @@ void GaussJordan(const Array2<T>& a, const Array2<T>& b)
     // This is the main loop over the columns to be reduced.
     double big=0.0;
     for(unsigned int j=0; j < n; j++) {
-      typename Array1<T>::opt aj=a[j];
+      typename array1<T>::opt aj=a[j];
       // This is the outer loop of the search for a pivot element.
       if(pivot[j] != 1) {
 	for(unsigned int k=0; k < n; k++) {
@@ -606,11 +600,11 @@ void GaussJordan(const Array2<T>& a, const Array2<T>& b)
     // there is an implied column interchange. With this form of
     // bookkeeping, the solution b's will end up in the correct order,
     // and the inverse matrix will be scrambled by columns.
-    typename Array1<T>::opt acol=a[col];
-    typename Array1<T>::opt bcol=b[col];
+    typename array1<T>::opt acol=a[col];
+    typename array1<T>::opt bcol=b[col];
     if(row != col) {
-      typename Array1<T>::opt arow=a[row];
-      typename Array1<T>::opt brow=b[row];
+      typename array1<T>::opt arow=a[row];
+      typename array1<T>::opt brow=b[row];
       for(unsigned int l=0; l < n; l++) MatrixSwap(arow[l], acol[l]);
       for(unsigned int l=0; l < m; l++) MatrixSwap(brow[l], bcol[l]);
     }
@@ -627,7 +621,7 @@ void GaussJordan(const Array2<T>& a, const Array2<T>& b)
       // Next, we reduce the rows...
       if(ll != col) { 
 				//...except for the pivot one, of course.
-	typename Array1<T>::opt all=a[ll], bll=b[ll];
+	typename array1<T>::opt all=a[ll], bll=b[ll];
 	T dum=all[col];
 	all[col]=0.0;
 	for(unsigned int l=0; l < n; l++) all[l] -= acol[l]*dum;
@@ -651,7 +645,7 @@ void GaussJordan(const Array2<T>& a, const Array2<T>& b)
 // Compute A=C^{-1} B
 
 template<class T>
-inline void Divide(const Array2<T>& A, const Array2<T>& C, const Array2<T>& B)
+inline void Divide(const array2<T>& A, const array2<T>& C, const array2<T>& B)
 {
   if(&A != &B) {
     assert(A.Nx() == B.Nx() && A.Ny() == B.Ny());
@@ -660,17 +654,19 @@ inline void Divide(const Array2<T>& A, const Array2<T>& C, const Array2<T>& B)
   }
 	
   unsigned int n=C.Size();
-  static DynVector<T> temp(n);
-  if(n > temp.Alloc()) temp.Realloc(n);
+  
+  static typename array1<T>::opt temp(n);
+  static unsigned int tempsize=n;
+  if(n > tempsize) {Reallocate(temp,n); tempsize=n;}
 	
-  Array2<T> D(C.Nx(),C.Ny(),temp);
+  array2<T> D(C.Nx(),C.Ny(),temp);
   D.Load(C);
   C.Purge();
   GaussJordan(D,A);
 }
 	
 template<class T>
-inline void Divide(const Array1<T>& A, const Array2<T>& C, const Array1<T>& B)
+inline void Divide(const array1<T>& A, const array2<T>& C, const array1<T>& B)
 {
   if(&A != &B) {
     assert(A.Nx() == B.Nx());
@@ -679,11 +675,13 @@ inline void Divide(const Array1<T>& A, const Array2<T>& C, const Array1<T>& B)
   }
 	
   unsigned int n=C.Size();
-  static DynVector<T> temp(n);
-  if(n > temp.Alloc()) temp.Realloc(n);
+  
+  static typename array1<T>::opt temp(n);
+  static unsigned int tempsize=n;
+  if(n > tempsize) {Reallocate(temp,n); tempsize=n;}
 	
-  Array2<T> D(C.Nx(),C.Ny(),temp);
-  Array2<T> A2(A.Nx(),1,A);
+  array2<T> D(C.Nx(),C.Ny(),temp);
+  array2<T> A2(A.Nx(),1,A);
 	
   D.Load(C);
   C.Purge();
@@ -691,7 +689,7 @@ inline void Divide(const Array1<T>& A, const Array2<T>& C, const Array1<T>& B)
 }
 	
 template<class T>
-inline void Divide(const Array2<T>& A, T C, const Array2<T>& B)
+inline void Divide(const array2<T>& A, T C, const array2<T>& B)
 {
   T Cinv=1.0/C;
   unsigned int size=A.Size(); 
@@ -700,9 +698,9 @@ inline void Divide(const Array2<T>& A, T C, const Array2<T>& B)
 }
 
 template<class T>
-inline Array2<T> operator / (const Array2<T>& B, T C)
+inline array2<T> operator / (const array2<T>& B, T C)
 {
-  Array2<T> A(B.Nx(),B.Ny());
+  array2<T> A(B.Nx(),B.Ny());
   Divide(A,C,B);
   A.Hold();
   return A;
@@ -719,7 +717,7 @@ inline void Add(const array1<T>& A, const array1<T>& B, const array1<T>& C)
 }
 
 template<class T>
-inline void Add(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
+inline void Add(const array2<T>& A, const array2<T>& B, const array2<T>& C)
 {
   assert(A.Nx() == B.Nx() && A.Ny() == B.Ny() && 
 	 B.Nx() == C.Nx() && B.Ny() == C.Ny());
@@ -741,7 +739,7 @@ inline void Sub(const array1<T>& A, const array1<T>& B, const array1<T>& C)
 }
 
 template<class T>
-inline void Sub(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
+inline void Sub(const array2<T>& A, const array2<T>& B, const array2<T>& C)
 {
   assert(A.Nx() == B.Nx() && A.Ny() == B.Ny() && 
 	 B.Nx() == C.Nx() && B.Ny() == C.Ny());
@@ -762,7 +760,7 @@ inline void Unary(const array1<T>& A, const array1<T>& B)
 }
 
 template<class T>
-inline void Unary(const Array2<T>& A, const Array2<T>& B)
+inline void Unary(const array2<T>& A, const array2<T>& B)
 {
   assert(A.Nx() == B.Nx() && A.Ny() == B.Ny());
   unsigned int size=A.Size();
@@ -780,7 +778,7 @@ inline void Add(array1<T>& A, const array1<T>& B, T C)
 }
 
 template<class T>
-inline void Add(Array2<T>& A, const Array2<T>& B, T C)
+inline void Add(array2<T>& A, const array2<T>& B, T C)
 {
   assert(A.Nx() == B.Nx() && A.Ny() == B.Ny());
   unsigned int size=A.Size();
@@ -798,7 +796,7 @@ inline void Sub(array1<T>& A, const array1<T>& B, T C)
 }
 
 template<class T>
-inline void Sub(Array2<T>& A, const Array2<T>& B, T C)
+inline void Sub(array2<T>& A, const array2<T>& B, T C)
 {
   assert(A.Nx() == B.Nx() && A.Ny() == B.Ny());
   unsigned int size=A.Size();
@@ -816,7 +814,7 @@ inline void Add(const array1<T>& A, T B, const array1<T>& C)
 }
 
 template<class T>
-inline void Add(const Array2<T>& A, T B, const Array2<T>& C)
+inline void Add(const array2<T>& A, T B, const array2<T>& C)
 {
   assert(A.Nx() == C.Nx() && A.Ny() == C.Ny());
   unsigned int size=A.Size();
@@ -834,7 +832,7 @@ inline void Sub(const array1<T>& A, T B, const array1<T>& C)
 }
 
 template<class T>
-inline void Sub(const Array2<T>& A, T B, const Array2<T>& C)
+inline void Sub(const array2<T>& A, T B, const array2<T>& C)
 {
   assert(A.Nx() == C.Nx() && A.Ny() == C.Ny());
   unsigned int size=A.Size();
@@ -843,81 +841,81 @@ inline void Sub(const Array2<T>& A, T B, const Array2<T>& C)
 }
 
 template<class T>
-inline Array1<T> operator + (const Array1<T>& B, const Array1<T>& C)
+inline array1<T> operator + (const array1<T>& B, const array1<T>& C)
 {
-  Array1<T> A(B.Nx());
+  array1<T> A(B.Nx());
   Add(A,B,C);
   A.Hold();
   return A;
 }
 
 template<class T>
-inline Array2<T> operator + (const Array2<T>& B, const Array2<T>& C)
+inline array2<T> operator + (const array2<T>& B, const array2<T>& C)
 {
-  Array2<T> A(B.Nx(),B.Ny());
+  array2<T> A(B.Nx(),B.Ny());
   Add(A,B,C);
   A.Hold();
   return A;
 }
 
 template<class T>
-inline Array1<T> operator - (const Array1<T>& B, const Array1<T>& C)
+inline array1<T> operator - (const array1<T>& B, const array1<T>& C)
 {
-  Array1<T> A(B.Nx());
+  array1<T> A(B.Nx());
   Sub(A,B,C);
   A.Hold();
   return A;
 }
 
 template<class T>
-inline Array2<T> operator - (const Array2<T>& B, const Array2<T>& C)
+inline array2<T> operator - (const array2<T>& B, const array2<T>& C)
 {
-  Array2<T> A(B.Nx(),B.Ny());
+  array2<T> A(B.Nx(),B.Ny());
   Sub(A,B,C);
   A.Hold();
   return A;
 }
 
 template<class T>
-inline Array2<T> operator + (const Array2<T>& B, T C)
+inline array2<T> operator + (const array2<T>& B, T C)
 {
-  Array2<T> A(B.Nx(),B.Ny());
+  array2<T> A(B.Nx(),B.Ny());
   Add(A,B,C);
   A.Hold();
   return A;
 }
 
 template<class T>
-inline Array2<T> operator - (const Array2<T>& B, T C)
+inline array2<T> operator - (const array2<T>& B, T C)
 {
-  Array2<T> A(B.Nx(),B.Ny());
+  array2<T> A(B.Nx(),B.Ny());
   Sub(A,B,C);
   A.Hold();
   return A;
 }
 
 template<class T>
-inline Array2<T> operator + (T B, const Array2<T>& C)
+inline array2<T> operator + (T B, const array2<T>& C)
 {
-  Array2<T> A(C.Nx(),C.Ny());
+  array2<T> A(C.Nx(),C.Ny());
   Add(A,B,C);
   A.Hold();
   return A;
 }
 
 template<class T>
-inline Array2<T> operator - (T B, const Array2<T>& C)
+inline array2<T> operator - (T B, const array2<T>& C)
 {
-  Array2<T> A(C.Nx(),C.Ny());
+  array2<T> A(C.Nx(),C.Ny());
   Sub(A,B,C);
   A.Hold();
   return A;
 }
 
 template<class T>
-inline Array2<T> operator - (const Array2<T>& B)
+inline array2<T> operator - (const array2<T>& B)
 {
-  Array2<T> A(B.Nx(),B.Ny());
+  array2<T> A(B.Nx(),B.Ny());
   Unary(A,B);
   A.Hold();
   return A;
@@ -925,7 +923,7 @@ inline Array2<T> operator - (const Array2<T>& B)
 
 // Compute the matrix exponential B of a square matrix A
 template<class T, class U>
-inline void Exp(Array2<T>& B, const Array2<U>& A)
+inline void Exp(array2<T>& B, const array2<U>& A)
 {
   unsigned int n=A.Nx();
   assert(n == A.Ny());
@@ -942,7 +940,7 @@ inline void Exp(Array2<T>& B, const Array2<U>& A)
 	
   unsigned int q=1;
   //	double delta=DBL_EPSILON;
-  double delta=1.0e-11;
+  double delta=1.0e-11; // JCB
   double epsilon=8.0;
   while (epsilon > delta) {
     epsilon /= 8*(4*q*q-1);
@@ -950,11 +948,20 @@ inline void Exp(Array2<T>& B, const Array2<U>& A)
   }
   q--;
 	
-  // Improve to reuse work arrays here: JCB
-	
-  Array2<T> D(n,n);
-  Array2<T> N(n,n);
-  Array2<T> X(n,n);
+  static typename array1<T>::opt Dtemp(n2);
+  static typename array1<T>::opt Ntemp(n2);
+  static typename array1<T>::opt Xtemp(n2);
+  static unsigned int tempsize=n2;
+  if(n2 > tempsize) {
+    Reallocate(Dtemp,n2);
+    Reallocate(Ntemp,n2);
+    Reallocate(Xtemp,n2); 
+    tempsize=n2;
+  }
+  
+  array2<T> D(n,n,Dtemp);
+  array2<T> N(n,n,Ntemp);
+  array2<T> X(n,n,Xtemp);
 	
   D.Identity();
   X=N=D;
@@ -976,10 +983,10 @@ inline void Exp(Array2<T>& B, const Array2<U>& A)
 }	
 
 template<class T>
-const Array2<T> exp(const Array2<T>& A)
+const array2<T> exp(const array2<T>& A)
 {
   unsigned int n=A.Nx();
-  Array2<T> B(n,n);
+  array2<T> B(n,n);
   Exp(B,A);
   B.Hold();
   return B;
