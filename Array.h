@@ -21,12 +21,16 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #define __ARRAY_H_VERSION__ 1.16J
 
 // Defining NDEBUG improves optimization but disables argument checking.
+// Defining __NOARRAY2OPT inhibits special Array2[][] optimization.
 
 #ifdef NDEBUG
 #define __check(i,n,dim,m)
 #define __checkSize()
 #define __checkActivate(i) CheckActivate(i)
 #else
+#ifndef __NOARRAY2OPT
+#define __NOARRAY2OPT
+#endif
 #define __check(i,n,dim,m) Check(i,n,dim,m)
 #define __checkSize() CheckSize()
 #define __checkActivate(i) Activate()
@@ -284,7 +288,7 @@ class array2 : public array1<T> {
   unsigned int Ny() const {return ny;}
   unsigned int N2() const {return ny;}
 
-#ifdef NDEBUG
+#ifndef __NOARRAY2OPT
   T *operator [] (int ix) const {
     return v+ix*ny;
   }
@@ -697,7 +701,7 @@ class Array2 : public array2<T> {
     Dimension(nx0,ny0,v0,ox0,oy0);
   }
 
-#ifdef NDEBUG
+#ifndef __NOARRAY2OPT
   T *operator [] (int ix) const {
     return vtemp+ix*ny-oy;
   }
@@ -906,14 +910,9 @@ class Array4 : public array4<T> {
 
 }
 
-#ifdef NDEBUG
-// Obsolete: Array1(T) has been superceded by Array1<T>::opt
-#define array1(T) T*
-#define Array1(T) T*
-#else
-#define array1(T) array1<T>
-#define Array1(T) Array1<T>
-#endif
+// Abbreviated form for optimized 1D arrays:
+#define array1(T) array1<T>::opt
+#define Array1(T) Array1<T>::opt
 
 #undef __check
 #undef __checkActivate

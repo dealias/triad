@@ -245,11 +245,11 @@ inline void Mult(const Array2<T>& A, const Array2<U>& B, const Array2<V>& C)
 	
   if(&A != &B) {
     for(unsigned int i=0; i < bnx; i++) {
-      Array1(T) Ai=A[i];
-      Array1(U) Bi=B[i];
+      Array1<T>::opt Ai=A[i];
+      Array1<U>::opt Bi=B[i];
       for(unsigned int k=0; k < cny; k++) {
 	T sum=0.0;
-	Array1(V) CTk=CT[k];
+	Array1<V>::opt CTk=CT[k];
 	for(unsigned int j=0; j < bny; j++) {
 	  sum += Bi[j]*CTk[j];
 	}
@@ -263,11 +263,11 @@ inline void Mult(const Array2<T>& A, const Array2<U>& B, const Array2<V>& C)
     T *work=temp2;
 		
     for(unsigned int i=0; i < bnx; i++) {
-      Array1(T) Ai=A[i];
+      Array1<T>::opt Ai=A[i];
       unsigned int k;
       for(k=0; k < cny; k++) {
 	T sum=0.0;
-	Array1(V) CTk=CT[k];
+	Array1<V>::opt CTk=CT[k];
 	for(unsigned int j=0; j < bny; j++) {
 	  sum += Ai[j]*CTk[j];
 	}
@@ -297,7 +297,7 @@ inline void Mult(const Array1<T>& A, const Array1<U>& B, const Array2<V>& C)
   if(&A != &B) {
     for(unsigned int k=0; k < cny; k++) {
       T sum=0.0;
-      Array1(V) CTk=CT[k];
+      Array1<V>::opt CTk=CT[k];
       for(unsigned int j=0; j < bny; j++) {
 	sum += B[j]*CTk[j];
       }
@@ -312,7 +312,7 @@ inline void Mult(const Array1<T>& A, const Array1<U>& B, const Array2<V>& C)
     unsigned int k;
     for(k=0; k < cny; k++) {
       T sum=0.0;
-      Array1(V) CTk=CT[k];
+      Array1<V>::opt CTk=CT[k];
       for(unsigned int j=0; j < bny; j++) {
 	sum += A[j]*CTk[j];
       }
@@ -342,7 +342,7 @@ inline void MultAdd(const Array1<T>& A, const Array1<U>& B, const Array2<V>& C,
   if(&A != &B) {
     for(unsigned int k=0; k < cny; k++) {
       T sum=0.0;
-      Array1(V) CTk=CT[k];
+      Array1<V>::opt CTk=CT[k];
       for(unsigned int j=0; j < bny; j++) {
 	sum += B[j]*CTk[j];
       }
@@ -357,7 +357,7 @@ inline void MultAdd(const Array1<T>& A, const Array1<U>& B, const Array2<V>& C,
     unsigned int k;
     for(k=0; k < cny; k++) {
       T sum=0.0;
-      Array1(V) CTk=CT[k];
+      Array1<V>::opt CTk=CT[k];
       for(unsigned int j=0; j < bny; j++) {
 	sum += A[j]*CTk[j];
       }
@@ -375,7 +375,7 @@ inline void Mult(const Array1<T>& A, const Array2<U>& B, const Array1<V>& C)
   assert(bnx == A.Nx() && bny == C.Nx());
 	
   for(unsigned int i=0; i < bnx; i++) {
-    Array1(U) Bi=B[i];
+    Array1<U>::opt Bi=B[i];
     T sum=0.0;
     for(unsigned int j=0; j < bny; j++) {
       sum += Bi[j]*C[j];
@@ -395,7 +395,7 @@ inline void MultAdd(const Array1<T>& A, const Array2<U>& B, const Array1<V>& C,
   assert(bny == C.Nx() && bnx == A.Nx());
 	
   for(unsigned int i=0; i < bnx; i++) {
-    Array1(U) Bi=B[i];
+    Array1<U>::opt Bi=B[i];
     T sum=0.0;
     for(unsigned int j=0; j < bny; j++) {
       sum += Bi[j]*C[j];
@@ -429,12 +429,12 @@ inline void MultAdd(const Array2<T>& A, const Array2<U>& B, const Array2<V>& C,
 	
   if(&A != &B) {
     for(unsigned int i=0; i < bnx; i++) {
-      Array1(T) Ai=A[i];
-      Array1(U) Bi=B[i];
-      Array1(W) Di=D[i];
+      Array1<T>::opt Ai=A[i];
+      Array1<U>::opt Bi=B[i];
+      Array1<W>::opt Di=D[i];
       for(unsigned int k=0; k < cny; k++) {
 	T sum=0.0;
-	Array1(T) CTk=CT[k];
+	Array1<T>::opt CTk=CT[k];
 	for(unsigned int j=0; j < bny; j++) {
 	  sum += Bi[j]*CTk[j];
 	}
@@ -448,17 +448,17 @@ inline void MultAdd(const Array2<T>& A, const Array2<U>& B, const Array2<V>& C,
     T *work=temp2;
 		
     for(unsigned int i=0; i < bnx; i++) {
-      Array1(T) Ai=A[i];
+      Array1<T>::opt Ai=A[i];
       unsigned int k;
       for(k=0; k < cny; k++) {
 	T sum=0.0;
-	Array1(V) CTk=CT[k];
+	Array1<V>::opt CTk=CT[k];
 	for(unsigned int j=0; j < bny; j++) {
 	  sum += Ai[j]*CTk[j];
 	}
 	work[k]=sum;
       }
-      Array1(W) Di=D[i];
+      Array1<W>::opt Di=D[i];
       for(k=0; k < cny; k++) Ai[k]=work[k]+Di[k];
     }
   }		
@@ -579,7 +579,7 @@ void GaussJordan(const Array2<T>& a, const Array2<T>& b)
     // This is the main loop over the columns to be reduced.
     double big=0.0;
     for(unsigned int j=0; j < n; j++) {
-      Array1(T) aj=a[j];
+      Array1<T>::opt aj=a[j];
       // This is the outer loop of the search for a pivot element.
       if(pivot[j] != 1) {
 	for(unsigned int k=0; k < n; k++) {
@@ -605,11 +605,11 @@ void GaussJordan(const Array2<T>& a, const Array2<T>& b)
     // there is an implied column interchange. With this form of
     // bookkeeping, the solution b's will end up in the correct order,
     // and the inverse matrix will be scrambled by columns.
-    Array1(T) acol=a[col];
-    Array1(T) bcol=b[col];
+    Array1<T>::opt acol=a[col];
+    Array1<T>::opt bcol=b[col];
     if(row != col) {
-      Array1(T) arow=a[row];
-      Array1(T) brow=b[row];
+      Array1<T>::opt arow=a[row];
+      Array1<T>::opt brow=b[row];
       for(unsigned int l=0; l < n; l++) MatrixSwap(arow[l], acol[l]);
       for(unsigned int l=0; l < m; l++) MatrixSwap(brow[l], bcol[l]);
     }
@@ -626,8 +626,7 @@ void GaussJordan(const Array2<T>& a, const Array2<T>& b)
       // Next, we reduce the rows...
       if(ll != col) { 
 				//...except for the pivot one, of course.
-	Array1(T) all=a[ll];
-	Array1(T) bll=b[ll];
+	Array1<T>::opt all=a[ll], bll=b[ll];
 	T dum=all[col];
 	all[col]=0.0;
 	for(unsigned int l=0; l < n; l++) all[l] -= acol[l]*dum;

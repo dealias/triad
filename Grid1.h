@@ -3,12 +3,14 @@
 
 #include "MultiGrid.h"
 
+namespace Array {
+  
 template<class T>
 class Grid1 : public Grid<Array1<T>,T> {
  protected:	
   // number of points in previous and current levels and incl. boundaries
   int nx1, nx, nx1bc, nxbc, sx, rx, offx, ox;
-  Array1(Real) x;
+  Array1<Real>::opt x;
   Real hx, hxinv, hx2, hx2inv;
  public:
   Grid1() {radix=2; dimension=1;}
@@ -38,25 +40,27 @@ class Grid1 : public Grid<Array1<T>,T> {
 		      Array1<T>& f)=0; 
   virtual void Smooth(const Array1<T>& u, const Array1<T>& f)=0;
 	
-  virtual void GaussSeidel(const Array1<T>&, const Array1<T>&, int, int) {};
+  virtual void GaussSeidel(const Array1<T>&, const Array1<T>&,
+			   int, int) {};
 	
   virtual void Restrict(const Array1<T>& r, const Array1<T>& u) {
     if(&r != &u) XDirichlet(r,u,1);
-    Array1(T) u0=u+offx;
+    Array1<T>::opt u0=u+offx;
     for(int i=1; i <= nx1; i++)
       r[i]=0.5*(0.5*(u0[rx*i-1]+u0[rx*i+1])+u0[rx*i]);
   }
 	
   virtual void SubtractProlongation(const Array1<T>& u,
 				    const Array1<T>& v0) { 
-    Array1(T) u0=u+offx;
+    Array1<T>::opt u0=u+offx;
     for(int i=sx; i <= nx1; i++) {
       u0[rx*i] -= v0[i];
       u0[rx*i+1] -= 0.5*(v0[i]+v0[i+1]);
     }
   }
 	
-  virtual inline void L0inv(const Array1<T>& u, const Array1<T>& f) {};
+  virtual inline void L0inv(const Array1<T>& u,
+			    const Array1<T>& f) {};
 	
   void Jacobi(const Array1<T>& u, const Array1<T>& f, Real omegah2) {
     Defect(d,u,f);
@@ -105,7 +109,8 @@ class Grid1 : public Grid<Array1<T>,T> {
     u[nx0+1]=b[nx+1];
   }
 	
-  void XDirichlet2(const Array1<T>& u, const Array1<T>& b, int contract=0) {
+  void XDirichlet2(const Array1<T>& u, const Array1<T>& b,
+		   int contract=0) {
     if(homogeneous) return;
     int nx0;
     if(contract) nx0=nx1;
@@ -168,5 +173,7 @@ class Grid1 : public Grid<Array1<T>,T> {
     u[nx+2]=u[2];
   }
 };
+
+}
 
 #endif

@@ -3,7 +3,8 @@
 
 #include <new.h>
 #include "Array.h"
-using namespace Array;
+
+namespace Array {
 
 class BC {
  protected:
@@ -139,7 +140,7 @@ class Grid {
     if(level > 0) v=(V) 0.0;
   }
 	
-  virtual void Mesh(Array1(Real) &x, Limits limits, int& n1, int& n,
+  virtual void Mesh(Array1<Real>::opt &x, Limits limits, int& n1, int& n,
 		    int& n1bc, int& nbc, Real& h, Real& hinv,
 		    Real& h2, Real& h2inv, int& start, int& r, int& offset,
 		    int &ioff) {
@@ -922,5 +923,6 @@ inline void mtridiagonalp(int n, T *u, const T *f,
   mtridiagonalp(n,u,f,c,a,b,m,inc1,inc2,(Real *) NULL,(Real *) NULL);
 }
 
+}
 
 #endif
