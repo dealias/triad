@@ -44,7 +44,7 @@ void MakePalette(int palette)
 		break;
 	case BWRAINBOW:
 		offset=1;
-		nintervals=6;
+		nintervals=7;
 		divisor=3;
 		break;
 	case RGreyB:
@@ -84,8 +84,13 @@ void MakePalette(int palette)
 		return;
 	}
 	
-	if(palette == WRAINBOW || palette == BWRAINBOW) {
+	if(palette == WRAINBOW) {
 		for(i=0; i < n; i++) AddColor(1.0,(n-i)*ninv,(n-i)*ninv);
+	}
+	
+	if(palette == BWRAINBOW) {
+		for(i=0; i < n; i++) AddColor(1.0,(n-i)*ninv,1.0);
+		for(i=0; i < n; i++) AddColor(1.0,0.0,(n-i)*ninv);
 	}
 	
 	for(i=0; i < n; i++) AddColor(1.0,i*ninv,0.0);
