@@ -246,9 +246,12 @@ void Partition<T>::ComputeTriads() {
 	}
 	
 	pqbuffer=new Var[pq(n,n)];
+	pqIndex=new Var*[n];
 	triadLimits=new TriadLimits[Nmode];
 	int *ntriad=new int[Nmode];
 	
+	for(p=0; p < n; p++) pqIndex[p]=pqbuffer+p*(2*n-1-p)/2;
+							 
 	triad.Resize(Nmode*n);
 	for(k=0; k < Nmode; k++) {
 		norm=1.0/(twopi2*Area(k));
