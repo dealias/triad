@@ -14,6 +14,8 @@ public:
 	int bad() const { return state & badbit; }
 	void clear(iostate _state = 0) {state=_state;}
 	void set(iostate flag) {state |= flag;}
+    operator void*() const { return fail() ? (void*)0 : (void*)(-1); }
+    int operator!() const { return fail(); }
 };
 
 class xstream : virtual public xios {
@@ -25,10 +27,16 @@ public:
 		clear();
 		buf=fopen(filename,mode);
 		if(buf) xdrstdio_create(&xdrs, buf, xop);
-		else {errno=0; set(badbit);}
+		else set(badbit);
 	}
-	void close() {if(buf) fclose(buf);}
+	void close() {if(buf) fclose(buf); buf=NULL;}
 };
+
+#define IXSTREAM(T,N) ixstream& operator >> (T& x) \
+{if(!xdr_##N(&xdrs, &x)) set(eofbit); return *this;}
+
+#define OXSTREAM(T,N) oxstream& operator << (T x) \
+{if(!xdr_##N(&xdrs, &x)) set(badbit); return *this;}
 
 class ixstream : public xstream {
 public:
@@ -44,22 +52,16 @@ public:
 	typedef ixstream& (*imanip)(ixstream&);
     ixstream& operator << (imanip func) { return (*func)(*this); }
 	
-    ixstream& operator >> (char& x) {
-		if(!xdr_char(&xdrs, &x)) set(badbit);
-		return *this;
-	}
-    ixstream& operator >> (int& x) {
-		if(!xdr_int(&xdrs, &x)) set(badbit);
-		return *this;
-	}
-    ixstream& operator >> (float& x) {
-		if(!xdr_float(&xdrs, &x)) set(badbit);
-		return *this;
-	}
-    ixstream& operator >> (double& x) {
-		if(!xdr_double(&xdrs, &x)) set(badbit);
-		return *this;
-	}
+	IXSTREAM(int,int)
+	IXSTREAM(unsigned int,u_int)
+	IXSTREAM(long,long)
+	IXSTREAM(unsigned long,u_long)
+	IXSTREAM(short,short)
+	IXSTREAM(unsigned short,u_short)
+	IXSTREAM(char,char)
+	IXSTREAM(unsigned char,u_char)
+	IXSTREAM(float,float)
+	IXSTREAM(double,double)
 };
 
 class oxstream : public xstream {
@@ -80,27 +82,24 @@ public:
 	oxstream(const char *filename, openmode mode) {open(filename,mode);}
 	~oxstream() {close();}
 
+	oxstream& flush() {if(buf) fflush(buf); return *this;}
+	
 	typedef oxstream& (*omanip)(oxstream&);
     oxstream& operator << (omanip func) { return (*func)(*this); }
 	
-    oxstream& operator << (char x) {
-		if(!xdr_char(&xdrs, &x)) set(badbit);
-		return *this;
-	}
-    oxstream& operator << (int x) {
-		if(!xdr_int(&xdrs, &x)) set(badbit);
-		return *this;
-	}
-    oxstream& operator << (float x) {
-		if(!xdr_float(&xdrs, &x)) set(badbit);
-		return *this;
-	}
-    oxstream& operator << (double x) {
-		if(!xdr_double(&xdrs, &x)) set(badbit);
-		return *this;
-	}
+	OXSTREAM(int,int)
+	OXSTREAM(unsigned int,u_int)
+	OXSTREAM(long,long)
+	OXSTREAM(unsigned long,u_long)
+	OXSTREAM(short,short)
+	OXSTREAM(unsigned short,u_short)
+	OXSTREAM(char,char)
+	OXSTREAM(unsigned char,u_char)
+	OXSTREAM(float,float)
+	OXSTREAM(double,double)
 };
 
 inline oxstream& endl(oxstream& s) {return s;}
+inline oxstream& flush(oxstream& s) {return s; s.flush();}
 
 #endif

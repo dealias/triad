@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
 		fdump.open(ptemp);
 		Vocabulary->Dump(fdump);
 		fdump.close();
-		if(fdump.good()) rename(ptemp,pname);
+		if(fdump) rename(ptemp,pname);
 		else msg(ERROR,"Cannot write to parameter file %s",ptemp);
 	}
 	
@@ -251,7 +251,7 @@ void read_init()
 		"Current value of ny (%d) disagrees with value (%d) in file\n%s";
 	
 	ixstream finit(rname);
-	if(finit.good()) {
+	if(finit) {
 		cout << newl << "READING " << upcase(type) << " DATA FROM FILE "
 			 << rname << "." << endl; 
 		finit >> t0 >> dt0;
@@ -260,9 +260,7 @@ void read_init()
 		finit >> ny0;
 		if(ny0 != ny) msg(OVERRIDE,ny_msg,ny,ny0,rname);
 		for(i=0; i < min(ny,ny0); i++) finit >> y[i];
-		finit.close();
-		if(!finit.good())
-			msg(ERROR,"Cannot read from %s file %s",type,rname);
+		if(!finit)	msg(ERROR,"Cannot read from %s file %s",type,rname);
 	} else msg(ERROR,"Could not open %s file %s",type,rname);
 	
 	if(!explicit_dt) dt=dt0;
@@ -313,7 +311,7 @@ void dump(int it, int final, double tmax)
 	
 	int iter=final_iteration+iteration;
 	oxstream frestart(rtemp);
-	if(frestart.good()) {
+	if(frestart) {
 		int i;
 		frestart << t << newl << dt << newl;
 		frestart << iter << newl;
@@ -321,8 +319,11 @@ void dump(int it, int final, double tmax)
 		frestart << ny << newl;
 		for(i=0; i < ny; i++) frestart << y[i] << newl;
 		frestart.close();
-		if(frestart.good()) rename(rtemp,rname);
-		else msg(WARNING,"Cannot write to restart file %s",rtemp);
+		if(frestart) rename(rtemp,rname);
+		else {
+			errno=0;
+			msg(WARNING,"Cannot write to restart file %s",rtemp);
+		}		  
 	} else if(it == 0) msg(ERROR,"Could not open restart file %s",rtemp);
 }
 

@@ -174,7 +174,7 @@ static Real ThetaAverage(Real k) {
 	Real ans;
 	int iflag;
 	k0=k;
-	if(!simpfast(ThetaAverageFunction,b.min.th,b.max.th,linacc,ans,pi,iflag))
+	if(simpfast(ThetaAverageFunction,b.min.th,b.max.th,linacc,ans,pi,iflag))
 		msg(ERROR,"Simp returned code %d",iflag);
 	return k*ans;
 }
@@ -191,7 +191,7 @@ void BinAverage(Real& nu, Real (*fcn)(Real), Real (*)(Real)=NULL)
 	} else {
 		int iflag;
 		ThetaAverageFunction=fcn;
-		if(!simpfast(ThetaAverage,b.min.r,b.max.r,linacc,nu,dxmax,iflag))
+		if(simpfast(ThetaAverage,b.min.r,b.max.r,linacc,nu,dxmax,iflag))
 			msg(ERROR,"Simp returned code %d",iflag);
 	}
 }

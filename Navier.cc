@@ -197,8 +197,10 @@ void NWave::InitialConditions()
 	open_output(ft,dirsep,"t");
 	open_output(fprolog,dirsep,"prolog");
 	
-	avgyre=new Avgylabel[Nmoment];
-	avgyim=new Avgylabel[Nmoment];
+	if(Nmoment) {
+		avgyre=new Avgylabel[Nmoment];
+		avgyim=new Avgylabel[Nmoment];
+	}
 	for(n=0; n < Nmoment; n++) {
 		sprintf(tempbuffer,"avgy%d",n);
 

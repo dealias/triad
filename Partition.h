@@ -92,7 +92,8 @@ public:
 	friend inline int operator > (const WeightIndex& a, const WeightIndex& b);
 	friend inline int operator < (const WeightIndex& a, const WeightIndex& b);
 	friend inline int operator == (const WeightIndex& a, const WeightIndex& b);
-	friend inline istream& operator >> (istream& s, WeightIndex& y);
+	friend inline ixstream& operator >> (ixstream& s, WeightIndex& y);
+	friend inline oxstream& operator << (oxstream& s, const WeightIndex& y);
 	friend inline ostream& operator << (ostream& s, const WeightIndex& y);
 };
 
@@ -120,8 +121,13 @@ inline WeightIndex::operator double() {
 		((double)p)/WeightN.k/WeightN.p+((double)k)/WeightN.k;
 }
 	
-inline istream& operator >> (istream& s, WeightIndex& y) {
+inline ixstream& operator >> (ixstream& s, WeightIndex& y) {
 	s >> y.k >> y.p >> y.q;
+    return s;
+}
+
+inline oxstream& operator << (oxstream& s, const WeightIndex& y) {
+	s << y.k << y.p << y.q;
     return s;
 }
 
@@ -142,7 +148,7 @@ public:
 	Mc Value() const {return value;}
 };
 
-inline istream& operator >> (istream& s, Weight& y) {
+inline ixstream& operator >> (ixstream& s, Weight& y) {
 	WeightIndex index;
 	Mc value;
 	s >> index >> value;
@@ -150,7 +156,7 @@ inline istream& operator >> (istream& s, Weight& y) {
 	return s;
 }
 
-inline ostream& operator << (ostream& s, const Weight& y) {
+inline oxstream& operator << (oxstream& s, const Weight& y) {
 	s << y.Index() << newl << y.Value();
 	return s;
 }
@@ -235,7 +241,7 @@ public:
 };
 
 
-int out_weights(ofstream& fout, Weight* w, int lastindex, int n);
+int out_weights(oxstream& fout, Weight* w, int lastindex, int n);
 	
 template<class T, class D>
 INLINE void Partition<T,D>::GenerateWeights() {
@@ -245,12 +251,12 @@ INLINE void Partition<T,D>::GenerateWeights() {
 	WeightIndex kpq,previous,lastkpq=WeightIndex(0,0,0);
 	double realtime,lasttime=time(NULL);
 	double interval=15.0;
-	ofstream fout;
+	oxstream fout;
 	
 	char *filename=WeightFileName("");
 	fout.open(filename);
 	if(!fout) msg(ERROR,"Weight file %s could not be opened",filename);
-	fout.write((char *) &lastindex,sizeof(int));
+	fout << lastindex;
 	
 	if(Nweight) {
 		lastindex=out_weights(fout,weight.Base(),lastindex,Nweight);
@@ -336,10 +342,8 @@ inline Mc Partition<T,D>::FindWeight(int k, int p, int q) {
 	return 0.0;	// no match found.
 }
 
-int get_weights(DynVector<Weight>& weight, int *Nweight, char *filename,
-				char *filenamef);
+int get_weights(DynVector<Weight>& weight, int *Nweight, char *filename);
 void save_weights(DynVector<Weight>& w, int n, char *filename);
-void save_formatted_weights(DynVector<Weight>& w, int n, char *filename);
 
 template<class T, class D>
 INLINE void Partition<T,D>::Initialize() {
@@ -351,14 +355,13 @@ INLINE void Partition<T,D>::Initialize() {
 	psibufferR=(reality ? psibuffer+Nmode : psibuffer);
 	psibufferStop=psibuffer+n;
 		
-	char *filename=WeightFileName(""), *filenamef=WeightFileName("f");
+	char *filename=WeightFileName("");
 	
 	WeightN=WeightIndex(Nmode,Nmode,n);
-	if(!get_weights(weight,&Nweight,filename,filenamef)) {
+	if(!get_weights(weight,&Nweight,filename)) {
 		GenerateWeights();
 		save_weights(weight,Nweight,filename);
 	}
-	if(output) save_formatted_weights(weight,Nweight,filenamef);
 	
 	weightBase=weight.Base();
 
