@@ -2,9 +2,7 @@
 
 #include <ctype.h>
 #include <iostream.h>
-#include <stdio.h>
 #include <errno.h>
-#include <string.h>
 #include <time.h>
 
 char* run="";

@@ -13,7 +13,7 @@ int Ny=17; // Number of modes in y-direction
 int Nx0,NRows,NPad,NPadTop,xoffset;
 unsigned int log2Nxb,log2Nyb;
 int nfft; // Total number of FFT elements;
-int Nxb,Nyb,Nyp;
+int Nxb,Nxb1,Nyb,Nyp;
 Cartesian *CartesianMode;
 
 void Basis<Cartesian>::MakeBins()
@@ -49,7 +49,7 @@ void Basis<Cartesian>::MakeBins()
 	Nyb=1 << log2Nyb;
 	Nyp=(Nyb/2+1);
 	xoffset=Nxb/2;
-	int Nxb1=Nxb;
+	Nxb1=Nxb;
 	
 #if _CRAY // Avoid memory bank conflicts
 	Nxb1 += 1;

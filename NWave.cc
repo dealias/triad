@@ -177,6 +177,25 @@ void PS::NonLinearSrc(Var *source, Var *psi, double)
 	CartesianPad(psiy,source);
 	crfft2dT(psiy,log2Nxb,log2Nyb,1);
 
+#if 0	
+	Real *v2;
+	// Strictly speaking, v2 should be divided by (Nxb*Nyb)^2 afterwards
+	Real psix0=psix[0].re;
+	Real psiy0=psiy[0].re;
+	for(int j=0; j < Nyb; j++) {
+		int jN=Nxb1*j;
+#pragma ivdep	
+		for(i=0; i < Nxb; i++) {
+			Real vx1=psiy0-psiy[i+jN].re;
+			Real vy1=psix[i+jN].re-psix0;
+			*(v2++)=vx1*vx1+vy1*vy1;
+			vx1=psiy0-psiy[i+jN].im;
+			vy1=psix[i+jN].im-psix0;
+			*(v2++)=vx1*vx1+vy1*vy1;
+		}
+	}
+#endif	
+
 #pragma ivdep	
 	for(i=0; i < nfft; i++) {
 		psiy[i].re *= vort[i].re;

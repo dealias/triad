@@ -281,13 +281,14 @@ void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	const int nx1=nx+offset;
 	Complex *p;
 
-	data[0]=0.0;
 	// Enforce reality condition
+	data[0]=0.0;
 #pragma ivdep
 	for(i=1; i < nx2; i++) data[i]=conj(data[nx-i]);
 	
+	mfft(data,log2nx,isign,nyp,1,nx1);
+
 	Complex *pstop=data+nx1*nyp;
-	
 #if _CRAY
 	for(i=1; i < nx; i += 2) {
 #pragma ivdep
@@ -296,26 +297,6 @@ void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 #else	
 	for(p=data; p < pstop; p += nx1) {
 		for(i=1; i < nx; i += 2) p[i]=-p[i];
-	}
-#endif
-	
-	mfft(data,log2nx,isign,nyp,1,nx1);
-
-#if _CRAY
-	Complex *data1=data+1;
-	Complex *datanx1=data+nx1;
-	int pinc=2*nx1;
-	for(i=0; i < nx; i += 2) {
-#pragma ivdep
-		for(p=data1+i; p < pstop; p += pinc) *p=-(*p);
-#pragma ivdep
-		for(p=datanx1+i; p < pstop; p += pinc) *p=-(*p);
-	}
-#else	
-	for(p=data; p < pstop; p += nx1) {
-		for(i=1; i < nx; i += 2) p[i]=-p[i];
-		p += nx1;
-		if(p < pstop) for(i=0; i < nx; i += 2) p[i]=-p[i];
 	}
 #endif	
 	
@@ -345,27 +326,6 @@ void rcfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	mrcfft(data,log2ny,isign,nx,nx1,1);
 	
 	Complex *pstop=data+nx1*nyp;
-	
-#if _CRAY
-	Complex *data1=data+1;
-	Complex *datanx1=data+nx1;
-	int pinc=2*nx1;
-	for(i=0; i < nx; i += 2) {
-#pragma ivdep
-		for(p=data1+i; p < pstop; p += pinc) *p=-(*p);
-#pragma ivdep
-		for(p=datanx1+i; p < pstop; p += pinc) *p=-(*p);
-	}
-#else	
-	for(p=data; p < pstop; p += nx1) {
-		for(i=1; i < nx; i += 2) p[i]=-p[i];
-		p += nx1;
-		if(p < pstop) for(i=0; i < nx; i += 2) p[i]=-p[i];
-	}
-#endif	
-	
-	mfft(data,log2nx,isign,nyp,1,nx1);
-	
 #if _CRAY
 	for(i=1; i < nx; i += 2) {
 #pragma ivdep
@@ -376,6 +336,8 @@ void rcfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 		for(i=1; i < nx; i += 2) p[i]=-p[i];
 	}
 #endif
+	
+	mfft(data,log2nx,isign,nyp,1,nx1);
 }
 
 // Return the two-dimensional real inverse Fourier transform of the
@@ -406,23 +368,13 @@ void crfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 #pragma ivdep
 	for(i=1; i < nx2; i++) data[nyp*i]=conj(data[nyp*(nx-i)]);
 	
+	mfft(data,log2nx,isign,nyp);
+	
 	Complex *pstop=data+nx*nyp;
 	int pinc=2*nyp;
 	for(p=data+nyp; p < pstop; p += pinc) {
 #pragma ivdep
 		for(j=0; j < nyp; j++) p[j]=-p[j];
-	}
-
-	mfft(data,log2nx,isign,nyp);
-	
-	for(p=data; p < pstop; p += pinc) {
-#pragma ivdep
-		for(j=1; j < nyp; j += 2) p[j]=-p[j];
-	}
-	
-	for(p=data+nyp; p < pstop; p += pinc) {
-#pragma ivdep
-		for(j=0; j < nyp; j += 2) p[j]=-p[j];
 	}
 	
 	mcrfft(data,log2ny,isign,nx,1,nyp);
@@ -449,24 +401,14 @@ void rcfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 
 	mrcfft(data,log2ny,isign,nx,1,nyp);
 
-	int pinc=2*nyp;
 	Complex *pstop=data+nx*nyp;
-	for(p=data; p < pstop; p += pinc) {
-#pragma ivdep
-		for(j=1; j < nyp; j += 2) p[j]=-p[j];
-	}
-	
-	for(p=data+nyp; p < pstop; p += pinc) {
-#pragma ivdep
-		for(j=0; j < nyp; j += 2) p[j]=-p[j];
-	}
-	
-	mfft(data,log2nx,isign,nyp);
-	
+	int pinc=2*nyp;
 	for(p=data+nyp; p < pstop; p += pinc) {
 #pragma ivdep
 		for(j=0; j < nyp; j++) p[j]=-p[j];
 	}
+	
+	mfft(data,log2nx,isign,nyp);
 }
 
 // Return the Fourier transform of a Complex vector of length n=power of 4.

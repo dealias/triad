@@ -48,11 +48,11 @@ int main(int argc, char *argv[])
 	int xsize=mx*nx;
 	int ysize=my*((ny+1)*nz+1);
 		
-	char buf[200+2*strlen(argv[1])];
+	char *buf=new char[200+2*strlen(argv[1])];
 	sprintf(buf,"rm %s*.rgb >& /dev/null",argv[1]); // Delete old rgb files
 	system(buf);
 
-	char oname[20+strlen(argv[1])];
+	char *oname=new char[20+strlen(argv[1])];
 	double step=(vmax == vmin) ? 1.0 : 1.0/(vmax-vmin);
 	l=0;
 	for(n=0; n < nset; n++) {

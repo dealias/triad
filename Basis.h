@@ -7,7 +7,7 @@
 #define BASIS(key) {new Entry<Basis<key>,GeometryBase> (#key,GeometryTable);}
 
 extern int nfft;
-extern int Nxb,Nyb,Nyp;
+extern int Nxb,Nxb1,Nyb,Nyp;
 
 extern Var *psix,*psiy,*vort;
 extern Real *kfactor;

@@ -2,6 +2,7 @@
 #include "NWave.h"
 #include "Polar.h"
 #include "Cartesian.h"
+#include "fft.h"
 
 #include <sys/stat.h>
 
@@ -225,7 +226,7 @@ static Real Normalization(int i) {return Geometry->Normalization(i);}
 static Real nu_re(int i) {Complex nuC=nu[i]; return nuC.re;}
 static Real nu_im(int i) {Complex nuC=nu[i]; return nuC.im;}
 
-static const int ngrid=100; // JCB
+static int ngridx,ngridy;
 static Complex *xcoeff, *ycoeff;
 
 void NWave::Initialize()
@@ -247,21 +248,28 @@ void NWave::Initialize()
 	// Initialize time integrals to zero.
 	for(i=Npsi; i < ny; i++) y[i]=0.0;
 	
-	if(strcmp(method,"SR") == 0) {
+	if(strcmp(method,"PS") != 0) {
+		
 		Real k0=FLT_MAX;
 		for(i=0; i < Npsi; i++) k0=min(k0,Geometry->K(i));
 	
-		xcoeff=new Complex [ngrid*Npsi];
-		ycoeff=new Complex [ngrid*Npsi];
+		ngridx=Nx*5;
+		ngridy=Ny*5;
+		xcoeff=new Complex [ngridx*Npsi];
+		ycoeff=new Complex [ngridy*Npsi];
 		Real L=twopi/k0;
 		for(int m=0; m < Npsi; m++) {
 			Real kx=Geometry->X(m);
 			Real ky=Geometry->Y(m);
-			for(i=0; i < ngrid; i++) {
-				Complex *p=xcoeff+i*Npsi, *q=ycoeff+i*Npsi;
-				Real x=(2*i-ngrid)*L/ngrid;
+			for(i=0; i < ngridx; i++) {
+				Complex *p=xcoeff+i*Npsi;
+				Real x=i*L/ngridx;
 				p[m]=expi(kx*x);
-				q[m]=expi(ky*x);
+			}				
+			for(int j=0; j < ngridy; j++) {
+				Complex *q=ycoeff+j*Npsi;
+				Real y=j*L/ngridy;
+				q[m]=expi(ky*y);
 			}
 		}
 	}
@@ -308,11 +316,11 @@ void NWave::Output(int)
 		favgy.close();
 	}
 	
-	if(strcmp(method,"SR") == 0) {
-		fpsi << ngrid << ngrid << 1;
-		for(int j=0; j < ngrid; j++) {
+	if(strcmp(method,"PS") != 0) {
+		fpsi << ngridx << ngridy << 1;
+		for(int j=ngridy-1; j >= 0; j--) {
 			Complex *q=ycoeff+j*Npsi;
-			for(int i=0; i < ngrid; i++) {
+			for(int i=0; i < ngridx; i++) {
 				Complex *p=xcoeff+i*Npsi;
 				Real sum=0.0;
 				for(int m=0; m < Npsi; m++) {
@@ -323,47 +331,22 @@ void NWave::Output(int)
 			}
 		}
 	} 
-#if 0	
 	else {
-		int i,j;
-		unsigned int log2nx, log2ny;
-		for(log2nx=0; Nxb=(1 << log2nx) < Nx; log2nx++);
-		for(log2ny=0; Nyb=(1 << log2ny) < Ny; log2ny++);
+		fpsi << Nxb << Nyb << 1;
 		
-		int Nxb=1 << log2nx;
-		int Nyb=1 << log2ny;
-		int Nyp=Nyb/2+1;
-		static Complex *xbuffer;
-		xbuffer=new Complex[Nxb*Nyp];
-		for(i=0; i < Nxb*Nyp; i++) xbuffer[i]=0.0;
+		CartesianPad(psix,y);
+		crfft2dT(psix,log2Nxb,log2Nyb,1);
 		
-		int imax=(Nx-1)/2, imin=-imax;
-		
-		int xoffset=Nxb-(Nx+1)/2;
-		for(int k=0; k < Npsi; k++) {
-			Cartesian m=mode[k];
-			xbuffer[(xoffset+m.i)*Nyp+m.j]=y[k];
-		}
-		xbuffer[xoffset*Nyp]=0.0;
-		for(i=1; i <= imax; i++) {
-			xbuffer[(xoffset-i)*Nyp]=xbuffer[(xoffset+i)*Nyp];
-		}
-		
-		rfft2d_inv(xbuffer,log2nx,log2ny);
-		// Don't forget to divide by nx*ny; also fix up fft sign. JCB
-		
-		fpsi << Nx << Ny << 1;
-		Real *rxbuffer=(Real *) xbuffer;
-		
-		for(j=Nyb/2; j >= 0; j--) {
-			for(i=imin; i <= imax; i++) fpsi << (float) rxbuffer[(Nyb+2)*(xoffset+i)+j];
-		}
-		for(j=Ny-1; j > Nyb/2; j--) {
-			for(int i=imin; i <= imax; i++) fpsi << (float) rxbuffer[(Nyb+2)*(xoffset+i)+j];
+		Real *psir=(Real *) psix;
+		Real ninv=1.0/(Nxb*Nyb);
+		int factor=2*(Nxb1-1);
+		for(int j=Nyb-1; j >= 0; j--) {
+			int jN=factor*(j/2)+j;
+			for(int i=0; i < Nxb; i++)
+				fpsi << (float) (psir[2*i+jN]*ninv);
 		}
 	}
 	fpsi.flush();
-#endif
 	
 	tcount++;
 	ft << t << endl;
