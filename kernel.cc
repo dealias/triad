@@ -226,7 +226,7 @@ int main(int argc, char *argv[])
 
   if(checkpoint && tmpdir) {
     ostringstream buf;
-    buf << tmpdir << dirsep << Vocabulary->FileName("","") << ends;
+    buf << tmpdir << dirsep << Vocabulary->FileName("","");
     mkdir(buf.str().c_str(),0xFFFF);
   }
 					
@@ -396,7 +396,7 @@ void statistics(int it)
       if(checkpoint && it > 0 && (it-1) % checkpoint == 0) {
 	ostringstream rcheck;
 	if(tmpdir) rcheck << tmpdir << dirsep;
-	rcheck << rname << "." << last_iter << ends;
+	rcheck << rname << "." << last_iter;
 	if(tmpdir ? copy(rname,rcheck.str().c_str()) : 
 	   rename(rname,rcheck.str().c_str()))
 	  msg(WARNING,"Cannot copy %s to checkpoint file %s",
@@ -433,6 +433,6 @@ void statistics(int it)
 const char *VocabularyBase::FileName(const char* delimiter, const char *suffix)
 {
   ostringstream buf;
-  buf << Directory() << run << delimiter << suffix << ends;
+  buf << Directory() << run << delimiter << suffix;
   return strdup(buf.str().c_str());
 }

@@ -57,24 +57,13 @@ class Table {
 				      KeyCompare,&match_type);
 	if(check_match(match_type,name,key)) break;
 	
-	cout << newl << "Recognized " << name << " values:" << endl << endl;
+	cout << "Recognized " << name << " values:" << endl << endl;
 	List(cout);
 	cout << newl << name << "=";
       
-	const int blocksize=80;
-	char s[blocksize];
-	ostringstream buf;
-	
-	int input=1;
-	while(1) {
-	  string str;
-	  getline(cin,str);
-	  buf << s;
-	  cout << buf.str() << endl;
-  	  if(cin.eof() || !cin.fail()) {input=errno=0; break;}
-	  cin.clear();
-	}
-	if(input && buf.str().c_str()) key=strdup(buf.str().c_str());
+	string s;
+	getline(cin,s);
+	if(s.c_str()) key=strdup(s.c_str());
     }
     
     p=e->New();
