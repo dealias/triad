@@ -4,10 +4,11 @@
 inline void IntegratorBase::ChangeTimestep(double& dt, double dtnew,
 										   const double t, const double sample)
 {
-	if(sample && dtnew > sample) { // New time step must be <= sample.
-		if(dt == sample) return; // Don't adjust time step.
-		dtnew=sample;
-	}
+	// New time step must be <= sample.
+	if(sample && dtnew > sample) dtnew=sample;
+	
+	if(abs(dt-dtnew) <= tprecision*abs(dt))	return;	// Don't adjust time step.
+	
 	if(verbose > 1) cout << newl << "Time step changed from " << dt <<
 						" to " << dtnew << " at t=" << t << "." << endl;
 	if(dtnew == 0.0) msg(ERROR,"Zero time step encountered");
@@ -70,7 +71,8 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 			}
 			
 			if(forwards ? t+dt > tstop : t+dt < tstop) {
-				if(t==tstop) break;
+				if(abs(tstop-t) <= tprecision*abs(tstop)) t=tstop;
+				if(t == tstop) break;
 				dtorig=dt;
 				ChangeTimestep(dt,tstop-t,t,sample);
 				itx=microsteps-1; // This is the final iteration.

@@ -60,6 +60,7 @@ double tolmin=0.0;
 double stepfactor=sqrt(2.0);
 double stepnoninvert=stepfactor;
 double dtmax=0.0;
+double tprecision=0.0;
 int digits=REAL_DIG;
 int restart=0;
 double polltime=0.0;
@@ -90,6 +91,7 @@ VocabularyBase::VocabularyBase()
 	VOCAB(stepfactor,1.0,DBL_STD_MAX);
 	VOCAB(stepnoninvert,1.0,DBL_STD_MAX);
 	VOCAB(dtmax,0.0,DBL_STD_MAX);
+	VOCAB(tprecision,0.0,DBL_STD_MAX);
 	VOCAB(sample,0.0,DBL_STD_MAX);
 	VOCAB(polltime,0.0,DBL_STD_MAX);
 	VOCAB(hybrid,0,1);

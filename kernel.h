@@ -27,6 +27,7 @@ extern char *integrator;
 extern int itmax; 
 extern double tmax;
 extern double dt;
+extern double tprecision;
 extern int Nmoment;
 extern int dynamic;
 extern int digits;
