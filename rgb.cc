@@ -27,9 +27,7 @@ void manimate(int argc, char *const argf[], int n, char *const type,
 
 int verbose=0;
 
-#if __GNUC__
 extern "C" int getopt(int argc, char *const argv[], const char *optstring);
-#endif
 
 int main(int argc, char *const argv[])
 {
