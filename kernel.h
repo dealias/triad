@@ -180,7 +180,22 @@ void lock();
 void unlock();
 void testlock();
 void dump(int it, int final, double tmax);
-void open_output(ofstream& fout, const char *delimiter, char *suffix,
-				 int append=restart);
+
+template<class T>
+inline void open_output(T& fout, const char *delimiter, char *suffix)
+{
+	open_output(fout,delimiter,suffix,restart);
+}
+
+template<class T>
+inline void open_output(T& fout, const char *delimiter, char *suffix,
+						int append)
+{
+	char *filename=Vocabulary->FileName(delimiter,suffix);
+	if(append) fout.open(filename,fout.app); // Append to end of output file.
+	else fout.open(filename);
+	if(!fout) msg(ERROR,"Output file %s could not be opened",filename);
+	fout.precision(digits);
+}
 
 #endif

@@ -124,12 +124,16 @@ inline WeightIndex::operator double() {
 }
 	
 inline ixstream& operator >> (ixstream& s, WeightIndex& y) {
-	s >> y.k >> y.p >> y.q;
+	unsigned int kp;
+	s >> kp >> y.q;
+	y.k=kp/USHRT_MAX;
+	y.p=kp-USHRT_MAX*y.k;
     return s;
 }
 
 inline oxstream& operator << (oxstream& s, const WeightIndex& y) {
-	s << y.k << y.p << y.q;
+	unsigned int kp=USHRT_MAX*y.k+y.p; 
+	s << kp << y.q;
     return s;
 }
 

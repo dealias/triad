@@ -12,7 +12,6 @@
 #endif
 
 #include <stdio.h>
-#include <iostream.h>
 
 class xios {
 public:
@@ -51,6 +50,7 @@ public:
 			buf=NULL;
 		}
 	}
+	void precision(int) {}
 };
 
 #define IXSTREAM(T,N) ixstream& operator >> (T& x) \
@@ -117,7 +117,7 @@ public:
 	OXSTREAM(double,double);
 };
 
-inline oxstream& endl(oxstream& s) {return s;}
+inline oxstream& endl(oxstream& s) {s.flush(); return s;}
 inline oxstream& flush(oxstream& s) {s.flush(); return s;}
 
 #endif

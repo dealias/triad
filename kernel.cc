@@ -360,13 +360,3 @@ char *VocabularyBase::FileName(const char* delimiter, const char *suffix)
 	return filename;
 }
 
-void open_output(ofstream& fout, const char *delimiter, char *suffix,
-				 int append)
-{
-	char *filename=Vocabulary->FileName(delimiter,suffix);
-	if(append) fout.open(filename,ios::app); // Append to end of output file.
-	else fout.open(filename);
-	
-	if(!fout) msg(ERROR,"Output file %s could not be opened",filename);
-	fout.precision(digits);
-}
