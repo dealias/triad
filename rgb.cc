@@ -15,6 +15,9 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
+const char PROGRAM[]="RGB";
+const char VERSION[]="1.0";
+
 #ifdef NEW_IMAGEMAGICK
 char yuvformat[]="yuv";
 char yuvinterlace[]="-interlace partition ";
@@ -129,7 +132,7 @@ int readframe(T& fin, int nx, int ny, int nz, float **value,
 	}
 	
 	if(implicit) {
-		if(byte && implicit) {
+		if(byte) {
 			char c;
 			fin >> c;
 		}
@@ -159,9 +162,11 @@ extern "C" int getopt(int argc, char *const argv[], const char *optstring);
 
 void usage(char *program)
 {
-	cerr << "Usage: " << program
+	cerr << PROGRAM << " version " << VERSION
+		 << " [(C) John C. Bowman <bowman@ipp-garching.mpg.de> 1997]" << endl
+		 << endl << "Usage: " << program
 		 << " [-bfFghilmpvz] [-x mag] [-H hmag] [-V vmag] " << endl
-		<< "[-B begin] [-E end] [-P palette] [-S skip]" << endl 
+		 << "[-B begin] [-E end] [-P palette] [-S skip]" << endl 
 		 << "           [-X xsize -Y ysize [-Z zsize]] file1 [file2 ...]"
 		 << endl;
 }
@@ -326,7 +331,8 @@ int main(int argc, char *const argv[])
 	rgbdir=rgbdirbuf.str();
 	
 	char *const format=gray ? "gray" : "rgb";
-	int PaletteMax=gray ? 255 : ColorPaletteMax[palette];
+	int PaletteMin=gray ? 255 : ColorPaletteMin[palette];
+	int PaletteRange=gray ? -255 : ColorPaletteMax[palette]-PaletteMin;
 	
 	red=Red[palette];
 	green=Green[palette];
@@ -408,12 +414,13 @@ int main(int argc, char *const argv[])
 			
 			for(int k=0; k < nz; k++) {
 				if(floating_section) {vmin=vmink[k]; vmax=vmaxk[k];}
-				double step=(vmax == vmin) ? 0.0 : PaletteMax/(vmax-vmin);
+				double step=(vmax == vmin) ? 0.0 : PaletteRange/(vmax-vmin);
 				for(int j=0; j < ny; j++)  {
 					for(int j2=0; j2 < my; j2++) {
 						for(int i=0; i < nx; i++)  {
-							int index=(step == 0.0) ? PaletteMax/2 : 
-								(int) ((vmax-value[k][i+nx*j])*step+0.5);
+							int index=(step == 0.0) ? PaletteRange/2 : 
+								(int) ((vmin+value[k][i+nx*j])*step+0.5);
+							index += PaletteMin;
 							if(gray) {
 								for(int i2=0; i2 < mx; i2++)
 									fout << (unsigned char) index;
@@ -427,15 +434,18 @@ int main(int argc, char *const argv[])
 					}
 				}
 				unsigned char black=0;
-				for(int i=0; i < xsize*msep; i++) // Output separator
+				int xmsep=xsize*msep;
+				for(int i=0; i < xmsep; i++) // Output separator
 					if(gray) fout << black;
 					else fout << black << black << black;
 			}
 			
 			for(int j2=0; j2 < mpal; j2++) { // Output palette
-				for(int i=0; i < nx*mx; i++)  {
+				int nxmx=nx*mx;
+				double step=1.0/nxmx;
+				for(int i=0; i < nxmx; i++)  {
 					int index;
-					index=(int) (PaletteMax*(1.0-((double) i)/(nx*mx))+0.5);
+					index=PaletteMin+(int) (PaletteRange*i*step+0.5);
 					if(gray) fout << (unsigned char) index;
 					else fout << red[index] << green[index] << blue[index];
 				}
