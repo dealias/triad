@@ -826,8 +826,7 @@ class Array2 : public array2<T> {
   int ox,oy;
  public:
   void Offsets() {
-    int offset=ox*ny;
-    vtemp=v-offset;
+    vtemp=v-ox*(int) ny;
     voff=vtemp-oy;
   }
   void Dimension(unsigned int nx0, unsigned int ny0, int ox0=0, int oy0=0) {
@@ -918,10 +917,8 @@ class Array3 : public array3<T> {
   int ox,oy,oz;
  public:
   void Offsets() {
-    int xoffset=ox*nyz;
-    vtemp=v-xoffset;
-    int yoffset=oy*nz;
-    voff=vtemp-yoffset-oz;
+    vtemp=v-ox*(int) nyz;
+    voff=vtemp-oy*(int) nz-oz;
   }
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 int ox0=0, int oy0=0, int oz0=0) {
@@ -996,11 +993,8 @@ class Array4 : public array4<T> {
   int ox,oy,oz,ow;
  public:
   void Offsets() {
-    int xoffset=ox*nyzw;
-    vtemp=v-xoffset;
-    int yoffset=oy*nzw;
-    int zoffset=oz*nw;
-    voff=vtemp-yoffset-zoffset-ow;
+    vtemp=v-ox*(int) nyzw;
+    voff=vtemp-oy*(int) nzw-oz*(int) nw-ow;
   }
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 unsigned int nw0, 
@@ -1081,12 +1075,8 @@ class Array5 : public array5<T> {
   int ox,oy,oz,ow,ov;
  public:
   void Offsets() {
-    int xoffset=ox*nyzwv;
-    vtemp=v-xoffset;
-    int yoffset=oy*nzwv;
-    int zoffset=oz*nwv;
-    int woffset=ow*nv;
-    voff=vtemp-yoffset-zoffset-woffset-ov;
+    vtemp=v-ox*(int) nyzwv;
+    voff=vtemp-oy*(int) nzwv-oz*(int) nwv-ow*(int) nv-ov;
   }
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 unsigned int nw0,  unsigned int nv0,
