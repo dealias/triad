@@ -1,5 +1,5 @@
 /* Derived Fast Fourier transform routines
-   Version 1.0 Copyright (C) 1997 John C. Bowman (bowman@ipp-garching.mpg.de)
+   Version 1.1 Copyright (C) 1997 John C. Bowman (bowman@ipp-garching.mpg.de)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
