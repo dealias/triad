@@ -352,8 +352,8 @@ void options()
   cerr << "-maximum max\t maximum threshold" << endl; 
   cerr << "-vector\t\t plot 2 components using spectral intensity gradients"
        << endl; 
-  cerr << "-vector2\t\t plot 2 components as red--blue values" << endl; 
-  cerr << "-vector3\t\t plot 3 components as red--green--blue values" << endl; 
+  cerr << "-vector2\t plot 2 components as red--blue values" << endl; 
+  cerr << "-vector3\t plot 3 components as red--green--blue values" << endl; 
   cerr << "-reverse\t reverse palette direction" << endl;
   cerr << "-ncolors n\t maximum number of colors to generate (default 65536)"
        << endl; 
