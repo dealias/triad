@@ -29,11 +29,9 @@ namespace Array {
 class ArrayMod {
  public:	
   inline void Mod(int& i, unsigned int n) const {
-    if(i >= (int) n) i -= n;
-    else if(i < 0) i += n;
-	
-    if(i >= (int) n) i %= n;
-    else if(i < 0) {i=n-(-i % n); if(i == (int) n) i=0;}
+    if(i >= 0 && i < n) return i;
+    int val = i % n;
+    if(i < 0) val += n;
   }
 };
 
