@@ -37,6 +37,8 @@ const char VERSION[]="1.07";
 #define PI 3.14159265358979323846264338327950288
 #endif
 
+using namespace Array;
+
 const double pi=PI;
 const double twopi=2.0*PI;
 

@@ -1,6 +1,8 @@
 #include "utils.h"
 #include "rgb.h"
 
+using namespace Array;
+
 int NColors=65536;
 
 Array1<u_char> Red;
