@@ -3,6 +3,37 @@
 
 const double twopi=2.0*PI;
 
+void gfft(Complex *data, unsigned int n, int isign)
+{
+  if(n == 1) return;
+  unsigned n2=n/2;
+  Complex datae[n2];
+  Complex datao[n2];
+  for(unsigned i=0; i < n2; i++) {
+    datae[i]=data[2*i];
+    datao[i]=data[2*i+1];
+  }
+  gfft(datae,n2,isign);
+  gfft(datao,n2,isign);
+  Real phase=isign*twopi/n;
+  for(unsigned int i=0; i < n2; i++) {
+    Complex factor=expi(i*phase);
+    data[i]=datae[i]+factor*datao[i];
+//    data[n2+i]=datae[i]+expi((n2+i)*phase)*datao[i];
+    data[n2+i]=datae[i]-factor*datao[i];
+  }
+  return;
+}
+
+void fft(Complex *data, unsigned int log2n, int isign, Real scale,
+	 int bitreverse) 
+{
+  unsigned n=1 << log2n;
+  gfft(data,n,isign);
+  for(unsigned i=0; i < n; i++) data[i] *= scale;
+}
+
+#if 0
 Complex expfactor[1000];
 
 Complex gfft(Complex *data, unsigned int n, int isign, unsigned level)
@@ -28,6 +59,7 @@ void fft(Complex *data, unsigned int log2n, int isign, Real scale,
   }
   for(unsigned i=0; i < n; i++) data[i] = out[i] * scale;
 }
+#endif
 
 int main()
 {	
