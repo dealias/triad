@@ -11,7 +11,7 @@ typedef int *pint;
 typedef Real *pReal;
 
 void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
-		  unsigned int inc1, unsigned int inc2, int)
+		  unsigned int inc1, unsigned int inc2, Real scale, int)
 {
 	static int TableSize=0;
 	static unsigned int *nTable=NULL, *nkTable=NULL;
@@ -44,6 +44,11 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	int jump=2*inc2;
 	CFFTMLT(&data[0].re,&data[0].im,work[j],trigs[j],ifax[j],inc,jump,n,nk,
 			isign);
+	
+	if(scale != 1.0) {
+		unsigned int istop=i+n*nk;
+		for(unsigned int i=0; i < istop; i++) data[i] *= scale;
+	}
 }
 
 extern "C" void CCFFT(const int& isign, const int& n, const Real& scale,

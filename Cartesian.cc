@@ -90,7 +90,7 @@ void DiscretePad(Var *to, Var *from, Real *norm)
 	Var *s=from+Nx0;
 	for(; to < tostop; to++) *to=conj(*(--s));
 	*(to++)=0.0;
-	*tostop=to+Nx0;
+	tostop=to+Nx0;
 #pragma ivdep		
 	for(; to < tostop; to++) {
 		int index=ModeBin[k++];
@@ -124,7 +124,7 @@ void CartesianPad(Var *to_, Var *from)
 	const Var *s=from+Nx0;
 	for(; to < tostop; to++) *to=conj(*(--s));
 	*(to++)=0.0;
-	*tostop=to+Nx0;
+	tostop=to+Nx0;
 #pragma ivdep		
 	for(; to < tostop; to++) *to=*(from++);
     for(int j=0; j < NRows-1; j++) {
