@@ -3,7 +3,7 @@
 #include "Burger.h"
 #include "fft.h"
 
-#include <sys/stat.h>
+#include <sys/stat.h> // On the sun this must come after xstream.h
 
 LinearityBase *Linearity;
 
@@ -46,7 +46,7 @@ int pH=1;
 int randomIC=1;
 
 static Real mode_density;
-Real scale;
+static Real mscale;
 
 Nu *nu,*nu_inv;
 Real *nuR_inv,*nuI;
@@ -137,8 +137,8 @@ void PS::NonLinearSrc(Var *source, Var *u, double)
 	crfft(uconv,log2Nxb,1);
 	
 	for(i=0; i < nfft; i++) {
-		uconv[i].re *= scale*ux[i].re;
-		uconv[i].im *= scale*ux[i].im;
+		uconv[i].re *= mscale*ux[i].re;
+		uconv[i].im *= mscale*ux[i].im;
 	}
 
 	rcfft(uconv,log2Nxb,-1);
@@ -283,10 +283,9 @@ void Burger::Initialize()
 
 void compute_invariants(Var *y, int Nmode, Real& E)
 {
-	Real Ek,k2;
+	Real Ek;
 	E=0.0;
 	for(int i=0; i < Nmode; i++) {
-		k2=Geometry->K2(i);
 		Ek=Geometry->Normalization(i)*abs2(y[i])*Geometry->Area(i);
 		E += Ek;
 	}
@@ -349,7 +348,7 @@ void Burger::FinalOutput()
 	
 	if(Nmoment > 2 && t) {
 		cout << newl << "AVERAGED VALUES:" << newl << endl;
-// We overwrite y+Nmode here, since it is no longer needed.
+// We overwrite y+3*Nmode here, since it is no longer needed.
 		Var *y2=y+3*Nmode;
 		for(i=0; i < Nmode; i++) y2[i] = (real(y2[i])+imag(y2[i]))/t;
 		
@@ -373,7 +372,8 @@ void Basis<Cartesian1>::Initialize()
 		cout << endl << "ALLOCATING FFT BUFFERS (" << Nxb << ")." << endl;
 		ux=new Var[nfft];
 		uconv=new Var[nfft];
-		scale=Nxb;
+		Real scale=1.0/Nxb;
+		mscale=-scale;
 	}
 }
 

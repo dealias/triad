@@ -9,7 +9,7 @@ class Mode {
 public:	
 	virtual Real X() const=0;
 	virtual Real Y() const {return 0.0;}
-	virtual Real K2() const;
+	virtual Real K2() const=0;
 	virtual Real K() const=0;
 	virtual Real Th() const {return 0.0;}
 };

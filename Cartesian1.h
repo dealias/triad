@@ -108,7 +108,6 @@ void Cartesian1UnPad(Var *to, Var *from);
 #else
 inline void Cartesian1Pad(Var *to, const Var *from)
 {
-	to += xoffset;
 	*(to++)=0.0;
 	set(to,from,Nx0);
 	to += Nx0; from += Nx0;
@@ -118,15 +117,14 @@ inline void Cartesian1Pad(Var *to, const Var *from)
 
 inline void Cartesian1UnPad(Var *to, const Var *from)
 {
-	from += xoffset+1;
+	from++;
 	set(to,from,Nx0);
-	to += Nx0; from += Nx0+NPad;
 }
 #endif
 
 // Factor which converts |y|^2 to 2.0*energy in stream function normalization:
-inline Real Basis<Cartesian1>::Normalization(int i) {
-	return Linearity->Denominator(ModeOf(i));
+inline Real Basis<Cartesian1>::Normalization(int) {
+	return 1.0;
 }
 
 #endif

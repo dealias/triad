@@ -9,11 +9,13 @@ INCL =
 
 POLAR = Polar PolarAverage simpfast
 RFFT = rfft $(FFT) $(CORE) $(UTILS)
+
 NAVIER = Navier NWave Geometry $(POLAR) Cartesian $(RFFT)
 THREEWAVE = ThreeWave NWave Geometry $(POLAR) Cartesian $(RFFT)
 BURGER = Burger Geometry Cartesian1 $(RFFT)
 POLARAVG = PolarAverageTest PolarAverage simpfast
-TRIAD = $(NAVIER) $(THREEWAVE) $(POLARAVG)
+
+TRIAD = $(NAVIER) $(THREEWAVE) $(BURGER) $(POLARAVG)
 
 burger: $(BURGER:=.o)
 	$(C++) $(OPT) -o triad $(BURGER:=.o) $(LIB) 

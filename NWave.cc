@@ -844,7 +844,7 @@ void NWave::FinalOutput()
 	
 	if(Nmoment > 2 && t) {
 		cout << newl << "AVERAGED VALUES:" << newl << endl;
-// We overwrite y+Npsi here, since it is no longer needed.
+// We overwrite y+3*Npsi here, since it is no longer needed.
 		Var *y2=y+3*Npsi;
 		for(i=0; i < Npsi; i++) y2[i] = (real(y2[i])+imag(y2[i]))/t;
 		
