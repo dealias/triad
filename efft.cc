@@ -22,15 +22,14 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	unsigned int n=1 << log2n;
 	isign = -isign;
 	
-	for(j=0; j < TableSize; j++) 
-		if(n == nTable[j] && nk == nkTable[j]) break;
+	for(j=0; j < TableSize; j++) if(n == nTable[j] && nk == nkTable[j]) break;
 	
     if(j == TableSize) {
 		TableSize++;
-		nTable=new(nTable,TableSize);
-		nkTable=new(nkTable,TableSize);
-		aux1=new(aux1,TableSize);
-		aux2=new(aux2,TableSize);
+		nTable=new(nTable,TableSize) int;
+		nkTable=new(nkTable,TableSize) int;
+		aux1=new(aux1,TableSize) *double[2];
+		aux2=new(aux2,TableSize) *double[2];
 		
 		if(n <= 2048) naux=20000;
 		else naux=20000+2.28*n;
