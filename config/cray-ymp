@@ -2,6 +2,7 @@ C++ = /usr/bin/CC -D_POSIX_SOURCE
 OPT = $(CFLAGS)
 LIB = $(LFLAGS) -lsci -lm
 MAKEDEPEND = /lib/cpp -M
+MDOPTS = -I /usr/include/CC
 
 ARCH = unix
 FFT = cfft
