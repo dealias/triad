@@ -155,7 +155,7 @@ public:
 	virtual void InitialConditions()=0;
 	virtual void Initialize() {};
 	virtual void Output(int it)=0;
-	virtual void FinalOutput()=0;
+	virtual void FinalOutput() {}
 	virtual char *FileName(const char* delimiter="", const char *suffix="");
 	virtual int Microprocess() {return 0;}
 };

@@ -23,13 +23,13 @@ public:
 	char *Name() {return "Kepler";}
 	char *Abbrev() {return "kepler";}
 	void InitialConditions();
-	void Output(int it, int final);
+	void Output(int it);
 };
 
 class C_PC : public PC {
 public:
 	char *Name() {return "Conservative Predictor-Corrector";}
-	Corrector_t Corrector;
+	int Corrector(Var *, double, double&, int, int);
 };
 
 Kepler::Kepler()
@@ -67,7 +67,7 @@ void Kepler::InitialConditions()
 	open_output(fout,".",downcase(undashify(Integrator->Abbrev())));
 }
 
-void Kepler::Output(int it, int final)
+void Kepler::Output(int it)
 {
 	int i;
 	double arg,A,E;
@@ -85,15 +85,14 @@ void Kepler::Output(int it, int final)
 	
 }
 
-void KeplerSource(Var *source, Var *y, double t)
+void KeplerSource(Var *source, Var *y, double)
 {
 	source[R]=y[V];
 	source[V]=(L*L/(m*y[R])-K)/(m*y[R]*y[R]);
 	source[Th]=L/(m*y[R]*y[R]);
 }
 
-inline int C_PC::Corrector(Var *y0, double dt, double& errmax, int start,
-						   int stop)
+inline int C_PC::Corrector(Var *y0, double dt, double&, int, int) 
 {
 	Real DE,arg,lambda,f,diff,lastdiff,th;
 

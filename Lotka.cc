@@ -24,14 +24,14 @@ public:
 	char *Name() {return "Lotka-Volterra";}
 	char *Abbrev() {return "lotka";}
 	void InitialConditions();
-	void Output(int it, int final);
+	void Output(int it);
 };
 
 class C_PC : public PC {
 public:
 	char *Name() {return "Conservative Predictor-Corrector";}
 	char *Abbrev() {return "C-PC";}
-	Corrector_t Corrector;
+	int Corrector(Var *, double, double&, int, int);
 };
 
 Lotka::Lotka()
@@ -69,7 +69,7 @@ void Lotka::InitialConditions()
 
 }
 
-void Lotka::Output(int it, int final)
+void Lotka::Output(int it)
 {
 	int i;
 	
@@ -84,14 +84,13 @@ void Lotka::Output(int it, int final)
 	dynamic=0;
 }
 
-void LotkaSource(Var *source, Var *y, double t)
+void LotkaSource(Var *source, Var *y, double)
 {
 	source[X]=-mu*y[X]*(1.0-y[Y]);
 	source[Y]=y[Y]*(1.0-y[X]);
 }
 
-inline int C_PC::Corrector(Var *y0, double dt, double& errmax, int start,
-						   int stop)
+inline int C_PC::Corrector(Var *y0, double dt, double&, int, int)
 {
 	Real DE,f,diff,lastdiff,old;
 	Real xi[2];
