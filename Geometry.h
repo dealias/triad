@@ -93,8 +93,8 @@ inline Index_t HashWeightIndex(int j)
 template<class T>
 class Partition : public GeometryBase {
 	DynVector<Weight> weight;
-	int Nweight;
 	Hash<Index_t> *hash;
+	int Nweight,Nhash;
 	Bin<T> *bin; // pointer to table of bins
 public:
 	Partition() {}
@@ -207,7 +207,7 @@ inline Mc Partition<T>::FindWeight(int k, int p, int q) {
 	
 	Index_t kpq=WeightIndex(k,p,q);
 	int h=hash->hash(kpq);
-	if(h < 0 || h >= n) return 0.0; // no match found.
+	if(h < 0 || h >= Nhash) return 0.0; // no match found.
 	int l=hash->Table(h);
 	int u=hash->Table(h+1);
 	
@@ -302,7 +302,8 @@ void Partition<T>::ComputeTriads() {
 	
 	weightBase=weight.Base();
 
-	hash=new Hash<Index_t>(2*Nweight,Nweight,HashWeightIndex);
+	Nhash=2*Nweight;
+	hash=new Hash<Index_t>(Nhash,Nweight,HashWeightIndex);
 	cout << "HASH TABLE CONSTRUCTED." << endl;
 
 	triad.Resize(Nmode*n);
