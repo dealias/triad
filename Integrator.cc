@@ -122,7 +122,7 @@ Solve_RC Euler::Solve(double t, double& dt)
 {
 	Source(source,y0,t);
 	Problem->Transform(y0,t,dt,yi);
-	for(int j=0; j < ny; j++) y0[j] += dt*source[j];
+	for(unsigned int j=0; j < ny; j++) y0[j] += dt*source[j];
 	Problem->BackTransform(y0,t+dt,dt,yi);
 	Problem->Stochastic(y0,t,dt);
 	return SUCCESSFUL;
@@ -149,17 +149,17 @@ Solve_RC PC::Solve(double t, double& dt)
 	return flag;
 }
 
-void PC::Predictor(double t, double dt, int start, int stop)
+void PC::Predictor(double t, double dt, unsigned int start, unsigned int stop)
 {
-	for(int j=start; j < stop; j++) y1[j]=y0[j]+dt*source0[j];
+	for(unsigned int j=start; j < stop; j++) y1[j]=y0[j]+dt*source0[j];
 	Problem->BackTransform(y1,t+dt,dt,yi);
 //	if(yi) set(yi,y1,ny);
 	Source(source,y1,t+dt);
 }
 
-int PC::Corrector(double dt, int dynamic, int start, int stop)
+int PC::Corrector(double dt, int dynamic, unsigned int start, unsigned int stop)
 {
-	int j;
+	unsigned int j;
 	if(dynamic) {
 		for(j=start; j < stop; j++) {
 			y[j]=y0[j]+halfdt*(source0[j]+source[j]);
@@ -179,7 +179,7 @@ int PC::Corrector(double dt, int dynamic, int start, int stop)
 Solve_RC AdamsBashforth::Solve(double t, double& dt)
 {
 	Var *temp;
-	int j;
+	unsigned int j;
 	switch(init) {
 	case 0:
 		temp=source2; source2=source1; source1=source0; source0=temp;
@@ -210,13 +210,13 @@ Solve_RC AdamsBashforth::Solve(double t, double& dt)
 // *** Need to add Transform and BackTransform here...
 Solve_RC Midpoint::Solve(double t, double& dt)
 {
-	for(int j=0; j < ny; j++) y[j]=y0[j];
+	for(unsigned int j=0; j < ny; j++) y[j]=y0[j];
 	
 	if(verbose > 1) cout << endl;
 	for(int i=0; i < 10; i++) {
-		if(i > 0) for(int j=0; j < ny; j++) y0[j]=0.5*(y0[j]+y[j]);
+		if(i > 0) for(unsigned int j=0; j < ny; j++) y0[j]=0.5*(y0[j]+y[j]);
 		Source(source,y0,t);
-		for(int j=0; j < ny; j++) y0[j]=y[j]+dt*source[j];
+		for(unsigned int j=0; j < ny; j++) y0[j]=y[j]+dt*source[j];
 		if(verbose > 1) cout << y0[0] << endl;
 	}
 	
@@ -224,21 +224,21 @@ Solve_RC Midpoint::Solve(double t, double& dt)
 	return SUCCESSFUL;
 }
 
-void LeapFrog::Predictor(double t, double, int start, int stop)
+void LeapFrog::Predictor(double t, double, unsigned int start, unsigned int stop)
 {
 	if(new_y0) {oldhalfdt=lasthalfdt;}
 	else set(yp,yp0,ny);
 	double dtprime=halfdt+oldhalfdt;
 	Problem->Transform(yp,t-oldhalfdt,dtprime,yp0);
-	for(int j=start; j < stop; j++) yp[j] += dtprime*source0[j];
+	for(unsigned int j=start; j < stop; j++) yp[j] += dtprime*source0[j];
 	Problem->BackTransform(yp,t+halfdt,dtprime,yp0);
 	Source(source,yp,t+halfdt);
 	lasthalfdt=halfdt;
 }
 	
-int LeapFrog::Corrector(double dt, int dynamic, int start, int stop)
+int LeapFrog::Corrector(double dt, int dynamic, unsigned int start, unsigned int stop)
 {
-	int j;
+	unsigned int j;
 	if(dynamic) {
 		for(j=start; j < stop; j++) {
 			y[j]=y0[j]+dt*source[j];
@@ -251,16 +251,16 @@ int LeapFrog::Corrector(double dt, int dynamic, int start, int stop)
 	return 1;
 }
 
-void RK2::Predictor(double t, double, int start, int stop)
+void RK2::Predictor(double t, double, unsigned int start, unsigned int stop)
 {
-	for(int j=start; j < stop; j++) y1[j]=y0[j]+halfdt*source0[j];
+	for(unsigned int j=start; j < stop; j++) y1[j]=y0[j]+halfdt*source0[j];
 	Problem->BackTransform(y1,t+halfdt,halfdt,yi);
 	Source(source,y1,t+halfdt);
 }
 
-int RK2::Corrector(double dt, int dynamic, int start, int stop)
+int RK2::Corrector(double dt, int dynamic, unsigned int start, unsigned int stop)
 {
-	int j;
+	unsigned int j;
 	if(dynamic) {
 		for(j=start; j < stop; j++) {
 			y[j]=y0[j]+dt*source[j];
@@ -279,9 +279,9 @@ void RK4::TimestepDependence(double dt)
 	sixthdt=dt/6.0;
 }
 
-void RK4::Predictor(double t, double dt, int start, int stop)
+void RK4::Predictor(double t, double dt, unsigned int start, unsigned int stop)
 {
-	int j;
+	unsigned int j;
 	for(j=start; j < stop; j++) y[j]=y0[j]+halfdt*source0[j];
 	Problem->BackTransform(y,t+halfdt,halfdt,yi);
 	if(yi) set(yi,y,ny);
@@ -296,9 +296,9 @@ void RK4::Predictor(double t, double dt, int start, int stop)
 	Source(source,y,t+dt);
 }
 
-int RK4::Corrector(double, int dynamic, int start, int stop)
+int RK4::Corrector(double, int dynamic, unsigned int start, unsigned int stop)
 {
-	int j;
+	unsigned int j;
 	if(dynamic) {
 		for(j=start; j < stop; j++) {
 			y[j]=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+
@@ -326,9 +326,9 @@ void RK5::TimestepDependence(double dt)
 	d4=277.0/14336.0*dt; d5=0.25*dt;
 }
 
-void RK5::Predictor(double t, double, int start, int stop)
+void RK5::Predictor(double t, double, unsigned int start, unsigned int stop)
 {
-	int j;
+	unsigned int j;
 #pragma ivdep		
 	for(j=start; j < stop; j++) y[j]=y0[j]+b10*source0[j];
 	Problem->BackTransform(y,t+a1,a1,yi);
@@ -357,9 +357,9 @@ void RK5::Predictor(double t, double, int start, int stop)
 	Source(source,y,t+a5);
 }
 
-int RK5::Corrector(double, int dynamic, int start, int stop)
+int RK5::Corrector(double, int dynamic, unsigned int start, unsigned int stop)
 {
-	int j;
+	unsigned int j;
 	if(dynamic) {
 #pragma ivdep		
 		for(j=start; j < stop; j++) {

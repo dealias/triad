@@ -94,12 +94,12 @@ public:
 		shrinkfactor=max(shrinkfactor,stepinverse);
 		if(errmax <= tolmax2) errmax=0.0; // Force a time step adjustment.
 	}
-	virtual void Predictor(double, double, int, int);
-	virtual int Corrector(double, int, int, int);
-	virtual void StandardPredictor(double t, double dt, int start, int stop) {
+	virtual void Predictor(double, double, unsigned int, unsigned int);
+	virtual int Corrector(double, int, unsigned int, unsigned int);
+	virtual void StandardPredictor(double t, double dt, unsigned int start, int stop) {
 		PC::Predictor(t,dt,start,stop);
 	}
-	virtual int StandardCorrector(double dt, int dynamic, int start,
+	virtual int StandardCorrector(double dt, int dynamic, unsigned int start,
 								  int stop) {
 		return PC::Corrector(dt,dynamic,start,stop);
 	}
@@ -114,16 +114,16 @@ public:
 		yp=new Var[n]; yp0=new Var[n]; lasthalfdt=0.0;
 	}
 	void TimestepDependence(double dt) {
-		if(lasthalfdt == 0.0) for(int j=0; j < ny; j++) yp[j] = y0[j];
+		if(lasthalfdt == 0.0) for(unsigned int j=0; j < ny; j++) yp[j] = y0[j];
 		halfdt=0.5*dt;
 	}
 	const char *Name() {return "Leapfrog";}
-	void Predictor(double, double, int, int);
-	int Corrector(double, int, int, int);
-	void StandardPredictor(double t, double dt, int start, int stop) { 
+	void Predictor(double, double, unsigned int, unsigned int);
+	int Corrector(double, int, unsigned int, unsigned int);
+	void StandardPredictor(double t, double dt, unsigned int start, unsigned int stop) { 
 		LeapFrog::Predictor(t,dt,start,stop);
 	}
-	int StandardCorrector(double dt, int dynamic, int start, int stop) {
+	int StandardCorrector(double dt, int dynamic, unsigned int start, unsigned int stop) {
 		return LeapFrog::Corrector(dt,dynamic,start,stop);
 	}
 };
@@ -135,12 +135,12 @@ public:
 	void TimestepDependence(double dt) {
 		halfdt=0.5*dt;
 	}
-	void Predictor(double, double, int, int);
-	int Corrector(double, int, int, int);
-	void StandardPredictor(double t, double dt, int start, int stop) {
+	void Predictor(double, double, unsigned int, unsigned int);
+	int Corrector(double, int, unsigned int, unsigned int);
+	void StandardPredictor(double t, double dt, unsigned int start, unsigned int stop) {
 		RK2::Predictor(t,dt,start,stop);
 	}
-	int StandardCorrector(double dt, int dynamic, int start, int stop) {
+	int StandardCorrector(double dt, int dynamic, unsigned int start, unsigned int stop) {
 		return RK2::Corrector(dt,dynamic,start,stop);
 	}
 };
@@ -156,12 +156,12 @@ public:
 	}
 	const char *Name() {return "Fourth-Order Runge-Kutta";}
 	void TimestepDependence(double);
-	void Predictor(double, double, int, int);
-	int Corrector(double, int, int, int);
-	void StandardPredictor(double t, double dt, int start, int stop) {
+	void Predictor(double, double, unsigned int, unsigned int);
+	int Corrector(double, int, unsigned int, unsigned int);
+	void StandardPredictor(double t, double dt, unsigned int start, unsigned int stop) {
 		RK4::Predictor(t,dt,start,stop);
 	}
-	int StandardCorrector(double dt, int dynamic, int start, int stop) {
+	int StandardCorrector(double dt, int dynamic, unsigned int start, unsigned int stop) {
 		return RK4::Corrector(dt,dynamic,start,stop);
 	}
 };
@@ -186,12 +186,14 @@ public:
 	}
 	const char *Name() {return "Fifth-Order Runge-Kutta";}
 	void TimestepDependence(double);
-	void Predictor(double, double, int, int);
-	int Corrector(double, int, int, int);
-	void StandardPredictor(double t, double dt, int start,int stop) {
+	void Predictor(double, double, unsigned int, unsigned int);
+	int Corrector(double, int, unsigned int, unsigned int);
+	void StandardPredictor(double t, double dt, unsigned int start, 
+						   unsigned int stop) {
 		RK5::Predictor(t,dt,start,stop);
 	}
-	int StandardCorrector(double dt, int dynamic, int start, int stop) {
+	int StandardCorrector(double dt, int dynamic, unsigned int start,
+						  unsigned int stop) {
 		return RK5::Corrector(dt,dynamic,start,stop);
 	}
 };

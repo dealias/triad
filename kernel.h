@@ -53,7 +53,7 @@ enum Solve_RC {NONINVERTIBLE=-1,UNSUCCESSFUL,SUCCESSFUL,ADJUST};
 class ProblemBase {
 protected:
 	Var *y;
-	int ny;
+	unsigned int ny;
 	const char *abbrev;
 	int *errmask;
 public:	
@@ -61,7 +61,7 @@ public:
 	void SetAbbrev(const char *abbrev0) {abbrev=abbrev0;}
 	const char *Abbrev() {return abbrev;}
 	Var *Vector() {return y;}
-	int Size() {return ny;}
+	unsigned int Size() {return ny;}
 	int *ErrorMask() {return errmask;}
 	
 	virtual const char *Name() {return "";}
@@ -85,7 +85,7 @@ extern ProblemBase *Problem;
 class IntegratorBase {
 protected:
 	const char *abbrev;
-	int ny;
+	unsigned int ny;
 	Var *y0, *yi, *source;
 	double errmax;
 	int *errmask;
