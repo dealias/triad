@@ -58,9 +58,6 @@ static double sample=0.0;
 static int initialize=0;
 static int clobber=0;
 
-static int average=0; // Obsolete
-static char *approximation; // Obsolete
-
 VocabularyBase::VocabularyBase()
 {
 	Vocabulary=this;
@@ -90,9 +87,6 @@ VocabularyBase::VocabularyBase()
 	VOCAB(method,"","");
 	VOCAB(integrator,"","");
 	
-	VOCAB_NODUMP(average,0,1); // Obsolete
-	VOCAB_NODUMP(approximation,"",""); // Obsolete
-		
 	ProblemTable=new Table<ProblemBase>("method");
 	IntegratorTable=new Table<IntegratorBase>("integrator");
 	
