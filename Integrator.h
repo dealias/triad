@@ -10,13 +10,12 @@ inline void IntegratorBase::Source(Var *src, Var *y, double t)
 	Problem->LinearSrc(src,y,t);
 }
 
-inline void IntegratorBase::CalcError(const Var& initial, const Var& norm, 
+inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0, 
 									  const Var& pred, const Var& corr)
 {
-	Real denom,error;
-	denom=max(norm2(norm),norm2(initial));
-	if(denom && (pred != initial)) {
-        error=norm2(corr-pred)/denom;
+	Real error;
+	if(pred != initial) {
+		error=max(abs2(corr-pred)/max(abs2(norm0),abs2(initial)));
 	    if(error > errmax) errmax=error;
 	}
 }

@@ -167,6 +167,11 @@ inline Real divide0(Real x, Real y)
 	return (y ? x/y : 0.0);
 }
 
+inline Real max(Real x)
+{
+	return x;
+}
+
 #if !_AIX || __GNUC__
 inline Real abs(Real x)
 {
@@ -192,6 +197,11 @@ inline Real norm2(Real x)
 inline Real norm2(const Complex& x)
 {
 	return abs2(x);
+}
+
+inline Real norm(Real x)
+{
+	return abs(x);
 }
 
 inline Real product(Real x, Real y)
