@@ -167,7 +167,8 @@ void usage(char *program)
 		 << " [(C) John C. Bowman <bowman@ipp-garching.mpg.de> 1997]" << endl
 		 << endl << "Usage: " << program
 		 << " [-bfFghilmpvz] [-x mag] [-H hmag] [-V vmag] " << endl
-		 << "           [-B begin] [-E end] [-P palette] [-S skip]" << endl 
+		 << "           [-B begin] [-E end] [-L lower] [-U upper]" << endl
+         << "           [-P palette] [-S skip]" << endl
 		 << "           [-X xsize -Y ysize [-Z zsize]] file1 [file2 ...]"
 		 << endl;
 }
@@ -193,6 +194,8 @@ void options()
 	cerr << "-V vmag\t\t vertical magnification factor" << endl;
 	cerr << "-B begin\t first frame to process" << endl;
 	cerr << "-E end\t\t last frame to process" << endl;
+	cerr << "-L lower\t\t last section to process" << endl;
+	cerr << "-U upper\t\t first section to process" << endl;
 	cerr << "-P palette\t palette (integer between 0 and " << NPalette-1 <<
 		")" << endl;
 	cerr << "-S skip\t\t interval between processed frames" << endl;
@@ -206,6 +209,7 @@ int main(int argc, char *const argv[])
 	int nx=1,ny=1,nz=1;
 	int nset=0, mx=1, my=1;
 	int n,begin=0, skip=1, end=INT_MAX;
+	int lower=0, upper=INT_MAX;
 	int label=0;
 	int make_mpeg=0;
 	int syntax=0;
@@ -219,7 +223,7 @@ int main(int argc, char *const argv[])
 #endif	
 	errno=0;
 	while (1) {
-		int c = getopt(argc,argv,"bfghilmpvzFx:H:V:B:E:P:S:X:Y:Z:");
+		int c = getopt(argc,argv,"bfghilmpvzFx:H:V:B:E:L:U:P:S:X:Y:Z:");
 		if (c == -1) break;
 		switch (c) {
 		case 'b':
@@ -272,6 +276,12 @@ int main(int argc, char *const argv[])
 			break;
 		case 'E':
 			end=atoi(optarg);
+			break;
+		case 'L':
+			lower=atoi(optarg);
+			break;
+		case 'U':
+			upper=atoi(optarg);
 			break;
 		case 'P':
 			palette=atoi(optarg);
@@ -413,7 +423,12 @@ int main(int argc, char *const argv[])
 				msg(ERROR,"Cannot open output file %s",oname);
 			}
 			
-			for(int k=0; k < nz; k++) {
+			int kmin=0;
+			int kmax=nz-1;
+			if(kmin < lower) kmin=lower;
+			if(kmax > lower) kmax=upper;
+		
+			for(int k=kmin; k < kmax; k++) {
 				if(floating_section) {vmin=vmink[k]; vmax=vmaxk[k];}
 				double step=(vmax == vmin) ? 0.0 : PaletteRange/(vmax-vmin);
 				for(int j=0; j < ny; j++)  {
