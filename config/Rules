@@ -1,13 +1,13 @@
 .cc.o:
 	$(C++) $(OPT) $(INCL) -o $@ -c $<
 
-.PHONY: triad clean
-
-triad:
+triad:  FORCE
 	make -f $(TRI)/config/Depend compile NAME=triad
 
-clean:
+clean:  FORCE
 	rm -rf *.o *.$(D) *mon.out $(CLEAN)
+
+FORCE:
 
 %.$(D): %.cc
 	$(MAKEDEPEND) $(INCL) $(MDOPTS) $< > $@
