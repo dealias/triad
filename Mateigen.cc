@@ -2,7 +2,7 @@
 #include "Complex.h"
 #include "Matrix.h"
 
-extern "C" void zgees_(const char& jobvs, const char& sort, void *(select)(),
+extern "C" void zgees_(const char& jobvs, const char& sort, void (*select)(),
 		       const int& n, Complex *a, const int& lda, int *sdim,Complex *w,
 		       Complex *vs, const int& ldvs, Complex *work, const int& lwork, 
 		       Real *rwork, char *bwork, int *info);
