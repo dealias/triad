@@ -665,6 +665,7 @@ int _getopt_long_only (int argc, char *const *argv,
   }
 }
 
+#if 0
 int getopt (int argc, char *const *argv, const char *optstring)
 {
   return _getopt_internal (argc, argv, optstring,
@@ -672,5 +673,6 @@ int getopt (int argc, char *const *argv, const char *optstring)
 			   (int *) 0,
 			   0);
 }
+#endif
 
 #endif	/* _LIBC or not __GNU_LIBRARY__.  */
