@@ -5,7 +5,7 @@ int NpsiR;
 int Ntriad;
 
 // Reality condition flag 
-//	(0 => evolve all modes, 1 => evolve only half of the modes).
+// (0 => evolve all modes, 1 => evolve only half of the modes).
 int reality=1;	
 
 Var *psibuffer,*psibufferStop,*pqbuffer;
