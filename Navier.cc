@@ -211,10 +211,12 @@ void NWave::InitialConditions()
 		for(i=nindependent; i < Npsi; i++) y[i]=conj(y[i-nindependent]);
 	}
 	
-	Real t0;
-	ftin.open(Problem->FileName(dirsep,"t"));
-	while(ftin >> t0, ftin.good()) tcount++;
-	ftin.close();
+	if(restart) {
+		Real t0;
+		ftin.open(Problem->FileName(dirsep,"t"));
+		while(ftin >> t0, ftin.good()) tcount++;
+		ftin.close();
+	}
 	
 	open_output(fparam,dirsep,"param",0);
 	open_output(fevt,dirsep,"evt");
@@ -226,7 +228,7 @@ void NWave::InitialConditions()
 	
 	if(average) for(n=0; n < Nmoment; n++) {
 		sprintf(tempbuffer,"avgy%d",n+2);
-		mkdir(Problem->FileName(dirsep,tempbuffer),0x777);
+		mkdir(Problem->FileName(dirsep,tempbuffer),0xFFFF);
 		sprintf(avgylabel[n],"y%%s^%d",n+2);
 	}
 	
@@ -289,18 +291,17 @@ void NWave::Output(int)
 	
 	fevt << t << "\t" << E << "\t" << Z << "\t" << P << endl << flush;
 	
-	out_curve(ft,t,"t");
-	
 	out_real(fyvt,y,"y%s",Npsi);
 	fyvt.flush();
 	
 	if(average) for(n=0; n < Nmoment; n++) {
-		sprintf(tempbuffer,"avgy%d%s%d",n+2,dirsep,tcount++);
+		sprintf(tempbuffer,"avgy%d%st%d",n+2,dirsep,tcount);
 		open_output(favgy,dirsep,tempbuffer,0);
 		out_curve(favgy,t,"t");
 		out_real(favgy,y+Npsi*(n+1),avgylabel[n],Npsi);
 		favgy.close();
 	}
+	tcount++;
 	
 	ft << t << endl << flush;
 }
