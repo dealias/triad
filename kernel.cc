@@ -396,7 +396,7 @@ void statistics(int it)
 				msg(ERROR,"Cannot rename restart file %s",rtemp);
 		} else {
 			errno=0;
-			frestart.open(retemp);
+			frestart.open(rtemp);
 			frestart.close();
 			msg(SLEEP,"Cannot write to restart file %s",rtemp);
 			statistics(it); // Try again;
