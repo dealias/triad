@@ -93,7 +93,7 @@ class IntegratorBase {
   int *errmask;
   double tolmax2,tolmin2;
   double stepfactor,stepinverse,stepnoninverse;
-  double growfactor, shrinkfactor;
+  double growfactor,shrinkfactor;
   double dtmin,dtmax;
   int itmax,microsteps;
   int microprocess;

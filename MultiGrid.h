@@ -9,14 +9,18 @@ namespace Array {
 class BC {
  protected:
   int internal,external;
-  int offset; // Offset for implementing Neumann boundary condition
-  int ioff;
+  int offset; // Offset in origin
+  int ioff;   // Index of first ghost point
+  int active; // Index of first active point
+  int poffset;// Offset to first prolongation point
  public:	
-  BC() : offset(0), ioff(0) {}
+  BC() : offset(0), ioff(0), active(1), poffset(-1) {}
   int Internal() const {return internal;}
   int External() const {return external;}
   int Offset() const {return offset;}
   int Ioff() const {return ioff;}
+  int Active() const {return active;}
+  int Poffset() const {return poffset;}
   virtual int Resolution(int radix, int lvl) const =0;
 };
 
@@ -28,13 +32,13 @@ class DirichletBC : public BC {
 
 class ExtendedDirichletBC : public BC {
  public:	
-  ExtendedDirichletBC() {internal=2; external=2; ioff=-1;}
+  ExtendedDirichletBC() {internal=2; external=2; active=2; offset=-1;}
   int Resolution(int radix, int lvl) const {return pow(radix,lvl)-1;}
 };
 
 class NeumannBC : public BC {
  public:	
-  NeumannBC() {internal=0; external=2; offset=-1;}
+  NeumannBC() {internal=0; external=2; offset=-1; poffset=0;}
   int Resolution(int radix, int lvl) const {return pow(radix,lvl)+1;}
 };
 
@@ -56,15 +60,15 @@ class DirichletBC2 : public BC {
   int Resolution(int radix, int lvl) const {return pow(radix,lvl+1)-1;}
 };
 
-class ExtendedDirichletBC2 : public BC {
+class ExtendedDirichletBC2 : public BC { // Need to update this! JCB
  public:	
-  ExtendedDirichletBC2() {internal=2; external=4; ioff=-2;}
+  ExtendedDirichletBC2() {internal=2; external=4; ioff=-1; offset=-1;}
   int Resolution(int radix, int lvl) const {return pow(radix,lvl)-1;}
 };
 
 class NeumannBC2 : public BC {
  public:	
-  NeumannBC2() {internal=0; external=4; ioff=-1; offset=-1;}
+  NeumannBC2() {internal=0; external=4; ioff=-1; offset=-1; poffset=0;}
   int Resolution(int radix, int lvl) const {return pow(radix,lvl)+1;}
 };
 
@@ -140,15 +144,14 @@ class Grid {
     if(level > 0) v=(V) 0.0;
   }
 	
-  virtual void Mesh(Array1<Real>::opt &x, Limits limits, int& n1, int& n,
+  virtual void Mesh(Array1<Real>::opt &x, Limits limits, int& n,
 		    int& n1bc, int& nbc, Real& h, Real& hinv,
-		    Real& h2, Real& h2inv, int& start, int& r, int& offset,
-		    int &ioff) {
+		    Real& h2, Real& h2inv, int& r, int& offset, int &ioff,
+		    int& start, int& startp, int& stop, int& stopp) {
     // number of points in one direction
     int lvl=max(level-limits.skiplevels,0);
     n=limits.n0*limits.bc->Resolution(radix,lvl);
-    if(lvl > 0) n1=limits.n0*limits.bc->Resolution(radix,lvl-1);
-    else n1=n;
+    int n1=(lvl > 0) ? limits.n0*limits.bc->Resolution(radix,lvl-1) : n;
     int bcpts=limits.bc->Internal()+limits.bc->External();
     nbc=n+bcpts;
     n1bc=n1+bcpts;
@@ -165,8 +168,11 @@ class Grid {
     offset=limits.bc->Offset();
     for(int i=ioff; i < nbc+ioff; i++)
       x[i]=limits.min+(i+offset)*h;
-    if(level <= limits.skiplevels) {start=1; r=1; offset=0;}
-    else {start=-offset; r=radix;}
+    start=limits.bc->Active();
+    if(level <= limits.skiplevels) {startp=start; r=1; offset=0;}
+    else {startp=start+limits.bc->Poffset(); r=radix;}
+    stop=limits.bc->Active()+n-1;
+    stopp=limits.bc->Active()+n1-1;
   }
 	
   virtual void Defect(const T& d0, const T& u, const T& f)=0;
