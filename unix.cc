@@ -101,5 +101,5 @@ char *date()
 
 char *tempdir()
 {
-	return getenv("TMPDIR");
+	return getenv("TMP_DIR");
 }
