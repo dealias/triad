@@ -785,9 +785,9 @@ void ProjectedTorus(Array3<Ivec> Index)
 		}
 	}
 	
-	const int Nxfine=3;
-	const int Nyfine=4;
-	const int Nzfine=50;
+	const int Nxfine=4;
+	const int Nyfine=5;
+	const int Nzfine=100;
 
 	const Real xfinestep=1.0/(2.0*Nxfine+1.0);
 	const Real yfinestep=1.0/(2.0*Nyfine+1.0);
