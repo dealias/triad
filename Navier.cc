@@ -27,6 +27,8 @@ Real nu0=0.0;
 Real force=0.0;
 Real tauforce=0.0;
 
+Real vd=0.0;
+
 Real kL=STD_MAX;
 Real kH=0.0;
 
@@ -61,6 +63,8 @@ NWaveVocabulary::NWaveVocabulary()
 	
 	VOCAB(force,0.0,STD_MAX);
 	VOCAB(tauforce,0.0,STD_MAX);
+	
+	VOCAB(vd,0.0,STD_MAX);
 	
 	VOCAB(kL,0.0,STD_MAX);
 	VOCAB(kH,0.0,STD_MAX);
@@ -130,9 +134,9 @@ inline Real growth(const Polar& v)
 	return gamma;
 }
 
-inline Real frequency(const Polar&)
+inline Real frequency(const Polar& v)
 {
-	return 0.0;
+	return vd*v.Y()/v.K2();
 }
 
 Real linearity_re(const Polar& v)

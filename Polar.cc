@@ -211,7 +211,7 @@ Nu Partition<Polar,Cartesian>::Linearity(int i)
 	return nu;
 }
 
-Nu Partition<Polar,Cartesian>::Forcing(int i)
+Real Partition<Polar,Cartesian>::Forcing(int i)
 {
 	Real force;
 	b=bin[i];

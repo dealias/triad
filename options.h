@@ -17,6 +17,6 @@ typedef Real Var;
 const Real I=0.0;
 #endif
 
-typedef Real Nu;
+typedef Var Nu;
 
 #endif
