@@ -15,7 +15,6 @@
 #include <sys/mtimes.h>
 #include <sys/machd.h>
 static struct mtms mbuf;
-extern "C" SECOND(const double& seconds);
 static int parallel=-1;
 #endif
 
@@ -24,9 +23,8 @@ static const double init_time=time(NULL);
 
 void cputime(double *cpu)
 {
-		struct tms buf;
 #if _CRAY
-	if(parallel == -1) 	parallel=strcmp(getenv("NCPUS"),"1");
+	if(parallel == -1) parallel=strcmp(getenv("NCPUS"),"1");
 	if(parallel) {
 		time_t task=0,child=0;
 		
@@ -40,15 +38,13 @@ void cputime(double *cpu)
 			}
 		}
 		
-		times(&buf);
-	
 		cpu[0] = ((double) task)/CLK_TCK;
 		cpu[1] = ((double) child)/CLK_TCK;
 		cpu[2] = 0.0;
-		
 		return;
 	}
 #endif		
+	struct tms buf;
 	times(&buf);
 	cpu[0] = ((double) buf.tms_utime)/CLK_TCK;
 	cpu[1] = ((double) buf.tms_cutime)/CLK_TCK;

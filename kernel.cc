@@ -195,10 +195,10 @@ int main(int argc, char *argv[])
 	Problem->InitialConditions();
 	y=Problem->Vector();
 	ny=Problem->Size();
-	Integrator->Allocate(ny);
 	if(restart || initialize) read_init();
 	if(!restart) Problem->Initialize();
 	
+	Integrator->Allocate(ny);
 	adjust_parameters(dt,dtmax,tmax,itmax);
 	
 	Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,

@@ -222,16 +222,6 @@ void msg(int fatal, char *file, int line, char *format,...)
 	cout << flush;
 }
 
-char *output_filename(char *basename, char *suffix)
-{
-	char *filename;
-	suffix=downcase(suffix);
-	filename=new char[strlen(basename)+strlen(suffix)+1];
-	strcpy(filename,basename);
-	strcat(filename,suffix);
-	return filename;
-}
-
 Complex atoc(const char *s)
 {
 	double re,im;
@@ -255,66 +245,6 @@ char *atos(const char *s)
 	s2=new char[n];
 	strncpy(s2,s,n);
 	return s2;
-}
-
-const int nperline=4;
-
-void out_curve(ostream& os, Real (*f)(int), char *text, int n)
-{
-	os << "# " << text << endl;
-	for(int i=0; i < n-1;) {
-		os << (*f)(i);
-		if(++i % nperline) os << "\t"; else os << " \\" << endl;
-	}
-	os << (*f)(n-1) << endl;
-}
-
-void out_curve(ostream& os, Complex (*f)(int), char *text, int n)
-{
-	os << "# " << text << endl;
-	for(int i=0; i < n-1;) {
-		os << (*f)(i);
-		if(++i % nperline) os << "\t"; else os << " \\" << endl;
-	}
-	os << (*f)(n-1) << endl;
-}
-
-void out_curve(ostream& os, int *f, char *text, int n)
-{
-	os << "# " << text << endl;
-	for(int i=0; i < n-1;) {
-		os << f[i];
-		if(++i % nperline) os << "\t"; else os << " \\" << endl;
-	}
-	os << f[n-1] << endl;
-}
-
-void out_curve(ostream& os, Real *f, char *text, int n)
-{
-	os << "# " << text << endl;
-	for(int i=0; i < n-1;) {
-		os << f[i];
-		if(++i % nperline) os << "\t"; else os << " \\" << endl;
-	}
-	os << f[n-1] << endl;
-}
-
-void out_curve(ostream& os, Complex *f, char *text, int n)
-{
-    int i;
-	os << "# " << text << ".re" << endl;
-	for(i=0; i < n-1;) {
-		os << real(f[i]);
-		if(++i % nperline) os << "\t"; else os << " \\" << endl;
-	}
-	os << real(f[n-1]) << endl;
-	
-	os << "# " << text << ".im" << endl;
-	for(i=0; i < n-1;) {
-		os << imag(f[i]);
-		if(++i % nperline) os << "\t"; else os << " \\" << endl;
-	}
-	os << imag(f[n-1]) << endl;
 }
 
 void crand_gauss(Real *w)
@@ -350,5 +280,37 @@ void crand_gauss(Complex *w)
 	*w=Complex(v1,v2)*sqrt(-log(r2)/r2);
 }
 
+char *output_filename(char *basename, char *suffix)
+{
+	char *filename;
+	suffix=downcase(suffix);
+	filename=new char[strlen(basename)+strlen(suffix)+1];
+	strcpy(filename,basename);
+	strcat(filename,suffix);
+	return filename;
+}
 
+static Complex *base;
+static Real out_re(int i) {return base[i].re;}
+static Real out_im(int i) {return base[i].im;}
 
+void out_real(ostream& os, Real *f, char *format, int n, int nperline);
+{
+	char *text=new char[strlen(format)+1];
+	sprintf(text,format,"");
+	out_curve(os,f,text,n,nperline);
+}
+
+void out_real(ostream& os, Complex *f, char *format, int n, int nperline);
+{
+	char *text=new char[strlen(format)+4];
+	base=f;
+	sprintf(text,format,".re");
+	out_function(os,out_re,text,n,nperline);
+	sprintf(text,format,".im");
+	out_function(os,out_im,text,n,nperline);
+}
+
+#if _CRAY
+#include "out_curve.h"
+#endif

@@ -167,7 +167,6 @@ static Real equilibrium(int i)
 
 static ofstream fparam,fevt,fekvt,favgy[Nmoment],fprolog;
 Real continuum_factor;
-static Complex *nuC;
 
 void NWave::InitialConditions()
 {
@@ -183,11 +182,10 @@ void NWave::InitialConditions()
 	ny=(average ? Nmoment+1 : 1)*Npsi;
 	y=new Var[ny];
 	nu=new Nu[Npsi];
-	nuC=new Complex[Npsi];
 	forcing=new Real[Npsi];
 	
 	for(i=0; i < Npsi; i++) {
-		nuC[i]=nu[i]=Geometry->Linearity(i);
+		nu[i]=Geometry->Linearity(i);
 		y[i]=sqrt(2.0*equilibrium(i)/Geometry->Normalization(i));
 		forcing[i]=forcek(i);
 	}
@@ -226,24 +224,25 @@ static Real K(int i) {return Geometry->K(i);}
 static Real Th(int i) {return Geometry->Th(i);}
 static Real Area(int i) {return Geometry->Area(i);}
 static Real Normalization(int i) {return Geometry->Normalization(i);}
+static Real nu_re(int i) {Complex nuC=nu[i]; return nuC.re;}
+static Real nu_im(int i) {Complex nuC=nu[i]; return nuC.im;}
 
 void NWave::Initialize()
 {
 	int i;
 	
-	out_curve(fprolog,K,"K",Npsi);
-	out_curve(fprolog,Th,"Th",Npsi);
-	out_curve(fprolog,Area,"Area",Npsi);
-	out_curve(fprolog,nuC,"nu",Npsi);
-	out_curve(fprolog,equilibrium,"equil",Npsi);
-	out_curve(fprolog,Normalization,"normalization",Npsi);
+	out_function(fprolog,K,"K",Npsi);
+	out_function(fprolog,Th,"Th",Npsi);
+	out_function(fprolog,Area,"Area",Npsi);
+	out_function(fprolog,nu_re,"nu.re",Npsi);
+	out_function(fprolog,nu_im,"nu.im",Npsi);
+	out_function(fprolog,equilibrium,"equil",Npsi);
+	out_function(fprolog,Normalization,"normalization",Npsi);
 
 	fevt << "#   t\t\t E\t\t Z\t\t P" << endl;
 
 	// Initialize time integrals to zero.
 	if(average) for(i=Npsi; i < ny; i++) y[i]=0.0;
-	
-	delete [] nuC;
 }
 
 void compute_invariants(Var *y, int Npsi, Real& E, Real& Z, Real& P)
@@ -276,12 +275,14 @@ void NWave::Output(int)
 	fevt << t << "\t" << E << "\t" << Z << "\t" << P << endl << flush;
 	
 	out_curve(fekvt,t,"t");
-	out_curve(fekvt,y,"y",Npsi);
+	out_real(fekvt,y,"y%%s",Npsi);
 	fekvt.flush();
 	
 	if(average) for(n=0; n < Nmoment; n++) {
 		out_curve(favgy[n],t,"t");
-		out_curve(favgy[n],y+Npsi*(n+1),"y^n",Npsi);
+		char text[20];
+		sprintf(text,"y%%s^%d",n+2);
+		out_real(favgy[n],y+Npsi*(n+1),text,Npsi);
 		favgy[n].flush();
 	}
 }

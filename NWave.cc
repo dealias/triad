@@ -198,7 +198,7 @@ void PrimitiveNonlinearityFFT(Complex *source, Complex *psi, double)
 #pragma ivdep	
 	for(i=0; i < Npsi; i++) {
 		source[i].re = -kinv2[i]*(CartesianMode[i].Ky()*psibuffer[i].im-
-								CartesianMode[i].Kx()*psitemp[i].im);
+								  CartesianMode[i].Kx()*psitemp[i].im);
 		source[i].im = kinv2[i]*(CartesianMode[i].Ky()*psibuffer[i].re-
 								 CartesianMode[i].Kx()*psitemp[i].re);
 	}

@@ -7,6 +7,7 @@
 extern "C" TREMAIN(const double& seconds);
 
 extern double polltime;
+extern int restart;
 
 static double tlimit=0.0;
 static double last_seconds=0.0;
@@ -20,7 +21,7 @@ int poll()
 	cputime(cpu);
 	for(int i=0; i < ncputime; i++) seconds += cpu[i];
 
-	if(2*seconds-last_seconds < 0.95*tlimit) {
+	if(2.0*seconds-last_seconds < (restart ? 0.7 : 0.8)*tlimit) {
 		last_seconds=seconds;
 		return 0;
 	}

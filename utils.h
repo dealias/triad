@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <fstream.h>
 #include <math.h>
+#include <stdio.h>
 
 #if _MAC
 #include ":arch:mac.h"
@@ -23,6 +24,7 @@
 #include "precision.h"
 #include "Complex.h"
 #include "pow.h"
+#include "out_curve.h"
 
 extern const double pi;
 extern const double twopi;
@@ -208,27 +210,30 @@ inline Complex expim1(Real phase)
 }
 
 Complex atoc(const char *s);
+	
+const int default_nperline=4;
 
-void out_curve(ostream& os, Real (*f)(int), char *text, int n);
-void out_curve(ostream& os, Complex (*f)(int), char *text, int n);
-void out_curve(ostream& os, int *f, char *text, int n);
-void out_curve(ostream& os, Real *f, char *text, int n);
-void out_curve(ostream& os, Complex *f, char *text, int n);
-
-inline void out_curve(ostream& os, int f, char *text)
+inline void out_function(ostream& os, Real (*f)(int), char *text, int n)
 {
-	out_curve(os,&f,text,1);
+	out_function(os,f,text,n,default_nperline);
+}
+	
+template<class T>
+inline void out_curve(ostream& os, T *f, char *text, int n)
+{
+	out_curve(os,f,text,n,default_nperline);
 }
 
-inline void out_curve(ostream& os, Real f, char *text)
+template<class T>
+inline void out_curve(ostream& os, T f, char *text)
 {
-	out_curve(os,&f,text,1);
+	out_curve(os,&f,text,1,default_nperline);
 }
 
-inline void out_curve(ostream& os, Complex f, char *text)
-{
-	out_curve(os,&f,text,1);
-}
+inline void out_real(ostream& os, Complex *f, char *format, int n,
+					 int nperline=default_nperline);
+inline void out_real(ostream& os, Real *f, char *format, int n,
+					 int nperline=default_nperline);
 
 inline double drand()
 {			  
