@@ -75,7 +75,6 @@ int main(int argc, char *const argv[])
 	}
 	
 	int nfiles=argc-optind;
-	cout << optind << endl;
 	if(nfiles < 1) msg(ERROR,"File name required");
 	char *const *argf=argv+optind;
 		
