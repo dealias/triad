@@ -373,13 +373,14 @@ void set_timer()
 
 void statistics(int it)
 {
+	int i;
 	if(restart && it == 0) return;
 	
 	static int last_iter=0;
 	int iter=final_iteration+iteration;
 
 	cputime(cpu);
-	for(int i=0; i < ncputime; i++) cpu[i] -= cpu0[i];
+	for(i=0; i < ncputime; i++) cpu[i] -= cpu0[i];
 	
 	oxstream frestart(rtemp);
 	if(frestart) {
@@ -419,7 +420,7 @@ void statistics(int it)
 	total_invert_cnt += invert_cnt;
 	invert_cnt=0;
 	
-	for(int i=0; i < ncputime; i++) {
+	for(i=0; i < ncputime; i++) {
 		fstats << setw(w) << cpu[i] << " ";
 	}
 	fstats << endl;
