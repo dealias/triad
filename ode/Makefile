@@ -4,9 +4,8 @@ POLL = poll
 
 include $(TRI)/config/Common
 
-DEPEND = Ode $(CORE) $(UTILS)
-
-triad: all
+TRIAD = Ode $(CORE) $(UTILS)
+DEPEND = $(TRIAD)
 
 include $(TRI)/config/Rules
 

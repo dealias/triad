@@ -1,14 +1,14 @@
 .cc.o:
 	$(C++) $(OPT) $(INCL) -o $@ -c $<
 
+triad: $(TRIAD:=.o)
+	$(C++) $(OPT) -o triad $(TRIAD:=.o) $(LIB)
+
 clean:
 	rm -rf *.o *.$(D) *mon.out $(CLEAN)
 
 %.$(D): %.cc
 	$(MAKEDEPEND) $(INCL) $(MDOPTS) $< > $@
-
-all: $(DEPEND:=.o)
-	$(C++) $(OPT) -o triad $(DEPEND:=.o) $(LIB)
 
 ifneq ($(wildcard $(TRI)/config/$(HOSTTYPE).rules),)
 include $(TRI)/config/$(HOSTTYPE).rules
