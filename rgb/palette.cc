@@ -138,11 +138,6 @@ void MakePalette(int palette)
 		for(i=0; i <= n; i++) AddColor(0.0,0.0,(n-i)*ninv);
 		return;
 		
-	case GENERAL:
-		reverse=!reverse;
-		for(i=0; i <= n; i++) AddColor(r1+r2*i*ninv,g1+g2*i*ninv,b1+b2*i*ninv);
-		return;
-		
 	case YELLOW: 
 		for(i=0; i <= n; i++) AddColor((n-i)*ninv,(n-i)*ninv,0.0);
 		return;
@@ -165,6 +160,11 @@ void MakePalette(int palette)
 		
 	case GREENBLUE: 
 		for(i=0; i <= n; i++) AddColor(0.0,(n-i)*ninv,i*ninv);
+		return;
+		
+	case GENERAL:
+		reverse=!reverse;
+		for(i=0; i <= n; i++) AddColor(r1+r2*i*ninv,g1+g2*i*ninv,b1+b2*i*ninv);
 		return;
 	}
 

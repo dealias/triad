@@ -351,6 +351,10 @@ void options()
 	cerr << "-redblue\t red-blue scale" << endl;
 	cerr << "-redgreen\t red-green scale" << endl;
 	cerr << "-greenblue\t green-blue scale" << endl;
+	cerr << "-const r,g,b\t starting color codes (between 0.0 and 1.0)"
+		 << endl;
+	cerr << "-rate r,g,b\t color increase rate (between -1.0 and 1.0)" << endl;
+	cerr << "-greenblue\t green-blue scale" << endl;
 	cerr << endl;
 	cerr << "Transforms:" << endl;
 	cerr << "-identity\t no transformation [default]" << endl;
