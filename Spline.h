@@ -6,13 +6,14 @@
 
 namespace Array {
   
-// Do a binary search of an ordered array to find an interval containing key.
-// Return the index corresponding to the left-hand endpoint of the matching
-// interval, or -1 if key is less than the first element.
+// Do a binary search of an ordered array of n elements to find an interval
+// containing key. Return the index corresponding to the left-hand endpoint
+// of the matching interval, or n if the key is less than the first element.
 template<class X>
 unsigned int bintsearch(X key, unsigned int n, const typename array1<X>::opt x)
 {
-  if(key < x[0]) return -1;
+  if(n == 0) return 0;
+  if(key < x[0]) return n;
   if(key >= x[n-1]) return n-1;
   
   unsigned int l=0;
@@ -35,7 +36,7 @@ unsigned int bintsearch(X key, unsigned int n, const typename array1<X>::opt x)
 template<class Y, class X>
 class CubicSpline {
 protected:
-  static const double sixth=1.0/6.0;
+  static double sixth;
   static typename array1<X>::opt work;
   static typename array1<Y>::opt y2;
   static unsigned int size;
@@ -86,7 +87,7 @@ public:
 		const typename array1<X>::opt x,
 		const typename array1<Y>::opt y, X x0, unsigned int i) {
     if(x0 == x[n-1]) return y[n-1];
-    if(i < 0 || i >= n) ArrayExit("Index out of range");
+    if(i >= n-1) ArrayExit("Index out of range");
     X D=x[i+1]-x[i];
     X B=(x0-x[i])/D;
     X A=1.0-B;
@@ -104,6 +105,9 @@ public:
   }
 };
 
+template<class Y, class X>
+static double CubicSpline<Y,X>::sixth=1.0/6.0;
+  
 template<class Y, class X>
 unsigned int CubicSpline<Y,X>::size=0;
 
