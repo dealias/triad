@@ -63,7 +63,7 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 #if _CRAY		
 #pragma ivdep		
 #endif		
-		for(k=psibuffer; k < kstop; k++) *(q++)=conj(*k);
+		for(k=psibuffer; k < kstop; k++,q++) *q=conj(*k);
 	}
 	
 	pstop=pair+Npair;
@@ -76,14 +76,21 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 	
 	// Compute moments
 	if(average && Nmoment > 0) {
-		q=source+Npsi;
+		Var *q0=q=source+Npsi;
 		kstop=psi+Npsi;
+#if 1
+		for(k=psi; k < kstop; k++,q++) *q=product(*k,*k);   // psi^2
+		for(int n=1; n < Nmoment; n++) {
+			for(k=psi; k < kstop; k++,q++,q0++) *q=product(*q0,*k);  // psi^n
+		}
+#else
 		for(k=psi; k < kstop; k++) {
 			Var prod,psi=*k;
 			*(q++)=prod=product(psi,psi);		// psi^2
 			for(int n=1; n < Nmoment; n++)
 				*(q++)=prod=product(prod,psi);	// psi^n
 		}
+#endif		
 	}
 }
 
@@ -593,7 +600,7 @@ void NWave::FinalOutput()
 	if(average && t) {
 		cout << endl << "AVERAGED VALUES:" << endl << endl;
 		for(i=0; i < Npsi; i++) {
-			y2[i] = (real(y[Npsi+Nmoment*i])+imag(y[Npsi+Nmoment*i]))/t;
+			y2[i] = (real(y[Npsi+i])+imag(y[Npsi+i]))/t;
 			cout << "|psi|^2 [" << i << "] = " << y2[i] << endl;
 		}
 		cout << endl;

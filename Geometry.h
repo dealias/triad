@@ -161,8 +161,7 @@ inline Mc Partition<T>::FindWeight(int k, int p, int q) {
 	// Exploit the full antisymmetry of the weight factors: reorder so that
 	// $k\prime\le p\prime\le q\prime$.
 	unsigned int kpq;
-	Weight *l,*u,*i;
-	int cmp,sign,conjflag=0;
+	int l,u,i,cmp,sign,conjflag=0;
 	
 	if(k==p || p==q || q==k) return 0.0;
 	sign=1;
@@ -176,16 +175,16 @@ inline Mc Partition<T>::FindWeight(int k, int p, int q) {
 	if(p >= Nmode) {int K=k; k=p-Nmode; p=q-Nmode; q=K+Nmode; conjflag=1;}
 	
 	kpq=WeightIndex(k,p,q);
-	l=&weight[0];
-	u=&weight[Nweight-1]+1;
+	l=0;
+	u=Nweight;
 	while(l < u) {
-		i=l+((u-l)/(2*sizeof(Weight)));
-		cmp=kpq-i->Index();
-		if (cmp < 0) u=i;
+		i=(l+u)/2;
+		cmp=kpq-weight[i].Index();
+		if(cmp < 0) u=i;
 		else {
-			if (cmp > 0) l=i+1;
+			if(cmp > 0) l=i+1;
 			else {
-				Mc value=i->Value();
+				Mc value=weight[i].Value();
 				if(conjflag) value=conj(value);
 				return sign*value*Central(k0,p0,q0);
 			}
