@@ -97,21 +97,25 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 
 void StandardLinearity(Var *source, Var *psi, double)
 {
+#pragma ivdep
 	for(int k=0; k < Npsi; k++) source[k] -= nu[k]*psi[k];
 }
 
 void ExponentialLinearity(Var *source, Var *, double)
 {
+#pragma ivdep
 	for(int k=0; k < Npsi; k++) source[k] *= nu_inv[k];
 }
 
 void ConservativeExponentialLinearity(Real *source, Real *, double)
 {
+#pragma ivdep
 	for(int k=0; k < Npsi; k++) source[k] *= nuR_inv[k];
 }
 
 void ConservativeExponentialLinearity(Complex *source, Complex *psi, double)
 {
+#pragma ivdep
 	for(int k=0; k < Npsi; k++) {
 		source[k].re += imag(nu[k])*imag(psi[k]);
 		source[k].im -= imag(nu[k])*real(psi[k]);
@@ -127,15 +131,15 @@ void ConstantForcing(Var *source, Var *, double)
 	if(iteration > last_iteration) {
 		last_iteration=iteration;
 		for(int k=0; k < Npsi; k++) {
-			randomforce[k]=forcing[k];
 			if(forcing[k]) {
 				Var w;
 				crand_gauss(w);
-				randomforce[k] *= w;
+				randomforce[k] = w;
 			}
 		}
 	}
-	for(int k=0; k < Npsi; k++) source[k] += randomforce[k];
+#pragma ivdep
+	for(int k=0; k < Npsi; k++) source[k] += forcing[k]*randomforce[k];
 }
 
 Solve_RC C_Euler::Solve(Real *y0, double t, double dt)

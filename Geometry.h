@@ -268,7 +268,7 @@ void Partition<T>::ComputeTriads() {
 				if(nkpq != 0.0)	{
 					index=pqindex+pq(p,q);
 					if(!*index) {
-						*index=pqbuffer+Npair;
+						*index=pqbuffer++;
 						pair[Npair++].Store(&psibuffer[p],&psibuffer[q]);
 					}
 					nkpq *= ((p==q) ? 0.5 : 1.0) * norm;
