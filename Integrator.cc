@@ -291,7 +291,7 @@ void RK5::Predictor(double t, double, int start, int stop)
 	for(j=start; j < stop; j++) y4[j]=y0[j]+b40*source0[j]+b41*source[j]+
 									b42*source2[j]+b43*source3[j];
 	Problem->BackTransform(y4,t+a4,a4,y3);
-	if(yi) set(yi,y,ny);
+	if(yi) set(yi,y4,ny);
 	Source(source4,y4,t+a4);
 #pragma ivdep		
 	for(j=start; j < stop; j++) y[j]=y0[j]+b50*source0[j]+b51*source[j]+
