@@ -170,19 +170,19 @@ static Real ThAveragedFrequency(Real k) {
 
 void BinAveragedLinearity(Real& nu)
 {
+	Real ans;
 	if(discrete) {
-		nu=0.0;
+		ans=0.0;
 		Cartesian *mk=b.mode.Base(), *mkstop=mk+b.nmode; 
 		for(; mk < mkstop; mk++) {
-			nu += growth(Polar(mk->K(),mk->Th()));
+			ans += growth(Polar(mk->K(),mk->Th()));
 		}
 	} else {
-		Real ans;
 		int iflag;
 		if(!simpfast(ThAveragedGrowth,b.min.r,b.max.r,linacc,ans,dxmax,iflag))
 			msg(ERROR,"Simp returned code %d",iflag);
-		nu=-ans;
 	}
+	nu=-ans;
 }
 
 void BinAveragedLinearity(Complex& nu)
