@@ -159,8 +159,8 @@ int main(int argc, char *argv[])
 	
   cout << newl << "MACHINE: " << machine() << " [" << date() << "]" << newl;
 	
-  cout << newl << "PROBLEM: " << Vocabulary->Name() << "(version "
-       << problem_version << ")" << newl;
+  cout << newl << "PROBLEM: " << Vocabulary->Name() << " version "
+       << problem_version << "" << newl;
 	
   cout << newl << "COMMAND LINE: ";
   for(i=1; i < argc; i++) cout << argv[i] << " ";
@@ -302,7 +302,7 @@ void read_init()
     if(!oldversion) finit >> init_version >> nout0;
     if(init_version > 1) {
       finit >> restart_problem_version;
-      cout << "(version " << restart_problem_version << ")";
+      cout << " (version " << restart_problem_version << ")";
     }
     cout << "." << endl; 
     finit >> t0 >> dt0 >> final_iteration;
