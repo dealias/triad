@@ -4,3 +4,4 @@ files: $(FILES:=.o)
 	$(C++) $(OPT) -o $(NAME) $(FILES:=.o) $(LIB)
 
 include $(FILES:=.$(D))
+

@@ -1,3 +1,4 @@
+DEFAULT = default
 NAME = triad
 D = d
 LIB = $(LFLAGS) -lm

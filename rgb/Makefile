@@ -5,9 +5,7 @@ POLL = poll
 include $(TRI)/config/Common
 
 FILES = rgb palette msg new getopt
-
-rgb:
-	make -f $(TRI)/config/Make depend NAME=rgb
+NAME = rgb
 
 include $(TRI)/config/Rules
 
