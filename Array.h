@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.31
+#define __ARRAY_H_VERSION__ 1.32
 
 // Defining NDEBUG improves optimization but disables argument checking.
 // Defining __NOARRAY2OPT inhibits special optimization of Array2[].
@@ -33,12 +33,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifdef NDEBUG
 #define __check(i,n,dim,m)
 #define __checkSize()
-#define __checkActivate(i,align) Activate(align)
+#define __checkActivate(i,align) this->Activate(align)
 #define __NULLARRAY NULL;
 #else
-#define __check(i,n,dim,m) Check(i,n,dim,m)
-#define __checkSize() CheckSize()
-#define __checkActivate(i,align) CheckActivate(i,align)
+#define __check(i,n,dim,m) this->Check(i,n,dim,m)
+#define __checkSize() this->CheckSize()
+#define __checkActivate(i,align) this->CheckActivate(i,align)
 #define __NULLARRAY (void *) 0;
 #ifndef __NOARRAY2OPT
 #define __NOARRAY2OPT
@@ -368,14 +368,13 @@ class array2 : public array1<T> {
  public:
   void Dimension(unsigned int nx0, unsigned int ny0) {
     nx=nx0; ny=ny0;
-    size=nx*ny;
+    this->size=nx*ny;
   }
   void Dimension(unsigned int nx0, unsigned int ny0, T *v0) {
     Dimension(nx0,ny0);
-    v=v0;
-    clear(allocated);
+    this->v=v0;
+    clear(this->allocated);
   }
-  
   void Dimension(const array1<T> &A) {ArrayExit("Operation not implemented");} 
   
   void Allocate(unsigned int nx0, unsigned int ny0, size_t align=0) {
@@ -394,24 +393,24 @@ class array2 : public array1<T> {
 
 #ifndef __NOARRAY2OPT
   T *operator [] (int ix) const {
-    return v+ix*ny;
+    return this->v+ix*ny;
   }
 #else
   array1<T> operator [] (int ix) const {
     __check(ix,nx,2,1);
-    return array1<T>(ny,v+ix*ny);
+    return array1<T>(ny,this->v+ix*ny);
   }
 #endif
   T& operator () (int ix, int iy) const {
     __check(ix,nx,2,1);
     __check(iy,ny,2,2);
-    return v[ix*ny+iy];
+    return this->v[ix*ny+iy];
   }
   T& operator () (int i) const {
-    __check(i,size,2,0);
-    return v[i];
+    __check(i,this->size,2,0);
+    return this->v[i];
   }
-  T* operator () () const {return v;}
+  T* operator () () const {return this->v;}
 	
   array2<T>& operator = (T a) {Load(a); return *this;}
   array2<T>& operator = (T *a) {Load(a); return *this;}
@@ -423,12 +422,12 @@ class array2 : public array1<T> {
 	
   array2<T>& operator += (const array2<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < size; i++) v[i] += A(i);
+    for(unsigned int i=0; i < this->size; i++) this->v[i] += A(i);
     return *this;
   }
   array2<T>& operator -= (const array2<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < size; i++) v[i] -= A(i);
+    for(unsigned int i=0; i < this->size; i++) this->v[i] -= A(i);
     return *this;
   }
   array2<T>& operator *= (const array2<T>& A);
@@ -436,18 +435,18 @@ class array2 : public array1<T> {
   array2<T>& operator += (T a) {
     __checkSize();
     unsigned int inc=ny+1;
-    for(unsigned int i=0; i < size; i += inc) v[i] += a;
+    for(unsigned int i=0; i < this->size; i += inc) this->v[i] += a;
     return *this;
   }
   array2<T>& operator -= (T a) {
     __checkSize();
     unsigned int inc=ny+1;
-    for(unsigned int i=0; i < size; i += inc) v[i] -= a;
+    for(unsigned int i=0; i < this->size; i += inc) this->v[i] -= a;
     return *this;
   }
   array2<T>& operator *= (T a) {
     __checkSize();
-    for(unsigned int i=0; i < size; i++) v[i] *= a;
+    for(unsigned int i=0; i < this->size; i++) this->v[i] *= a;
     return *this;
   }
   
@@ -455,7 +454,7 @@ class array2 : public array1<T> {
     Load((T) 0);
     __checkSize();
     unsigned int inc=ny+1;
-    for(unsigned int i=0; i < size; i += inc) v[i]=(T) 1;
+    for(unsigned int i=0; i < this->size; i += inc) this->v[i]=(T) 1;
   }
 };
 
@@ -487,21 +486,22 @@ class array3 : public array1<T> {
   unsigned int nz;
   unsigned int nyz;
  public:
+  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0) {
+    nx=nx0; ny=ny0; nz=nz0; nyz=ny*nz;
+    this->size=nx*nyz;
+  }
+  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0, T *v0) {
+    Dimension(nx0,ny0,nz0);
+    this->v=v0;
+    clear(this->allocated);
+  }
+	
   void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		size_t align=0) {
     Dimension(nx0,ny0,nz0);
     __checkActivate(3,align);
   }
-  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0) {
-    nx=nx0; ny=ny0; nz=nz0; nyz=ny*nz;
-    size=nx*nyz;
-  }
-  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0, T *v0) {
-    Dimension(nx0,ny0,nz0);
-    v=v0;
-    clear(allocated);
-  }
-	
+  
   array3() : nx(0), ny(0), nz(0), nyz(0) {}
   array3(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 	 size_t align=0) {
@@ -517,19 +517,19 @@ class array3 : public array1<T> {
 
   array2<T> operator [] (int ix) const {
     __check(ix,nx,3,1);
-    return array2<T>(ny,nz,v+ix*nyz);
+    return array2<T>(ny,nz,this->v+ix*nyz);
   }
   T& operator () (int ix, int iy, int iz) const {
     __check(ix,nx,3,1);
     __check(iy,ny,3,2);
     __check(iz,nz,3,3);
-    return v[ix*nyz+iy*nz+iz];
+    return this->v[ix*nyz+iy*nz+iz];
   }
   T& operator () (int i) const {
-    __check(i,size,3,0);
-    return v[i];
+    __check(i,this->size,3,0);
+    return this->v[i];
   }
-  T* operator () () const {return v;}
+  T* operator () () const {return this->v;}
 	
   array3<T>& operator = (T a) {Load(a); return *this;}
   array3<T>& operator = (T *a) {Load(a); return *this;}
@@ -541,25 +541,25 @@ class array3 : public array1<T> {
 	
   array3<T>& operator += (array3<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < size; i++) v[i] += A(i);
+    for(unsigned int i=0; i < this->size; i++) this->v[i] += A(i);
     return *this;
   }
   array3<T>& operator -= (array3<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < size; i++) v[i] -= A(i);
+    for(unsigned int i=0; i < this->size; i++) this->v[i] -= A(i);
     return *this;
   }
 	
   array3<T>& operator += (T a) {
     __checkSize();
     unsigned int inc=nyz+nz+1;
-    for(unsigned int i=0; i < size; i += inc) v[i] += a;
+    for(unsigned int i=0; i < this->size; i += inc) this->v[i] += a;
     return *this;
   }
   array3<T>& operator -= (T a) {
     __checkSize();
     unsigned int inc=nyz+nz+1;
-    for(unsigned int i=0; i < size; i += inc) v[i] -= a;
+    for(unsigned int i=0; i < this->size; i += inc) this->v[i] -= a;
     return *this;
   }
 };
@@ -598,23 +598,24 @@ class array4 : public array1<T> {
   unsigned int nzw;
   unsigned int nyzw;
  public:
+  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+		 unsigned int nw0) {
+    nx=nx0; ny=ny0; nz=nz0; nw=nw0; nzw=nz*nw; nyzw=ny*nzw;
+    this->size=nx*nyzw;
+  }
+  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+		 unsigned int nw0, T *v0) {
+    Dimension(nx0,ny0,nz0,nw0);
+    this->v=v0;
+    clear(this->allocated);
+  }
+	
   void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		unsigned int nw0, size_t align=0) {
     Dimension(nx0,ny0,nz0,nw0);
     __checkActivate(4,align);
   }
-  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-		 unsigned int nw0) {
-    nx=nx0; ny=ny0; nz=nz0; nw=nw0; nzw=nz*nw; nyzw=ny*nzw;
-    size=nx*nyzw;
-  }
-  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-		 unsigned int nw0, T *v0) {
-    Dimension(nx0,ny0,nz0,nw0);
-    v=v0;
-    clear(allocated);
-  }
-	
+  
   array4() : nx(0), ny(0), nz(0), nw(0), nyz(0), nzw(0), nyzw(0) {}
   array4(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 	 unsigned int nw0, size_t align=0) {Allocate(nx0,ny0,nz0,nw0,align);}
@@ -630,20 +631,20 @@ class array4 : public array1<T> {
 
   array3<T> operator [] (int ix) const {
     __check(ix,nx,3,1);
-    return array3<T>(ny,nz,nw,v+ix*nyzw);
+    return array3<T>(ny,nz,nw,this->v+ix*nyzw);
   }
   T& operator () (int ix, int iy, int iz, int iw) const {
     __check(ix,nx,4,1);
     __check(iy,ny,4,2);
     __check(iz,nz,4,3);
     __check(iw,nw,4,4);
-    return v[ix*nyzw+iy*nzw+iz*nw+iw];
+    return this->v[ix*nyzw+iy*nzw+iz*nw+iw];
   }
   T& operator () (int i) const {
-    __check(i,size,4,0);
-    return v[i];
+    __check(i,this->size,4,0);
+    return this->v[i];
   }
-  T* operator () () const {return v;}
+  T* operator () () const {return this->v;}
 	
   array4<T>& operator = (T a) {Load(a); return *this;}
   array4<T>& operator = (T *a) {Load(a); return *this;}
@@ -655,25 +656,25 @@ class array4 : public array1<T> {
 	
   array4<T>& operator += (array4<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < size; i++) v[i] += A(i);
+    for(unsigned int i=0; i < this->size; i++) this->v[i] += A(i);
     return *this;
   }
   array4<T>& operator -= (array4<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < size; i++) v[i] -= A(i);
+    for(unsigned int i=0; i < this->size; i++) this->v[i] -= A(i);
     return *this;
   }
 	
   array4<T>& operator += (T a) {
     __checkSize();
     unsigned int inc=nyzw+nzw+nw+1;
-    for(unsigned int i=0; i < size; i += inc) v[i] += a;
+    for(unsigned int i=0; i < this->size; i += inc) this->v[i] += a;
     return *this;
   }
   array4<T>& operator -= (T a) {
     __checkSize();
     unsigned int inc=nyzw+nzw+nw+1;
-    for(unsigned int i=0; i < size; i += inc) v[i] -= a;
+    for(unsigned int i=0; i < this->size; i += inc) this->v[i] -= a;
     return *this;
   }
 };
@@ -716,24 +717,25 @@ class array5 : public array1<T> {
   unsigned int nzwv;
   unsigned int nyzwv;
  public:
+  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+		 unsigned int nw0, unsigned int nv0) {
+    nx=nx0; ny=ny0; nz=nz0; nw=nw0; nv=nv0; nwv=nw*nv; nzwv=nz*nwv;
+    nyzwv=ny*nzwv;
+    this->size=nx*nyzwv;
+  }
+  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+		 unsigned int nw0, unsigned int nv0, T *v0) {
+    Dimension(nx0,ny0,nz0,nw0,nv0);
+    this->v=v0;
+    clear(this->allocated);
+  }
+	
   void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		unsigned int nw0, unsigned int nv0, size_t align=0) {
     Dimension(nx0,ny0,nz0,nw0,nv0);
     __checkActivate(5,align);
   }
-  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-		 unsigned int nw0, unsigned int nv0) {
-    nx=nx0; ny=ny0; nz=nz0; nw=nw0; nv=nv0; nwv=nw*nv; nzwv=nz*nwv;
-    nyzwv=ny*nzwv;
-    size=nx*nyzwv;
-  }
-  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-		 unsigned int nw0, unsigned int nv0, T *v0) {
-    Dimension(nx0,ny0,nz0,nw0,nv0);
-    v=v0;
-    clear(allocated);
-  }
-	
+  
   array5() : nx(0), ny(0), nz(0), nw(0), nv(0), nwv(0), nzwv(0), nyzwv(0) {}
   array5(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 	 unsigned int nw0, unsigned int nv0, size_t align=0) {
@@ -752,7 +754,7 @@ class array5 : public array1<T> {
 
   array4<T> operator [] (int ix) const {
     __check(ix,nx,4,1);
-    return array4<T>(ny,nz,nw,nv,v+ix*nyzwv);
+    return array4<T>(ny,nz,nw,nv,this->v+ix*nyzwv);
   }
   T& operator () (int ix, int iy, int iz, int iw, int iv) const {
     __check(ix,nx,5,1);
@@ -760,13 +762,13 @@ class array5 : public array1<T> {
     __check(iz,nz,5,3);
     __check(iw,nw,5,4);
     __check(iv,nv,5,5);
-    return v[ix*nyzwv+iy*nzwv+iz*nwv+iw*nv+iv];
+    return this->v[ix*nyzwv+iy*nzwv+iz*nwv+iw*nv+iv];
   }
   T& operator () (int i) const {
-    __check(i,size,5,0);
-    return v[i];
+    __check(i,this->size,5,0);
+    return this->v[i];
   }
-  T* operator () () const {return v;}
+  T* operator () () const {return this->v;}
 	
   array5<T>& operator = (T a) {Load(a); return *this;}
   array5<T>& operator = (T *a) {Load(a); return *this;}
@@ -778,25 +780,25 @@ class array5 : public array1<T> {
 	
   array5<T>& operator += (array5<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < size; i++) v[i] += A(i);
+    for(unsigned int i=0; i < this->size; i++) this->v[i] += A(i);
     return *this;
   }
   array5<T>& operator -= (array5<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < size; i++) v[i] -= A(i);
+    for(unsigned int i=0; i < this->size; i++) this->v[i] -= A(i);
     return *this;
   }
 	
   array5<T>& operator += (T a) {
     __checkSize();
     unsigned int inc=nyzwv+nzwv+nwv+nv+1;
-    for(unsigned int i=0; i < size; i += inc) v[i] += a;
+    for(unsigned int i=0; i < this->size; i += inc) this->v[i] += a;
     return *this;
   }
   array5<T>& operator -= (T a) {
     __checkSize();
     unsigned int inc=nyzwv+nzwv+nwv+nv+1;
-    for(unsigned int i=0; i < size; i += inc) v[i] -= a;
+    for(unsigned int i=0; i < this->size; i += inc) this->v[i] -= a;
     return *this;
   }
 };
@@ -845,27 +847,29 @@ class Array1 : public array1<T> {
   int ox;
  public:
   void Offsets() {
-    voff=v-ox;
+    voff=this->v-ox;
   }
   void Dimension(unsigned int nx0, int ox0=0) {
-    size=nx0;
+    this->size=nx0;
     ox=ox0;
     Offsets();
   }
   void Dimension(unsigned int nx0, T *v0, int ox0=0) {
-    v=v0;
+    this->v=v0;
     Dimension(nx0,ox0);
-    clear(allocated);
+    clear(this->allocated);
   }
   void Dimension(const Array1<T>& A) {
-    Dimension(A.size,A.v,A.ox); state=A.test(temporary);
+    Dimension(A.size,A.v,A.ox); this->state=A.test(this->temporary);
   }
+
   void Allocate(unsigned int nx0, int ox0=0, size_t align=0) {
     Dimension(nx0,ox0);
     __checkActivate(1,align);
     Offsets();
   }
 	
+  void Deallocate();
   void Reallocate(unsigned int nx0, int ox0=0, size_t align=0) {
     Deallocate();
     Allocate(nx0,ox0,align);
@@ -888,13 +892,13 @@ class Array1 : public array1<T> {
   typedef Array1<T> opt;
 #endif  
   
-  T& operator [] (int ix) const {__check(ix,size,ox,1,1); return voff[ix];}
-  T& operator () (int i) const {__check(i,size,0,1,1); return v[i];}
+  T& operator [] (int ix) const {__check(ix,this->size,ox,1,1); return voff[ix];}
+  T& operator () (int i) const {__check(i,this->size,0,1,1); return this->v[i];}
   T* operator () () const {return voff;}
   operator T* () const {return voff;}
 	
-  Array1<T> operator + (int i) const {return Array1<T>(size-i,v+i,ox);}
-  void Set(T *a) {v=a; Offsets(); clear(allocated);}
+  Array1<T> operator + (int i) const {return Array1<T>(this->size-i,this->v+i,ox);}
+  void Set(T *a) {this->v=a; Offsets(); clear(this->allocated);}
 	
   Array1<T>& operator = (T a) {Load(a); return *this;}
   Array1<T>& operator = (const T *a) {Load(a); return *this;}
@@ -919,21 +923,22 @@ class Array2 : public array2<T> {
   int ox,oy;
  public:
   void Offsets() {
-    vtemp=v-ox*(int) ny;
+    vtemp=this->v-ox*(int) this->ny;
     voff=vtemp-oy;
   }
   void Dimension(unsigned int nx0, unsigned int ny0, int ox0=0, int oy0=0) {
-    nx=nx0; ny=ny0;
-    size=nx*ny;
+    this->nx=nx0; this->ny=ny0;
+    this->size=this->nx*this->ny;
     ox=ox0; oy=oy0;
     Offsets();
   }
   void Dimension(unsigned int nx0, unsigned int ny0, T *v0, int ox0=0,
 		 int oy0=0) {
-    v=v0;
+    this->v=v0;
     Dimension(nx0,ny0,ox0,oy0);
-    clear(allocated);
+    clear(this->allocated);
   }
+  
   void Allocate(unsigned int nx0, unsigned int ny0, int ox0=0, int oy0=0,
 		size_t align=0) {
     Dimension(nx0,ny0,ox0,oy0);
@@ -952,26 +957,26 @@ class Array2 : public array2<T> {
 
 #ifndef __NOARRAY2OPT
   T *operator [] (int ix) const {
-    return voff+ix*(int) ny;
+    return voff+ix*(int) this->ny;
   }
 #else
   Array1<T> operator [] (int ix) const {
-    __check(ix,nx,ox,2,1);
-    return Array1<T>(ny,vtemp+ix*(int) ny,oy);
+    __check(ix,this->nx,ox,2,1);
+    return Array1<T>(this->ny,vtemp+ix*(int) this->ny,oy);
   }
 #endif
   
   T& operator () (int ix, int iy) const {
-    __check(ix,nx,ox,2,1);
-    __check(iy,ny,oy,2,2);
-    return voff[ix*(int) ny+iy];
+    __check(ix,this->nx,ox,2,1);
+    __check(iy,this->ny,oy,2,2);
+    return voff[ix*(int) this->ny+iy];
   }
   T& operator () (int i) const {
-    __check(i,size,0,2,0);
-    return v[i];
+    __check(i,this->size,0,2,0);
+    return this->v[i];
   }
   T* operator () () const {return voff;}
-  void Set(T *a) {v=a; Offsets(); clear(allocated);}
+  void Set(T *a) {this->v=a; Offsets(); clear(this->allocated);}
 	
   Array2<T>& operator = (T a) {Load(a); return *this;}
   Array2<T>& operator = (T *a) {Load(a); return *this;}
@@ -998,22 +1003,23 @@ class Array3 : public array3<T> {
   int ox,oy,oz;
  public:
   void Offsets() {
-    vtemp=v-ox*(int) nyz;
-    voff=vtemp-oy*(int) nz-oz;
+    vtemp=this->v-ox*(int) this->nyz;
+    voff=vtemp-oy*(int) this->nz-oz;
   }
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 int ox0=0, int oy0=0, int oz0=0) {
-    nx=nx0; ny=ny0; nz=nz0; nyz=ny*nz;
-    size=nx*nyz;
+    this->nx=nx0; this->ny=ny0; this->nz=nz0; this->nyz=this->ny*this->nz;
+    this->size=this->nx*this->nyz;
     ox=ox0; oy=oy0; oz=oz0;
     Offsets();
   }
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 T *v0, int ox0=0, int oy0=0, int oz0=0) {
-    v=v0;
+    this->v=v0;
     Dimension(nx0,ny0,nz0,ox0,oy0,oz0);
-    clear(allocated);
+    clear(this->allocated);
   }
+  
   void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		int ox0=0, int oy0=0, int oz0=0, size_t align=0) {
     Dimension(nx0,ny0,nz0,ox0,oy0,oz0);
@@ -1032,21 +1038,21 @@ class Array3 : public array3<T> {
   }
 	
   Array2<T> operator [] (int ix) const {
-    __check(ix,nx,ox,3,1);
-    return Array2<T>(ny,nz,vtemp+ix*(int) nyz,oy,oz);
+    __check(ix,this->nx,ox,3,1);
+    return Array2<T>(this->ny,this->nz,vtemp+ix*(int) this->nyz,oy,oz);
   }
   T& operator () (int ix, int iy, int iz) const {
-    __check(ix,nx,ox,3,1);
-    __check(iy,ny,oy,3,2);
-    __check(iz,nz,oz,3,3);
-    return voff[ix*(int) nyz+iy*(int) nz+iz];
+    __check(ix,this->nx,ox,3,1);
+    __check(iy,this->ny,oy,3,2);
+    __check(iz,this->nz,oz,3,3);
+    return voff[ix*(int) this->nyz+iy*(int) this->nz+iz];
   }
   T& operator () (int i) const {
-    __check(i,size,0,3,0);
-    return v[i];
+    __check(i,this->size,0,3,0);
+    return this->v[i];
   }
   T* operator () () const {return voff;}
-  void Set(T *a) {v=a; Offsets(); clear(allocated);}
+  void Set(T *a) {this->v=a; Offsets(); clear(this->allocated);}
 	
   Array3<T>& operator = (T a) {Load(a); return *this;}
   Array3<T>& operator = (T *a) {Load(a); return *this;}
@@ -1074,24 +1080,26 @@ class Array4 : public array4<T> {
   int ox,oy,oz,ow;
  public:
   void Offsets() {
-    vtemp=v-ox*(int) nyzw;
-    voff=vtemp-oy*(int) nzw-oz*(int) nw-ow;
+    vtemp=this->v-ox*(int) this->nyzw;
+    voff=vtemp-oy*(int) this->nzw-oz*(int) this->nw-ow;
   }
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 unsigned int nw0, 
 		 int ox0=0, int oy0=0, int oz0=0, int ow0=0) {
-    nx=nx0; ny=ny0; nz=nz0; nw=nw0; nzw=nz*nw; nyzw=ny*nzw;
-    size=nx*nyzw;
+    this->nx=nx0; this->ny=ny0; this->nz=nz0; this->nw=nw0;
+    this->nzw=this->nz*this->nw; this->nyzw=this->ny*this->nzw;
+    this->size=this->nx*this->nyzw;
     ox=ox0; oy=oy0; oz=oz0; ow=ow0;
     Offsets();
   }
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 unsigned int nw0, T *v0,
 		 int ox0=0, int oy0=0, int oz0=0, int ow0=0) {
-    v=v0;
+    this->v=v0;
     Dimension(nx0,ny0,nz0,nw0,ox0,oy0,oz0,ow0);
-    clear(allocated);
+    clear(this->allocated);
   }
+  
   void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		unsigned int nw0,
 		int ox0=0, int oy0=0, int oz0=0, int ow0=0, size_t align=0) {
@@ -1113,22 +1121,23 @@ class Array4 : public array4<T> {
   }
 
   Array3<T> operator [] (int ix) const {
-    __check(ix,nx,ox,3,1);
-    return Array3<T>(ny,nz,nw,vtemp+ix*(int) nyzw,oy,oz,ow);
+    __check(ix,this->nx,ox,3,1);
+    return Array3<T>(this->ny,this->nz,this->nw,vtemp+ix*(int) this->nyzw,
+		     oy,oz,ow);
   }
   T& operator () (int ix, int iy, int iz, int iw) const {
-    __check(ix,nx,ox,4,1);
-    __check(iy,ny,oy,4,2);
-    __check(iz,nz,oz,4,3);
-    __check(iw,nw,ow,4,4);
-    return voff[ix*(int) nyzw+iy*(int) nzw+iz*(int) nw+iw];
+    __check(ix,this->nx,ox,4,1);
+    __check(iy,this->ny,oy,4,2);
+    __check(iz,this->nz,oz,4,3);
+    __check(iw,this->nw,ow,4,4);
+    return voff[ix*(int) this->nyzw+iy*(int) this->nzw+iz*(int) this->nw+iw];
   }
   T& operator () (int i) const {
-    __check(i,size,0,4,0);
-    return v[i];
+    __check(i,this->size,0,4,0);
+    return this->v[i];
   }
   T* operator () () const {return voff;}
-  void Set(T *a) {v=a; Offsets(); clear(allocated);}
+  void Set(T *a) {this->v=a; Offsets(); clear(this->allocated);}
 	
   Array4<T>& operator = (T a) {Load(a); return *this;}
   Array4<T>& operator = (T *a) {Load(a); return *this;}
@@ -1156,25 +1165,27 @@ class Array5 : public array5<T> {
   int ox,oy,oz,ow,ov;
  public:
   void Offsets() {
-    vtemp=v-ox*(int) nyzwv;
-    voff=vtemp-oy*(int) nzwv-oz*(int) nwv-ow*(int) nv-ov;
+    vtemp=this->v-ox*(int) this->nyzwv;
+    voff=vtemp-oy*(int) this->nzwv-oz*(int) this->nwv-ow*(int) this->nv-ov;
   }
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 unsigned int nw0,  unsigned int nv0,
 		 int ox0=0, int oy0=0, int oz0=0, int ow0=0, int ov0=0) {
-    nx=nx0; ny=ny0; nz=nz0; nw=nw0; nv=nv0; nwv=nw*nv; nzwv=nz*nwv;
-    nyzwv=ny*nzwv;
-    size=nx*nyzwv;
+    this->nx=nx0; this->ny=ny0; this->nz=nz0; this->nw=nw0; this->nv=nv0;
+    this->nwv=this->nw*this->nv; this->nzwv=this->nz*this->nwv;
+    this->nyzwv=this->ny*this->nzwv;
+    this->size=this->nx*this->nyzwv;
     ox=ox0; oy=oy0; oz=oz0; ow=ow0; ov=ov0;
     Offsets();
   }
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 unsigned int nw0, unsigned int nv0, T *v0,
 		 int ox0=0, int oy0=0, int oz0=0, int ow0=0, int ov0=0) {
-    v=v0;
+    this->v=v0;
     Dimension(nx0,ny0,nz0,nw0,nv0,ox0,oy0,oz0,ow0,ov0);
-    clear(allocated);
+    clear(this->allocated);
   }
+  
   void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		unsigned int nw0, unsigned int nv0,
 		int ox0=0, int oy0=0, int oz0=0, int ow0=0, int ov0=0,
@@ -1197,23 +1208,25 @@ class Array5 : public array5<T> {
   }
 
   Array4<T> operator [] (int ix) const {
-    __check(ix,nx,ox,4,1);
-    return Array4<T>(ny,nz,nw,nv,vtemp+ix*(int) nyzwv,oy,oz,ow,ov);
+    __check(ix,this->nx,ox,4,1);
+    return Array4<T>(this->ny,this->nz,this->nw,this->nv,
+		     vtemp+ix*(int) this->nyzwv,oy,oz,ow,ov);
   }
   T& operator () (int ix, int iy, int iz, int iw, int iv) const {
-    __check(ix,nx,ox,5,1);
-    __check(iy,ny,oy,5,2);
-    __check(iz,nz,oz,5,3);
-    __check(iw,nw,ow,5,4);
-    __check(iv,nv,ov,5,5);
-    return voff[ix*(int) nyzwv+iy*(int) nzwv+iz*(int) nwv+iw*(int) nv+iv];
+    __check(ix,this->nx,ox,5,1);
+    __check(iy,this->ny,oy,5,2);
+    __check(iz,this->nz,oz,5,3);
+    __check(iw,this->nw,ow,5,4);
+    __check(iv,this->nv,ov,5,5);
+    return voff[ix*(int) this->nyzwv+iy*(int) this->nzwv+iz*(int) this->nwv
+	       +iw*(int) this->nv+iv];
   }
   T& operator () (int i) const {
-    __check(i,size,0,5,0);
-    return v[i];
+    __check(i,this->size,0,5,0);
+    return this->v[i];
   }
   T* operator () () const {return voff;}
-  void Set(T *a) {v=a; Offsets(); clear(allocated);}
+  void Set(T *a) {this->v=a; Offsets(); clear(this->allocated);}
 	
   Array5<T>& operator = (T a) {Load(a); return *this;}
   Array5<T>& operator = (T *a) {Load(a); return *this;}

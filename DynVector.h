@@ -175,11 +175,12 @@ class StackVector : public DynVector<T> {
 public:
   StackVector() {}
   StackVector(const DynVector<T>& A) {DynVector<T>::SetDynVector(A);}
-  StackVector(unsigned int s) {Allocate(s);}
+  StackVector(unsigned int s) {this->Allocate(s);}
   
   T& operator [] (unsigned int i) {
-    if (i >= size) DynVectorExit("Attempt to access past end of StackVector");
-    return v[i];
+    if (i >= this->size) 
+      DynVectorExit("Attempt to access past end of StackVector");
+    return this->v[i];
   }
 	
   T& operator [] (int i) {

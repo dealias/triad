@@ -82,7 +82,7 @@ class Table {
 template<class T, class B>
 class Entry : public EntryBase<B> {
  public:
-  Entry(const char *key0,Table<B> *t) {key=key0; t->Add(this);}
+  Entry(const char *key0,Table<B> *t) {this->key=key0; t->Add(this);}
   B *New() {return new T;}
 };
 
