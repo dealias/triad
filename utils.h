@@ -36,7 +36,8 @@ extern const double twopi2;
 
 extern char beep;
 
-const char newl='\n';
+inline ostream& newl(ostream& s) {s << '\n'; return s;}
+inline oxstream& newl(oxstream& s) {return s;}
 
 inline int isgn(const Real x)
 {

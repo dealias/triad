@@ -1,5 +1,6 @@
 #include "options.h"
 #include "kernel.h"
+#include "xstream.h"
 
 #include <iomanip.h>
 
@@ -28,9 +29,9 @@ static double cpu[ncputime],cpu0[ncputime];
 static final_iteration=0;
 static int total_invert_cnt=0;
 
-static char *pname,*rname,*iname,*ptemp,*rtemp,*lname;
+static char *pname,*rname,*ptemp,*rtemp,*lname;
 static ifstream fparam,fin;
-static ofstream fdump,fstat,fout,flock;
+static ofstream fdump,fstat,flock;
 
 // Global vocabulary declarations and default values
 int itmax=-1;
@@ -243,47 +244,27 @@ int main(int argc, char *argv[])
 
 void read_init()
 {
-	ifstream finit;
+	int i,ny0;
 	double t0,dt0;
-	int ny0,formatted=0;
+	char *type= (restart ? "restart" : "initialization");
 	char *ny_msg=
 		"Current value of ny (%d) disagrees with value (%d) in file\n%s";
 	
-	iname=rname;
-	finit.open(iname);
-	errno=0;
-	if(!finit) {
-		formatted=1;
-		iname=Vocabulary->FileName(dirsep,"restartf");
-		finit.open(iname);
-		if(!finit)
-			msg(ERROR,"Initialization file %s could not be opened",iname);
-	}
-	
-	cout << newl << "READING " << (restart ? "RESTART" : "INITIALIZATION") <<
-		" DATA FROM FILE " << iname << "." << endl;
-
-	if(formatted) {
-		int i;
+	ixstream finit(rname);
+	if(finit.good()) {
+		cout << newl << "READING " << upcase(type) << " DATA FROM FILE "
+			 << rname << "." << endl; 
 		finit >> t0 >> dt0;
 		finit >> final_iteration;
 		for(i=0; i < ncputime; i++) finit >> cpu[i];
 		finit >> ny0;
-		if(ny0 != ny) msg(OVERRIDE,ny_msg,ny,ny0,iname);
+		if(ny0 != ny) msg(OVERRIDE,ny_msg,ny,ny0,rname);
 		for(i=0; i < min(ny,ny0); i++) finit >> y[i];
-	} else {
-		finit.read((char *) &t0,sizeof(double));
-		finit.read((char *) &dt0,sizeof(double));
-		finit.read((char *) &final_iteration,sizeof(int));
-		finit.read((char *) cpu,sizeof(cpu));
-		finit.read((char *) &ny0,sizeof(int));
-		if(ny0 != ny) msg(OVERRIDE,ny_msg,ny,ny0,iname);
-		finit.read((char *) y,min(ny,ny0)*sizeof(Var));
-	}
+		finit.close();
+		if(!finit.good())
+			msg(ERROR,"Cannot read from %s file %s",type,rname);
+	} else msg(ERROR,"Could not open %s file %s",type,rname);
 	
-	finit.close();
-	if(!finit.good())
-		msg(ERROR,"Cannot read from initialization file %s",iname);
 	if(!explicit_dt) dt=dt0;
 	if(restart) {t=t0; last_dump=t;}
 }
@@ -331,35 +312,18 @@ void dump(int it, int final, double tmax)
 	}
 	
 	int iter=final_iteration+iteration;
-	fdump.open(rtemp);
-	if(fdump) {
-		fdump.write((char *) &t,sizeof(double));
-		fdump.write((char *) &dt,sizeof(double));
-		fdump.write((char *) &iter,sizeof(int));
-		fdump.write((char *) cpu,sizeof(cpu));
-		fdump.write((char *) &ny,sizeof(int));
-		fdump.write((char *) y,ny*sizeof(Var));
-		fdump.close();
-		if(fdump.good()) rename(rtemp,rname);
+	oxstream frestart(rtemp);
+	if(frestart.good()) {
+		int i;
+		frestart << t << newl << dt << newl;
+		frestart << iter << newl;
+		for(i=0; i < ncputime; i++) frestart << cpu[i] << newl;
+		frestart << ny << newl;
+		for(i=0; i < ny; i++) frestart << y[i] << newl;
+		frestart.close();
+		if(frestart.good()) rename(rtemp,rname);
 		else msg(WARNING,"Cannot write to restart file %s",rtemp);
-	}
-	else if(it == 0) msg(ERROR,"Dump file %s could not be opened",rtemp);
-
-	if(output) {
-		char *oname=Vocabulary->FileName(dirsep,"restartf");
-		fout.open(oname);
-		fout.precision(REAL_DIG);
-		if(fout) {
-			int i;
-			fout << t << newl << dt << newl;
-			fout << iter << newl;
-			for(i=0; i < ncputime; i++) fout << cpu[i] << newl;
-			fout << ny << newl;
-			for(i=0; i < ny; i++) fout << y[i] << newl;
-			fout.close();
-		}
-		if(!fout.good()) msg(WARNING,"Cannot write to output file %s",oname);
-	}
+	} else if(it == 0) msg(ERROR,"Could not open restart file %s",rtemp);
 }
 
 static int w,e;

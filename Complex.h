@@ -25,7 +25,9 @@
 
 #include <iostream.h>
 #include <math.h>
+
 #include "precision.h"
+#include "xstream.h"
 
 class Complex
 {
@@ -297,18 +299,30 @@ inline Complex polar(Real r, Real t)
 #ifdef __GNUC__
 istream&  operator >> (istream& s, Complex& x);
 ostream&  operator << (ostream& s, const Complex& x);
+ixstream& operator >> (ixstream& s, Complex& y);
+oxstream& operator << (oxstream& s, const Complex& y);
 #else
 inline istream& operator >> (istream& s, Complex& y)
 {
-	Real re,im;
-	s >> "(" >> re >> "," >> im >> ")";
-	y=Complex(re,im);
+	s >> "(" >> y.re >> "," >> y.im >> ")";
 	return s;
 }
 
 inline ostream& operator << (ostream& s, const Complex& y)
 {
 	s << "(" << y.re << ", " << y.im << ")";
+	return s;
+}
+
+inline ixstream& operator >> (ixstream& s, Complex& y)
+{
+	s >> y.re >> y.im;
+	return s;
+}
+
+inline oxstream& operator << (oxstream& s, const Complex& y)
+{
+	s << y.re << y.im;
 	return s;
 }
 #endif

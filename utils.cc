@@ -318,3 +318,16 @@ void out_real(ostream& os, Complex *f, char *textre, char *textim, int n,
 	out_function(os,out_re,textre,n,nperline);
 	out_function(os,out_im,textim,n,nperline);
 }
+
+ixstream& operator >> (ixstream& s, Complex& y)
+{
+	s >> y.re >> y.im;
+	return s;
+}
+
+oxstream& operator << (oxstream& s, const Complex& y)
+{
+	s << y.re << y.im;
+	return s;
+}
+	
