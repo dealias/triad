@@ -285,7 +285,7 @@ void mpeg(int argc, int n, const char *type, int xsize, int ysize);
 void animate(int argc, const char *filename, int n, const char *type,
 	     const char *pattern, int xsize, int ysize);
 	
-#ifdef __i386__
+#ifdef __GNUC__
 extern "C" void putenv(const char *);
 #endif
 
