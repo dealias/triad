@@ -437,7 +437,7 @@ int I_RK2::Corrector(double dt, double& errmax, int start, int stop)
 	int j;
 	for(j=start; j < stop; j++)
 		y[j]=y0[j]*expinv[j]+dt*source[j];
-	if(dynamic) for(int j=start; j < stop; j++)
+	if(dynamic) for(j=start; j < stop; j++)
 		calc_error(y0[j]*expinv[j],y[j],
 				   (y0[j]+dt*source0[j])*expinv[j],y[j],errmax);
 	for(j=start; j < stop; j++) y[j] *= expinv[j];
