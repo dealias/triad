@@ -14,7 +14,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		  unsigned int inc1, unsigned int inc2, int)
 {
 	static int naux,nlast=0, nklast=0, inc1last=0, inc2last=0;	
-	static double *aux1,*aux2;
+	static double *aux1[2],*aux2[2];
 	unsigned int n=1 << log2n;
 	isign = -isign;
 	
@@ -27,13 +27,17 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		else naux=20000+2.28*n;
 		if(inc2 == 1 || n >= 252) naux += (2*n+256)*((nk > 64) ? nk : 64);
 	
-		aux1=new(aux1,naux) Real;
-		aux2=new(aux2,naux) Real;
-		dcft(one,data,inc1,inc2,data,inc1,inc2,n,nk,isign,scale,
-			 aux1,naux,aux2,naux);
+		for(int sign=-1; sign <= 1; sign += 2) {
+			int i=(isign == -1);
+			aux1[i]=new(aux1[i],naux) Real;
+			aux2[i]=new(aux2[i],naux) Real;
+			dcft(one,data,inc1,inc2,data,inc1,inc2,n,nk,isign,scale,
+				 aux1[i],naux,aux2[i],naux);
+		}
 	}
+	int i=(isign == -1);
 	dcft(zero,data,inc1,inc2,data,inc1,inc2,n,nk,isign,scale,
-		 aux1,naux,aux2,naux);
+		 aux1[i],naux,aux2[i],naux);
 }
 
 void fft(Complex *data, unsigned int log2n, int isign, int)
