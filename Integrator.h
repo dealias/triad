@@ -51,8 +51,7 @@ public:
 	Solve_RC Solve(double, double);
 	virtual void Predictor(double, double, int, int);
 	virtual int Corrector(double, int, int, int);
-	virtual void StandardPredictor(double t, double dt, int start,
-								   int stop) {
+	virtual void StandardPredictor(double t, double dt, int start, int stop) {
 		PC::Predictor(t,dt,start,stop);
 	}
 	virtual int StandardCorrector(double dt, int dynamic, int start,
@@ -92,8 +91,7 @@ public:
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, int, int, int);
-	void StandardPredictor(double t, double dt, int start,
-						   int stop) {
+	void StandardPredictor(double t, double dt, int start, int stop) {
 		RK2::Predictor(t,dt,start,stop);
 	}
 	int StandardCorrector(double dt, int dynamic, int start, int stop) {
@@ -113,8 +111,7 @@ public:
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, int, int, int);
-	void StandardPredictor(double t, double dt, int start,
-						   int stop) {
+	void StandardPredictor(double t, double dt, int start, int stop) {
 		RK4::Predictor(t,dt,start,stop);
 	}
 	int StandardCorrector(double dt, int dynamic, int start, int stop) {
