@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.34
+#define __ARRAY_H_VERSION__ 1.35
 
 // Defining NDEBUG improves optimization but disables argument checking.
 // Defining __NOARRAY2OPT inhibits special optimization of Array2[].
@@ -34,12 +34,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #define __check(i,n,dim,m)
 #define __checkSize()
 #define __checkActivate(i,align) this->Activate(align)
-#define __NULLARRAY NULL;
+#define __NULLARRAY NULL
 #else
 #define __check(i,n,dim,m) this->Check(i,n,dim,m)
 #define __checkSize() this->CheckSize()
 #define __checkActivate(i,align) this->CheckActivate(i,align)
-#define __NULLARRAY (void *) 0;
+#define __NULLARRAY (void *) 0
 #ifndef __NOARRAY2OPT
 #define __NOARRAY2OPT
 #endif

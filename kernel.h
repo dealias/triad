@@ -66,7 +66,7 @@ class ProblemBase {
   const char *abbrev;
   ivector errmask;
  public:	
-  ProblemBase() {errmask=__NULLARRAY}
+  ProblemBase() {errmask=__NULLARRAY;}
   virtual ~ProblemBase() {}
   void SetAbbrev(const char *abbrev0) {abbrev=abbrev0;}
   const char *Abbrev() {return abbrev;}

@@ -82,7 +82,7 @@ protected:
   vector source1,source2;
   vector2 Src1,Src2;
 public:
-  E_RK3() {order=3;}
+  E_RK3() {order=3; coeff2=__NULLARRAY;}
   void Allocator0() {
     PC::Allocator();
     Exponential::Allocator();
