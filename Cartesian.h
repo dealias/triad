@@ -119,7 +119,7 @@ inline Mc Mkpq(T& k, T& p, T&)
 	return (k.Y()*p.X()-k.X()*p.Y())*p.K2()/k.K2();
 }
 
-// Factor which converts |y|^2 to energy in this normalization:
+// Factor which converts |y|^2 to 2.0*energy in this normalization:
 inline Real Basis<Cartesian>::Normalization(int i) {return K2(i);}
 
 #endif

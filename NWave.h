@@ -177,11 +177,10 @@ public:
 
 class I_RK5 : public RK5 {
 protected:
-	Nu *expinv1,*expinv2,*expinv3,*expinv4,*expinv5;
+	Nu *expinv,*expinv5;
 public:
 	void Allocate(int);
 	char *Name() {return "Fifth-Order Runge-Kutta w/Integrating Factor";}
-	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, double&, int, int);
 	void Source(Var *src, Var *var, double t) {

@@ -153,7 +153,7 @@ inline Mc Jkpq(Cartesian& k, Cartesian& p, Cartesian& q)
 	return (k.Y()*p.X()-k.X()*p.Y())/sqrt(k.K2()*p.K2()*q.K2());
 }
 
-// Factor which converts |y|^2 to energy in this normalization:
+// Factor which converts |y|^2 to 2.0*energy in this normalization:
 inline Real Partition<Polar,Cartesian>::Normalization(int) {return 1.0;}
 
 #endif

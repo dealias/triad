@@ -25,17 +25,23 @@ Real *nuR_inv,*nuI;
 Real *forcing;
 extern Real tauforce;
 
-void ComputeMoments(Var *source, Var *psi) {
+static Complex random_factor=0.0;
+
+inline void ComputeMoments(Var *source, Var *psi) {
 	Var *k, *q=source+Npsi, *kstop=psi+Npsi;
 #pragma ivdep
 	for(k=psi; k < kstop; k++, q++) *q=product(*(q-Npsi),*k); // S_k*psi_k
 	if(Nmoment > 1) {
 #pragma ivdep
 		for(k=psi; k < kstop; k++, q++) *q=*k; // psi_k
-		for(int n=2; n < Nmoment; n++) { // psi_k^n
+		for(int n=2; n < Nmoment-1; n++) { // psi_k^n
 #pragma ivdep
 			for(k=psi; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);
 		}
+	}
+	if(Nmoment > 2) {
+#pragma ivdep 
+			for(k=psi; k < kstop; k++, q++) *q=random_factor*(*k); // psi_k w
 	}
 }
 
@@ -199,13 +205,12 @@ void ConservativeExponentialLinearity(Complex *source, Complex *psi, double)
 }
 
 static Real last_t=-REAL_MAX;
-static Complex randomfactor=0.0;
 
 void ConstantForcing(Var *source, Var *, double t)
 {
-	if(t-last_t > tauforce) {last_t=t; crand_gauss(&randomfactor);}
+	if(t-last_t > tauforce) {last_t=t; crand_gauss(&random_factor);}
 #pragma ivdep
-	for(int k=0; k < Npsi; k++) source[k] += forcing[k]*randomfactor;
+	for(int k=0; k < Npsi; k++) source[k] += forcing[k]*random_factor;
 }
 
 #if COMPLEX	
@@ -560,64 +565,58 @@ int C_RK4::Corrector(double dt, double& errmax, int start, int stop)
 void I_RK5::Allocate(int n)
 {
 	RK5::Allocate(n);
-	expinv1=new Nu[nyprimary];
-	expinv2=new Nu[nyprimary];
-	expinv3=new Nu[nyprimary];
-	expinv4=new Nu[nyprimary];
+	expinv=new Nu[nyprimary];
 	expinv5=new Nu[nyprimary];
-}
-
-void I_RK5::TimestepDependence(double dt)
-{
-	RK5::TimestepDependence(dt);
-	for(int j=0; j < nyprimary; j++) {
-		expinv1[j]=exp(-nu[j]*a1);
-		expinv2[j]=exp(-nu[j]*a2);
-		expinv3[j]=exp(-nu[j]*a3);
-		expinv4[j]=exp(-nu[j]*a4);
-		expinv5[j]=exp(-nu[j]*a5);
-	}
 }
 
 void I_RK5::Predictor(double t, double, int start, int stop)
 {
 	int j;
 #pragma ivdep		
-	for(j=start; j < stop; j++) y[j]=(y0[j]+b10*source0[j])*expinv1[j];
+	for(j=start; j < stop; j++) {
+		expinv[j]=exp(-nu[j]*a1);
+		y[j]=(y0[j]+b10*source0[j])*expinv[j];
+	}
 	Source(source,y,t+a1);
 #pragma ivdep		
 	for(j=start; j < stop; j++) {
-		source[j] /= expinv1[j];
-		y2[j]=(y0[j]+b20*source0[j]+b21*source[j])*expinv2[j];
+		source[j] /= expinv[j];
+		expinv[j]=exp(-nu[j]*a2);
+		y2[j]=(y0[j]+b20*source0[j]+b21*source[j])*expinv[j];
 	}
 	Source(source2,y2,t+a2);
 #pragma ivdep		
 	for(j=start; j < stop; j++) {
-		source2[j] /= expinv2[j];
-		y3[j]=(y0[j]+b30*source0[j]+b31*source[j]+b32*source2[j])*expinv3[j];
+		source2[j] /= expinv[j];
+		expinv[j]=exp(-nu[j]*a3);
+		y3[j]=(y0[j]+b30*source0[j]+b31*source[j]+b32*source2[j])*expinv[j];
 	}
 	Source(source3,y3,t+a3);
 #pragma ivdep		
 	for(j=start; j < stop; j++) {
-		source3[j] /= expinv3[j];
+		source3[j] /= expinv[j];
+		expinv[j]=exp(-nu[j]*a4);
 		y4[j]=(y0[j]+b40*source0[j]+b41*source[j]+b42*source2[j]+
-			   b43*source3[j])*expinv4[j];
+			   b43*source3[j])*expinv[j];
 	}
 	Source(source4,y4,t+a4);
 #pragma ivdep		
 	for(j=start; j < stop; j++) {
-		source4[j] /= expinv4[j];
+		source4[j] /= expinv[j];
+		expinv5[j]=exp(-nu[j]*a5);
 		y[j]=(y0[j]+b50*source0[j]+b51*source[j]+b52*source2[j]+b53*source3[j]+
 			  b54*source4[j])*expinv5[j];
 	}
 	Source(source,y,t+a5);
+#pragma ivdep	
 	for(j=start; j < stop; j++) source[j] /= expinv5[j];
 }
 
 int I_RK5::Corrector(double dt, double& errmax, int start, int stop)
 {
 	RK5::Corrector(dt,errmax,start,stop);
-	for(int j=start; j < stop; j++) y[j] *= expinv4[j];
+#pragma ivdep	
+	for(int j=start; j < stop; j++) y[j] *= expinv[j];
 	return 1;
 }
 

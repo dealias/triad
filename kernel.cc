@@ -62,7 +62,7 @@ ProblemBase::ProblemBase()
 	
 	VOCAB(itmax,0,INT_MAX);
 	VOCAB(microsteps,1,INT_MAX);
-	VOCAB(tmax,-DBL_MAX,DBL_MAX);
+	VOCAB(tmax,0.0,DBL_MAX);
 	VOCAB(dt,0.0,DBL_MAX);
 	VOCAB(dynamic,0,1);
 	VOCAB(tolmax,0.0,DBL_MAX);
