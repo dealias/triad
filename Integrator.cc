@@ -13,7 +13,7 @@ int IntegratorKeyCompare(const void *key, const void *p, const size_t n)
 inline void IntegratorBase::ChangeTimestep(double& dt, const double dtnew,
 										   const double t)
 {
-	if(verbose > 1) cout << endl << "Time step changed from " << dt <<
+	if(verbose > 1) cout << newl << "Time step changed from " << dt <<
 		" to " << dtnew << " at t=" << t << "." << endl;
 	if(dtnew == 0.0) msg(ERROR,"Zero time step encountered");
 	TimestepDependence(dt=dtnew);
@@ -52,7 +52,7 @@ void IntegratorBase::Integrate(Var *const y0, double& t, double tmax,
 	for(it=0; it < itmax && (forwards ? t < tmax : t > tmax); it++) {
 		
 		if(verbose) {
-			if((it % nperline) == 0) cout << endl;
+			if((it % nperline) == 0) cout << newl;
 			cout << "[" << it << flush;
 		}
 		

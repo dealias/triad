@@ -41,14 +41,14 @@ void Basis<Cartesian>::MakeBins()
 		for(i=((j == 0) ? 1 : low.Column()); i <= high.Column(); i++)
 			*(p++)=Cartesian(i,j);
 		}
+	
 	RowBoundary[NRows]=p-mode;
 	NPad=RowBoundary[1]-RowBoundary[0];
 	ZeroBuffer=new Var[NPad];
 	for(i=0; i < NPad; i++) ZeroBuffer[i]=0.0;
-	
 	Npsibuffer=Nmode+NRows*NPad;
-	int nfft;
-	for(nfft=1, log2n=0; 3*(Npsibuffer+1) >= nfft+2; nfft *= 2, log2n++);
+	int ntotal=(3*Nx-1)*(3*Ny-1)/4;
+	for(log2n=0; ntotal > (1 << log2n); log2n++);
 	
 	for(j=0; j >= low.Row(); j--) // Reflected modes
 		for(i=((j == 0) ? -1 : high.Column()); i >= low.Column(); i--)

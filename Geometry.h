@@ -20,7 +20,7 @@ public:
 	virtual int ValidApproximation(char *)=0;
 	virtual void MakeBins()=0;
 	virtual void List(ostream &)=0;
-	virtual void ListTriads() {}
+	virtual void ListTriads(ostream &) {}
 	virtual void Initialize()=0;
 	
 	virtual Nu Linearity(int)=0;

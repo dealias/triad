@@ -5,7 +5,8 @@ void rfft_brinv(Complex *data, unsigned int log2n);
 
 // Compute H = F (*) G, where F and G contain the non-negative Fourier
 // components of real functions f and g, respectively. Dealiasing via
-// zero-padding is implemented automatically.
+// zero-padding is implemented automatically. (For a 1D convolution,
+// 3*m must be less than n+2.)
 //
 // Arrays F[n/2+1], G[n/2+1] must be distinct, with n=2^log2n.
 // Input F[i] (0 <= i < m <= n/3), g[i] (0 <= i < n/2).
@@ -37,7 +38,8 @@ void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
 
 // Compute H = F (*) G, where F and G contain the non-negative Fourier
 // components of real functions f and g, respectively. Dealiasing via
-// zero-padding is implemented automatically.
+// zero-padding is implemented automatically. (For a 1D convolution,
+// 3*m must be less than n+2.)
 //
 // Arrays F[n/2+1], G[n/2+1] must be distinct, with n=2^log2n.
 // Input F[i], G[i] (0 <= i < m), where m <= n/3.
@@ -52,9 +54,6 @@ void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
 	unsigned int n=1 << log2n;
 	unsigned int i;
 
-// #define msg(a,b) cout << b << endl
-	if(3*m >= n+2) msg(ERROR, "Insufficient room for dealiasing");
-	
 #pragma ivdep	
 	for(i=m; i < n/2+1; i++) G[i]=0.0;
 	rfft_brinv(G,log2n-1);

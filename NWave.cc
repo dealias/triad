@@ -661,8 +661,8 @@ int C_RK5::Corrector(Var *y0, double, double& errmax, int start, int stop)
 
 void display_invariants(Real E, Real Z, Real P)
 {
-	cout << "Energy = " << E << endl;
-	cout << "Enstrophy = " << Z << endl;
+	cout << "Energy = " << E << newl;
+	cout << "Enstrophy = " << Z << newl;
 	cout << "Palinstrophy = " << P << endl;
 }
 
@@ -672,9 +672,9 @@ void NWave::FinalOutput()
 	int i;
 	const int Nlimit=128;
 	
-	cout << endl << "FINAL VALUES:" << endl << endl;
+	cout << newl << "FINAL VALUES:" << newl << endl;
 	if(Npsi <= Nlimit || verbose > 1) {
-	for(i=0; i < Npsi; i++) cout << "psi[" << i << "] = " << y[i] << endl;
+	for(i=0; i < Npsi; i++) cout << "psi[" << i << "] = " << y[i] << newl;
 	cout << endl;
 	}
 	
@@ -682,7 +682,7 @@ void NWave::FinalOutput()
 	display_invariants(E,Z,P);
 	
 	if(average && t) {
-		cout << endl << "AVERAGED VALUES:" << endl << endl;
+		cout << newl << "AVERAGED VALUES:" << newl << endl;
 // We overwrite y+Npsi here, since it is no longer needed.
 		Var *y2=y+Npsi;
 		for(i=0; i < Npsi; i++) y2[i] = (real(y2[i])+imag(y2[i]))/t;
@@ -690,7 +690,7 @@ void NWave::FinalOutput()
 		if(Npsi <= Nlimit || verbose > 1) {
 			for(i=0; i < Npsi; i++) {
 				Real y2avg=y2[i].re;
-				cout << "|psi|^2 [" << i << "] = " << y2avg << endl;
+				cout << "|psi|^2 [" << i << "] = " << y2avg << newl;
 			}
 		cout << endl;
 		}

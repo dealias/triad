@@ -151,7 +151,7 @@ inline istream& operator >> (istream& s, Weight& y) {
 }
 
 inline ostream& operator << (ostream& s, const Weight& y) {
-	s << y.Index() << endl << y.Value();
+	s << y.Index() << newl << y.Value();
 	return s;
 }
 
@@ -214,7 +214,7 @@ public:
 
 	void GenerateWeights();
 	void Initialize();
-	void ListTriads();
+	void ListTriads(ostream &os);
 	
 	Real Area(int k) {return bin[k].Area();}
 	Real K(int k) {return bin[k].K();}
@@ -261,7 +261,7 @@ void Partition<T,D>::GenerateWeights() {
 		first=1;
 	}
 	
-	cout << endl << "GENERATING WEIGHT FACTORS." << endl;
+	cout << newl << "GENERATING WEIGHT FACTORS." << endl;
 	
 	for(k=0; k < Nmode; k++) {	// Loop for k < p < q
 		for(p=k+1; p < Nmode; p++) {
@@ -295,7 +295,7 @@ void Partition<T,D>::GenerateWeights() {
 			}
 		}
 	}
-	if(Nweight >= 100) cout << endl;
+	cout << endl;
 }
 
 
@@ -418,16 +418,17 @@ void Partition<T,D>::Initialize() {
 	weight.~DynVector();
 
 	cout << Ntriad << " WAVENUMBER TRIADS ALLOCATED." << endl;
-	if(verbose > 2) ListTriads();
+	if(verbose > 2) ListTriads(cout);
 }
 
 template<class T, class D>
-void Partition<T,D>::ListTriads() {
+void Partition<T,D>::ListTriads(ostream &os) {
 	int j;
-	cout << endl << Ntriad << " Triads:" << endl;
+	os << newl << Ntriad << " Triads:" << endl;
 	for(j=0; j < Ntriad; j++) {
-		if(triad[j].pq)	cout << triad[j].Mkpq << endl;
+		if(triad[j].pq)	os << triad[j].Mkpq << newl;
 	}
+	os << flush;
 }
 
 template<class T, class D>
@@ -437,12 +438,12 @@ void Partition<T,D>::List(ostream &os)
 	for(int i=0; i < n; i++) {
 #if _CRAY	
 	os << "[" << bin[i].min << "\t" << bin[i].cen << "\t" << bin[i].max
-	   << "]" << endl;
+	   << "]" << newl;
 #else	
-	os << bin[i] << endl;
+	os << bin[i] << newl;
 #endif	
 	}
-	cout << endl;
+	os << endl;
 }
 
 #endif

@@ -46,8 +46,8 @@ template<class T>
 void Basis<T>::List(ostream &os)
 {
 	os << "         " << Name() << " Mode Geometry:" << endl;
-	for(int i=0; i < n; i++) os << mode[i] << endl;
-	cout << endl;
+	for(int i=0; i < n; i++) os << mode[i] << newl;
+	os << flush;
 }
 template<class T>
 void Basis<T>::Initialize()

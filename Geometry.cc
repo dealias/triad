@@ -46,7 +46,7 @@ int get_weights(DynVector<Weight>& weight, int *Nweight, char *filename,
 	complete=(n ? 1 : 0);
 		
 	if(fin) {
-		cout << endl << "READING WEIGHT FACTORS FROM " << filename << "."
+		cout << newl << "READING WEIGHT FACTORS FROM " << filename << "."
 			 << endl;
 		if(n) weight.Resize(n);
 		if(formatted) {
@@ -91,8 +91,8 @@ void save_formatted_weights(DynVector<Weight>& w, int n, char *filename)
 	fout.open(filename);
 	fout.precision(FLT_DIG);
 	if(!fout) msg(ERROR,"Weight file %s could not be opened",filename);
-	fout << n << endl;
-	for(int i=0; i < n; i++) fout << w[i] << endl;
+	fout << n << newl;
+	for(int i=0; i < n; i++) fout << w[i] << newl;
 	fout.close();
 	if(!fout.good()) msg(ERROR,write_error,filename);
 }	

@@ -228,6 +228,7 @@ void NWave::InitialConditions()
 	if(average) for(n=0; n < Nmoment; n++) {
 		sprintf(tempbuffer,"avgy%d",n+2);
 		mkdir(Problem->FileName(dirsep,tempbuffer),0xFFFF);
+		errno=0;
 		sprintf(avgylabel[n],"y%%s^%d",n+2);
 	}
 	
@@ -288,7 +289,7 @@ void NWave::Output(int)
 	
 	compute_invariants(y,Npsi,E,Z,P);
 	
-	fevt << t << "\t" << E << "\t" << Z << "\t" << P << endl << flush;
+	fevt << t << "\t" << E << "\t" << Z << "\t" << P << endl;
 	
 	out_real(fyvt,y,"y%s",Npsi);
 	fyvt.flush();
@@ -302,7 +303,7 @@ void NWave::Output(int)
 	}
 	tcount++;
 	
-	ft << t << endl << flush;
+	ft << t << endl;
 }
 
 void LinearityAt(int i,Real& nu)

@@ -117,12 +117,12 @@ int main(int argc, char *argv[])
 
 	cout.precision(REAL_DIG);
 	
-	cout << endl << PROGRAM << " version " << VERSION << 
-		" [(C) John C. Bowman and B. A. Shadwick 1996]" << endl;
+	cout << newl << PROGRAM << " version " << VERSION << 
+		" [(C) John C. Bowman and B. A. Shadwick 1996]" << newl;
 	
-	cout << endl << "PROBLEM: " << Problem->Name() << endl;
+	cout << newl << "PROBLEM: " << Problem->Name() << newl;
 	
-	cout << endl << "COMMAND LINE: ";
+	cout << newl << "COMMAND LINE: ";
 	for(i=1; i < argc; i++) cout << argv[i] << " ";
 	cout << endl;
 	
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 	
 	for(i=1; i < argc; i++) Problem->Assign(argv[i]);
 	
-	cout << endl << "PARAMETERS:" << endl << endl;
+	cout << newl << "PARAMETERS:" << newl << newl;
 	Problem->List(cout);
 	
 	
@@ -206,7 +206,7 @@ int main(int argc, char *argv[])
 	Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,
 						 dtmax,itmax,microsteps,Problem->Nconserve(),verbose);
 	
-	cout << endl << "INTEGRATING:" << endl;
+	cout << newl << "INTEGRATING:" << endl;
 	set_timer();
 	
 	Integrator->Integrate(y,t,tmax,LinearSrc,NonlinearSrc,ConstantSrc,
@@ -217,18 +217,18 @@ int main(int argc, char *argv[])
 
 	Problem->FinalOutput();
 	
-	cout << endl;
+	cout << newl;
 	cout << "COMPUTATION TERMINATED after " << iteration <<	" iteration" <<
-		PLURAL(iteration) << endl << "                       at t=" <<
-		t << " with dt=" << dt << "." << endl; 
+		PLURAL(iteration) << newl << "                       at t=" <<
+		t << " with dt=" << dt << "." << newl; 
 	if(total_invert_cnt)
 		cout << "NONINVERTIBILE TRANSFORMATION encountered " <<
 			total_invert_cnt << " time" << PLURAL(total_invert_cnt) <<
-		"." << endl;
+		"." << newl;
 	
-	cout << endl;
-	cout << "INTEGRATION TIMING STATISTICS:" << endl <<	"            CPU = "
-		 << cpu[0] << ", CHILD = " << cpu[1] <<  ", SYS = " << cpu[2] << endl;
+	cout << newl;
+	cout << "INTEGRATION TIMING STATISTICS:" << newl <<	"            CPU = "
+		 << cpu[0] << ", CHILD = " << cpu[1] <<  ", SYS = " << cpu[2] << newl;
 	cout << endl;
 	
 	if(!testing) mailuser("completed");
@@ -252,7 +252,7 @@ void read_init()
 			msg(ERROR,"Initialization file %s could not be opened",iname);
 	}
 	
-	cout << endl << "READING " << (restart ? "RESTART" : "INITIALIZATION") <<
+	cout << newl << "READING " << (restart ? "RESTART" : "INITIALIZATION") <<
 		" DATA FROM FILE " << iname << "." << endl;
 
 	if(formatted) {
@@ -336,10 +336,10 @@ void dump(int it, int final, double tmax)
 		fout.precision(REAL_DIG);
 		if(fout) {
 			int i;
-			fout << t << endl << dt << endl;
-			for(i=0; i < ny; i++) fout << y[i] << endl;
-			fout << iter << endl;
-			for(i=0; i < ncputime; i++) fout << cpu[i] << endl;
+			fout << t << newl << dt << newl;
+			for(i=0; i < ny; i++) fout << y[i] << newl;
+			fout << iter << newl;
+			for(i=0; i < ncputime; i++) fout << cpu[i] << newl;
 			fout.close();
 		}
 		if(!fout.good()) msg(WARNING,"Cannot write to output file %s",oname);
@@ -373,7 +373,7 @@ void statistics()
 		cpu[i] -= cpu0[i];
 		fstat << setw(w) << cpu[i] << " ";
 	}
-	fstat << endl << flush;
+	fstat << endl;
 }
 
 char *ProblemBase::FileName(const char* delimiter, const char *suffix)

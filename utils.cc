@@ -212,7 +212,7 @@ void msg(int fatal, char *file, int line, char *format,...)
 	}
 
 	if(fatal && abort_flag) {
-		cout << endl << flush;
+		cout << endl;
 		char *buf=new char[70+strlen(file)+strlen(format)];
 		sprintf(buf,"terminated with error from \"%s\":%d; %s",
 				file,line,format);

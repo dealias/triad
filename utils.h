@@ -31,8 +31,7 @@ extern const double twopi2;
 
 extern char beep;
 
-// Make endl not flush by default.
-#define endl '\n'
+const char newl='\n';
 
 inline int isgn(const Real x)
 {
@@ -225,10 +224,10 @@ void out_function(ostream& os, T (*f)(int), char *text, int n, int nperline)
 #endif	
 {
 	int i;
-	os << "# " << text << endl;
+	os << "# " << text << newl;
 	for(i=0; i < n-1;) {
 		os << (*f)(i);
-		if(++i % nperline) os << "\t"; else os << " \\" << endl;
+		if(++i % nperline) os << "\t"; else os << " \\" << newl;
 	}
 	os << (*f)(n-1) << endl;
 }
@@ -242,10 +241,10 @@ void out_curve(ostream& os, T *f, char *text, int n, int nperline)
 #endif
 {
 	int i;
-	os << "# " << text << endl;
+	os << "# " << text << newl;
 	for(i=0; i < n-1;) {
 		os << f[i];
-		if(++i % nperline) os << "\t"; else os << " \\" << endl;
+		if(++i % nperline) os << "\t"; else os << " \\" << newl;
 	}
 	os << f[n-1] << endl;
 }

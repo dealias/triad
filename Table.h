@@ -31,7 +31,8 @@ public:
 	EntryBase<B> **Base() {return list.Base();}
 	EntryBase<B> *Entry(int i) {return list[i];}
 	void List(ostream& os) {
-		for(int i=0; i < Size(); i++) os << Entry(i)->Key() << endl;
+		for(int i=0; i < Size(); i++) os << Entry(i)->Key() << newl;
+		os << flush;
 	}
 	B *Locate (char *key) {
 		int match_type;
@@ -42,7 +43,7 @@ public:
 									  KeyCompare,&match_type);
 		check_match(match_type,name,key);
 		p=e->New();
-		cout << endl << upcase(name) << ": " << p->Name() << endl;
+		cout << newl << upcase(name) << ": " << p->Name() << endl;
 		return p;
 	}
 	int DefaultCompare(const void *a, const void *b) {
