@@ -50,6 +50,7 @@ static int floating_scale=0;
 static int floating_section=0;
 static int preserve=0;
 static int remote=0;
+static int pointsize=0;
 
 int byte=0;
 int implicit=1;
@@ -172,7 +173,8 @@ void usage(char *program)
 	cerr << PROGRAM << " version " << VERSION
 		 << " [(C) John C. Bowman <bowman@math.ualberta.ca> 1997]" << endl
 		 << endl << "Usage: " << program
-		 << " [-bfFghilmprvz] [-x mag] [-H hmag] [-V vmag] " << endl
+		 << " [-bfFghimprvz] [-l pointsize] [-x mag] [-H hmag] [-V vmag] " 
+		 << endl
 		 << "           [-B begin] [-E end] [-L lower] [-U upper]" << endl
          << "           [-P palette] [-S skip]" << endl
 		 << "           [-X xsize -Y ysize [-Z zsize]] file1 [file2 ...]"
@@ -189,13 +191,13 @@ void options()
 	cerr << "-g\t\t produce gray-scale output" << endl;
 	cerr << "-h\t\t help" << endl;
 	cerr << "-i\t\t invert vertical axis (y-origin at bottom)" << endl;
-	cerr << "-l\t\t label frames with file names and values" << endl;
 	cerr << "-m\t\t generate mpeg (.mpg) file" << endl;
 	cerr << "-p\t\t preserve temporary output files" << endl;
 	cerr << "-r\t\t remote X-server (substitute Postscript fonts)" << endl;
 	cerr << "-v\t\t verbose output" << endl;
 	cerr << "-z\t\t make color palette symmetric about zero" <<
 		" (if possible)" << endl;
+	cerr << "-l pointsize\t label frames with file names and values" << endl;
 	cerr << "-x mag\t\t overall magnification factor" << endl;
 	cerr << "-H hmag\t\t horizontal magnification factor" << endl;
 	cerr << "-V vmag\t\t vertical magnification factor" << endl;
@@ -217,7 +219,6 @@ int main(int argc, char *const argv[])
 	int nset=0, mx=1, my=1;
 	int n,begin=0, skip=1, end=INT_MAX;
 	int lower=0, upper=INT_MAX;
-	int label=0;
 	int make_mpeg=0;
 	int syntax=0;
 	extern int optind;
@@ -254,9 +255,6 @@ int main(int argc, char *const argv[])
 		case 'i':
 			invert=1;
 			break;
-		case 'l':
-			label=1;
-			break;
 		case 'm':
 			make_mpeg=1;
 			break;
@@ -271,6 +269,9 @@ int main(int argc, char *const argv[])
 			break;
 		case 'z':
 			zero=1;
+			break;
+		case 'l':
+			pointsize=atoi(optarg);
 			break;
 		case 'x':
 			mx=my=atoi(optarg);
@@ -328,7 +329,7 @@ int main(int argc, char *const argv[])
 		exit(1);
 	}
 	
-	if(nfiles > 1) label=1;
+	if(nfiles > 1) pointsize=12;
 	
 	char *const *argf=argv+optind;
 		
@@ -489,7 +490,7 @@ int main(int argc, char *const argv[])
 	}
 	
 	if(nset) {
-		if(label || make_mpeg) { 
+		if(pointsize || make_mpeg) { 
 			if(make_mpeg) montage(nfiles,argf,0,format,"miff");
 			for(n=0; n < nset; n++) 
 				montage(nfiles,argf,n,format,make_mpeg ? yuvformat : "miff");
@@ -527,7 +528,8 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 	
 	if(remote) unsetenv("DISPLAY");
 	buf << "montage -size " << xsize << "x" << ysize
-	    << " -geometry " << xsize << "x" << ysize << " -interlace none";
+		<< " -geometry " << xsize << "x" << ysize << " -interlace none";
+	if(pointsize) buf << " -pointsize " << pointsize;
 	for(int f=0; f < nfiles; f++) {
 		char *fieldname=argf[f];
 		buf << " -label \"";
