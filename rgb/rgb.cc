@@ -51,7 +51,7 @@ const double pi=PI;
 const double twopi=2.0*PI;
 
 // Number of digits used to index intermediate files.
-const int NDIGITS 4
+const int NDIGITS 4;
 
 static double *vminf, *vmaxf;
 static char *rgbdir;
