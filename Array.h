@@ -52,7 +52,7 @@ template<class T>
 class array1 {
 protected:
 	T *v;
-	unsigned int nx;
+	int nx;
 	mutable int state;
 public:
     enum alloc_state {unallocated=0, allocated=1, temporary=2};
@@ -200,7 +200,7 @@ istream& operator >> (istream& s, const array1<T>& A)
 template<class T>
 class array2 : public array1<T> {
 protected:
-	unsigned int ny;
+	int ny;
 public:
 	unsigned int Size() const {return nx*ny;}
 	void Dimension(unsigned int nx0, unsigned int ny0) {nx=nx0; ny=ny0;}
@@ -293,7 +293,7 @@ template<class T>
 class array3 : public array2<T> {
 protected:
 	unsigned int nyz;
-	unsigned int nz;
+	int nz;
 public:
 	unsigned int Size() const {return nx*nyz;}
 	void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0) {
@@ -390,7 +390,7 @@ class array4 : public array3<T> {
 protected:
 	unsigned int nyzw;
 	unsigned int nzw;
-	unsigned int nw;
+	int nw;
 public:
 	unsigned int Size() const {return nx*nyzw;}
 	void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
