@@ -2,8 +2,12 @@
 #include "kernel.h"
 
 inline void IntegratorBase::ChangeTimestep(double& dt, const double dtnew,
-										   const double t)
+										   const double t, const double sample)
 {
+	if(sample && dtnew > sample) { // New time step must be <= sample.
+		if(dt == sample) return; // Don't adjust time step.
+		dtnew=sample;
+	}
 	if(verbose > 1) cout << newl << "Time step changed from " << dt <<
 						" to " << dtnew << " at t=" << t << "." << endl;
 	if(dtnew == 0.0) msg(ERROR,"Zero time step encountered");
@@ -44,7 +48,7 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 		if(sample > 0.0 && (forwards ? t >= tstop : t <= tstop)) {
 			dump(it,0,tmax);
 			tstop=sign*min(++nout*sample,sign*tmax);
-			if(dtorig) {ChangeTimestep(dt,dtorig,t); dtorig=0.0;}
+			if(dtorig) {ChangeTimestep(dt,dtorig,t,sample); dtorig=0.0;}
 		}
 		else if(sample == 0.0) dump(it,0,tmax);
 		
@@ -61,7 +65,7 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 			if(forwards ? t+dt > tstop : t+dt < tstop) {
 				if(t==tstop) break;
 				dtorig=dt;
-				ChangeTimestep(dt,tstop-t,t);
+				ChangeTimestep(dt,tstop-t,t,sample);
 				itx=microsteps-1; // This is the final iteration.
 			}
 			cont=1;
@@ -69,18 +73,19 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 				switch(Solve(t,dt))	{
 				case ADJUST:
 					t += dt;
-					ChangeTimestep(dt,sign*min(sign*dt*stepfactor,dtmax),t);
+					ChangeTimestep(dt,sign*min(sign*dt*stepfactor,dtmax),t,
+								   sample);
 					cont=0;	break;
 				case SUCCESSFUL:
 					t += dt;
-					if(dtold) {ChangeTimestep(dt,dtold,t); dtold=0.0;}   
+					if(dtold) {ChangeTimestep(dt,dtold,t,sample); dtold=0.0;}  
 					cont=0;	break;
 				case NONINVERTIBLE:
 					if(!dtold) dtold=dtorig ? dtorig : dt;
 					invert_cnt++;
-					ChangeTimestep(dt,dt*stepnoninverse,t); break;
+					ChangeTimestep(dt,dt*stepnoninverse,t,sample); break;
 				case UNSUCCESSFUL:
-					ChangeTimestep(dt,dt*stepinverse,t);
+					ChangeTimestep(dt,dt*stepinverse,t,sample);
 				}
 			} while(cont);
 			iteration++;
@@ -89,7 +94,7 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 	}
 	
 	if(verbose) cout << endl;
-	if(dtorig) ChangeTimestep(dt,dtorig,t);
+	if(dtorig) ChangeTimestep(dt,dtorig,t,sample);
 	if(sample >= 0.0) dump(it,1,tmax);
 	dt *= sign;
 }	
