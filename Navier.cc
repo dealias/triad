@@ -42,8 +42,6 @@ int ngridy=0;
 int movie=0;
 int truefield=0;
 
-Real Dx=1.0;
-
 NWaveVocabulary::NWaveVocabulary()
 {
 	Vocabulary=this;
@@ -88,8 +86,6 @@ NWaveVocabulary::NWaveVocabulary()
 	VOCAB(ngridy,0,INT_MAX);
 	VOCAB(movie,0,1);
 	VOCAB(truefield,0,1);
-	
-	VOCAB(Dx,0.0,STD_MAX);
 	
 	GeometryTable=new Table<GeometryBase>("Geometry");
 
@@ -255,24 +251,24 @@ void NWave::InitialConditions()
 			
 			xcoeff=new Complex [ngridx*Npsi];
 			for(m=0; m < Npsi; m++) {
-				Real DkDxinv=1.0/(Dx*Geometry->Area(m));
+				Real Dkinv=1.0/Geometry->Area(m);
 				Real kx=Geometry->X(m);
 				Real norm=sqrt(Geometry->Normalization(m)/Geometry->K2(m));
 				for(i=0; i < ngridx; i++) {
 					Complex *p=xcoeff+i*Npsi;
 					Real X=i*L/ngridx;
-					p[m]=expi(kx*X*DkDxinv)*norm;
+					p[m]=expi(kx*X*Dkinv)*norm;
 				}				
 			}
 			
 			ycoeff=new Complex [ngridy*Npsi];
 			for(m=0; m < Npsi; m++) {
 				Real ky=Geometry->Y(m);
-				Real DkDxinv=1.0/(Dx*Geometry->Area(m));
+				Real Dkinv=1.0/Geometry->Area(m);
 				for(int j=0; j < ngridy; j++) {
 					Complex *q=ycoeff+j*Npsi;
 					Real Y=j*L/ngridy;
-					q[m]=expi(ky*Y*DkDxinv);
+					q[m]=expi(ky*Y*Dkinv);
 				}
 			}
 		}
