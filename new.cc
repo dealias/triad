@@ -17,6 +17,13 @@ void *operator new(size_t size)
 	return mem;
 }
 
+void *operator new(size_t size, int)
+{
+	void *mem=calloc(size,1);
+	if(size && !mem) (my_new_handler)();
+	return mem;
+}
+
 void operator delete(void *ptr)
 {
 	free(ptr);

@@ -23,6 +23,7 @@
 #endif // _MAC
 
 #include <new.h>
+void *operator new(size_t size, int);
 void *operator new(size_t size, void *ptr, int new_len);
 
 #include "precision.h"

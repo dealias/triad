@@ -65,8 +65,8 @@ public:
 	virtual char *Name() {return "";}
 	virtual void LinearSrc(Var *, Var *, double) {}
 	virtual void NonLinearSrc(Var *, Var *, double) {}
-	virtual void Transform(Var *, double, double) {}
-	virtual void BackTransform(Var *, double, double) {}
+	virtual void Transform(Var *, double, double, Var *&) {}
+	virtual void BackTransform(Var *, double, double, Var *) {}
 	virtual void Initialize() {}
 	virtual void FinalOutput() {}
 	virtual int Microprocess() {return 0;}
@@ -83,7 +83,7 @@ class IntegratorBase {
 protected:
 	char *abbrev;
 	int ny,nyprimary;
-	Var *y0, *source;
+	Var *y0, *yi, *source;
 	double tolmax2,tolmin2;
 	double stepfactor,stepinverse,stepnoninverse;
 	double dtmax;
