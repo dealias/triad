@@ -123,7 +123,7 @@ static double ComputeAverage(Bin<Polar> *k, Bin<Polar> *p, Bin<Polar> *q)
 	// Call adaptive Simpson integration routine.
 	// See documentation in simp for a description of possible errors.
 	if(!simpfast(pint,a,b,acc,ans,dxmax,iflag))
-		msg(ERROR,"First nested call to simp returned code %d",iflag);
+		msg(OVERRIDE,"First nested call to simp returned code %d",iflag);
 	return ans;
 }
 
@@ -143,7 +143,7 @@ static double pint(double p0)
 	dxmax=0.4*(qg-ql);
 
 	if(!simpfast(kint,a,b,acc,ans,dxmax,iflag))
-		msg(ERROR,"Second nested call to simp returned code %d",iflag);
+		msg(OVERRIDE,"Second nested call to simp returned code %d",iflag);
 	return p*ans;
 }
 
@@ -158,7 +158,7 @@ inline void rbarterm(double a, double b, int coeffa0, int coeffb0,
 	
 	if(b > a*(1.0+sgn1(a)*eps)) {
 		if(!simpfast(rint0,a,b,acc,ans,dxmax3,iflag))
-			msg(ERROR,"Third nested call to simp returned code %d",iflag);
+			msg(OVERRIDE,"Third nested call to simp returned code %d",iflag);
 		sum+=ans;
 	}
 }

@@ -58,8 +58,10 @@ simpfast(Real (*f)(Real),	// Pointer to function to be integrated.
 		area -= diff;
 
 		iflag=0;
-		if(dx <= foureps*alpha) iflag=2; 
-		if(p >= pstop) iflag=3;
+		if(dx <= foureps*alpha)
+			iflag=2; 
+		if(p >= pstop)
+			iflag=3;
 		if(fabs(diff) <= acc*fabs(area) && da <= dxmax) iflag=1;
 		
 		if(iflag) {
