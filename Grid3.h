@@ -1,6 +1,8 @@
 #ifndef __Grid3_h__
 #define __Grid3_h__ 1
 
+// Needs to be generalized to handle ExtendedDirichlet *****
+
 #include "MultiGrid.h"
 
 template<class T>
@@ -40,6 +42,9 @@ public:
 	int Nx1bc() {return nx1bc;}
 	int Ny1bc() {return ny1bc;}
 	int Nz1bc() {return nz1bc;}
+	int Ox() {return ox;}
+	int Oy() {return oy;}
+	int Oz() {return oz;}
 	Real Hx() {return hx;}
 	Real Hy() {return hy;}
 	Real Hz() {return hz;}
@@ -267,6 +272,7 @@ public:
 	}
 	
 	void XDirichlet(const Array3<T>& u, const Array3<T>& b, int contract=0) {
+		if(homogeneous) return;
 		int nx0,ny0bc,nz0bc;
 		if(contract) {nx0=nx1; ny0bc=ny1bc; nz0bc=nz1bc;}
 		else {nx0=nx; ny0bc=nybc; nz0bc=nzbc;} 
@@ -294,22 +300,6 @@ public:
 			for(int k=0; k < nzbc; k++) {
 				u0j[k]=u2j[k];
 				unx1j[k]=unxm1j[k];
-			}
-		}
-	}
-	
-	void XDirichletInNeumann(const Array3<T>& u, T b0, T b1) {
-		if(homogeneous) {b0=b1=0.0;}
-		else {b0 *= 2.0; b1 *= 2.0;}
-		Array2<T> u0=u[0], u2=u[2], unxm1=u[nx-1], unx1=u[nx+1];
-		for(int j=0; j < nybc; j++) {
-			Array1(T) u0j=u0[j];
-			Array1(T) u2j=u2[j];
-			Array1(T) unxm1j=unxm1[j];
-			Array1(T) unx1j=unx1[j];
-			for(int k=0; k < nzbc; k++) {
-				u0j[k]=b0-u2j[k];
-				unx1j[k]=b1-unxm1j[k];
 			}
 		}
 	}
@@ -380,6 +370,7 @@ public:
 	}
 	
 	void YDirichlet(const Array3<T>& u, const Array3<T>& b, int contract=0) {
+		if(homogeneous) return;
 		int nx0bc,ny0,nz0bc;
 		if(contract) {nx0bc=nx1bc; ny0=ny1; nz0bc=nz1bc;} 
 		else {nx0bc=nxbc; ny0=ny; nz0bc=nzbc;} 
@@ -406,22 +397,6 @@ public:
 			for(int k=0; k < nzbc; k++) {
 				ui0[k]=ui2[k];
 				uiny1[k]=uinym1[k];
-			}
-		}
-	}
-	
-	void YDirichletInNeumann(const Array3<T>& u, T b0, T b1) {
-		if(homogeneous) {b0=b1=0.0;}
-		else {b0 *= 2.0; b1 *= 2.0;}
-		for(int i=0; i < nxbc; i++) {
-			Array2<T> ui=u[i];
-			Array1(T) ui0=ui[0];
-			Array1(T) ui2=ui[2];
-			Array1(T) uinym1=ui[ny-1];
-			Array1(T) uiny1=ui[ny+1];
-			for(int k=0; k < nzbc; k++) {
-				ui0[k]=b0-ui2[k];
-				uiny1[k]=b1-uinym1[k];
 			}
 		}
 	}
@@ -469,6 +444,7 @@ public:
 	}
 	
 	void ZDirichlet(const Array3<T>& u, const Array3<T>& b, int contract=0) {
+		if(homogeneous) return;
 		int nx0bc,ny0bc,nz0;
 		if(contract) {nx0bc=nx1bc; ny0bc=ny1bc; nz0=nz1;} 
 		else {nx0bc=nxbc; ny0bc=nybc; nz0=nz;} 
@@ -490,19 +466,6 @@ public:
 				Array1(T) uij=ui[j];
 				uij[0]=uij[2];
 				uij[nz+1]=uij[nz-1];
-			}
-		}
-	}
-	
-	void ZDirichletInNeumann(const Array3<T>& u, T b0, T b1) {
-		if(homogeneous) {b0=b1=0.0;}
-		else {b0 *= 2.0; b1 *= 2.0;}
-		for(int i=0; i < nxbc; i++) {
-			Array2<T> ui=u[i];
-			for(int j=0; j < nybc; j++) {
-				Array1(T) uij=ui[j];
-				uij[0]=b0-uij[2];
-				uij[nz+1]=b1-uij[nz-1];
 			}
 		}
 	}

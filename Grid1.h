@@ -20,6 +20,7 @@ public:
 	int Nx() {return nx;}
 	int Nxbc() {return nxbc;}
 	int Nx1bc() {return nx1bc;}
+	int Ox() {return ox;}
 	Real Hx() {return hx;}
 	
 	void Allocate(int allocate=1) {
@@ -96,6 +97,7 @@ public:
 	}
 	
 	void XDirichlet(const Array1<T>& u, const Array1<T>& b, int contract=0) {
+		if(homogeneous) return;
 		int nx0;
 		if(contract) nx0=nx1;
 		else nx0=nx;
@@ -104,6 +106,7 @@ public:
 	}
 	
 	void XDirichlet2(const Array1<T>& u, const Array1<T>& b, int contract=0) {
+		if(homogeneous) return;
 		int nx0;
 		if(contract) nx0=nx1;
 		else nx0=nx;
@@ -125,30 +128,6 @@ public:
 		u[nx+2]=u[nx-2];
 	}
 	
-	void XDirichletInNeumann(const Array1<T>& u, T b0, T b1) {
-		if(homogeneous) {b0=b1=0.0;}
-		else {b0 *= 2.0; b1 *= 2.0;}
-		u[0]=b0-u[2];
-		u[nx+1]=b1-u[nx-1];
-	}
-	
-	void XDirichletInNeumann2(const Array1<T>& u, T b0, T b1) {
-		if(homogeneous) {
-			u[-1]=b0-u[3];
-			u[0]=b0-u[2];
-			u[1]=b0;
-			u[nx]=b1;
-			u[nx+1]=b1-u[nx-1];
-			u[nx+2]=b1-u[nx-2];
-		} else {
-			b0 *= 2.0; b1 *= 2.0;
-			u[-1]=b0-u[3];
-			u[0]=b0-u[2];
-			u[nx+1]=b1-u[nx-1];
-			u[nx+2]=b1-u[nx-2];
-		}
-	}
-	
 	void XConstant(const Array1<T>& u) {
 		u[0]=u[1];
 		u[nx+1]=u[nx];
@@ -157,11 +136,6 @@ public:
 	void XConstant2(const Array1<T>& u) {
 		u[0]=u[-1]=u[1];
 		u[nx+2]=u[nx+1]=u[nx];
-	}
-	
-	void XConstant3(const Array1<T>& u) {
-		u[0]=u[-1]=u[-2]=u[1];
-		u[nx+3]=u[nx+2]=u[nx+1]=u[nx];
 	}
 	
 	void XMixedA(const Array1<T>& u) {

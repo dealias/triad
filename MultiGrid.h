@@ -25,6 +25,12 @@ public:
 	int Resolution(int radix, int lvl) const {return pow(radix,lvl+1)-1;}
 };
 
+class ExtendedDirichletBC : public BC {
+public:	
+	ExtendedDirichletBC() {internal=2; external=2; ioff=-1;}
+	int Resolution(int radix, int lvl) const {return pow(radix,lvl)-1;}
+};
+
 class NeumannBC : public BC {
 public:	
 	NeumannBC() {internal=0; external=2; offset=-1;}
@@ -43,15 +49,15 @@ public:
 	int Resolution(int radix, int lvl) const {return pow(radix,lvl+1)-1;}
 };
 
+class ExtendedDirichletBC2 : public BC {
+public:	
+	ExtendedDirichletBC2() {internal=2; external=4; ioff=-2;}
+	int Resolution(int radix, int lvl) const {return pow(radix,lvl)-1;}
+};
+
 class NeumannBC2 : public BC {
 public:	
 	NeumannBC2() {internal=0; external=4; ioff=-1; offset=-1;}
-	int Resolution(int radix, int lvl) const {return pow(radix,lvl)+1;}
-};
-
-class NeumannBC3 : public BC {
-public:	
-	NeumannBC3() {internal=0; external=6; ioff=-2; offset=-1;}
 	int Resolution(int radix, int lvl) const {return pow(radix,lvl)+1;}
 };
 
@@ -61,24 +67,19 @@ public:
 	int Resolution(int radix, int lvl) const {return pow(radix,lvl+1);}
 };
 
-class PeriodicBC3 : public BC {
-public:	
-	PeriodicBC3() {internal=1; external=5; ioff=-2;}
-	int Resolution(int radix, int lvl) const {return pow(radix,lvl+1);}
-};
-
 const DirichletBC Dirichlet[1];
 const DirichletBC2 Dirichlet2[1];
+
+const ExtendedDirichletBC ExtendedDirichlet[1];
+const ExtendedDirichletBC2 ExtendedDirichlet2[1];
 
 const NeumannBC Neumann[1];
 const NeumannBC2 Neumann2[1];
 
 const PeriodicBC Periodic[1];
 const PeriodicBC2 Periodic2[1];
-const PeriodicBC3 Periodic3[1];
 
 const PeriodicBC MixedB[1];
-
 const PeriodicBC MixedB2[1];
 
 class Limits {
