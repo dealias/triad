@@ -23,6 +23,9 @@ struct TriadLimits {
 };
 
 extern int Ntriad;
+extern int discrete;
+extern int movie;
+extern int truefield;
 
 extern Var *pqbuffer;
 extern Var **pqIndex;

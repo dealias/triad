@@ -35,7 +35,6 @@ extern int output;
 extern int hybrid;
 extern int override;
 extern int verbose;
-extern int discrete;
 
 class ParamBase {
 	int nvar;
