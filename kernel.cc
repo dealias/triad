@@ -211,6 +211,12 @@ int main(int argc, char *argv[])
 		errno=0;
 	}
 
+	if(checkpoint && tmpdir) {
+		strstream buf;
+		buf << tmpdir << dirsep << Vocabulary->FileName("","") << ends;
+		mkdir(buf.str(),0xFFFF);
+	}
+					
 	t=0.0;
 	Problem->InitialConditions();
 	y=Problem->Vector();
@@ -352,17 +358,10 @@ void dump(int it, int final, double tmax)
 				strstream rcheck;
 				if(tmpdir) rcheck << tmpdir << dirsep;
 				rcheck << rname << "." << iter-microsteps << ends;
-				if(tmpdir) {
-					strstream buf;
-					buf << tmpdir << dirsep << Vocabulary->FileName("","")
-						<< ends;
-					mkdir(buf.str(),0xFFFF);
-					copy(rname,rcheck.str());
-				} else {
-					rename(rname,rcheck.str());
-					msg(WARNING,"Cannot rename %s to checkpoint file %s",rname,
-						rcheck.str());
-				}
+				if(tmpdir ? copy(rname,rcheck.str()) : 
+				   rename(rname,rcheck.str()))
+					msg(WARNING,"Cannot copy %s to checkpoint file %s",
+						rname,rcheck.str());
 			}
 			if(rename(rtemp,rname))
 				msg(WARNING,"Cannot rename restart file %s",rtemp);
