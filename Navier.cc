@@ -340,7 +340,6 @@ void NWave::Output(int)
 	}
 	
 	if(movie) {
-		lock();
 		if(strcmp(method,"SR") == 0 && !(discrete && truefield)) {
 			fpsi << ngridx << ngridy << 1;
 			for(int j=ngridy-1; j >= 0; j--) {
@@ -373,7 +372,6 @@ void NWave::Output(int)
 		}
 		fpsi.flush();
 		if(!fpsi) msg(ERROR, "Cannot write to movie file psi");
-		unlock();
 	}
 	
 	tcount++;
