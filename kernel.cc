@@ -398,6 +398,7 @@ void statistics(int it)
 			errno=0;
 			msg(SLEEP,"Cannot write to restart file %s",rtemp);
 			statistics(it); // Try again;
+			return;
 		}		  
 	} else if(it == 0) msg(ERROR,"Could not open restart file %s",rtemp);
 	
