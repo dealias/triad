@@ -73,8 +73,8 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 	
 	// Compute moments
 	if(average && Nmoment > 0) {
-		kstop=k+Npsi;
 		q=source+Npsi;
+		kstop=psi+Npsi;
 		for(k=psi; k < kstop; k++) {
 			Var prod,psi=*k;
 			*(q++)=prod=product(psi,psi);		// psi^2
