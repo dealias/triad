@@ -333,10 +333,7 @@ int main(int argc, char *const argv[])
 		exit(1);
 	}
 	
-	if(nfiles > 1 || pointsize) {
-		convertprog="montage";
-		if(!pointsize) pointsize=12;
-	} else convertprog="convert";
+	convertprog=(nfiles > 1 || pointsize) ? "montage" : "convert";
 	
 	char *const *argf=argv+optind;
 		
@@ -538,18 +535,21 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 	strstream buf;
 	
 	buf << convertprog << " -size " << xsize << "x" << ysize
-		<< " -geometry " << xsize << "x" << ysize << " -interlace none";
-	if(pointsize) buf << " -pointsize " << pointsize;
+		<< " -geometry " << xsize << "x" << ysize << " -interlace none ";
+	if(pointsize) buf << "-pointsize " << pointsize << " ";
 	for(int f=0; f < nfiles; f++) {
 		char *fieldname=argf[f];
-		buf << " -label \"";
-		if(!(floating_scale || byte)) 
-			buf << setprecision(2) << vminf[f]
-				<< separator << setprecision(2) << vmaxf[f] << "\\n";
-		buf << fieldname << "\" " << format << ":" << rgbdir << fieldname
-			<< setfill('0') << setw(4) << n << "." << format;
+		if(pointsize) {
+			buf << " -label \"";
+			if(!(floating_scale || byte)) 
+				buf << setprecision(2) << vminf[f]
+					<< separator << setprecision(2) << vmaxf[f] << "\\n";
+			buf << fieldname << "\" ";
+		}
+		buf << format << ":" << rgbdir << fieldname
+			<< setfill('0') << setw(4) << n << "." << format << " ";
 	}
-	buf << " " << yuvinterlace << type << ":" << rgbdir << argf[0] << n;
+	buf << yuvinterlace << type << ":" << rgbdir << argf[0] << n;
 #if !NEW_IMAGEMAGIK	
 	if(strcmp(type,"yuv3") != 0)
 #endif
@@ -625,6 +625,7 @@ extern char **environ;
 
 int system (char *command) {
 	int pid, status;
+	static cleaning=0;
 
 	if (command == 0) return 1;
 	pid = fork();
@@ -644,6 +645,8 @@ int system (char *command) {
 			if (errno != EINTR) return -1;
 		} else {
 			if(status != 0) {
+				if(cleaning) return status;
+				cleaning=1; cleanup();
 				msg(ERROR,"%s\nReceived signal %d",command,status);
 			}
 			return status;
