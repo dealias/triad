@@ -1,8 +1,8 @@
 /* These routines calculate the geometric weight factors for a polar
    coordinate partition of the Fourier wavenumber space. The input
    arguments to the function BinAverage() are the six coordinates
-   specifying the magnitude and angular limits of the three bins which are
-   integrated over.  */
+   specifying the magnitude and angular limits of the three bins over
+   which the integration is preformed. */
 
 #include "options.h"
 #include "Polar.h"
@@ -15,7 +15,7 @@ inline void SortBins(Bin<Polar,Cartesian> *& k, Bin<Polar,Cartesian> *& q,
 	volatile Polar Dk=k->Delta(), Dq=q->Delta();
 
 	if(Dk.th > Dq.th || (Dk.th == Dq.th && Dk.r > Dq.r)) { 
-		swap(k,q); cnt+=level;
+		swap(k,q); cnt += level;
 	}
 }
 
@@ -49,7 +49,7 @@ Real BinAverage(Bin<Polar,Cartesian> *k, Bin<Polar,Cartesian> *p,
 
 inline void checklim(double& al, double& ag, double offset)
 {
-	al-=offset; ag-=offset;
+	al -= offset; ag -= offset;
 	if(al > ag) msg(ERROR,"Invalid limits (%.15g > %.15g)",al,ag);
 	if(ag-al > twopi) ag=al+twopi;
 }
@@ -57,8 +57,8 @@ inline void checklim(double& al, double& ag, double offset)
 // This routine returns the branch of a in the interval [br,br+2\pi]. 
 inline double branch(double a, double br)
 {
-	while(a < br) a+=twopi;
-	while(a > br+twopi) a-=twopi;
+	while(a < br) a += twopi;
+	while(a > br+twopi) a -= twopi;
 	return a;
 }
 
@@ -124,10 +124,10 @@ static double ComputeAverage(Bin<Polar,Cartesian> *k, Bin<Polar,Cartesian> *p,
 	b=pg;
 	dxmax=0.4*(qg-ql);
 
-	// Call adaptive Simpson integration routine.
-	// See documentation in simp for a description of possible errors.
-	if(!simpfast(pint,a,b,acc,ans,dxmax,iflag))
-		msg(OVERRIDE,"First nested call to simp returned code %d",iflag);
+	// Call the adaptive Simpson integration routine.
+	// See documentation in simpfast for a description of possible errors.
+	if(simpfast(pint,a,b,acc,ans,dxmax,iflag))
+		msg(ERROR,"First nested call to simpfast returned code %d",iflag);
 	return ans;
 }
 
@@ -146,8 +146,8 @@ static double pint(double p0)
 	b=kg;
 	dxmax=0.4*(qg-ql);
 
-	if(!simpfast(kint,a,b,acc,ans,dxmax,iflag))
-		msg(OVERRIDE,"Second nested call to simp returned code %d",iflag);
+	if(simpfast(kint,a,b,acc,ans,dxmax,iflag))
+		msg(ERROR,"Second nested call to simpfast returned code %d",iflag);
 	return p*ans;
 }
 
@@ -161,9 +161,9 @@ inline void rbarterm(double a, double b, int coeffa0, int coeffb0,
 	coeffa=coeffa0; coeffb=coeffb0; term=term0;
 	
 	if(b > a*(1.0+sgn1(a)*eps)) {
-		if(!simpfast(rint0,a,b,acc,ans,dxmax3,iflag))
-			msg(OVERRIDE,"Third nested call to simp returned code %d",iflag);
-		sum+=ans;
+		if(simpfast(rint0,a,b,acc,ans,dxmax3,iflag))
+			msg(ERROR,"Third nested call to simpfast returned code %d",iflag);
+		sum += ans;
 	}
 }
 
@@ -172,7 +172,7 @@ void rbarint(double r1, double r2)
 	int j,loopcount=1;
 	double r1true;
 	
-	if(r2 < 0.0) {r1+=twopi; r2+=twopi;}
+	if(r2 < 0.0) {r1 += twopi; r2 += twopi;}
 	r1true=r1;
 
 	if(r1 < 0.0) {r1=0.0; loopcount=2;}
@@ -226,8 +226,8 @@ static double kint(double k0)
 	}
 
 	r3=twopi-r2; r4=twopi-r1; // $r_{3,4}$ are from interval $[\pi,2\pi]$
-	r1-=roff; r2-=roff; // Subtract $r_{off}$ to obtain $\rb$ values
-	r3-=roff; r4-=roff;
+	r1 -= roff; r2 -= roff; // Subtract $r_{off}$ to obtain $\rb$ values
+	r3 -= roff; r4 -= roff;
 	sum=0.0;
 	
 	rbarint(r1,r2); // integrate over $[\rb_1,\rb_2]$ interval
@@ -254,7 +254,7 @@ static double rint0(double rbar)
 	y=-p*sinr; x=-k-p*cosr;
 	if(x == 0.0) theta=0.0; // atan2(y,0.0) is undefined.
 	else theta=atan2(y,x); // returns angle in $[-\pi,\pi]$
-	if(theta < 0.0) theta+=twopi; // we want $\th\in[0,2\pi]$
+	if(theta < 0.0) theta += twopi; // we want $\th\in[0,2\pi]$
 
 	b0=rbar+bl; g0=theta+al;
 	// $\a=\ab+\a_0, \b=\ab+b_0, \g=\ab+g_0$
@@ -267,17 +267,17 @@ static double rint0(double rbar)
 		// \Eq(angular)
 		if(hi > lo*epsplus1) switch(perm) {
 		case 0:
-			sum+=(*f)(k,p,q,a0,b0,g0,lo,hi); break;
+			sum += (*f)(k,p,q,a0,b0,g0,lo,hi); break;
 		case 1:
-			sum+=(*f)(k,q,p,a0,g0,b0,lo,hi); break;
+			sum += (*f)(k,q,p,a0,g0,b0,lo,hi); break;
 		case 2:
-			sum+=(*f)(p,q,k,b0,g0,a0,lo,hi); break;
+			sum += (*f)(p,q,k,b0,g0,a0,lo,hi); break;
 		case 3:
-			sum+=(*f)(p,k,q,b0,a0,g0,lo,hi); break;
+			sum += (*f)(p,k,q,b0,a0,g0,lo,hi); break;
 		case 4:
-			sum+=(*f)(q,k,p,g0,a0,b0,lo,hi); break;
+			sum += (*f)(q,k,p,g0,a0,b0,lo,hi); break;
 		case 5:
-			sum+=(*f)(q,p,k,g0,b0,a0,lo,hi); break;
+			sum += (*f)(q,p,k,g0,b0,a0,lo,hi); break;
 		}
 	}
 	return sum;

@@ -2,7 +2,6 @@
 #include "options.h"
 
 const int nest=100;
-const Real foureps=(4.0*REAL_EPSILON);
 
 typedef struct {
 	int lorr;
@@ -20,14 +19,15 @@ simpfast(Real (*f)(Real),	// Pointer to function to be integrated.
 		 // to prevent premature convergence of Simpson's rule.
 		 
 		 int& iflag 	// Error code:
-		 // 1=successful,
-		 // 2=interval underflow,
-		 // 3=nesting capacity exceeded,
+		 // 0=successful,
+		 // 1=nesting capacity exceeded,
+		 // Note: This routine ignores underflow.
 		 )
 {
 	Real diff, area, estl, estr, alpha, da, dx, wt, est, arg, fv[5];
 	TABLE table[nest],*p,*pstop;
 	
+	iflag=0;
 	p=table;
 	pstop=table+nest-1;
 	p->lorr=1;
@@ -57,18 +57,12 @@ simpfast(Real (*f)(Real),	// Pointer to function to be integrated.
 		diff=est - sum;
 		area -= diff;
 
-		iflag=0;
-		if(dx <= foureps*alpha)
-			iflag=2; 
-		if(p >= pstop)
-			iflag=3;
-		if(fabs(diff) <= acc*fabs(area) && da <= dxmax) iflag=1;
-		
-		if(iflag) {
+		if(p >= pstop) iflag=1;
+		if(iflag || fabs(diff) <= acc*fabs(area) && da <= dxmax) {
 			//  Accept approximate integral sum. If it was a right interval,
-			//  add results to finish at this level.  If it was a left 
-			//  interval process right interval. Array lorr indicates left or
-			//  right interval at each level.
+			//  add results to finish at this level.  If it was a left
+			//  interval, process right interval. Array lorr indicates left
+			//  or right interval at each level.
 
 			while (1) {
 				if (p->lorr == 0) { //  process right-half interval
@@ -83,7 +77,7 @@ simpfast(Real (*f)(Real),	// Pointer to function to be integrated.
 					break;
 				}
 				sum=p->psum + sum;
-				if(--p <= table) return (iflag==1);
+				if(--p <= table) return iflag;
 			}
 
 		} else {

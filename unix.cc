@@ -9,6 +9,7 @@
 #include <sys/times.h>
 #include <time.h>
 #include <string.h>
+#include <malloc.h>
 
 #if _CRAY
 #include <sys/types.h>

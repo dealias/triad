@@ -3,6 +3,9 @@
 
 #include <iomanip.h>
 
+char *machine(), *date();
+size_t memory();
+
 const char PROGRAM[]="TRIAD";
 const char VERSION[]="1.0";
 
@@ -19,7 +22,7 @@ IntegratorBase *Integrator;
 // Kernel variables
 static Var *y;
 static int ny;
-static int override_dt=0;
+static int explicit_dt=0;
 static int testing=0;
 static double cpu[ncputime],cpu0[ncputime];
 static final_iteration=0;
@@ -30,7 +33,7 @@ static ifstream fparam,fin;
 static ofstream fdump,fstat,fout,flock;
 
 // Global vocabulary declarations and default values
-int itmax=0;
+int itmax=-1;
 double tmax=0.0;
 double dt=0.0;
 int Nmoment=0;
@@ -106,12 +109,12 @@ void adjust_parameters(double& dt, double& dtmax, double& tmax, int& itmax)
 {
 	if(dt == 0.0) {
 		if(tmax == 0.0) tmax=1.0;
-		if(itmax == 0) itmax=100;
-		dt=abs(tmax/itmax);
+		if(itmax == -1) itmax=100;
+		dt=abs(tmax/(itmax ? itmax : 1));
 	}
 	
 	if(tmax == 0.0) tmax=DBL_MAX; 
-	else if(itmax == 0) itmax=INT_MAX;
+	else if(itmax == -1) itmax=INT_MAX;
 
 	if(dtmax == 0.0) dtmax=DBL_MAX;
 }	
@@ -119,11 +122,12 @@ void adjust_parameters(double& dt, double& dtmax, double& tmax, int& itmax)
 int main(int argc, char *argv[])
 {
 	int i;
-
 	cout.precision(REAL_DIG);
 	
 	cout << newl << PROGRAM << " version " << VERSION << 
 		" [(C) John C. Bowman and B. A. Shadwick 1996]" << newl;
+	
+	cout << newl << "MACHINE: " << machine() << " [" << date() << "]" << newl;
 	
 	cout << newl << "PROBLEM: " << Vocabulary->Name() << newl;
 	
@@ -134,7 +138,7 @@ int main(int argc, char *argv[])
 	for(i=1; i < argc; i++) Vocabulary->Assign(argv[i]);
 	
 	// Allow time step to be overridden from command line (even on restarts).
-	if(dt) override_dt=1; 
+	if(dt) explicit_dt=1; 
 	
 	if(run == NULL) {run="test"; testing=1; clobber=1;}
 	
@@ -162,10 +166,9 @@ int main(int argc, char *argv[])
 	}
 	
 	for(i=1; i < argc; i++) Vocabulary->Assign(argv[i]);
-	
+	adjust_parameters(dt,dtmax,tmax,itmax);
 	cout << newl << "PARAMETERS:" << newl << newl;
 	Vocabulary->List(cout);
-	
 	
 	if(!testing) {
 		fdump.open(ptemp);
@@ -204,7 +207,6 @@ int main(int argc, char *argv[])
 	if(!restart) Problem->Initialize();
 	
 	Integrator->Allocate(ny);
-	adjust_parameters(dt,dtmax,tmax,itmax);
 	
 	Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,dtmax,itmax,
 						 microsteps,verbose);
@@ -231,7 +233,9 @@ int main(int argc, char *argv[])
 	cout << newl;
 	cout << "INTEGRATION TIMING STATISTICS:" << newl <<	"            CPU = "
 		 << cpu[0] << ", CHILD = " << cpu[1] <<  ", SYS = " << cpu[2] << newl;
-	cout << endl;
+	
+	cout << newl << "DYNAMIC MEMORY ALLOCATED: " << memory() << " bytes ["
+		 << date() << "]" << newl << endl; 
 	
 	if(!testing) mailuser("completed");
 	return exit_signal;
@@ -280,7 +284,7 @@ void read_init()
 	finit.close();
 	if(!finit.good())
 		msg(ERROR,"Cannot read from initialization file %s",iname);
-	if(!override_dt) dt=dt0;
+	if(!explicit_dt) dt=dt0;
 	if(restart) {t=t0; last_dump=t;}
 }
 

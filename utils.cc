@@ -3,8 +3,13 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <time.h>
+#include <sys/utsname.h>
 
 #include "utils.h"
+
+extern "C" int gethostname(char *name, size_t len);
+extern "C" int getdomainname(char *name, size_t len);
 
 char* run=NULL;
 Exit_code exit_signal=COMPLETE;
@@ -161,6 +166,29 @@ void check_match(int match_type, char *object, char *key)
 	return;
 }
 
+const int ndate=64;
+char time_date[ndate];
+
+char *date()
+{
+	const time_t bintime=time(NULL);
+	strftime(time_date,ndate,"%a %b %d %H:%M:%S %Z %Y",localtime(&bintime));
+	return time_date;
+}
+
+struct utsname platform;
+char machine_name[256];
+
+char *machine()
+{
+	uname(&platform);
+	char *domain=platform.domainname;
+	if(strcmp(domain,"(none)") == 0) domain="";
+	sprintf(machine_name,"%s%s%s (%s)",platform.nodename,
+			(*domain) ? "." : "",domain,platform.machine);
+	return machine_name;
+}
+	
 int abort_flag=1; 	// If nonzero, abort program after a fatal error.
 int beep_enabled=1; // If nonzero, enable terminal beeping during errors.
 
