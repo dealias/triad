@@ -1,4 +1,4 @@
-TRI = .
+TRI = $(HOME)/tri
 ARCH = unix
 FFT = fft
 POLL = poll
