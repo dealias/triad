@@ -81,15 +81,15 @@ public:
     if(size) {
       size--;
       value=v[size];
-      return 1;
-    } else return 0;
+      return 0;
+    } else return -1;
   }
   
   int Pop() {
     if(size) {
       size--;
-      return 1;
-    } else return 0;
+      return 0;
+    } else return -1;
   }
   
   // Pop v[i], close up, and return v[i].
@@ -98,8 +98,8 @@ public:
       value=v[i];
      for (unsigned int j=i+1; j < size; j++) v[j-1]=v[j];
       size--;
-      return 1;
-    } else return 0;
+      return 0;
+    } else return -1;
   }
   
   void Expand(unsigned int i) {if (i > alloc) Realloc(i);}
