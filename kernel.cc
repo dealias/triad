@@ -348,6 +348,7 @@ void dump(int it, int final, double tmax)
 		unlock();
 	}
 	
+	static int last_iter=0;
 	int iter=final_iteration+iteration;
 
 	oxstream frestart(rtemp);
@@ -362,12 +363,13 @@ void dump(int it, int final, double tmax)
 			if(checkpoint && it > 0 && (it-1) % checkpoint == 0) {
 				strstream rcheck;
 				if(tmpdir) rcheck << tmpdir << dirsep;
-				rcheck << rname << "." << iter-microsteps << ends;
+				rcheck << rname << "." << last_iter << ends;
 				if(tmpdir ? copy(rname,rcheck.str()) : 
 				   rename(rname,rcheck.str()))
 					msg(WARNING,"Cannot copy %s to checkpoint file %s",
 						rname,rcheck.str());
 			}
+			last_iter=iter;
 			if(rename(rtemp,rname))
 				msg(WARNING,"Cannot rename restart file %s",rtemp);
 		}

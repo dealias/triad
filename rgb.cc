@@ -1,5 +1,5 @@
 /* RGB:  A movie production utility
-Copyright (C) 1997 John C. Bowman (bowman@math.ualberta.ca)
+Copyright (C) 1998 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
