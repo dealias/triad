@@ -178,6 +178,7 @@ enum ErrorCode {WARNING_,OVERRIDE_,SLEEP_,ERROR_};
 #define ERROR_GLOBAL ERROR_,"",0
 
 inline void Array::ArrayExit(char *x) {msg(ERROR_GLOBAL,x);}
+inline void DynVectorExit(char *x) {msg(ERROR_GLOBAL,x);}
 	
 enum ExitCode {FATAL=-1,CONTINUE,COMPLETE};
 extern ExitCode exit_signal;

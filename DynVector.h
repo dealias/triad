@@ -23,12 +23,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #include <stdlib.h>
 #include <iostream.h>
 
-namespace Array {
-  
-inline void ArrayExit(char *x);
+inline void DynVectorExit(char *x);
 
-#ifndef __ExternalArrayExit
-inline void ArrayExit(char *x)
+#ifndef __ExternalDynVectorExit
+inline void DynVectorExit(char *x)
 {
   cout << _newl << "ERROR: " << x << "." << endl;
   exit(1);
@@ -171,7 +169,7 @@ public:
   StackVector(unsigned int s) {Allocate(s);}
   
   T& operator [] (unsigned int i) {
-    if (i >= size) ArrayExit("Attempt to access past end of StackVector");
+    if (i >= size) DynVectorExit("Attempt to access past end of StackVector");
     return v[i];
   }
 	
@@ -183,7 +181,5 @@ public:
     return *this;
   }
 };
-
-}
 
 #endif

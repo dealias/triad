@@ -23,6 +23,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <sys/stat.h> // On the sun this must come after xstream.h
 #include <iomanip.h>
 
+using namespace Array;
+
 const char PROGRAM[]="TRIAD";
 const char VERSION[]="1.21";
 

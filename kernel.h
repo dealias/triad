@@ -10,6 +10,7 @@
 #include <string.h>
 #include <strstream.h>
 
+#define __ExternalDynVectorExit
 #include "DynVector.h"
 #include "Table.h"
 
