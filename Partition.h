@@ -49,8 +49,8 @@ public:
 	Real X() {return cen.X();}
 	Real Y() {return cen.Y();}
 	
-	int InBin(const D& m) {return (m >= min && m < max);}
-	void Count(const D& m) {if(InBin(m)) mode[nmode++]=m;}
+	int InBin(const D& m) {return InInterval(m,min,max);}
+	void Count(const D& m) {if(InBin(m)) mode.Set(nmode++,m);}
 	void MakeModes();
 };
 

@@ -33,14 +33,10 @@ public:
 	Real Y() const {return r*sin(th);}
 };
 
-inline int operator >= (const Cartesian& x, const Polar& y)
+inline int InInterval(const Cartesian& x, const Polar& a, const Polar& b)
 {
-	return x.K() >= y.K() && x.Th() >= y.Th();
-}
-
-inline int operator < (const Cartesian& x, const Polar& y)
-{
-	return x.K() < y.K() && x.Th() < y.Th();
+	Real xK=x.K(), xTh=x.Th();
+	return xK >= a.K() && xK < b.K() && xTh >= a.Th() && xTh < b.Th();
 }
 
 inline int operator == (const Polar& x, const Polar& y)

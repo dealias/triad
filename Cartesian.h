@@ -10,7 +10,8 @@ class Cartesian {
 public:	
 	int x,y;	// wavenumber components
 	
-	Cartesian(int column=0, int row=0) : x(column), y(row) {}
+	Cartesian() {}
+	Cartesian(int column, int row) : x(column), y(row) {}
 	Real K2() const {return x*x+y*y;}
 	Real K() const {return sqrt(K2());}
 	Real Th() const {

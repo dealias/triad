@@ -128,8 +128,8 @@ void Bin<Polar,Cartesian>::MakeModes()
 		}
 		w++;
 	}
-	for(int i=0; i < nmode; i++) cout << mode[i] << endl;
-	cout << endl;
+	mode.Resize(nmode);
+	cout << mode << endl;
 }
 
 static const Real linacc=0.01;

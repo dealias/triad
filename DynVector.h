@@ -20,6 +20,11 @@ public:
 		if (i >= sz) v=new(v,sz=max(i+1,2*sz)) (T);
 		return v[i];
 	}
+	T Set (int i, T m) {
+		if (i >= sz) v=new(v,sz=max(i+1,2*sz)) (T);
+		return v[i]=m;
+	}
+	
 	void Resize(int i) {v=new(v,sz=i) (T);}
 
 	DynVector<T> operator = (const T *A) {
@@ -29,9 +34,9 @@ public:
 };
 
 template<class T>
-ostream& operator << (ostream& s, const DynVector<T>& A)
+ostream& operator << (ostream& s, DynVector<T>& A)
 {
-	int i, sz=A.size();
+	int i, sz=A.Size();
 	for(i=0; i < sz; i++) s << A[i] << " ";
 	return s;
 }
