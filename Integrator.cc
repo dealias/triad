@@ -130,8 +130,9 @@ void IntegratorBase::SetProblem(ProblemBase& problem)
   Problem=&problem;
 }
 
-void IntegratorBase::Alloc0(vector2& Y,const vector& y)
+void IntegratorBase::Alloc(vector2& Y, vector& y)
 {
+  Allocate1(y,ny);
   DynVector<unsigned int> *NY=Problem->Index();
   unsigned int nfields=NY->Size();
   Allocate1(Y,nfields);
@@ -143,10 +144,10 @@ void IntegratorBase::Alloc0(vector2& Y,const vector& y)
   }
 }
 
-void IntegratorBase::Alloc(vector2& Y, vector& y)
+void IntegratorBase::Alloc0(vector2& Y, vector& y)
 {
-  Allocate1(y,ny);
-  Alloc0(Y,y);
+  Alloc(Y,y);
+  for(unsigned int i=0; i < ny; i++) y[i]=0.0;
 }
 
 void IntegratorBase::Allocate()
@@ -157,7 +158,7 @@ void IntegratorBase::Allocate()
   unsigned int nfields=NY->Size();
   ny=0;
   for(unsigned int i=0; i < nfields; i++) ny += (*NY)[i];
-  Alloc(Src,source);
+  Alloc0(Src,source);
   
   Dimension1(errmask,Problem->ErrorMask());
   Dimension1(y,Problem->Vector());

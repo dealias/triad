@@ -56,7 +56,7 @@ class IntegratorBase {
 		 const Var& corr);
   Solve_RC CheckError();
   
-  void Alloc0(vector2& Y, const vector& y);
+  void Alloc0(vector2& Y, vector& y);
   void Alloc(vector2& Y, vector& y);
   
   void Alloc(vector2& A, vector& a, const vector2& B, const vector& b) {
@@ -140,8 +140,8 @@ class AdamsBashforth : public IntegratorBase {
   void Allocate() {
     IntegratorBase::Allocate();
     Alloc(Y0,y0);
-    Alloc(Src0,source0);
-    Alloc(Src1,source1);
+    Alloc0(Src0,source0);
+    Alloc0(Src1,source1);
     init=2;
   }
   const char *Name() {return "Third-Order Adams-Bashforth";}
@@ -168,7 +168,7 @@ class PC : public IntegratorBase {
   void Allocate() {
     IntegratorBase::Allocate();
     Alloc(Y0,y0);
-    Alloc(Src0,source0);
+    Alloc0(Src0,source0);
     new_y0=1;
     pgrow=0.5/order; pshrink=(order > 1) ? 0.5/(order-1) : 0;
   }
@@ -237,8 +237,8 @@ class RK4 : public PC {
   RK4() {order=4;}
   void Allocate() {
     PC::Allocate();
-    Alloc(Src1,source1);
-    Alloc(Src2,source2);
+    Alloc0(Src1,source1);
+    Alloc0(Src2,source2);
   }
   const char *Name() {return "Fourth-Order Runge-Kutta";}
   void TimestepDependence();
@@ -263,7 +263,7 @@ class RK5 : public RK4 {
   void Allocate() {
     RK4::Allocate();
     Alloc(Src3,source3,Src1,source1);
-    Alloc(Src4,source4);
+    Alloc0(Src4,source4);
   }
   const char *Name() {return "Fifth-Order Runge-Kutta";}
   void TimestepDependence();
