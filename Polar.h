@@ -33,10 +33,10 @@ public:
 	Real Y() const {return r*sin(th);}
 };
 
-inline Real InInterval(const Cartesian& m, const Polar& a, const Polar& b)
+inline int InInterval(const Cartesian& m, const Polar& a, const Polar& b)
 {
 	const Real xK2=m.K2();
-	if(xK2 < a.K2() || xK2 >= b.K2()) return 0.0;
+	if(xK2 < a.K2() || xK2 >= b.K2()) return 0;
 	
 	const Real A=a.Th();
 	const Real B=b.Th();
@@ -51,8 +51,8 @@ inline Real InInterval(const Cartesian& m, const Polar& a, const Polar& b)
 	if(A == kthneg && xTh >= opposite) xTh -= twopi;
 	if(B == kthmax && xTh < opposite) xTh += twopi;
 	
-	if(xTh < A || xTh >= B) return 0.0;
-	return 1.0;
+	if(xTh < A || xTh >= B) return 0;
+	return 1;
 }
 
 inline int operator == (const Polar& x, const Polar& y)
@@ -100,7 +100,7 @@ inline ostream& operator << (ostream& os, const Polar& y) {
 
 inline Real Bin<Polar,Cartesian>::Area()
 {
-	if(discrete) return area;
+	if(discrete) return (Real) nmode;
 	else return 0.5*(max.r*max.r-min.r*min.r)*(max.th-min.th);
 }
 

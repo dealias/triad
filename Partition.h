@@ -30,44 +30,15 @@ extern int *qStart;
 extern DynVector<Triad> triad;
 extern TriadLimits *triadLimits;
 
-template<class D>
-class Discrete
-{
-public:
-	D value;
-	Real weight;
-	void Store(const D& value0, const Real weight0) {
-		value=value0; weight=weight0;
-	}
-};
-
-template<class D>
-ostream& operator << (ostream& os, const Discrete<D>& y) {
-	os << y.value << ": " << y.weight;
-	return os;
-}
-
 template<class T, class D>
 class Bin {
 public:
 	T min,max,cen;
 	int nmode;
-	Real area;
-	DynVector<Discrete<D> > mode;
-	void WriteModes(oxstream &s) {
-		s << nmode << area;
-		for(int i=0; i < nmode; i++) s << mode[i].value;
-	}
-	void ReadModes(ixstream &s) {
-		s >> nmode >> area;
-		for(int i=0; i < nmode; i++) {
-			s >> mode[i].value;
-			mode[i].weight=1.0;
-		}
-	}
+	DynVector<D> mode;
 	
-	Bin() {nmode=0; area=0.0;}
-	T Delta() {return (max-min);}
+	Bin() {nmode=0;}
+	T Delta() {return max-min;}
 	Real Area();
 	
 	Real K() {return cen.K();}
@@ -76,21 +47,27 @@ public:
 	Real X() {return cen.X();}
 	Real Y() {return cen.Y();}
 	
-	Real InBin(const D& m) {return InInterval(m,min,max);}
-	void Count(const D& m) {
-		if(InBin(m)) {
-			mode[nmode++].Store(m,1.0);
-			area += 1.0;
-		}
-	}
+	int InBin(const D& m) {return InInterval(m,min,max);}
+	void Count(const D& m) {if(InBin(m)) mode[nmode++]=m;}
 	
 	void MakeModes();
+	
+	void WriteModes(oxstream &s) {
+		s << nmode;
+		for(int i=0; i < nmode; i++) s << mode[i];
+	}
+	
+	void ReadModes(ixstream &s) {
+		s >> nmode;
+		for(int i=0; i < nmode; i++) {
+			s >> mode[i];
+		}
+	}
 };
 
 template<class T, class D>
 INLINE ostream& operator << (ostream& os, const Bin<T,D>& y) {
 	os << "[" << y.min << "\t" << y.cen << "\t" << y.max << "]";
-	if(discrete) os << ": " << y.area;
 	return os;
 }
 
@@ -466,7 +443,7 @@ INLINE void Partition<T,D>::Initialize() {
 			Bin<T,D> *p=&bin[i];
 			int nmode=p->nmode;
 			for(int m=0; m < nmode; m++) {
-				int index=p->mode[m].value.ModeIndex();
+				int index=p->mode[m].ModeIndex();
 				if(ModeBin[index] != unassigned) 
 					msg(ERROR,
 						"Discrete mode (%d) is already assigned to bin %d",

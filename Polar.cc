@@ -134,14 +134,8 @@ void Bin<Polar,Cartesian>::MakeModes()
 	mode.Resize(nmode);
 	
 	if(verbose > 3) {
-		for(int i=0; i < nmode; i++) {
-#if _CRAY
-			cout << mode[i].value << ": " << mode[i].weight << newl;
-#else
-			cout << mode[i] << newl;
-#endif	
-		}
-	cout << flush;
+		for(int i=0; i < nmode; i++) {cout << mode[i] << newl;}
+		cout << flush;
 	}
 }
 
@@ -185,10 +179,10 @@ void BinAverage(Real& nu, Real (*fcn)(Real), Real (*)(Real)=NULL)
 {
 	if(discrete) {
 		nu=0.0;
-		Discrete<Cartesian> *mk=b.mode.Base(), *mkstop=mk+b.nmode; 
+		Cartesian *mk=b.mode.Base(), *mkstop=mk+b.nmode; 
 		for(; mk < mkstop; mk++) {
-			k0=mk->value.K();
-			nu += mk->weight*(*fcn)(mk->value.Th());
+			k0=mk->K();
+			nu += (*fcn)(mk->Th());
 		}
 	} else {
 		int iflag;
@@ -234,14 +228,12 @@ ComputeBinAverage(Bin<Polar,Cartesian> *k, Bin<Polar,Cartesian> *p,
 	Real sum;
 	if(discrete) {
 		sum=0.0;
-		Discrete<Cartesian> *mk=k->mode.Base(), *mkstop=mk+k->nmode; 
-		Discrete<Cartesian> *mp=p->mode.Base(), *mpstop=mp+p->nmode; 
+		Cartesian *mk=k->mode.Base(), *mkstop=mk+k->nmode; 
+		Cartesian *mp=p->mode.Base(), *mpstop=mp+p->nmode; 
 		for(; mk < mkstop; mk++) {
 			for(; mp < mpstop; mp++) {
-				Cartesian mq=-mk->value-mp->value;
-				const Real qweight=q->InBin(mq);
-				if(qweight) sum += mk->weight*mp->weight*qweight*
-								Jkpq(mk->value,mp->value,mq);
+				Cartesian mq=-*mk-*mp;
+				if(q->InBin(mq)) sum += Jkpq(*mk,*mp,mq);
 			}
 		}
 	} else {
