@@ -52,13 +52,13 @@ static int floating_section=0;
 static int preserve=0;
 static int remote=0;
 static int pointsize=0;
-static int byte=0;
-static int implicit=1;
-static int zero=0;
-static int invert=0;
 static int gray=0;
-
 static char *convertprog;
+
+int byte=0;
+int implicit=1;
+int zero=0;
+int invert=0;
 
 void cleanup();
 int system (char *command);
