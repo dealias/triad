@@ -301,6 +301,7 @@ void options()
 		 << "[default " << sy << "]" << endl;
 	cerr << "-symmetric\t make color palette symmetric about zero"
 		 << " (if possible)" << endl;
+	cerr << "-nobar\t inhibit palette bar" << endl;
 	cerr << "-extract format\t extract individual images as tiff, gif, etc." 
 		 << endl;
 	cerr << endl;
@@ -337,6 +338,7 @@ int main(int argc, char *const argv[])
 	u_char *red,*green,*blue;
 	int trans=0;
 	int palette=0;
+	int nobar=0;
 	
 	int syntax=0;
 	extern int optind;
@@ -354,6 +356,7 @@ int main(int argc, char *const argv[])
                {"circle", 0, &trans, CIRCLE},
                {"torus", 0, &trans, TORUS},
                {"symmetric", 0, &symmetric, 1},
+               {"nobar", 0, &nobar, 1},
                {"extract", 1, 0, EXTRACT},
                {"shear", 1, 0, ALPHA},
                {"xmin", 1, 0, XMIN},
@@ -584,8 +587,12 @@ int main(int argc, char *const argv[])
 		if(kmin < lower) kmin=lower;
 		if(kmax > upper) kmax=upper;
 		
-		int mpal=max(5,my);
-		int msep=max(2,my);
+		int mpal,msep;
+		if(nobar) mpal=msep=0;
+		else {
+			mpal=max(5,my);
+			msep=max(2,my);
+		}
 		
 		switch(trans) {
 		case 0: 
