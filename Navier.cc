@@ -185,9 +185,10 @@ void NWave::InitialConditions()
 	forcing=new Real[Npsi];
 	
 	for(i=0; i < Npsi; i++) {
+		Real norm=1.0/sqrt(Geometry->Normalization(i));
 		nu[i]=Geometry->Linearity(i);
-		y[i]=sqrt(2.0*equilibrium(i)/Geometry->Normalization(i));
-		forcing[i]=forcek(i);
+		y[i]=sqrt(2.0*equilibrium(i))*norm;
+		forcing[i]=forcek(i)*norm;
 	}
 	
 	// Randomize the initial conditions.	
