@@ -342,7 +342,7 @@ void dump(int it, int final, double tmax)
 		if(frestart) {
 			if(checkpoint && it > 0 && (it-1) % checkpoint == 0) {
 				strstream rcheck;
-				rcheck << rname << "." << iter-microsteps;
+				rcheck << rname << "." << iter-microsteps << ends;
 				rename(rname,rcheck.str());
 			}
 			rename(rtemp,rname);
