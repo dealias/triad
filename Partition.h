@@ -54,6 +54,17 @@ public:
 	int nmode;
 	Real area;
 	DynVector<Discrete<D> > mode;
+	void WriteModes(oxstream &s) {
+		s << nmode << area;
+		for(int i=0; i < nmode; i++) s << mode[i].value;
+	}
+	void ReadModes(ixstream &s) {
+		s >> nmode >> area;
+		for(int i=0; i < nmode; i++) {
+			s >> mode[i].value;
+			mode[i].weight=1.0;
+		}
+	}
 	
 	Bin() {nmode=0; area=0.0;}
 	T Delta() {return (max-min);}
@@ -66,13 +77,7 @@ public:
 	Real Y() {return cen.Y();}
 	
 	Real InBin(const D& m) {return InInterval(m,min,max);}
-	void Count(const D& m) {
-		const Real weight=InBin(m);
-		if(weight) {
-			area += weight;
-			mode[nmode++].Store(m,weight);
-		}
-	}
+	void Count(const D& m) {if(InBin(m)) mode[nmode++].Store(m,1.0);}
 	void MakeModes();
 };
 
@@ -221,6 +226,7 @@ class Partition : public GeometryBase {
 	Hash<WeightIndex> *hash;
 	int Nweight,Nhash;
 	Bin<T,D> *bin; // pointer to table of bins
+	int *ModeBin;
 public:
 	char *Name();
 	int Valid(char *s) {return strcmp(s,"SR")==0;}
@@ -230,6 +236,10 @@ public:
 	Mc ComputeBinAverage(Bin<T,D> *k, Bin<T,D> *p, Bin<T,D> *q);
 	Mc FindWeight(int k, int p, int q);
 
+	INLINE void out_weights(oxstream& fout, int lastindex);
+	INLINE void save_weights();
+	INLINE int get_weights();
+		
 	INLINE void GenerateWeights();
 	INLINE void Initialize();
 	INLINE void ListTriads(ostream &os);
@@ -252,27 +262,28 @@ public:
 	int pq(int p, int q) {return n*p-p*(p+1)/2+q;} // Index to element p <= q
 };
 
-
-int out_weights(oxstream& fout, Weight* w, int lastindex, int n);
-	
 template<class T, class D>
 INLINE void Partition<T,D>::GenerateWeights() {
 	Mc binaverage;
 	Index_t k,p,q;
-	int first;
+	int i,first;
 	int lastindex=0;
 	WeightIndex kpq,previous,lastkpq=WeightIndex(0,0,0);
 	double realtime,lasttime=time(NULL);
 	double interval=15.0;
 	oxstream fout;
 	
+	if(discrete && !Nweight) for (i=0; i < n; i++) bin[i].MakeModes();
+	
 	char *filename=WeightFileName();
 	fout.open(filename);
 	if(!fout) msg(ERROR,"Weight file %s could not be opened",filename);
 	fout << lastindex;
+	if(discrete) for(i=0; i < n; i++) bin[i].WriteModes(fout);
 	
 	if(Nweight) {
-		lastindex=out_weights(fout,weight.Base(),lastindex,Nweight);
+		out_weights(fout,lastindex);
+		lastindex=Nweight;
 		previous=weight[Nweight-1].Index();
 		first=0;
 	} else {
@@ -295,8 +306,8 @@ INLINE void Partition<T,D>::GenerateWeights() {
 						cout << (int) (100.0*((double) kpq)+0.5) << 
 							"% of weight factors generated: (" << kpq <<
 							")/(" <<	WeightN << ")." << endl;
-						lastindex=out_weights(fout,weight.Base(),lastindex,
-											  Nweight);
+						out_weights(fout,lastindex);
+						lastindex=Nweight;
 					}
 					if(!discrete && (coangular(&bin[k],&bin[p]) ||
 									 coangular(&bin[p],&bin[q]) ||
@@ -358,8 +369,68 @@ inline Mc Partition<T,D>::FindWeight(int k, int p, int q) {
 	return 0.0;	// no match found.
 }
 
-int get_weights(DynVector<Weight>& weight, int *Nweight, char *filename);
-void save_weights(DynVector<Weight>& w, int n, char *filename);
+template<class T, class D>
+INLINE int Partition<T,D>::get_weights()
+{
+	int complete;
+	int i,N=0;
+	
+	char *filename=WeightFileName();
+	ixstream fin(filename);
+	if(fin) {
+		fin >> N;
+		if(fin.eof()) {fin.close(); errno=0;}
+		if(N == 0) testlock();
+	}
+	
+	complete=(N ? 1 : 0);
+		
+	if(fin) {
+		cout << newl << "READING WEIGHT FACTORS FROM " << filename << "."
+			 << endl;
+		if(discrete) for(i=0; i < n; i++) bin[i].ReadModes(fin);
+		if(fin.bad()) 
+			msg(ERROR,"Error reading from weight file %s",filename);
+		
+		if(complete) {
+			weight.Resize(N);
+			for(i=0; i < N; i++) fin >> weight[i];
+			if(fin.bad()) 
+				msg(ERROR,"Error reading from weight file %s",filename);
+		} else {
+			Weight w;
+			while(fin >> w, !fin.eof()) weight[N++]=w;
+			if(N) cout << N << " WEIGHT FACTORS READ: ("
+					   << weight[N-1].Index() << ")/(" << WeightN << ")."
+					   << endl;
+		}
+	}
+	Nweight=N;
+	return complete;
+}
+
+template<class T, class D>
+INLINE void Partition<T,D>::save_weights()
+{
+	int i;
+	char *filename=WeightFileName();
+	oxstream fout(filename);
+	if(!fout) msg(ERROR,"Could not open weight file %s",filename);
+	fout << Nweight << newl;
+	if(discrete) for(i=0; i < n; i++) bin[i].WriteModes(fout);
+	for(i=0; i < Nweight; i++) fout << weight[i] << newl;
+	fout.close();
+	if(!fout) msg(ERROR,"Cannot write to weight file %s",filename);
+}	
+
+template<class T, class D>
+INLINE void Partition<T,D>::out_weights(oxstream& fout, int lastindex)
+{
+	lock();
+	for(int i=lastindex; i < Nweight; i++) fout << weight[i] << newl;
+	fout.flush();
+	unlock();
+}
 
 template<class T, class D>
 INLINE void Partition<T,D>::Initialize() {
@@ -371,12 +442,34 @@ INLINE void Partition<T,D>::Initialize() {
 	psibufferR=(reality ? psibuffer+Nmode : psibuffer);
 	psibufferStop=psibuffer+n;
 		
-	char *filename=WeightFileName();
-	
 	WeightN=WeightIndex(Nmode,Nmode,n);
-	if(!get_weights(weight,&Nweight,filename)) {
+	if(!get_weights()) {
 		GenerateWeights();
-		save_weights(weight,Nweight,filename);
+		save_weights();
+	}
+	
+	if(discrete) {
+		int i;
+		Nevolved=(Ny-1)/2*Nx+(Nx-1)/2;
+		int Ndiscrete=Nx*Ny-1;
+		ModeBin=new int[Ndiscrete];
+		const int unassigned=-1;
+		for(i=0; i < Ndiscrete; i++) ModeBin[i]=unassigned;
+		
+		for (i=0; i < n; i++) {
+			Bin<T,D> *p=&bin[i];
+			int nmode=p->nmode;
+			for(int m=0; m < nmode; m++) {
+				int index=p->mode[m].value.ModeIndex();
+				if(ModeBin[index] != unassigned) 
+					msg(ERROR,
+						"Discrete mode (%d) is already assigned to bin %d",
+						m,ModeBin[index]);
+				if(index >= Ndiscrete) 
+					msg(ERROR, "Number of modes is greater than Nx*Ny-1");
+				ModeBin[index]=i;
+			}
+		}
 	}
 	
 	weightBase=weight.Base();

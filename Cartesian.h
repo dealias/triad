@@ -8,7 +8,7 @@ extern int Ny;
 
 extern int xoffset;
 extern int Nx0,NRows,NPad,NPadTop;
-extern int Nevolved,Ndiscrete;
+extern int Nevolved;
 extern unsigned int log2Nxb,log2Nyb; // Order of FFT in each direction
 extern double scale;
 
@@ -79,9 +79,22 @@ inline Cartesian operator / (const Cartesian& a, const Cartesian& b)
 return Cartesian(a.x/b.x, a.y/b.y);
 }
 
-inline ostream& operator << (ostream& os, const Cartesian& b) {
-	os << "(" << b.x << ", " << b.y << ")";
-	return os;
+inline ixstream& operator >> (ixstream& s, Cartesian& b)
+{
+	s >> b.x >> b.y;
+	return s;
+}
+	
+inline oxstream& operator << (oxstream& s, const Cartesian& b)
+{
+	s << b.x << b.y;
+	return s;
+}
+
+inline ostream& operator << (ostream& s, const Cartesian& b)
+{
+	s << "(" << b.x << ", " << b.y << ")";
+	return s;
 }
 	
 extern Cartesian *CartesianMode;

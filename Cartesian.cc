@@ -11,7 +11,7 @@ int Nx=17; // Number of modes in x-direction
 int Ny=17; // Number of modes in y-direction
 
 int Nx0,NRows,NPad,NPadTop,xoffset;
-int Nevolved,Ndiscrete;
+int Nevolved;
 unsigned int log2Nxb,log2Nyb;
 int nfft; // Total number of FFT elements;
 int Nxb,Nxb1,Nyb,Nyp;

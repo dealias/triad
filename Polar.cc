@@ -15,8 +15,6 @@ Real kthmin=0.0;
 Real kthmax;
 Real kthneg;
 
-int *ModeBin;
-
 char *Partition<Polar,Cartesian>::Name() {return "Polar";}
 
 char *Partition<Polar,Cartesian>::WeightFileName() {
@@ -112,32 +110,6 @@ void Partition<Polar,Cartesian>::MakeBins()
 	if(p-bin != n) 
 		msg(ERROR,"Calculated number and actual number of bins disagree."); 
 
-	if(discrete) {
-		int ModeCount=0;
-		Nevolved=(Ny-1)/2*Nx+(Nx-1)/2;
-		Ndiscrete=Nx*Ny-1;
-		ModeBin=new int[Ndiscrete];
-		const int unassigned=-1;
-		for(i=0; i < Ndiscrete; i++) ModeBin[i]=unassigned;
-		
-		for (i=0; i < n; i++) {
-			p=&bin[i];
-			p->MakeModes();
-			int nmode=p->nmode;
-			for(int m=0; m < nmode; m++) {
-				int Index=p->mode[m].value.ModeIndex();
-				if(ModeBin[Index] != unassigned) 
-					msg(ERROR,
-						"Discrete mode (%d) is already assigned to bin %d",
-						m,ModeBin[Index]);
-				ModeBin[Index]=i;
-				ModeCount++;
-				if(ModeCount > Ndiscrete) 
-					msg(ERROR, "Number of modes is greater than Nx*Ny-1");
-			}
-		}
-	}
-	
 	delete [] grid;
 	return;
 }
