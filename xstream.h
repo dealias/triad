@@ -64,6 +64,7 @@ protected:
 	FILE *buf;
 	XDR xdrs;
 public:
+	xstream() {buf=NULL;}
 	void xopen(const char *filename, char *mode, xdr_op xop) {
 		clear();
 		buf=fopen(filename,mode);

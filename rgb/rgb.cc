@@ -1292,14 +1292,13 @@ void Torus(Array2<Ivec>& Index)
 			unsigned int detected=0;
 			Real u0=u-uoffset;
 			Real v0=(Ny-v)-voffset;
-			Toroidal T;
 			Real dmin=REAL_MAX;
+			Toroidal T;
 			Real z0=Pz;
-			Real deltaz=0.0;
 			Real minz=-Pz;
 			Real maxz=Pz;
 			for(int pass=0; pass < npass; pass++) {
-				deltaz=(maxz-minz)*nsliceinv;
+				Real deltaz=(maxz-minz)*nsliceinv;
 				Real z=maxz;
 				for(int n=0; n < nslice; n++) {
 					Real projection=1.0-Pzinv*z;
