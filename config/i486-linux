@@ -1,3 +1,4 @@
 C++ = g++ -Wall -ansi
-LIB = $(LFLAGS) -lm
-MAKEDEPEND =$(C++) -M
+LIB = $(LFLAGS) -lfftw -lm
+MAKEDEPEND = $(C++) -M
+FFT = wfft
