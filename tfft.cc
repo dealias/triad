@@ -66,11 +66,11 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	if(n > data2size) data2=new(data2,data2size=n) Complex;
 
 	for(unsigned int k=0; k < nk; k++) {
-		Complex *p=data+inc2*k;
-		unsigned int i;
-		for(i=0; i < n; i++) data2[i]=p[i*inc1];
+		Complex *p0=data+inc2*k;
+		Complex *data2stop=data2+n;
+		for(Complex *p=p0,*q=data2; q < data2stop; q++, p += inc1) *q=*p;
 		fft(data2,log2n,isign,scale);
-		for(i=0; i < n; i++) p[i*inc1]=data2[i];
+		for(Complex *p=p0,*q=data2; q < data2stop; q++, p += inc1) *p=*q;
 	}
 }
 
