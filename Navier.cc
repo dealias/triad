@@ -93,6 +93,7 @@ NWave::NWave()
 	INTEGRATOR(C_RK4);
 	INTEGRATOR(E_RK4);
 	INTEGRATOR(C_RK5);
+	INTEGRATOR(E_RK5);
 	
 	PARTITION(Polar,Cartesian);
 	BASIS(Cartesian);
@@ -104,7 +105,6 @@ void SR::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
 	*LinearSrc=StandardLinearity;
 	*NonlinearSrc=PrimitiveNonlinearitySR;
 	*ConstantSrc=ConstantForcing;
-	continuum_factor=1.0;
 }
 
 void Convolution::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
@@ -113,7 +113,6 @@ void Convolution::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
 	*LinearSrc=StandardLinearity;
 	*NonlinearSrc=PrimitiveNonlinearity;
 	*ConstantSrc=ConstantForcing;
-	continuum_factor=1.0;
 }
 
 void PS::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
@@ -123,7 +122,6 @@ void PS::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
 	*LinearSrc=StandardLinearity;
 	*NonlinearSrc=PrimitiveNonlinearityFFT;
 	*ConstantSrc=ConstantForcing;
-	continuum_factor=1.0;
 }
 
 NWave NWaveProblem;
@@ -168,7 +166,7 @@ static Real equilibrium(int i)
 
 static ifstream ftin;
 static ofstream fparam,fevt,fyvt,ft,favgy,fprolog;
-Real continuum_factor;
+Real continuum_factor=1.0;
 static char avgylabel[Nmoment][20];
 static char tempbuffer[30];
 static int tcount=0;

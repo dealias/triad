@@ -43,29 +43,29 @@ public:
 
 class PC : public IntegratorBase {
 protected:
+	int new_y0;
 	Var *y,*y1,*source0;
 public:
 	void Allocate(int n) {ny=n; source=new Var[n];
-						  y1=y=new Var [n]; source0=new Var [n];}
+						  y1=y=new Var [n]; source0=new Var [n]; new_y0=1;}
 	char *Name() {return "Predictor-Corrector";}
 	Solve_RC Solve(Var *, double, double);
 	virtual void Predictor(Var *, double, double);
 	virtual int Corrector(Var *, double, double&, int, int);
-	virtual int StandardCorrector(Var *y0, double dt, double& errmax,
-								  int start, int stop) {
+	virtual int StandardCorrector(Var *y0, double dt, double& errmax, int start, int stop) {
 		return PC::Corrector(y0,dt,errmax,start,stop);
 	}
 };
 
 class RK2 : public PC {
+protected:	
 	double halfdt;
 public:
 	char *Name() {return "Second-Order Runge-Kutta";}
 	void TimestepDependence(double);
 	void Predictor(Var *, double, double);
 	int Corrector(Var *, double, double&, int, int);
-	int StandardCorrector(Var *y0, double dt, double& errmax,
-								  int start, int stop) {
+	int StandardCorrector(Var *y0, double dt, double& errmax, int start, int stop) {
 		return RK2::Corrector(y0,dt,errmax,start,stop);
 	}
 };
@@ -81,8 +81,7 @@ public:
 	void TimestepDependence(double);
 	void Predictor(Var *, double, double);
 	int Corrector(Var *, double, double&, int, int);
-	int StandardCorrector(Var *y0, double dt, double& errmax,
-								  int start, int stop) {
+	int StandardCorrector(Var *y0, double dt, double& errmax, int start, int stop) {
 		return RK4::Corrector(y0,dt,errmax,start,stop);
 	}
 };
@@ -114,26 +113,25 @@ public:
 	}
 	void Predictor(Var *, double, double);
 	int Corrector(Var *, double, double&, int, int);
-	int StandardCorrector(Var *y0, double dt, double& errmax,
-						  int start, int stop) {
+	int StandardCorrector(Var *y0, double dt, double& errmax, int start, int stop) {
 		return RK5::Corrector(y0,dt,errmax,start,stop);
 	}
 	inline void Correct(const Real y0, Real& y,
-						 const Real source0, const Real source2, 
-						 const Real source3, const Real source4,
-						 const Real source, const double dt);
+						const Real source0, const Real source2, 
+						const Real source3, const Real source4,
+						const Real source, const double dt);
 	inline void Correct(const Complex y0, Complex& y,
-						 const Complex source0, const Complex source2, 
-						 const Complex source3, const Complex source4,
-						 const Complex source, const double dt);
+						const Complex source0, const Complex source2, 
+						const Complex source3, const Complex source4,
+						const Complex source, const double dt);
 	inline void CalcError(const Real y0, Real& y,
-						   const Real source0, const Real source2, 
-						   const Real source3, const Real source4,
-						   const Real source, const double dt);
+						  const Real source0, const Real source2, 
+						  const Real source3, const Real source4,
+						  const Real source, const double dt);
 	inline void CalcError(const Complex y0, Complex& y,
-						   const Complex source0, const Complex source2, 
-						   const Complex source3, const Complex source4,
-						   const Complex source, const double dt);
+						  const Complex source0, const Complex source2, 
+						  const Complex source3, const Complex source4,
+						  const Complex source, const double dt);
 };
 
 class Exact : public RK5 {

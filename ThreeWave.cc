@@ -3,12 +3,12 @@
 char *NWave::Name() {return "Three-Wave";}
 char *NWave::Abbrev() {return "w3";}
 
-char *approximation="none";
+char *approximation="Convolution";
 char *integrator="PC";
 
 // Three-wave variables
 int randomIC=0;
-Mc Mkpq[]={1.0,1.0,-2.0};
+Mc Mk[]={1.0,1.0,-2.0};
 static Nu nu0[]={0.0,0.0,0.0};
 static Var IC[]={sqrt(1.5),0.0,sqrt(1.5)};
 Real *K;
@@ -22,25 +22,28 @@ NWave::NWave()
 	
 	VOCAB(randomIC,0,1);
 	
-	VOCAB_ARRAY(Mkpq);
+	VOCAB_ARRAY(Mk);
 	VOCAB_ARRAY(IC);
 	VOCAB_ARRAY(nu0);
 	
 	APPROXIMATION(Convolution);
 	
 	INTEGRATOR(C_Euler);
+	INTEGRATOR(I_PC);
 	INTEGRATOR(C_PC);
 	INTEGRATOR(E_PC);
 	INTEGRATOR(CE_PC);
+	INTEGRATOR(I_RK2);
 	INTEGRATOR(C_RK2);
 	INTEGRATOR(E_RK2);
 	INTEGRATOR(C_RK4);
 	INTEGRATOR(E_RK4);
 	INTEGRATOR(C_RK5);
+	INTEGRATOR(E_RK5);
 }
 
-void None::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
-						  Source_t **)
+void Convolution::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
+								 Source_t **)
 {
 	*LinearSrc=StandardLinearity;
 	*NonlinearSrc=PrimitiveNonlinearitySR;
@@ -80,9 +83,9 @@ void NWave::InitialConditions()
 	}
 	for(p=0; p < Npsi; p++) qStart[p]=p;
 	
-	triad[0].Store(pqbuffer+4,Mkpq[0]);
-	triad[1].Store(pqbuffer+2,Mkpq[1]);
-	triad[2].Store(pqbuffer+1,Mkpq[2]);
+	triad[0].Store(pqbuffer+4,Mk[0]);
+	triad[1].Store(pqbuffer+2,Mk[1]);
+	triad[2].Store(pqbuffer+1,Mk[2]);
 
 	triadLimits[0].start=triad.Base();
 	for(k=0; k < Npsi-1; k++) {
@@ -139,8 +142,10 @@ void NWave::Output(int)
 	fout << y[i] << endl;
 }
 
-Nu LinearityAt(int)
+void LinearityAt(int , Nu &)
 {
-	return 0.0;
 }
 
+void ForcingAt(int , Real &)
+{
+}

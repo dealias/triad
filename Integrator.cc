@@ -123,7 +123,7 @@ Solve_RC PC::Solve(Var *y0, double t, double dt)
 {
 	double errmax=0.0;
 	
-	Source(source0,y0,t);
+	if(new_y0) Source(source0,y0,t);
 	Predictor(y0,t,dt);
 	if(!Corrector(y0,dt,errmax,0,nyconserve)) {
 		if(hybrid) StandardCorrector(y0,dt,errmax,0,nyconserve);
@@ -139,7 +139,8 @@ Solve_RC PC::Solve(Var *y0, double t, double dt)
 	}
 
 	Solve_RC flag=(dynamic ? CheckError(errmax) : SUCCESSFUL);
-	if(flag != UNSUCCESSFUL) set(y0,y,ny);
+	new_y0=(flag != UNSUCCESSFUL);
+	if(new_y0) set(y0,y,ny);
 	return flag;
 }
 
@@ -151,11 +152,10 @@ void PC::Predictor(Var *y0, double t, double dt)
 
 int PC::Corrector(Var *y0, double dt, double& errmax, int start, int stop)
 {
-	Var pred;
 	const double halfdt=0.5*dt;
 	
 	if(dynamic) for(int j=start; j < stop; j++) {
-		pred=y[j];
+		Var pred=y[j];
 		y[j]=y0[j]+halfdt*(source0[j]+source[j]);
 		calc_error(y0[j],y[j],pred,y[j],errmax);
 	} else for(int j=start; j < stop; j++) {
@@ -177,12 +177,9 @@ void RK2::Predictor(Var *y0, double t, double)
 
 int RK2::Corrector(Var *y0, double dt, double& errmax, int start, int stop)
 {
-	Var pred;
-	
 	if(dynamic) for(int j=start; j < stop; j++) {
-		pred=y0[j]+dt*source0[j];
 		y[j]=y0[j]+dt*source[j];
-		calc_error(y0[j],y[j],pred,y[j],errmax);
+		calc_error(y0[j],y[j],y0[j]+dt*source0[j],y[j],errmax);
 	} else for(int j=start; j < stop; j++) {
 		y[j]=y0[j]+dt*source[j];
 	}

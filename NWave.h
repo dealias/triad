@@ -76,6 +76,32 @@ public:
 	int Corrector(Var *, double, double&, int, int);
 };
 
+class I_PC : public PC {
+protected:
+	Nu *expinv;
+public:
+	void Allocate(int);
+	char *Name() {return "Predictor-Corrector w/Integrating Factor";}
+	void TimestepDependence(double);
+	void Predictor(Var *, double, double);
+	void Source(Var *src, Var *var, double t) {
+		if(NonlinearSrc) (*NonlinearSrc)(src,var,t);
+	}
+};
+
+class I_RK2 : public RK2 {
+protected:
+	Nu *expinv;
+public:
+	void Allocate(int);
+	char *Name() {return "Second-Order Runge-Kutta w/Integrating Factor";}
+	void TimestepDependence(double);
+	void Predictor(Var *, double, double);
+	void Source(Var *src, Var *var, double t) {
+		if(NonlinearSrc) (*NonlinearSrc)(src,var,t);
+	}
+};
+
 class E_PC : public PC {
 protected:
 	Nu *expinv,*onemexpinv;
@@ -171,7 +197,44 @@ public:
 						const Complex source, const double dt,int& invertible);
 };
 
+class E_RK5 : public RK5 {
+protected:
+	Nu *expinv,*onemexpinv;
+	Nu *expinv1,*expinv2,*expinv3,*expinv4,*expinv5;
+	Nu *onemexpinv1,*onemexpinv2,*onemexpinv3,*onemexpinv4,*onemexpinv5;
+public:
+	void Allocate(int);
+	char *Name() {return "Exponential Fifth-Order Runge-Kutta";}
+	void TimestepDependence(double);
+	void Predictor(Var *, double, double);
+	int Corrector(Var *, double, double&, int start, int stop);
+	void Source(Var *src, Var *var, double t) {
+		if(NonlinearSrc) (*NonlinearSrc)(src,var,t);
+		ExponentialLinearity(src,var,t);
+	}
+	inline void Correct(const Real y0, Real& y,
+						const Real expinv, const Real onemexpinv,
+						const Real source0, const Real source2, 
+						const Real source3, const Real source4,
+						const Real source, const double dt);
+	inline void Correct(const Complex y0, Complex& y,
+						const Real expinv, const Real onemexpinv,
+						const Complex source0, const Complex source2, 
+						const Complex source3, const Complex source4,
+						const Complex source, const double dt);
+	inline void CalcError(const Real y0, Real& y,
+						  const Real source0, const Real source2, 
+						  const Real source3, const Real source4,
+						  const Real source, const double dt);
+	inline void CalcError(const Complex y0, Complex& y,
+						  const Complex source0, const Complex source2, 
+						  const Complex source3, const Complex source4,
+						  const Complex source, const double dt);
+	inline void CalcExp(Real *, Real *, double);
+};
+
 #endif
+
 
 
 
