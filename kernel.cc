@@ -199,6 +199,7 @@ int main(int argc, char *argv[])
 	y=Problem->Vector();
 	ny=Problem->Size();
 	if(restart || initialize) read_init();
+	if(restart && dynamic < 0) dynamic=1;
 	if(!restart) Problem->Initialize();
 	
 	Integrator->Allocate(ny);

@@ -156,6 +156,7 @@ typedef char Avgylabel[20];
 static Avgylabel *avgyre,*avgyim;
 static char tempbuffer[30];
 static int tcount=0;
+static Complex *xcoeff, *ycoeff;
 
 void NWave::InitialConditions()
 {
@@ -224,36 +225,6 @@ void NWave::InitialConditions()
 	Vocabulary->GraphicsDump(fparam);
 	fparam.close();
 	
-}
-
-static Real K(int i) {return Geometry->K(i);}
-static Real Th(int i) {return Geometry->Th(i);}
-static Real Area(int i) {return Geometry->Area(i);}
-static Real Normalization(int i) {return Geometry->Normalization(i);}
-static Real nu_re(int i) {Complex nuC=nu[i]; return nuC.re;}
-static Real nu_im(int i) {Complex nuC=nu[i]; return nuC.im;}
-
-static Complex *xcoeff, *ycoeff;
-
-void NWave::Initialize()
-{
-	int i;
-	
-	out_function(fprolog,K,"K",Npsi);
-	out_function(fprolog,Th,"Th",Npsi);
-	out_function(fprolog,Area,"Area",Npsi);
-	out_function(fprolog,nu_re,"nu.re",Npsi);
-	out_function(fprolog,nu_im,"nu.im",Npsi);
-	out_curve(fprolog,forcing,"f",Npsi);
-	out_function(fprolog,equilibrium,"equil",Npsi);
-	out_function(fprolog,Normalization,"normalization",Npsi);
-	fprolog.flush();
-
-	fevt << "#   t\t\t E\t\t Z\t\t P" << endl;
-
-	// Initialize time integrals to zero.
-	for(i=Npsi; i < ny; i++) y[i]=0.0;
-	
 	if(movie && strcmp(method,"PS") != 0) {
 		Real k0=FLT_MAX;
 		for(i=0; i < Npsi; i++) k0=min(k0,Geometry->K(i));
@@ -278,6 +249,33 @@ void NWave::Initialize()
 			}
 		}
 	}
+}
+
+static Real K(int i) {return Geometry->K(i);}
+static Real Th(int i) {return Geometry->Th(i);}
+static Real Area(int i) {return Geometry->Area(i);}
+static Real Normalization(int i) {return Geometry->Normalization(i);}
+static Real nu_re(int i) {Complex nuC=nu[i]; return nuC.re;}
+static Real nu_im(int i) {Complex nuC=nu[i]; return nuC.im;}
+
+void NWave::Initialize()
+{
+	int i;
+	
+	out_function(fprolog,K,"K",Npsi);
+	out_function(fprolog,Th,"Th",Npsi);
+	out_function(fprolog,Area,"Area",Npsi);
+	out_function(fprolog,nu_re,"nu.re",Npsi);
+	out_function(fprolog,nu_im,"nu.im",Npsi);
+	out_curve(fprolog,forcing,"f",Npsi);
+	out_function(fprolog,equilibrium,"equil",Npsi);
+	out_function(fprolog,Normalization,"normalization",Npsi);
+	fprolog.flush();
+
+	fevt << "#   t\t\t E\t\t Z\t\t P" << endl;
+
+	// Initialize time integrals to zero.
+	for(i=Npsi; i < ny; i++) y[i]=0.0;
 }
 
 void compute_invariants(Var *y, int Npsi, Real& E, Real& Z, Real& P)
@@ -322,6 +320,7 @@ void NWave::Output(int)
 	}
 	
 	if(movie) {
+		lock();
 		if(strcmp(method,"PS") != 0) {
 			fpsi << ngridx << ngridy << 1;
 			for(int j=ngridy-1; j >= 0; j--) {
@@ -353,6 +352,8 @@ void NWave::Output(int)
 			}
 		}
 		fpsi.flush();
+		if(!fpsi) msg(ERROR, "Cannot write to movie file psi");
+		unlock();
 	}
 	
 	tcount++;

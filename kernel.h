@@ -183,7 +183,7 @@ void dump(int it, int final, double tmax);
 
 // Cfront can't seem to handle a template here.
 inline void open_output(ofstream& fout, const char *delimiter, char *suffix,
-						int append=0)
+						int append=restart)
 {
 	char *filename=Vocabulary->FileName(delimiter,suffix);
 	if(append) fout.open(filename,fout.app); // Append to end of output file.
@@ -193,7 +193,7 @@ inline void open_output(ofstream& fout, const char *delimiter, char *suffix,
 }
 
 inline void open_output(oxstream& fout, const char *delimiter, char *suffix,
-						int append=0)
+						int append=restart)
 {
 	char *filename=Vocabulary->FileName(delimiter,suffix);
 	if(append) fout.open(filename,fout.app); // Append to end of output file.
