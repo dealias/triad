@@ -260,7 +260,8 @@ int main(int argc, char *const argv[])
 	rgbdir=getenv("RGB_DIR");
 	if(rgbdir) rgbdirbuf << rgbdir;
 	else rgbdirbuf << "/tmp/" << getenv("USER");
-	rgbdirbuf << "/rgb." << getpid();
+	unsigned int process=getpid();
+	rgbdirbuf << "/rgb." << process;
 	strstream buf;
 	buf << "mkdirhier " << rgbdirbuf.str() << ends;
 	char *cmd=buf.str();
