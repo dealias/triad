@@ -28,6 +28,7 @@ const Array2<T>& exp(const Array2<T>& A)
 {
 //	double tolmax=1e-7;
 //	double tolmin=9e-8;
+	
 	double tolmax=1e-4;
 	double tolmin=9e-5;
 	MatExp MatExpProblem(A);
@@ -36,7 +37,11 @@ const Array2<T>& exp(const Array2<T>& A)
 	Var *y=MatExpProblem.Vector();
 	unsigned int n=MatExpProblem.Size();
 	
-	static Array2<T> B(n,n);
+	unsigned int n2=n;
+	static DynVector<T> temp(n2);
+	if(n2 > temp.Alloc()) temp.Resize(n2);
+	Array2<T> B;
+	B.Dimension(n,n,temp);
 	
 	static RK5 Int;
 	Int.Allocate(n);
