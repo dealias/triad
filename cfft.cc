@@ -36,7 +36,7 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 		CFTFAX(m,ifax,trigs);
 	}
 	
-	CFFTMLT(&data[0].re,&data[0].im,work,trigs,ifax,m,1,m,m,isign);
+	CFFTMLT(&data[0].re,&data[0].im,work,trigs,&ifax,m,1,m,m,isign);
 	
 	for(k=0; k < m; k++) {
 		Complex *p=data+m*k, *q=data+k;
@@ -60,7 +60,7 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 		for(k=0; k < m; k++) p[k] *= conj(phasej[k]);
 	}
 	
-	CFFTMLT(&data[0].re,&data[0].im,work,trigs,ifax,m,1,m,m,isign);
+	CFFTMLT(&data[0].re,&data[0].im,work,trigs,&ifax,m,1,m,m,isign);
 }
 
 extern "C" void CCFFT(const int& isign, const int& n, double& scale,
