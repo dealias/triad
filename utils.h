@@ -26,8 +26,6 @@ size_t memory();
 #include "Complex.h"
 #include "pow.h"
 
-#define __ARRAY_EXIT(x) msg(ERROR,x)
-	
 extern const double pi;
 extern const double twopi;
 extern const double twopi2;
@@ -158,6 +156,13 @@ inline void vform(const char *format, va_list& vargs)
 
 void msg(int severity, const char *file, int line, const char *format,...);
 
+#define __ArrayExtensions
+#define __ExternalArrayExit
+void __ArrayExit(char *x)
+{
+	msg(ERROR,x);
+} 
+	
 extern int abort_flag;
 extern int beep_enabled;
 extern int msg_override;

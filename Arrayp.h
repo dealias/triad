@@ -1,4 +1,4 @@
-/* Arrayp.h:  A high-performance multi-dimensional C++ array class
+/* Arrayp.h:  A high-performance periodic multi-dimensional C++ array class
 Copyright (C) 1999 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Arrayp_h__
 #define __Arrayp_h__ 1
 
-#define __ARRAYP_H_VERSION__ 1.10J
+#define __ARRAYP_H_VERSION__ 1.11
 
 // Defining NDEBUG improves optimization.
 

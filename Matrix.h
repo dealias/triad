@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Matrix_h__
 #define __Matrix_h__ 1
 
-#define __MATRIX_H_VERSION__ 1.10J
+#define __MATRIX_H_VERSION__ 1.11
 
 #include "DynVector.h"
 #include "Array.h"
@@ -165,7 +165,7 @@ inline Array2<T> operator * (const Array2<T>& B)
 }
 
 template<class T>
-inline void real(const Array1<Real>& A, const Array1<T>& B)
+inline void real(const Array1<double>& A, const Array1<T>& B)
 {
 	unsigned int size=A.Size();
 	assert(size == B.Size());
@@ -175,17 +175,17 @@ inline void real(const Array1<Real>& A, const Array1<T>& B)
 }
 
 template<class T>
-inline Array1<Real> real(const Array1<T>& B)
+inline Array1<double> real(const Array1<T>& B)
 {
 	unsigned int n=B.Nx();
-	Array1<Real> A(n);
+	Array1<double> A(n);
 	real(A,B);
 	A.Hold();
 	return A;
 }
 
 template<class T>
-inline void imag(const Array1<Real>& A, const Array1<T>& B)
+inline void imag(const Array1<double>& A, const Array1<T>& B)
 {
 	unsigned int size=A.Size();
 	assert(size == B.Size());
@@ -195,10 +195,10 @@ inline void imag(const Array1<Real>& A, const Array1<T>& B)
 }
 
 template<class T>
-inline Array1<Real> imag(const Array1<T>& B)
+inline Array1<double> imag(const Array1<T>& B)
 {
 	unsigned int n=B.Nx();
-	Array1<Real> A(n);
+	Array1<double> A(n);
 	imag(A,B);
 	A.Hold();
 	return A;
@@ -568,7 +568,7 @@ void GaussJordan(const Array2<T>& a, const Array2<T>& b)
 							col=k;
 						}
 					} else if(pivot[k] > 1) 
-					{__ARRAY_EXIT("Singular matrix");}
+					{__ArrayExit("Singular matrix");}
 				}
 			}
 		}
@@ -594,7 +594,7 @@ void GaussJordan(const Array2<T>& a, const Array2<T>& b)
 		// We are now ready to divide the pivot row by the pivot element,
 		// located at row and col. 
 		indx_c[i]=col;
-		if(acol[col] == 0.0) {__ARRAY_EXIT("Singular matrix");}
+		if(acol[col] == 0.0) {__ArrayExit("Singular matrix");}
 		T pivinv=1.0/acol[col];
 		acol[col]=1.0;
 		for(unsigned int l=0; l < n; l++) acol[l] *= pivinv;
