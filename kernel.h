@@ -51,8 +51,6 @@ public:
 
 enum Solve_RC {NONINVERTIBLE=-1,UNSUCCESSFUL,SUCCESSFUL,ADJUST};
 
-typedef void Source_t(Var *, Var *, double);
-
 class ProblemBase {
 protected:
 	Var *y;
@@ -93,7 +91,6 @@ protected:
 	int microprocess;
 	int verbose;
 public:	
-	typedef void Source_t(Var *, Var *, double);
 	void SetAbbrev(char *abbrev0) {abbrev=abbrev0;}
 	char *Abbrev() {return abbrev;}
 	void SetParam(double tolmax, double tolmin, double stepfactor0,

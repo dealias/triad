@@ -35,9 +35,9 @@ public:
 	void OpenOutput();
 	void Output(int it);
 	void FinalOutput();
-	Source_t LinearSrc;
+	void LinearSrc(Var *, Var *, double);
 	
-	static Source_t ExponentialLinearity;
+	static void ExponentialLinearity(Var *, Var *, double);
 	static void ConservativeExponentialLinearity(Real *, Real *, double );
 	static void ConservativeExponentialLinearity(Complex *, Complex *, double);
 };

@@ -23,6 +23,6 @@ w3:	$(THREEWAVE:=.o)
 polaraverage: $(POLARAVG:=.o) $(UTILS:=.o)
 	$(C++) $(OPT) -o triad $(POLARAVG=.o) $(UTILS:=.o) $(LIB)
 
-include $(TRI)/config/Rules
+include $(TRI)/config/Rules2
 
 
