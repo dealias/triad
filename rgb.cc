@@ -497,8 +497,8 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 			 char *const type)
 {
 	strstream buf;
-	buf << "montage -size " << xsize << "x" << ysize << " -geometry "
-		<< xsize << "x" << ysize << " -interlace none";
+	buf << "montage +display -size " << xsize << "x" << ysize
+	    << " -geometry " << xsize << "x" << ysize << " -interlace none";
 	for(int f=0; f < nfiles; f++) {
 		char *fieldname=argf[f];
 		buf << " -label \"";
