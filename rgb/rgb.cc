@@ -133,7 +133,7 @@ const char *outname=NULL;
 
 void MakePalette(int palette);
 void cleanup();
-int System(char *command);
+int System(const char *command);
 
 class Ivec {
 public:
