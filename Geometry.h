@@ -305,7 +305,7 @@ void Partition<T>::ComputeTriads() {
 	weightBase=weight.Base();
 
 	hash=new Hash<Index_t>(Nweight,HashWeightIndex);
-	cout << endl << "HASH TABLE CONSTRUCTED." << endl;
+	cout << "HASH TABLE CONSTRUCTED." << endl;
 
 	triad.Resize(Nmode*n);
 	for(k=0; k < Nmode; k++) {
@@ -335,7 +335,7 @@ void Partition<T>::ComputeTriads() {
 	delete [] ntriad;
 	weight.~DynVector();
 
-	cout << endl << Ntriad-Nmode << " WAVENUMBER TRIADS ALLOCATED." << endl;
+	cout << Ntriad-Nmode << " WAVENUMBER TRIADS ALLOCATED." << endl;
 }
 
 template<class T>
