@@ -239,6 +239,7 @@ int main(int argc, char *argv[])
   gparam.close();
 	
   fdump.open(ptemp);
+  fdump.precision(REAL_DIG);
   Vocabulary->Dump(fdump);
   fdump.close();
   if(fdump) {
