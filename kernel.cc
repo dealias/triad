@@ -166,15 +166,17 @@ int main(int argc, char *argv[])
 	if(fparam) {
 		const int blocksize=80;
 		char s[blocksize];
-		strstream buf;
-		while(1) {
-			fparam.get(s,blocksize,0x03);
-			if(fparam.eof()) break;
-			cout << s << endl;
-			buf << s;
+		while(!fparam.eof()) {
+			strstream buf;
+			while(1) {
+				fparam.getline(s,blocksize);
+				buf << s;
+				if(fparam.eof() || !fparam.fail()) break;
+				fparam.clear();
+			}
+			buf << ends;
+			Vocabulary->Parse(buf.str());
 		}
-		buf << ends;
-		Vocabulary->Parse(buf.str());
 		fparam.close();
 	} else {
 		if(!testing) msg(ERROR,"Parameter file %s could not be opened",pname); 
