@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
 	
 	if(!(restart || initialize)) {
 		fin.open(rname);
-		if(fin && !clobber) 
+		if(fin && !clobber && !testing) 
 			msg(OVERRIDE_GLOBAL,"Restart file %s already exists",rname);
 		fin.close();	
 		errno=0;
@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
 	if(!restart && initialize) {
 		char *sname=Vocabulary->FileName(dirsep,"stat");
 		fin.open(sname);
-		if(fin && !clobber)
+		if(fin && !clobber && !testing)
 			msg(OVERRIDE_GLOBAL,"Statistics file %s already exists",sname);
 		fin.close();
 		errno=0;
