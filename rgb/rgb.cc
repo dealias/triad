@@ -133,7 +133,7 @@ const char *outname=NULL;
 
 void MakePalette(int palette);
 void cleanup();
-int System(const char *command);
+int System(char *command);
 
 class Ivec {
 public:
@@ -1371,7 +1371,7 @@ void animate(int, const char *filename, int n, const char *type,
 
 extern char **environ;
 
-int System(const char *command) 
+int System(char *command) 
 {
   int pid;
   static bool cleaning=false;
@@ -1383,7 +1383,7 @@ int System(const char *command)
     char *argv[4];
     argv[0] = strdup("sh");
     argv[1] = strdup("-c");
-    argv[2] = strdup(command);
+    argv[2] = command;
     argv[3] = 0;
     execve("/bin/sh",argv,environ);
     exit(127);
@@ -1395,9 +1395,11 @@ int System(const char *command)
       if (errno == ECHILD) return 0;
       if (errno != EINTR) msg(ERROR,"Process %d failed", pid);
     } else {
-      if(WIFEXITED(status)) status=WEXITSTATUS(status);
+      if(WIFEXITED(status)) {
+	status=WEXITSTATUS(status);
+	if(status) msg(WARNING,"%s\nReceived signal %d",command,status);
+      }
       else msg(ERROR,"Process %d exited abnormally", pid);
-      if(status) msg(WARNING,"%s\nReceived signal %d",command,status);
       if(cleaning) return status;
       cleaning=true; cleanup();
     }
