@@ -89,8 +89,6 @@ int copy(const char *oldname, const char *newname)
   return system(buf.str());
 }
 
-extern "C" int getdomainname(char *name, int len);
-
 static struct utsname platform;
 static const int ndomain=65;
 static char domain[ndomain];
