@@ -1,9 +1,11 @@
 #include "xstream.h"
 #include <iostream.h>
 #include <limits.h>
+#include <errno.h>
+#include <string.h>
+
 #include "DynVector.h"
 #include "rgb.h"
-#include <errno.h>
 
 int main(int argc, char *argv[])
 {
