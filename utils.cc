@@ -162,16 +162,6 @@ void check_match(int match_type, char *object, char *key)
 	return;
 }
 
-const int ndate=64;
-char time_date[ndate];
-
-char *date()
-{
-	const time_t bintime=time(NULL);
-	strftime(time_date,ndate,"%a %b %d %H:%M:%S %Z %Y",localtime(&bintime));
-	return time_date;
-}
-
 int abort_flag=1; 	// If nonzero, abort program after a fatal error.
 int beep_enabled=1; // If nonzero, enable terminal beeping during errors.
 

@@ -1,5 +1,5 @@
 /* C++ interface to the XDR External Data Representation I/O routines.
-   Version 1.1
+   Version 1.2
    Copyright (C) 1997 John C. Bowman (bowman@ipp-garching.mpg.de)
 
 This program is free software; you can redistribute it and/or modify
@@ -76,8 +76,13 @@ public:
 #define IXSTREAM(T,N) ixstream& operator >> (T& x) \
 {if(!xdr_##N(&xdrs, &x)) set(eofbit); return *this;}
 
+#if __i386__ && !__ELF__
+// Due to a i386-linuxaout bug, cannot generate xdr output for a.out systems.
+#define OXSTREAM(T,N) oxstream& operator << (T) {return *this;}
+#else
 #define OXSTREAM(T,N) oxstream& operator << (T x) \
 {if(!xdr_##N(&xdrs, &x)) set(badbit); return *this;}
+#endif
 
 class ixstream : public xstream {
 public:

@@ -22,9 +22,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include <iomanip.h>
 
-char *machine(), *date();
-size_t memory();
-
 const char PROGRAM[]="TRIAD";
 const char VERSION[]="1.1";
 
@@ -76,6 +73,7 @@ static int microsteps=1;
 static double sample=0.0;
 static int initialize=0;
 static int clobber=0;
+static char *tmpdir=tempdir();
 
 VocabularyBase::VocabularyBase()
 {
@@ -342,6 +340,7 @@ void dump(int it, int final, double tmax)
 		if(frestart) {
 			if(checkpoint && it > 0 && (it-1) % checkpoint == 0) {
 				strstream rcheck;
+				if(tmpdir) rcheck << tmpdir << "/";
 				rcheck << rname << "." << iter-microsteps << ends;
 				rename(rname,rcheck.str());
 			}

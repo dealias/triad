@@ -10,12 +10,6 @@ void my_new_handler()
 	exit(1);
 }
 
-// Total amount of dynamically allocated (including subsequently freed) memory.
-size_t memory()
-{
-	return dynamic_memory;
-}
-
 void (*old_new_handler)()=set_new_handler(&my_new_handler);
 
 void *operator new(size_t size)
@@ -49,3 +43,8 @@ void *operator new(size_t size, void *ptr, int new_len)
 	return mem;
 }
 
+// Total amount of dynamically allocated (including subsequently freed) memory.
+size_t memory()
+{
+	return dynamic_memory;
+}
