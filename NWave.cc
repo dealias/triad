@@ -27,15 +27,15 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 	for(Var *k=psibuffer; k < psibufferR; k++) conjugate(*(k+Npsi),*k);
 	
 #if (_AIX || __GNUC__) && COMPLEX
-	Var *pq=pqbuffer;
-	for(Var *p=psibuffer; p < psibufferR; p++) {
+	Var *pq=pqbuffer,*p;
+	for(p=psibuffer; p < psibufferR; p++) {
 		Real psipre=p->re, psipim=p->im;
 		for(Var *q=psibufferR; q < psibufferStop; q++, pq++) {
 			pq->re=psipre*q->re-psipim*q->im;
 			pq->im=psipre*q->im+psipim*q->re;
 		}
 	}
-	for(Var *p=psibufferR; p < psibufferStop; p++) {
+	for(p=psibufferR; p < psibufferStop; p++) {
 		Real psipre=p->re, psipim=p->im;
 		for(Var *q=p; q < psibufferStop; q++, pq++) {
 			pq->re=psipre*q->re-psipim*q->im;

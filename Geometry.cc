@@ -3,6 +3,8 @@
 NWave *GeometryProblem;
 GeometryBase *Geometry;
 
+DynVector<Weight> *weight_ptr;
+
 int GeometryCompare(const void *a, const void *b)
 {
 	return GeometryProblem->GeometryTable->DefaultCompare(a,b);

@@ -32,20 +32,22 @@ extern GeometryBase *Geometry;
 Compare_t GeometryCompare;
 KeyCompare_t GeometryKeyCompare;
 
+typedef unsigned int Index_t;
+
 class Weight {
-	unsigned int index;
+	Index_t index;
 	Mc value;
 public:
-	void Store(unsigned int index0, Mc value0) {
+	void Store(Index_t index0, Mc value0) {
 		index=index0;
 		value=value0;
 	}
-	unsigned int Index() const {return index;}
+	Index_t Index() const {return index;}
 	Mc Value() const {return value;}
 };
 
 inline istream& operator >> (istream& s, Weight& y) {
-	unsigned int index;
+	Index_t index;
 	Mc value;
 	s >> index >> value;
 	y.Store(index,value);
@@ -58,9 +60,41 @@ inline ostream& operator << (ostream& s, const Weight& y) {
 }
 
 template<class T>
+class Hash {
+	int n;
+	T first, last;
+	int *table;
+public:
+	virtual inline int hash(T value) {return (n-1)*(value-first)/(last-first);}
+	
+	Hash(int n0, T value(int)) {
+		n=n0; first=index(0); last=index(n-1);
+		table=new int[n];
+		int j=0;
+		for(int i=0; i < n; i++) {
+			while (hash(value(j)) < i) j++;
+			table[i]=j;
+		}
+	}
+	
+	inline int Index(int hash) {
+		if (hash < 0) return 0;
+		if (hash >= n) return n;
+		return table[hash];
+	}
+};
+	
+extern DynVector<Weight> *weight_ptr;
+inline Index_t HashValue(int j)
+{
+	return (*weight_ptr)[j].Index();
+}
+
+template<class T>
 class Partition : public GeometryBase {
 	DynVector<Weight> weight;
 	int Nweight;
+	Hash<Index_t> *hash;
 	Bin<T> *bin; // pointer to table of bins
 public:
 	Partition() {}
@@ -72,6 +106,7 @@ public:
 	Mc ComputeBinAverage(Bin<T> *k, Bin<T> *p, Bin<T> *q);
 	inline Mc Ckpq(T, T, T);
 	Mc FindWeight(int k, int p, int q);
+
 	void GenerateWeights();
 	void ComputeTriads();
 	void ListTriads();
@@ -85,7 +120,7 @@ public:
 	Real Ky(int k) {return bin[k].Ky();}
 	
 	int pq(int p, int q) {return n*p-p*(p+1)/2+q;} // Index to element p <= q
-	unsigned int WeightIndex(int k, int p, int q) {
+	Index_t WeightIndex(int k, int p, int q) {
 		return n*k*(n-k+2)/2+k*(k-1)*(k-2)/6+(2*n-k-p-1)*(p-k)/2+q-k-(p+1)
 			-(2*n-1)*(k+1)+k*(k+1)+n; // Index to element k < p < q
 	}
@@ -114,7 +149,7 @@ template<class T>
 void Partition<T>::GenerateWeights() {
 	Mc binaverage;
 	int k,p,q;
-	unsigned int kpq,nkpq,lastkpq=0;
+	Index_t kpq,nkpq,lastkpq=0;
 	double realtime,lasttime=time(NULL);
 	double interval=15.0;
 	
@@ -169,9 +204,11 @@ inline Mc Partition<T>::FindWeight(int k, int p, int q) {
 
 	if(p >= Nmode) {int K=k; k=p-Nmode; p=q-Nmode; q=K+Nmode; conjflag=1;}
 	
-	unsigned int kpq=WeightIndex(k,p,q);
-	int l=0;
-	int u=Nweight;
+	Index_t kpq=WeightIndex(k,p,q);
+	int h=hash->hash(kpq);
+	int l=hash->Index(h);
+	int u=hash->Index(h+1);
+	
 	while(l < u) {
 		int i=(l+u)/2;
 		int cmp=kpq-weight[i].Index();
@@ -260,6 +297,9 @@ void Partition<T>::ComputeTriads() {
 			if(n > m) pq += n-m;
 	}
 	
+	weight_ptr=&weight;
+	hash=new Hash<Index_t>(Nweight,HashValue);
+
 	triad.Resize(Nmode*n);
 	for(k=0; k < Nmode; k++) {
 		norm=1.0/(twopi2*Area(k));
