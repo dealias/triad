@@ -7,36 +7,36 @@ template<class T>
 class DynVector
 {
 	T *v;
-	int sz;
-	int top;
+	int alloc;
+	unsigned int size;
 public:
-	void Allocate(int s) {v=new T[sz=s]; top=-1;}
-	void Deallocate() {delete [] v; sz=0;}
+	void Allocate(int s) {v=new T[alloc=s]; size=0;}
+	void Deallocate() {delete [] v; alloc=0;}
 	
-	DynVector() : v(NULL), sz(0), top(-1) {}
+	DynVector() : v(NULL), alloc(0), size(0) {}
 	DynVector(int s) {Allocate(s);}
 	~DynVector() {Deallocate();}
 
-	int Capacity() const {return sz;}
-	int Size() const {return top;}
+	int Capacity() const {return alloc;}
+	unsigned int Size() const {return size;}
 	
 	void Resize(int i) {
- 		if (i == 0 && sz > 0) delete [] v;
-		else if(i > sz) {
+ 		if (i == 0 && alloc > 0) delete [] v;
+		else if(i > alloc) {
 			T *v0=v;
 			v=new T[i];
-			if (sz) {
-				for(int j=0; j < sz; j++) v[j]=v0[j];
+			if (alloc) {
+				for(int j=0; j < alloc; j++) v[j]=v0[j];
 				delete [] v0;
 			}
 		}
-		sz=i;
-		if(top >= sz) top=sz-1;
+		alloc=i;
+		if(size > alloc) size=alloc;
 	}
 	
 	T& operator [] (int i) {
-		if (i >= sz) Resize(max(i+1,2*sz));
-		if (i > top) top=i;
+		if (i >= alloc) Resize(max(i+1,2*alloc));
+		if (i >= size) size=i+1;
 		return v[i];
 	}
 	
@@ -45,15 +45,14 @@ public:
 	operator T* () const {return v;}
 	
 	void PushBack(T value) {
-		top++;
-		if (top >= sz) Resize(max(top+1,2*sz));
-		v[top]=value;
+		if (size == alloc) Resize(2*alloc+1);
+		v[size++]=value;
 	}
 	
-	void Expand(int i) {if (i > sz) Resize(i);}
+	void Expand(int i) {if (i > alloc) Resize(i);}
 
 	DynVector<T> operator = (const T *A) {
-		memcpy(v,A,top*sizeof(T));
+		memcpy(v,A,size*sizeof(T));
 		return *this;
 	}
 };

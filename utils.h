@@ -97,6 +97,16 @@ inline int max(int a, int b)
 	return (a > b) ? a : b;
 }
 
+inline unsigned int min(unsigned int a, unsigned int b)
+{
+	return (a < b) ? a : b;
+}
+
+inline unsigned int max(unsigned int a, unsigned int b)
+{
+	return (a > b) ? a : b;
+}
+
 char *upcase(const char *s, char *s2=NULL);
 char *downcase(const char *s, char *s2=NULL);
 char *dashify(const char *s, char *s2=NULL);
