@@ -30,7 +30,7 @@ public:
 	void set(int flag) CONST {state |= flag;}
 	
 	DynVector() : v(NULL), size(0), alloc(0), state(unallocated) {}
-	DynVector(const DynVector& A) : v(A.v), size(A.size),
+	DynVector(const DynVector<T>& A) : v(A.v), size(A.size),
 		alloc(A.alloc), state(A.test(temporary)) {}
 	DynVector(unsigned int s) {Allocate(s);}
 	~DynVector() {Deallocate();}
