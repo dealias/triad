@@ -30,7 +30,7 @@ public:
 enum Linearity {STANDARD,EXPONENTIAL,CONSERVATIVE_EXPONENTIAL};
 
 class NWave : public ProblemBase {
-	void *Linearity(Var *, Var *, double);
+	void (*Linearity)(Var *, Var *, double);
 public:
 	void InitialConditions();
 	void Initialize();
