@@ -74,7 +74,6 @@ Complex log(const Complex& x);
 Complex pow(const Complex& x, int p);
 Complex pow(const Complex& x, const Complex& p);
 Complex pow(const Complex& x, Real y);
-Complex sqrt(const Complex& x);
    
 // other functions defined as inlines
 
@@ -103,6 +102,7 @@ inline Real imag(const Complex& x);
 inline Real abs(const Complex& x);
 inline Real norm(const Complex& x);
 inline Real arg(const Complex& x);
+inline Complex sqrt(const Complex& x);
 
 inline Complex polar(Real r, Real t = 0.0);
 
@@ -149,11 +149,11 @@ inline Complex& Complex::operator *= (Real y)
 
 inline Complex& Complex::operator /= (const Complex& y)
 {
-	register double t1,t2,t3,t4;
-	t3=y.re; t4=y.im; t1=t2=1.0/(t3*t3+t4*t4);
-	t1*=t3; t2*=t4; t3=re; t4=im;
-	re*=t1;	re+=t4*t2;
-	im*=t1;	im-=t3*t2;
+	register double t1,t2,t3;
+	t2=1.0/(y.re*y.re+y.im*y.im);
+	t1=t2*y.re; t2 *= y.im; t3=re;
+	re *= t1; re += im*t2;
+	im *= t1; im -= t3*t2;
 	return *this;
 }
 
@@ -198,55 +198,55 @@ inline Complex conj(const Complex& x)
 
 inline Complex operator + (const Complex& x, const Complex& y)
 {
-	return Complex(x.re + y.re, x.im + y.im);
+	return Complex(x.re+y.re, x.im+y.im);
 }
 
 inline Complex operator + (const Complex& x, Real y)
 {
-	return Complex(x.re + y, x.im);
+	return Complex(x.re+y, x.im);
 }
 
 inline Complex operator + (Real x, const Complex& y)
 {
-	return Complex(x + y.re, y.im);
+	return Complex(x+y.re, y.im);
 }
 
 inline Complex operator - (const Complex& x, const Complex& y)
 {
-	return Complex(x.re - y.re, x.im - y.im);
+	return Complex(x.re-y.re, x.im-y.im);
 }
 
 inline Complex operator - (const Complex& x, Real y)
 {
-	return Complex(x.re - y, x.im);
+	return Complex(x.re-y, x.im);
 }
 
 inline Complex operator - (Real x, const Complex& y)
 {
-	return Complex(x - y.re, -y.im);
+	return Complex(x-y.re, -y.im);
 }
 
 inline Complex operator * (const Complex& x, const Complex& y)
 {
-	return Complex(x.re * y.re - x.im * y.im, x.re * y.im + x.im * y.re);
+	return Complex(x.re*y.re-x.im*y.im, x.re*y.im+x.im*y.re);
 }
 
 inline Complex operator * (const Complex& x, Real y)
 {
-	return Complex(x.re * y, x.im * y);
+	return Complex(x.re*y, x.im*y);
 }
 
 inline Complex operator * (Real x, const Complex& y)
 {
-	return Complex(x * y.re, x * y.im);
+	return Complex(x*y.re, x*y.im);
 }
 
 inline Complex operator / (const Complex& x, const Complex& y)
 {
-	register double t1,t2,t3,t4;
-	t3=y.re; t4=y.im; t1=t2=1.0/(t3*t3+t4*t4);
-	t1*=t3; t2*=t4; t3=x.re; t4=x.im;
-	return Complex(t4*t2+t3*t1,t4*t1-t3*t2);
+	register double t1,t2;
+	t2=1.0/(y.re*y.re+y.im*y.im);
+	t1=t2*y.re; t2 *= y.im;
+	return Complex(x.im*t2+x.re*t1, x.im*t1-x.re*t2);
 }
 
 inline Complex operator / (const Complex& x, Real y)
@@ -273,7 +273,7 @@ inline Real imag(const Complex& x)
 
 inline Real norm(const Complex& x)
 {
-	return (x.re * x.re + x.im * x.im);
+	return (x.re*x.re+x.im*x.im);
 }
 
 inline Real abs(const Complex& x)
@@ -286,14 +286,37 @@ inline Real arg(const Complex& x)
 	return atan2(x.im, x.re);
 }
 
+inline Complex sqrt(const Complex& x)
+{
+	Real mag=abs(x);
+	if(mag == 0.0) return Complex(0.0,0.0);
+	else if(x.re > 0) {
+        Real re=sqrt(0.5*(mag+x.re));
+        return Complex (re,0.5*x.im/re);
+	} else {
+        Real im=sqrt(0.5*(mag-x.re));
+        if(x.im < 0) im=-im;
+        return Complex(0.5*x.im/im,im);
+	}
+}
+
 inline Complex polar(Real r, Real t)
 {
-	return Complex(r * cos(t), r * sin(t));
+	return Complex(r*cos(t), r*sin(t));
 }
 
 inline istream& operator >> (istream& s, Complex& y)
 {
-	s >> "(" >> y.re >> "," >> y.im >> ")";
+	char c;
+	s >> ws >> c;
+	if(c == '(') {
+		s >> y.re >> c;
+		if(c == ',') s >> y.im >> c;
+		else y.im=0.0;
+	} else {
+		s.putback(c);
+		s >> y.re; y.im=0.0;
+	}
 	return s;
 }
 
