@@ -5,15 +5,12 @@
 #include <fstream.h>
 #include <stdio.h>
 #include <limits.h>
-#define _ANSI_C_SOURCE
-#define _POSIX_SOURCE
-#include <math.h>
 #include <errno.h>
 #include <time.h>
 #include <string.h>
 
-#include "types.h"
 #include "utils.h"
+#include "types.h"
 #include "DynVector.h"
 #include "Table.h"
 

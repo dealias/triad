@@ -1,4 +1,4 @@
-G++ = xlC -+ -D_ANSI_C_SOURCE
+G++ = xlC -+ -D_ANSI_C_SOURCE -D__unix
 POLL = idle.o
 OPT = $(CFLAGS)
 MDOPT = -I /usr/lpp/xlC/include -I /

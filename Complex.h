@@ -255,14 +255,14 @@ inline Real  imag(const Complex& x)
   return x.imag();
 }
 
-inline Real  abs(const Complex& x)
-{
-  return hypot(x.real(), x.imag());
-}
-
 inline Real  norm(const Complex& x)
 {
   return (x.real() * x.real() + x.imag() * x.imag());
+}
+
+inline Real  abs(const Complex& x)
+{
+  return sqrt(norm(x));
 }
 
 inline Real  arg(const Complex& x)
