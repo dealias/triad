@@ -2,7 +2,7 @@ LIB = $(LFLAGS) -lm
 OPT = -g $(CFLAGS)
 MAKEDEPEND = makedepend
 
-ARCH = arch/unix.o
+ARCH = unix.o
 POLL = poll.o
 
 include config/$(HOSTTYPE)
@@ -42,7 +42,7 @@ depend:
 	kernel.cc Approx.cc Integrator.cc Param.cc ThreeWave.cc \
 	Navier.cc NWave.cc Geometry.cc Polar.cc PolarAverage.cc simpfast.cc \
 	Kepler.cc Lotka.cc utils.cc strcasecmp.cc new.cc poll.cc \
-	arch/idle.cc arch/unix.cc
+	idle.cc unix.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
