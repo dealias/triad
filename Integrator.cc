@@ -164,9 +164,9 @@ void IntegratorBase::Allocate()
   for(unsigned int i=0; i < nfields; i++) ny += (*NY)[i];
   Alloc(Src,source);
   
-  Dimension1(y,Problem->vect());
-  Dimension1(Y,Problem->Vector());
-  Dimension1(Yout,Problem->Vector());
+  Dimension1(y,Problem->Vector());
+  Dimension1(Y,Problem->Vector2());
+  Dimension1(Yout,Problem->Vector2());
 }
 
 Solve_RC Euler::Solve()

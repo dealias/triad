@@ -62,8 +62,8 @@ class ProblemBase {
   virtual ~ProblemBase() {}
   void SetAbbrev(const char *abbrev0) {abbrev=abbrev0;}
   const char *Abbrev() {return abbrev;}
-  vector vect() {return y;}
-  vector2 Vector() {return Y;}
+  vector Vector() {return y;}
+  vector2 Vector2() {return Y;}
   unsigned int Size() {return ny;}
   DynVector<unsigned int> *Index() {return &NY;}
 
