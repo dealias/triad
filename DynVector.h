@@ -7,8 +7,8 @@ template<class T>
 class DynVector
 {
 	T *v;
-	unsigned int size;
 	unsigned int alloc;
+	unsigned int size;
 public:
 	void Allocate(unsigned int s) {v=new T[alloc=s]; size=0;}
 	void Deallocate() {delete [] v; alloc=0;}
@@ -17,7 +17,7 @@ public:
 	DynVector(unsigned int s) {Allocate(s);}
 	~DynVector() {Deallocate();}
 
-	unsigned int Capacity() const {return alloc;}
+	unsigned int Alloc() const {return alloc;}
 	unsigned int Size() const {return size;}
 	
 	void Resize(unsigned int i) {
