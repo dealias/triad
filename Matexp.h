@@ -26,11 +26,11 @@ public:
 template<class T>
 const Array2<T> exp(const Array2<T>& A)
 {
-//	double tolmax=1e-7;
-//	double tolmin=9e-8;
+	double tolmax=1e-7;
+	double tolmin=9e-8;
 	
-	double tolmax=1e-4;
-	double tolmin=9e-5;
+//	double tolmax=1e-4;
+//	double tolmin=9e-5;
 	MatExp MatExpProblem(A);
 
 	MatExpProblem.InitialConditions();

@@ -253,16 +253,16 @@ inline Array2<T> const operator * (const Array2<T>& B, const Array2<T>& C)
 	return A;
 }
 
-template<class T>
-inline void Mult(const Array2<T>& A, const Array2<T>& B, T C)
+template<class T, class S>
+inline void Mult(const Array2<T>& A, const Array2<T>& B, S C)
 {
 	unsigned int size=A.Size(); 
 	for(unsigned int i=0; i < size; i++) A(i)=B(i)*C;
 	B.Purge();
 }
 
-template<class T>
-inline Array2<T> operator * (const Array2<T>& B, T C)
+template<class T, class S>
+inline Array2<T> operator * (const Array2<T>& B, S C)
 {
 	Array2<T> A(B.Nx(),B.Ny());
 	Mult(A,B,C);
