@@ -3,4 +3,3 @@ C++ = g++ -Wall -ansi
 LIB = $(LFLAGS) -lrfftw -lfftw -lcpml -lm
 MAKEDEPEND = g++ -M -DDEPEND
 FFT = wfft
-
