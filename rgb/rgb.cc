@@ -541,13 +541,13 @@ int main(int argc, char *const argv[])
 							int index;
 							
 							if(x.i < 0 || x.i >= nx) x.i=Undefined;
-							if(x.j < 0) x.j=0; 
-							if(x.j > ny-1) x.j=ny-0.5; 
 							if (step == 0.0 ||
 								x.i == Undefined || 
 								x.j == Undefined ||
 								x.k == Undefined) index=-1;
 							else {
+								if(x.j < 0) x.j=0; 
+								if(x.j > ny-1) x.j=ny-0.5; 
 								Real val;
 								int ci=(int) floor(x.i);
 								int cj=(int) floor(x.j);
