@@ -451,26 +451,34 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 	
 	fft(data,log4n,isign,m);
 	
-	for(k=0; k < m; k++) {
-		Complex *p=data+m*k, *q=data+k;
+	if(isign == 1) {
+		for(j=0; j < m; j++) {
+			int mj=m*j;
+			Complex *p=data+mj;
+			Complex *c=phase+mj;
+			Complex *q=data+j;
+			p[j] *= c[j];
 #pragma ivdep			
-        for(j=0; j < k; j++, q += m) {
-			Complex temp=p[j];
-			p[j]=*q;
-			*q=temp;
+			for(k=0; k < j; k++, q += m) {
+				Complex temp = p[k];
+				p[k] = (*q)*c[k];
+				(*q)=temp*c[k];
+			}
 		}
-	}
-
-	if(isign == 1) for(j=0; j < m; j++) {
-		Complex *p=data+m*j;
-		Complex *phasej=phase+m*j;
+	} else {
+		for(j=0; j < m; j++) {
+			int mj=m*j;
+			Complex *p=data+mj;
+			Complex *c=phase+mj;
+			Complex *q=data+j;
+			p[j] *= conj(c[j]);
 #pragma ivdep			
-		for(k=0; k < m; k++) p[k] *= phasej[k];
-	} else for(j=0; j < m; j++) {
-		Complex *p=data+m*j;
-		Complex *phasej=phase+m*j;
-#pragma ivdep			
-		for(k=0; k < m; k++) p[k] *= conj(phasej[k]);
+			for(k=0; k < j; k++, q += m) {
+				Complex temp = p[k];
+				p[k] = (*q)*conj(c[k]);
+				(*q)=temp*conj(c[k]);
+			}
+		}
 	}
 	
 	fft(data,log4n,isign,m);

@@ -1,3 +1,5 @@
+#include <sys/machd.h>
+
 #include "options.h"
 #include "fft.h"
 
@@ -11,12 +13,14 @@ extern "C" void CFFTMLT(Real *ar, Real *ai, Real *work, Real *trigs,
 						int *ifax , const int& inc, const int& jump,
 						const int& n, const int& lot, const int& isign);
 
+extern "C" void FLOWMARK(char *);
+
 void fft4(Complex *data, unsigned int log4n, int isign)
 {
 	unsigned int m,k,j;
 	static unsigned int lastsize=0;
-	static Complex *phase;
-	static Real *work,*trigs;
+	static Complex *phase, *work;
+	static Real *trigs;
 	static int ifax[19];
 
 	m=1 << log4n;
@@ -25,7 +29,7 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 	if(m != lastsize) {
 		if(m > lastsize) {
 			phase=new(phase,m*m) Complex;
-			work=new(work,4*m*m) Real;
+			work=new(work,2*m*m) Complex;
 			trigs=new(trigs,2*m) Real;
 		}
 		lastsize=m;
@@ -39,9 +43,70 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 		}
 		CFTFAX(m,ifax,trigs);
 	}
+
+#if 0	
+//	int P=min(m/64,NCPU); // Request this many processors.
+	int P=1;
+	int lot=m/P;
+	int remainder=m-P*lot;
 	
-	CFFTMLT(&data[0].re,&data[0].im,work,trigs,ifax,twom,two,m,m,isign);
-	
+//#pragma _CRI taskloop private(j) value(data,work,lot,trigs,ifax,twom,two,m,isign)
+	{
+		for(int j=0; j < P; j++) {
+			int off=j*lot;
+			off=0;
+			lot=m;
+			CFFTMLT(&data[off].re,&data[off].im,work+2*off,trigs,ifax,
+					twom,two,m,lot,isign);
+		}
+	}
+	if(remainder) {
+		int off=P*lot;
+		CFFTMLT(&data[off].re,&data[off].im,work+2*off,trigs,ifax,
+				twom,two,m,remainder,isign);
+	}
+#endif	
+	FLOWMARK("inner1");
+	CFFTMLT(&data[0].re,&data[0].im,&work[0].re,trigs,ifax,twom,two,m,m,isign);
+	FLOWMARK("");
+	 
+#if 0	
+	FLOWMARK("inner2");
+	if(isign == 1) {
+		for(int j=0; j < m; j++) {
+			int mj=m*j;
+			Complex *temp=work+mj;
+			Complex *p=data+mj;
+			Complex *c=phase+mj;
+			Complex *q=data+j;
+			p[j] *= c[j];
+#pragma ivdep			
+			for(int k=0; k < j; k++) {
+				temp[k] = p[k];
+				p[k] = q[m*k]*c[k];
+				q[m*k]=temp[k]*c[k];
+			}
+		}
+	} else {
+		for(int j=0; j < m; j++) {
+			int mj=m*j;
+			Complex *temp=work+mj;
+			Complex *p=data+mj;
+			Complex *c=phase+mj;
+			Complex *q=data+j;
+			p[j] *= conj(c[j]);
+#pragma ivdep			
+			for(int k=0; k < j; k++) {
+				temp[k] = p[k];
+				p[k] = q[m*k]*conj(c[k]);
+				q[m*k]=temp[k]*conj(c[k]);
+			}
+		}
+	}
+    FLOWMARK("");
+#endif	
+
+	FLOWMARK("inner2");
 	for(k=0; k < m; k++) {
 		Complex *p=data+m*k, *q=data+k;
 #pragma ivdep			
@@ -51,7 +116,9 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 			*q=temp;
 		}
 	}
+    FLOWMARK("");
 
+	FLOWMARK("inner3");
 	if(isign == 1) for(j=0; j < m; j++) {
 		Complex *p=data+m*j;
 		Complex *phasej=phase+m*j;
@@ -63,8 +130,13 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 #pragma ivdep			
 		for(k=0; k < m; k++) p[k] *= conj(phasej[k]);
 	}
+    FLOWMARK("");
 	
-	CFFTMLT(&data[0].re,&data[0].im,work,trigs,ifax,twom,two,m,m,isign);
+//#pragma _CRI taskloop private(j) value(m,data,work,phase)
+	
+    FLOWMARK("inner4");
+	CFFTMLT(&data[0].re,&data[0].im,&work[0].re,trigs,ifax,twom,two,m,m,isign);
+	FLOWMARK("");
 }
 
 extern "C" void CCFFT(const int& isign, const int& n, double& scale,
