@@ -45,42 +45,42 @@ public:
 
 inline Cartesian operator - (const Cartesian& a)
 {
-  return Cartesian(-a.x, -a.y);
+	return Cartesian(-a.x, -a.y);
 }
 
 inline int operator > (const Cartesian& a, const Cartesian& b)
 {
-return (a.x > b.x || (a.x == b.x && a.y > b.y));	
+	return (a.x > b.x || (a.x == b.x && a.y > b.y));	
 }
 
 inline int operator == (const Cartesian& a, const Cartesian& b)
 {
-return (a.x == b.x && a.y == b.y);	
+	return (a.x == b.x && a.y == b.y);	
 }
 
 inline int operator != (const Cartesian& a, const Cartesian& b)
 {
-return (a.x != b.x || a.y != b.y);	
+	return (a.x != b.x || a.y != b.y);	
 }
 
 inline Cartesian operator + (const Cartesian& a, const Cartesian& b)
 {
-return Cartesian(a.x+b.x, a.y+b.y);
+	return Cartesian(a.x+b.x, a.y+b.y);
 }
 
 inline Cartesian operator - (const Cartesian& a, const Cartesian& b)
 {
-return Cartesian(a.x-b.x, a.y-b.y);
+	return Cartesian(a.x-b.x, a.y-b.y);
 }
 
 inline Cartesian operator * (const Cartesian& a, const Cartesian& b)
 {
-return Cartesian(a.x*b.x, a.y*b.y);
+	return Cartesian(a.x*b.x, a.y*b.y);
 }
 
 inline Cartesian operator / (const Cartesian& a, const Cartesian& b)
 {
-return Cartesian(a.x/b.x, a.y/b.y);
+	return Cartesian(a.x/b.x, a.y/b.y);
 }
 
 inline ixstream& operator >> (ixstream& s, Cartesian& b)

@@ -77,7 +77,7 @@ template <class T>
 INLINE Nu Basis<T>::Linear(int i)
 {
 	Nu nu;
-	Linearity->Evaluate(Polar(Geometry->K(i),Geometry->Th(i)),nu);
+	Linearity->Evaluate(Geometry->ModeOf(i),nu);
 	return nu;
 }
 

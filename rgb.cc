@@ -416,15 +416,17 @@ int main(int argc, char *const argv[])
 		nset=nset ? min(nset,set) : set;
 	}
 	
-	if(label || make_mpeg) { 
-		if(make_mpeg) montage(nfiles,argf,0,format,"miff");
-		for(n=0; n < nset; n++) 
-			montage(nfiles,argf,n,format,make_mpeg ? yuvformat : "miff");
-		identify(nfiles,argf,0,"miff",xsize,ysize);
-		
-		if(make_mpeg) mpeg(nfiles,argf,nset-1,"mpg",xsize,ysize);
-		else manimate(nfiles,argf,nset-1,"miff",xsize,ysize);
-	} else animate(nfiles,argf,nset-1,format,xsize,ysize);
+	if(nset) {
+		if(label || make_mpeg) { 
+			if(make_mpeg) montage(nfiles,argf,0,format,"miff");
+			for(n=0; n < nset; n++) 
+				montage(nfiles,argf,n,format,make_mpeg ? yuvformat : "miff");
+			identify(nfiles,argf,0,"miff",xsize,ysize);
+			
+			if(make_mpeg) mpeg(nfiles,argf,nset-1,"mpg",xsize,ysize);
+			else manimate(nfiles,argf,nset-1,"miff",xsize,ysize);
+		} else animate(nfiles,argf,nset-1,format,xsize,ysize);
+	}
 	
 	cleanup();
 }

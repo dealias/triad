@@ -4,6 +4,5 @@ LIB = $(LFLAGS) -lessl -lm
 MAKEDEPEND = $(C++) -M -P
 D = u
 
-ARCH = unix
 FFT = efft
 #POLL = idle

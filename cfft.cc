@@ -13,12 +13,12 @@ typedef Real *pReal;
 void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		  unsigned int inc1, unsigned int inc2, int)
 {
-	int j;
 	unsigned int n=1 << log2n;
 	static int TableSize=0;
 	static unsigned int *nTable=NULL, *nkTable=NULL;
 	static int **ifax;
 	static Real **trigs,**work;
+	int j;
 	
 	for(j=0; j < TableSize; j++) if(n == nTable[j] && nk == nkTable[j]) break;
 	
@@ -50,20 +50,30 @@ extern "C" void CCFFT(const int& isign, const int& n, Real& scale,
 		 
 void fft(Complex *data, unsigned int log2n, int isign, int)
 {
-	static double *table,*work;
-	unsigned int n=1 << log2n;
-	static unsigned int nlast=0; 
+	static int TableSize=0;
+	static unsigned int *nTable=NULL;
+	static Real **table,**work;
 	static int isys[1]={0};
+	int j;
+	
+	unsigned int n=1 << log2n;
 	const int zero=0;
-
 	Real scale=1.0;
-	if(n != nlast) {
-		nlast=n;
-		table=new(table,100+8*n) Real;
-		work=new(work,8*n) Real;
-		CCFFT(zero,n,scale,data,data,table,work,isys);
+	
+	for(j=0; j < TableSize; j++) if(n == nTable[j]) break;
+	
+    if(j == TableSize) {
+		TableSize++;
+		nTable=new(nTable,TableSize) unsigned int;
+		table=new(table,TableSize) pReal;
+		work=new(work,TableSize) pReal;
+		nTable[j]=n;
+		table[j]=new Real[100+8*n];
+		work[j]=new Real[8*n];
+		CCFFT(zero,n,scale,data,data,table[j],work[j],isys);
 	}
-	CCFFT(isign,n,scale,data,data,table,work,isys);
+	
+	CCFFT(isign,n,scale,data,data,table[j],work[j],isys);
 }
 
 
