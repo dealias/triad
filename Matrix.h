@@ -103,7 +103,7 @@ inline void Trans(const Array2<T>& A, const Array2<T>& B)
 }
 
 template<class T>
-inline void Conjugate(const Array2<T>& A, const Array2<T>& B)
+inline void Conj(const Array2<T>& A, const Array2<T>& B)
 {
 	unsigned int nx=A.Nx();
 	unsigned int ny=A.Ny();
@@ -132,7 +132,7 @@ template<class T>
 inline Array2<T> operator * (const Array2<T>& B)
 {
 	Array2<T> A(B.Ny(),B.Nx());
-	Conjugate(A,B);
+	Conj(A,B);
 	A.Hold();
 	return A;
 }

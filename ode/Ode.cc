@@ -199,14 +199,14 @@ void Ode::Initialize()
 
 void Ode::Output(int)
 {
-	fout << t << "\t" << y[0] << "\t" << endl;
+	fout << t << "\t" << y[0].re << "\t" << endl;
 }
 
 void Ode::NonLinearSrc(Var *source, Var *, double t)
 {
 //	source[0]=cos(y[0]);
-	source[0]=cos(t)*y[0];
-//	source[0]=-A*y[0]-B*y[0]*y[0];
+//	source[0]=cos(t)*y[0];
+	source[0]=-A*y[0]-B*y[0]*y[0];
 }
 
 void Ode::LinearSrc(Var *source, Var *y, double)
@@ -298,7 +298,7 @@ void LE_PC::Predictor(double t, double dt, unsigned int start,
 					 unsigned int stop)
 {
 //	nu[0]=A+2.0*B*y0[0];
-	nu[0]=y0[0] ? -source0[0]/y0[0] : 0.0;
+	nu[0]=(y0[0] != 0.0) ? -source0[0]/y0[0] : 0.0;
 	source0[0] += nu[0]*y0[0];
 	TimestepDependence(dt);
 	for(unsigned int j=start; j < stop; j++)

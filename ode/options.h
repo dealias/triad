@@ -2,11 +2,11 @@
 #define __options_h__ 1
 
 #define DOUBLE_PRECISION 1
-#define COMPLEX 0
+#define COMPLEX 1
 
 #include "utils.h"
 
-typedef Real Var;
+typedef Complex Var;
 
 typedef Var Nu;
 
