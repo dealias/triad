@@ -9,7 +9,7 @@ extern "C" SECOND(const double& seconds);
 extern double polltime;
 
 static double tlimit=0.0;
-static double lastseconds=0.0;
+static double last_seconds=0.0;
 
 int poll()
 {
