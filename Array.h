@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.01J
+#define __ARRAY_H_VERSION__ 1.02
 
 // Setting ARRAY_CHECK to 1 enables optional argument checking.
 
@@ -34,6 +34,13 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 #include "iostream.h"
 
+#ifdef _AIX
+#define CONST const
+#else
+#define mutable
+#define CONST
+#endif
+
 #ifndef __utils_h__
 const char newl='\n';
 template<class T> 
@@ -41,7 +48,6 @@ inline void set(T *to, const T * from, int n)
 {
 	memcpy(to,from,sizeof(*from)*n);
 }
-
 #endif
 
 template<class T>
@@ -61,7 +67,7 @@ public:
 	}
 	
 	void Allocate(int nx0) {Dimension(nx0); v=new T[Size()]; allocate=1;}
-	void Deallocate() const {delete [] v; allocate=0;}
+	void Deallocate() CONST {delete [] v; allocate=0;}
 	void Dimension(int nx0) {nx=nx0;}
 	void Dimension(int nx0, T *v0) {Dimension(nx0); v=v0; allocate=0;}
 	
@@ -74,7 +80,10 @@ public:
 	
 	void Freeze() {allocate=0;}
 	void Hold() {if(allocate) {temporary=1; allocate=0;}}
-	void Purge() const {if(temporary) {Deallocate(); temporary=0;}}
+	void Purge() CONST {if(temporary) {Deallocate(); temporary=0;}}
+#ifdef mutable
+	void Purge() const {((Array1<T> *) this)->Purge();}
+#endif
 	
 	void Check(int i, int n, int dim, int m) const {
 		if(i < 0 || i >= n) {
@@ -90,10 +99,8 @@ public:
 	
 	int Nx() const {return nx;}
 	int N1() const {return nx;}
-//	Array1<T> operator () () const {return Array1<T>(Size(),v);}
 	T& operator [] (int ix) const {check(ix,nx,1,1); return v[ix];}
 	T& operator () (int ix) const {check(ix,nx,1,1); return v[ix];}
-	T *operator + (int i) {return v+i;}
 	T* operator () () const {return v;}
 	operator T* () const {return v;}
 	
@@ -104,9 +111,9 @@ public:
 	void Load(T *a) const {set(v,a,Size0());}
 	void Store(T *a) const {set(a,v,Size0());}
 	void Set(T *a) {v=a; allocate=0;}
-	void Input (istream &s) const {
+	istream& Input (istream &s) const {
 		int size=Size0();
-		for(int i=0; i < size; i++) s >> a(i);
+		for(int i=0; i < size; i++) s >> v[i];
 		return s;
 	}
 	
@@ -120,6 +127,14 @@ public:
 	}
 	Array1<T>& operator -= (const Array1<T>& A) {
 		int size=Size0(); for(int i=0; i < size; i++) v[i] -= A(i);
+		return *this;
+	}
+	Array1<T>& operator *= (const Array1<T>& A) {
+		int size=Size0(); for(int i=0; i < size; i++) v[i] *= A(i);
+		return *this;
+	}
+	Array1<T>& operator /= (const Array1<T>& A) {
+		int size=Size0(); for(int i=0; i < size; i++) v[i] /= A(i);
 		return *this;
 	}
 	
@@ -155,7 +170,7 @@ ostream& operator << (ostream& s, const Array1<T>& A)
 template<class T>
 istream& operator >> (istream& s, const Array1<T>& A)
 {
-	A.Input(s);
+	return A.Input(s);
 }
 
 template<class T>
@@ -182,7 +197,6 @@ public:
 	
 	int Ny() const {return ny;}
 	int N2() const {return ny;}
-//	Array1<T> operator () () const {return Array1<T>(Size(),v);}
 	Array1<T> operator [] (int ix) const {
 		check(ix,nx,2,1);
 		return Array1<T>(ny,v+ix*ny);
@@ -214,6 +228,7 @@ public:
 		int size=Size0(); for(int i=0; i < size; i++) v[i] -= A(i);
 		return *this;
 	}
+	Array2<T>& operator *= (const Array2<T>& A);
 	
 	Array2<T>& operator += (T a) {
 		int inc=ny+1, size=Size0();
@@ -225,6 +240,7 @@ public:
 		for(int i=0; i < size; i += inc) v[i] -= a;
 		return *this;
 	}
+	Array2<T>& operator *= (T A);
 };
 
 template<class T>
@@ -244,7 +260,7 @@ ostream& operator << (ostream& s, const Array2<T>& A)
 template<class T>
 istream& operator >> (istream& s, const Array2<T>& A)
 {
-	A.Input(s);
+	return A.Input(s);
 }
 
 template<class T>
@@ -274,7 +290,6 @@ public:
 	
 	int Nz() const {return nz;}
 	int N3() const {return nz;}
-//	Array1<T> operator () () const {return Array1<T>(Size(),v);}
 	Array2<T> operator [] (int ix) const {
 		check(ix,nx,3,1);
 		return Array2<T>(ny,nz,v+ix*nyz);
@@ -336,7 +351,7 @@ ostream& operator << (ostream& s, const Array3<T>& A)
 template<class T>
 istream& operator >> (istream& s, const Array3<T>& A)
 {
-	A.Input(s);
+	return A.Input(s);
 }
 
 template<class T>
@@ -369,7 +384,6 @@ public:
 
 	int Nw() const {return nw;}
 	int N4() const {return nw;}
-//	Array1<T> operator () () const {return Array1<T>(Size(),v);}
 	Array3<T> operator [] (int ix) const {
 		check(ix,nx,3,1);
 		return Array3<T>(ny,nz,nw,v+ix*nyzw);
@@ -435,24 +449,17 @@ ostream& operator << (ostream& s, const Array4<T>& A)
 template<class T>
 istream& operator >> (istream& s, const Array4<T>& A)
 {
-	A.Input(s);
+	return A.Input(s);
 }
 
 #if ARRAY_CHECK
 #define Array1(T) Array1<T>
-#define Array1a(T) Array1<T>
-#define Array1b(T) Array1<T>
-#define Array1c(T) Array1<T>
-#define Array1d(T) Array1<T>
-#define Array1e(T) Array1<T>
 #else
-#define Array1(T) typedef T* Tstar; Tstar
-#define Array1a(T) typedef T* Tstara; Tstara
-#define Array1b(T) typedef T* Tstarb; Tstarb
-#define Array1c(T) typedef T* Tstarc; Tstarc
-#define Array1d(T) typedef T* Tstard; Tstard
-#define Array1e(T) typedef T* Tstare; Tstare
+#define Array1(T) T*
 #endif
+
+#undef check
+#undef CONST
 
 #endif
 
