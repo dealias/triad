@@ -2,6 +2,8 @@
 #include "Polar.h"
 #include "Cartesian.h"
 
+#include <sys/stat.h>
+
 char *NWave::Name() {return "N-Wave";}
 char *NWave::Abbrev() {return "nw";}
 
@@ -165,8 +167,12 @@ static Real equilibrium(int i)
 	return 0.5/(alpha+beta*k*k);
 }
 
-static ofstream fparam,fevt,fekvt,favgy[Nmoment],fprolog;
+static ifstream ftin;
+static ofstream fparam,fevt,fyvt,ft,favgy,fprolog;
 Real continuum_factor;
+static char avgylabel[Nmoment][20];
+static char tempbuffer[30];
+static int tcount=0;
 
 void NWave::InitialConditions()
 {
@@ -205,15 +211,23 @@ void NWave::InitialConditions()
 		for(i=nindependent; i < Npsi; i++) y[i]=conj(y[i-nindependent]);
 	}
 	
+	Real t0;
+	ftin.open(Problem->FileName(dirsep,"t"));
+	while(ftin >> t0, ftin.good()) tcount++;
+	ftin.close();
+	
 	open_output(fparam,dirsep,"param",0);
 	open_output(fevt,dirsep,"evt");
-	open_output(fekvt,dirsep,"ekvt");
+	open_output(fyvt,dirsep,"yvt");
+	open_output(ft,dirsep,"t");
 	open_output(fprolog,dirsep,"prolog");
 	
+	for(n=0; n < Nmoment; n++) 
+	
 	if(average) for(n=0; n < Nmoment; n++) {
-		char temp[10];
-		sprintf(temp,"avgy%d",n+2);
-		open_output(favgy[n],dirsep,temp);
+		sprintf(tempbuffer,"avgy%d",n+2);
+		mkdir(Problem->FileName(dirsep,tempbuffer),0x777);
+		sprintf(avgylabel[n],"y%%s^%d",n+2);
 	}
 	
 	Problem->GraphicsDump(fparam);
@@ -275,17 +289,20 @@ void NWave::Output(int)
 	
 	fevt << t << "\t" << E << "\t" << Z << "\t" << P << endl << flush;
 	
-	out_curve(fekvt,t,"t");
-	out_real(fekvt,y,"y%%s",Npsi);
-	fekvt.flush();
+	out_curve(ft,t,"t");
+	
+	out_real(fyvt,y,"y%s",Npsi);
+	fyvt.flush();
 	
 	if(average) for(n=0; n < Nmoment; n++) {
-		out_curve(favgy[n],t,"t");
-		char text[20];
-		sprintf(text,"y%%s^%d",n+2);
-		out_real(favgy[n],y+Npsi*(n+1),text,Npsi);
-		favgy[n].flush();
+		sprintf(tempbuffer,"avgy%d%s%d",n+2,dirsep,tcount++);
+		open_output(favgy,dirsep,tempbuffer,0);
+		out_curve(favgy,t,"t");
+		out_real(favgy,y+Npsi*(n+1),avgylabel[n],Npsi);
+		favgy.close();
 	}
+	
+	ft << t << endl << flush;
 }
 
 Nu LinearityAt(int i)
