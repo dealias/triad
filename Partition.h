@@ -436,20 +436,21 @@ INLINE void Partition<T,D>::Initialize() {
 		Nevolved=(Ny-1)/2*Nx+(Nx-1)/2;
 		int Ndiscrete=Nx*Ny-1;
 		ModeBin=new int[Ndiscrete];
-		const int unassigned=-1;
-		for(i=0; i < Ndiscrete; i++) ModeBin[i]=unassigned;
+		const int Unassigned=-1;
+		for(i=0; i < Ndiscrete; i++) ModeBin[i]=Unassigned;
 		
 		for (i=0; i < n; i++) {
 			Bin<T,D> *p=&bin[i];
 			int nmode=p->nmode;
+			D *mode=p->mode.Base();
 			for(int m=0; m < nmode; m++) {
-				int index=p->mode[m].ModeIndex();
-				if(ModeBin[index] != unassigned) 
+				int index=mode[m].ModeIndex();
+				if(index >= Ndiscrete) 
+					msg(ERROR, "Number of modes is greater than Nx*Ny-1");
+				if(ModeBin[index] != Unassigned) 
 					msg(ERROR,
 						"Discrete mode (%d) is already assigned to bin %d",
 						m,ModeBin[index]);
-				if(index >= Ndiscrete) 
-					msg(ERROR, "Number of modes is greater than Nx*Ny-1");
 				ModeBin[index]=i;
 			}
 		}

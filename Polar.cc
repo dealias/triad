@@ -139,7 +139,7 @@ void Bin<Polar,Cartesian>::MakeModes()
 	}
 }
 
-static const Real linacc=0.01;
+static const Real linacc=1.0E-5;
 static const Real dxmax=REAL_MAX;
 
 Real linearity_re(const Polar& v);
