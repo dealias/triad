@@ -8,7 +8,7 @@
 char beep='\a';
 
 extern int sys_nerr;
-#if sun
+#if  sun || __linux__
 extern char *sys_errlist[];
 #endif
 
