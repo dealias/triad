@@ -1,5 +1,5 @@
 /* RGB:  A movie production utility (requires MPEGv1.2.2J.tar.gz, which
-fixes a buffer overflow and other warning message in MPEGv1.2.2.tar.gz)
+fixes a buffer overflow and also a warning message in MPEGv1.2.2.tar.gz)
 
 Copyright (C) 2000-2004 John C. Bowman (bowman@math.ualberta.ca)
 
@@ -18,7 +18,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.24";
+const char VERSION[]="1.25";
 
 #include "xstream.h"
 #include <iostream>
@@ -80,6 +80,7 @@ int sx=1,sy=1;
 int byte=0;
 int display=0;
 int implicit=1;
+int backwards=0;
 int symmetric=0;
 int rescale=0;
 int invert=0;
@@ -171,7 +172,8 @@ void openfield(T& fin, const char *fieldname, int& nx, int& ny, int& nz)
   fin.open(fieldname);
   if(!fin) {cleanup(); msg(ERROR,"Cannot open input file %s",fieldname);}
   if(implicit) {
-    fin >> nx1 >> ny1 >> nz1;
+    if(backwards) fin >> nx1 >> ny1 >> nz1;
+    else fin >> nz1 >> ny1 >> nx1;
     if(fin.eof()) {
       cleanup(); msg(ERROR,"End of file during processing");
     }
@@ -281,7 +283,8 @@ int readframe(ixstream& xin, int nx, int ny, int nz, array3<float> value,
 	
   if(implicit) {
     int nx0,ny0,nz0;
-    xin >> nx0 >> ny0 >> nz0;
+    if(backwards) xin >> nx0 >> ny0 >> nz0;
+    else xin >> nz0 >> ny0 >> nx0;
     if(xin.eof()) return 1;
     if(nx0 != nx1 || ny0 != ny1 || nz0 != nz1) {
       msg(WARNING,"Inconsistent image size");
@@ -337,6 +340,8 @@ void options()
   cerr << "-X xsize\t explicit horizontal size" << endl;
   cerr << "-Y ysize\t explicit vertical size" << endl;
   cerr << "-Z zsize\t explicit number of sections/frame" << endl;
+  cerr << "-backwards\t size information is stored backwards"
+       << endl;
   cerr << "-pointsize size\t point size to use with labels" << endl;
   cerr << "-avgx points\t number of data points per pixel in x direction " 
        << "[default " << sx << "]" << endl;
@@ -504,6 +509,7 @@ int main(int argc, char *argv[])
     {"vector2", 0, &vector2, 1},
     {"vector3", 0, &vector3, 1},
     {"symmetric", 0, &symmetric, 1},
+    {"backwards", 0, &backwards, 1},
     {"rescale", 0, &rescale, 1},
     {"view", 0, &display, 1},
     {"gradient", 0, &gradient, 1},
