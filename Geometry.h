@@ -298,6 +298,7 @@ void Partition<T>::ComputeTriads() {
 	int npq=reality ? Nmode*(3*Nmode+1)/2 : pq(n,n);
 	pqbuffer=new Var[npq];
 	pqIndex=new Var*[n];
+	qStart=new int[n];
 	triadLimits=new TriadLimits[Nmode];
 	int *ntriad=new int[Nmode];
 	
@@ -308,6 +309,7 @@ void Partition<T>::ComputeTriads() {
 			pqIndex[p]=pq-m;
 			if(n > m) pq += n-m;
 	}
+	for(p=0; p < n; p++) qStart[p]=max(p,NmodeR);
 	
 	weightBase=weight.Base();
 

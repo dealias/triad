@@ -9,8 +9,9 @@ int Ntriad;
 // (0 => evolve all modes, 1 => evolve only half of the modes).
 int reality=1;	
 
-Var *psibuffer,*psibufferR,*psibufferStop,*pqbuffer;
-Var **pqIndex;
+Var *psibuffer,*psibufferStop,*pqbuffer;
+Var **pqIndex,*psibufferR;
+int *qStart;
 DynVector<Triad> triad;
 TriadLimits *triadLimits;
 
@@ -26,7 +27,7 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 #pragma ivdep		
 	for(Var *k=psibuffer; k < psibufferR; k++) conjugate(*(k+Npsi),*k);
 	
-#if (_AIX || __GNUC__) && COMPLEX
+#if (_AIX || __GNUC0__) && COMPLEX
 	Var *pq=pqbuffer,*p;
 	for(p=psibuffer; p < psibufferR; p++) {
 		Real psipre=p->re, psipim=p->im;
@@ -43,12 +44,12 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 		}
 	}
 #else
-#pragma _CRI taskloop private(ip) value(psibuffer,Ntotal,pqIndex,NpsiR)
-	for(int ip=0; ip < NpsiR; ip++) {
+#pragma _CRI taskloop private(ip) value(psibuffer,Ntotal,pqIndex,qStart)
+	for(int ip=0; ip < Ntotal; ip++) {
 		Var psip=psibuffer[ip];
 		Var *pq=pqIndex[ip]; 
 #pragma ivdep		
-		for(int iq=max(ip,NpsiR); iq < Ntotal; iq++) pq[iq]=psip*psibuffer[iq];
+		for(int iq=qStart[ip]; iq < Ntotal; iq++) pq[iq]=psip*psibuffer[iq];
 	}
 #endif		
 	
