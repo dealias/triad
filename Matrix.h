@@ -918,9 +918,6 @@ inline Array2<T> operator - (const Array2<T>& B)
   return A;
 }
 
-#define log2 __log2
-#define pow2 __pow2
-
 // Compute the matrix exponential B of a square matrix A
 template<class T, class U>
 inline void Exp(Array2<T>& B, const Array2<U>& A)
