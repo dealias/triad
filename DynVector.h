@@ -11,11 +11,11 @@ class DynVector
 
 public:
 	void Allocate(int s) {v=new T[sz=s];}
-	void DeAllocate() {delete [] v; sz=0;}
+	void Deallocate() {delete [] v; sz=0;}
 	
 	DynVector() {v=NULL; sz=0;}
 	DynVector(int s) {Allocate(s);}
-	~DynVector() {DeAllocate();}
+	~DynVector() {Deallocate();}
 
 	int Size() const {return sz;}
 	T *Base() const {return v;}
