@@ -15,5 +15,4 @@ endif
 UTILS = utils msg strcasecmp new $(ARCH) $(POLL)
 CORE = kernel Integrator Param
 
-.SUFFIXES: .cc .c
-
+.SUFFIXES: .cc
