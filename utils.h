@@ -67,7 +67,7 @@ inline void set(T *to, const T * from, int n)
 template<class T>
 inline void swap(T& p, T& q)
 {
-	T temp; temp=p; p=q; q=temp;
+	T temp=p; p=q; q=temp;
 }
 #endif
 

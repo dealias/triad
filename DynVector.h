@@ -66,6 +66,7 @@ public:
 	}
 	
 	T *operator + (unsigned int i) {return v+i;}
+	T *operator + (int i) {return v+i;}
 	T *operator () () const {return v;}
 	operator T* () const {return v;}
 	

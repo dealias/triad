@@ -34,6 +34,12 @@ public:
 	int Resolution(int radix, int lvl) {return pow(radix,lvl+1);}
 };
 
+class PeriodicBC2 : public BC {
+public:	
+	PeriodicBC2() {internal=1; external=3; offset=-1;}
+	int Resolution(int radix, int lvl) {return pow(radix,lvl+1);}
+};
+
 extern DirichletBC Dirichlet[];
 extern NeumannBC Neumann[];
 extern PeriodicBC Periodic[];
