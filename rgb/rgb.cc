@@ -1063,8 +1063,8 @@ void montage(unsigned int nfiles, char *argf[], int n, const char *format,
   strstream buf;
   int frame;
 	
-  buf << convertprog << " -size " << xsize << "x" << ysize
-      << " -geometry " << xsize << "x" << ysize;
+  buf << convertprog << " -size " << xsize << "x" << ysize << 
+    " -depth 8 -geometry " << xsize << "x" << ysize;
   if(make_mpeg) buf << " -crop 2800x2800+0+0"; // Workaround internal mpeg limit
   buf << option.str() << " -interlace none ";
   if(pointsize) buf << "-pointsize " << pointsize << " ";
@@ -1121,13 +1121,15 @@ void identify(int, int n, const char *type, int& xsize, int& ysize)
   system(cmd);
   ifstream fin(iname);
   if(!fin) {cleanup(); msg(ERROR,"Cannot open identify file %s",iname);}
-  char c='x';
+  char c=0;
+  while(fin && c != ' ') fin.get(c);
+  c=0;
   while(fin && c != ' ') fin.get(c);
   fin >> xsize;
   fin.get(c);
   if(c != 'x') {
     cleanup();
-    msg(ERROR,"Parse error in reading image size");
+    msg(ERROR,"Parse error in reading image size: \'%c\'",c);
   }
   fin >> ysize;
 }
@@ -1135,8 +1137,10 @@ void identify(int, int n, const char *type, int& xsize, int& ysize)
 void mpeg(int, int n, const char *type, int xsize, int ysize)
 {
   strstream buf;
-  if(xsize % 2) xsize++; // Workaround for bug in convert.
+// Workaround for bug in convert:
+  if(xsize % 2) xsize++;
   if(ysize % 2) ysize++;
+  
   buf << "mpeg -a 0 -b " << n << " -h " << xsize << " -v " << ysize
       << " -PF " << rgbdir << outname << " -s " << outname
       << "." << type;
@@ -1151,9 +1155,9 @@ void animate(int, const char *filename, int n, const char *type,
 	     const char *pattern, int xsize, int ysize)
 {
   strstream buf;
-  buf << "animate -scene 0-" << n << " -size " << xsize << "x" << ysize
-      << " " << type << ":" << rgbdir << filename << pattern << "." << type
-      << ends;
+  buf << "animate -scenes 0-" << n << " -size " << xsize << "x" << ysize
+      << " -depth 8 " << type << ":" << rgbdir << filename << pattern
+      << "." << type << ends;
   char *cmd=buf.str();
   if(verbose) cout << cmd << endl;
   system(cmd);
