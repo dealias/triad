@@ -156,6 +156,7 @@ void Partition<T>::GenerateWeights() {
 	double realtime,lasttime=time(NULL);
 	double interval=15.0;
 	
+	cout << endl << "GENERATING WEIGHT FACTORS." << endl;
 	Nweight=0;
 	nkpq=WeightIndex(Nmode,Nmode,n);
 	
@@ -210,14 +211,18 @@ inline Mc Partition<T>::FindWeight(int k, int p, int q) {
 	Index_t kpq=WeightIndex(k,p,q);
 	hash->Limits(kpq,&l,&u);
 	
-	for(int i=l; i < u; i++) {
-		if(kpq == weight[i].Index()) {
+	while(l < u) {
+		int i=(l+u)/2;
+		int cmp=kpq-weight[i].Index();
+		if(cmp == 0) {
 			Mc value=weight[i].Value();
 			if(conjflag) value=conj(value);
 			return sign*value*Ckpq(bin[k0].cen,bin[p0].cen,bin[q0].cen);
 		}
+		if(cmp < 0) u=i;
+		else if(cmp > 0) l=i+1;
 	}
-	return 0.0; // no match found.
+	return 0.0;	// no match found.
 }
 
 template<class T>
@@ -247,6 +252,8 @@ void Partition<T>::ComputeTriads() {
 	}
 	
 	if(fin) {
+		cout << endl << "READING WEIGHT FACTORS FROM " << filename << "."
+			 << endl;
 		weight.Resize(Nweight);
 		if(formatted) for(i=0; i < Nweight; i++) fin >> weight[i];
 		else fin.read((char *) weight.Base(),Nweight*sizeof(Weight));
