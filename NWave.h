@@ -46,14 +46,14 @@ class SR : public NWave {
 public:	
 	SR() {}
 	char *Name() {return "Spectral Reduction";}
-	Source_t NonLinearSrc;
+	void NonLinearSrc(Var *source, Var *psi, double);
 };
 
 class Convolution : public NWave {
 public:
 	Convolution() {}
 	char *Name() {return "Convolution";}
-	Source_t NonLinearSrc;
+	void NonLinearSrc(Var *source, Var *psi, double);
 };
 
 class PS : public NWave {
@@ -62,7 +62,7 @@ public:
 		if(!reality) msg(ERROR,"Pseudospectral approximation needs reality=1");
 	}
 	char *Name() {return "Pseudospectral";}
-	Source_t NonLinearSrc;
+	void NonLinearSrc(Var *source, Var *psi, double);
 };
 
 class C_Euler : public Euler {
