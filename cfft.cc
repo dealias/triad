@@ -49,21 +49,17 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 	int P=m/64; // Request this many processors.
     if(P > NCPU) P=NCPU;
 	if(P < 1) P=1;
-	int P1=P-1;
 	int lot=m/P;
 	int last=lot+m-P*lot;
 	{
-#pragma _CRI taskloop private(j) \
-		value(P1,data,work,trigs,ifax,inc,jump,m,lot,isign)
-		for(int j=0; j < P1; j++) {
+#pragma _CRI taskloop private(j) value(P,data,work,trigs,ifax,inc,jump,m, \
+lot,isign,last)
+		for(int j=0; j < P; j++) {
 			int off=j*lot;
 			CFFTMLT(&data[off].re,&data[off].im,&work[2*off].re,trigs,ifax,
-					inc,jump,m,lot,isign);
+					inc,jump,m,(j == P-1) ? lot : last,isign);
 		}
 	}
-	int off=P1*lot;
-	CFFTMLT(&data[off].re,&data[off].im,&work[2*off].re,trigs,ifax,inc,jump,
-			m,last,isign);
 	
 	int m1=m+1;
 	if(isign == 1) {
@@ -101,16 +97,14 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 	}
 	
 	{
-#pragma _CRI taskloop private(j) \
-		value(P1,data,work,trigs,ifax,inc,jump,m,lot,isign)
-		for(int j=0; j < P1; j++) {
+#pragma _CRI taskloop private(j) value(P,data,work,trigs,ifax,inc,jump,m, \
+lot,isign,last)
+		for(int j=0; j < P; j++) {
 			int off=j*lot;
 			CFFTMLT(&data[off].re,&data[off].im,&work[2*off].re,trigs,ifax,
-					inc,jump,m,lot,isign);
+					inc,jump,m,(j == P-1) ? lot : last,isign);
 		}
 	}
-	CFFTMLT(&data[off].re,&data[off].im,&work[2*off].re,trigs,ifax,inc,jump,
-			m,last,isign);
 }
 
 extern "C" void CCFFT(const int& isign, const int& n, double& scale,
