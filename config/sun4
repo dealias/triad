@@ -1,4 +1,5 @@
 C++ = CC -D_POSIX_SOURCE
 OPT = $(CFLAGS)
-MAKEDEPEND = $(C++) -M
+MAKEDEPEND = $(C++) -xM
+
 
