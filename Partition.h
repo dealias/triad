@@ -118,26 +118,32 @@ inline int operator == (const WeightIndex& a, const WeightIndex& b)
 	return (a.k == b.k && a.p == b.p && a.q == b.q);
 }
 	
-inline WeightIndex::operator double() {
+inline WeightIndex::operator double()
+{
 	return ((double)q)/WeightN.k/WeightN.p/WeightN.q+
 		((double)p)/WeightN.k/WeightN.p+((double)k)/WeightN.k;
 }
 	
-inline ixstream& operator >> (ixstream& s, WeightIndex& y) {
+extern const int maxbins;
+
+inline ixstream& operator >> (ixstream& s, WeightIndex& y)
+{
 	unsigned int kp;
 	s >> kp >> y.q;
-	y.k=kp/USHRT_MAX;
-	y.p=kp-USHRT_MAX*y.k;
+	y.k=kp/maxbins;
+	y.p=kp-maxbins*y.k;
     return s;
 }
 
-inline oxstream& operator << (oxstream& s, const WeightIndex& y) {
-	unsigned int kp=USHRT_MAX*y.k+y.p; 
+inline oxstream& operator << (oxstream& s, const WeightIndex& y)
+{
+	unsigned int kp=maxbins*y.k+y.p; 
 	s << kp << y.q;
     return s;
 }
 
-inline ostream& operator << (ostream& s, const WeightIndex& y) {
+inline ostream& operator << (ostream& s, const WeightIndex& y)
+{
 	s << y.k << " " << y.p << " " << y.q;
     return s;
 }
@@ -275,7 +281,8 @@ INLINE void Partition<T,D>::GenerateWeights() {
 	}
 	
 	cout << newl << "GENERATING WEIGHT FACTORS." << endl;
-	if(n > USHRT_MAX) msg(ERROR, "Too many bins.");	
+	if(n > USHRT_MAX || n > maxbins)
+		msg(ERROR, "Internal limit on number of bins exceeded");	
 	
 	for(k=0; k < Nmode; k++) {	// Loop for k < p < q
 		for(p=k+1; p < Nmode; p++) {

@@ -141,6 +141,8 @@ static Real equilibrium(int i)
 
 static ifstream ftin;
 static ofstream fparam,fevt,fyvt,ft,favgy,fprolog;
+static oxstream fpsi;
+
 Real continuum_factor=1.0;
 typedef char Avgylabel[20];
 static Avgylabel *avgyre,*avgyim;
@@ -196,6 +198,7 @@ void NWave::InitialConditions()
 	open_output(fyvt,dirsep,"yvt");
 	open_output(ft,dirsep,"t");
 	open_output(fprolog,dirsep,"prolog");
+	open_output(fpsi,dirsep,"psi");
 	
 	if(Nmoment) {
 		avgyre=new Avgylabel[Nmoment];
@@ -222,6 +225,9 @@ static Real Normalization(int i) {return Geometry->Normalization(i);}
 static Real nu_re(int i) {Complex nuC=nu[i]; return nuC.re;}
 static Real nu_im(int i) {Complex nuC=nu[i]; return nuC.im;}
 
+static const int ngrid=100; // JCB
+static Complex *xcoeff, *ycoeff;
+
 void NWave::Initialize()
 {
 	int i;
@@ -240,6 +246,23 @@ void NWave::Initialize()
 
 	// Initialize time integrals to zero.
 	for(i=Npsi; i < ny; i++) y[i]=0.0;
+	
+	Real k0=FLT_MAX;
+	for(i=0; i < Npsi; i++) k0=min(k0,Geometry->K(i));
+	
+	xcoeff=new Complex [ngrid*Npsi];
+	ycoeff=new Complex [ngrid*Npsi];
+	Real L=twopi/k0;
+	for(int m=0; m < Npsi; m++) {
+		Real kx=Geometry->X(m);
+		Real ky=Geometry->Y(m);
+		for(i=0; i < ngrid; i++) {
+			Complex *p=xcoeff+i*Npsi, *q=ycoeff+i*Npsi;
+			Real x=(2*i-ngrid)*L/ngrid;
+			p[m]=expi(kx*x);
+			q[m]=expi(ky*x);
+		}
+	}
 }
 
 void compute_invariants(Var *y, int Npsi, Real& E, Real& Z, Real& P)
@@ -282,8 +305,23 @@ void NWave::Output(int)
 		out_real(favgy,yavg+Npsi*n,avgyre[n],avgyim[n],Npsi);
 		favgy.close();
 	}
-	tcount++;
 	
+	fpsi << ngrid << ngrid << 1;
+	for(int j=0; j < ngrid; j++) {
+		Complex *q=ycoeff+j*Npsi;
+		for(int i=0; i < ngrid; i++) {
+			Complex *p=xcoeff+i*Npsi;
+			Real sum=0.0;
+			for(int m=0; m < Npsi; m++) {
+				Complex pq=p[m]*q[m];
+				sum += pq.re*y[m].re-pq.im*y[m].im;
+			}
+			fpsi << (float) sum;
+		}
+	}
+	fpsi.flush();
+	
+	tcount++;
 	ft << t << endl;
 }
 

@@ -13,4 +13,3 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk);
 void fft4(Complex *data, unsigned int log4n, int isign);
 
 #endif
-

@@ -111,6 +111,8 @@ void Partition<Polar,Cartesian>::MakeBins()
 		msg(ERROR,"Calculated number and actual number of bins disagree."); 
 
 	if(discrete) for (i=0; i < n; i++) bin[i].MakeModes();
+	
+	delete [] grid;
 	return;
 }
 
