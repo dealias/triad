@@ -1171,9 +1171,10 @@ int main(int argc, char *argv[])
 
 	      for(int i2=0; i2 < mx; i2++) {
 		if(vector3) {
-		  outrgb(index,indexg,indexb);
+		  outrgb((unsigned char) index, (unsigned char) indexg,
+			 (unsigned char) indexb);
 		} else if(vector2) {
-		  outrgb(index,0,indexb);
+		  outrgb((unsigned char) index,0,(unsigned char) indexb);
 		} else if(vector) {
 		  unsigned char r,g,b;
 		  ramp(index,factor,r,g,b);
