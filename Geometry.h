@@ -68,7 +68,7 @@ public:
 	virtual inline int hash(T value) {return (n-1)*(value-first)/(last-first);}
 	
 	Hash(int n0, T value(int)) {
-		n=n0; first=index(0); last=index(n-1);
+		n=n0; first=value(0); last=value(n-1);
 		table=new int[n];
 		int j=0;
 		for(int i=0; i < n; i++) {
