@@ -16,7 +16,7 @@ public:
 	Real Re(const Polar& v) {return -Growth(v);}
 	Real Im(const Polar& v) {return Frequency(v);}
 	void Evaluate(const Polar& v, Real &nu) {nu=Re(v);}
-	void Evaluate(const Polar& v, Complex &nu) {nu=Re(v)+I*Im(v);}
+	void Evaluate(const Polar& v, Complex &nu) {nu=Complex(Re(v),Im(v));}
 };
 
 extern LinearityBase *Linearity;

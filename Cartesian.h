@@ -13,7 +13,8 @@ extern int Nevolved;
 extern unsigned int log2Nxb,log2Nyb; // Order of FFT in each direction
 extern double scale;
 
-extern Real krmin,krmin2;
+extern Real krmin;
+extern Real krmin2;
 
 class Cartesian {
 public:	

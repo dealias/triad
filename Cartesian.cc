@@ -18,6 +18,9 @@ int nfft; // Total number of FFT elements;
 int Nxb,Nxb1,Nyb,Nyp;
 Cartesian *CartesianMode;
 
+Real krmin=1.0;
+Real krmin2=0.0;
+
 void Basis<Cartesian>::MakeBins()
 {
 	int i,j;

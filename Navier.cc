@@ -23,8 +23,6 @@ Real beta=1.0;
 Real E0=1.0;
 Real U0=1.0;
 
-Real krmin=1.0;
-
 Real kforce=0.0;
 Real deltaf=1.0;
 Real gammaf=0.0;
@@ -50,8 +48,6 @@ int ngridy=0;
 int movie=0;
 int truefield=0;
 int weiss=0;
-
-Real krmin2=0.0;
 
 class Diamagnetic : public LinearityBase {
 public:
