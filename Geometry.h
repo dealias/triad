@@ -63,8 +63,8 @@ template<class T>
 class Hash {
 	int n;
 	T first, last;
-	int *table;
 public:
+	int *table;
 	virtual inline int hash(T value) {return (n-1)*(value-first)/(last-first);}
 	
 	Hash(int n0, T value(int)) {
@@ -72,7 +72,7 @@ public:
 		table=new int[n];
 		int j=0;
 		for(int i=0; i < n; i++) {
-			while (hash(value(j)) < i) j++;
+			while (j < n && hash(value(j)) < i) j++;
 			table[i]=j;
 		}
 	}
@@ -81,6 +81,12 @@ public:
 		if (hash < 0) return 0;
 		if (hash >= n) return n;
 		return table[hash];
+	}
+	
+	inline void Limits(const T kpq, int *l,int *u) {
+		int h=hash(kpq);
+		*l=Index(h);
+		*u=Index(h+1);
 	}
 };
 	
@@ -191,7 +197,7 @@ template<class T>
 inline Mc Partition<T>::FindWeight(int k, int p, int q) {
 	if(k==p || p==q || q==k) return 0.0;
 	
-	int sign=1, conjflag=0, k0=k, dummy;
+	int l,u,dummy, sign=1, conjflag=0, k0=k;
 	
 	// Exploit the full antisymmetry of the weight factors: reorder so that
 	// k <= p <= q.
@@ -205,9 +211,7 @@ inline Mc Partition<T>::FindWeight(int k, int p, int q) {
 	if(p >= Nmode) {int K=k; k=p-Nmode; p=q-Nmode; q=K+Nmode; conjflag=1;}
 	
 	Index_t kpq=WeightIndex(k,p,q);
-	int h=hash->hash(kpq);
-	int l=hash->Index(h);
-	int u=hash->Index(h+1);
+	hash->Limits(kpq,&l,&u);
 	
 	while(l < u) {
 		int i=(l+u)/2;
@@ -252,7 +256,7 @@ void Partition<T>::ComputeTriads() {
 	}
 	
 	if(fin) {
-		(void) weight[Nweight-1];
+		weight.Resize(Nweight-1);
 		if(formatted) for(i=0; i < Nweight; i++) fin >> weight[i];
 		else fin.read((char *) weight.Base(),Nweight*sizeof(Weight));
 		fin.close();
@@ -298,7 +302,9 @@ void Partition<T>::ComputeTriads() {
 	}
 	
 	weight_ptr=&weight;
+
 	hash=new Hash<Index_t>(Nweight,HashValue);
+	cout << endl << "HASH TABLE CONSTRUCTED." << endl;
 
 	triad.Resize(Nmode*n);
 	for(k=0; k < Nmode; k++) {
