@@ -98,14 +98,12 @@ char *machine()
 }
 
 const int ndate=64;
-char time_date[ndate]="";
+static char time_date[ndate]="";
 
 char *date()
 {
-#if !(__i386__ && !__ELF__)
 	const time_t bintime=time(NULL);
 	strftime(time_date,ndate,"%a %b %d %H:%M:%S %Z %Y",localtime(&bintime));
-#endif
 	return time_date;
 }
 

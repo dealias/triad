@@ -15,11 +15,7 @@
 #include ":arch:mac.h"
 #else // !_MAC
 
-#if __i386__
-#include "arch/i386.h"
-#else
 #include "arch/unix.h"
-#endif
 
 #endif // _MAC
 
