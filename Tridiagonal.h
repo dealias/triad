@@ -6,49 +6,6 @@
 
 namespace Array {
   
-template<class T>
-inline void Allocate(T *&work, int &nwork, int n) 
-{
-  if(n > nwork) work=new(work,nwork=n) T;
-}
-
-// Solve the problem Lu=f for u given f, subject to the Dirichlet boundary
-// condtions u[0]=u_0 and u[n+1]=u_{n+1},
-// where L is the n x (n+2) matrix
-//
-// [b a b           ]
-// [  b a b         ]
-// [    b a b       ]
-// [       ...      ]
-// [         b a b  ]
-// [           b a b]
-//
-// Note: u and f need not be distinct.
-
-template<class T>
-inline void Poisson1(int n, T *u, const T *f, Real b, Real a)
-{
-  if(n < 1) msg(ERROR,"Invalid matrix size (%d)",n);
-	
-  static int nwork=0;
-  static Real *work=NULL;
-  Allocate(work,nwork,n+1);
-  int i;
-	
-  Real temp=b/a;
-  work[1]=-temp;
-  Real binv=1.0/b;
-  u[1]=(f[1]*binv-u[0])*temp;
-	
-  for(i=2; i <= n; i++)	{
-    Real temp=b/(a+b*work[i-1]);
-    work[i]=-temp;
-    u[i]=(f[i]*binv-u[i-1])*temp;
-  }
-
-  for(i=n; i >= 1; i--) u[i] += work[i]*u[i+1];
-}
-
 // Solve the problem Lu=f for u given f, subject to the Dirichlet boundary
 // condtions u[0]=u_0 and u[n+1]=u_{n+1},
 // where L is the n x (n+2) matrix
@@ -59,42 +16,53 @@ inline void Poisson1(int n, T *u, const T *f, Real b, Real a)
 // [          ...         ]
 // [              cn an bn]
 //
-// [work] is an optional work area of size Real [n+1] that may be set to a
-// or b.
+// w is an optional work array of size [n+1] that may be set to a or b.
 //
 // Note: u and f need not be distinct.
 
-template<class T>
-inline void tridiagonal(int n, T *u, const T *f, const Real *c, const Real *a,
-			const Real *b, Real *work)
+template<class T, class C>
+inline void tridiagonal(unsigned int n, const typename Array1<T>::opt& u,
+			const typename Array1<T>::opt& f,
+			const typename Array1<C>::opt& c,
+			const typename Array1<C>::opt& a,
+			const typename Array1<C>::opt& b,
+			const typename Array1<C>::opt& w)
 {
   if(n < 1) msg(ERROR,"Invalid matrix size (%d)",n);
 	
-  static int nwork=0;
-  static Real *work0=NULL;
-  if(work == NULL) {Allocate(work0,nwork,n+1); work=work0;}
-  int i;
-	
-  Real temp=1.0/a[1];
+  C temp=1.0/a[1];
   work[1]=-b[1]*temp;
   u[1]=(f[1]-c[1]*u[0])*temp;
 	
-  for(i=2; i <= n; i++) {
-    Real temp=1.0/(a[i]+c[i]*work[i-1]);
+  for(unsigned int i=2; i <= n; i++) {
+    C temp=1.0/(a[i]+c[i]*work[i-1]);
     work[i]=-b[i]*temp;
     u[i]=(f[i]-c[i]*u[i-1])*temp;
   }
 
-  for(i=n; i >= 1; i--) u[i] += work[i]*u[i+1];
+  for(unsigned int i=n; i >= 1; i--) u[i] += work[i]*u[i+1];
+}
+
+template<class T, class C>
+inline void tridiagonal(unsigned int n, const typename Array1<T>::opt& u,
+			const typename Array1<T>::opt& f,
+			const typename Array1<C>::opt& c,
+			const typename Array1<C>::opt& a,
+			const typename Array1<C>::opt& b)
+{
+  static typename array1<T>::opt w;
+  static unsigned int wsize=0;
+  CheckReallocate(w,n+1,wsize);
+  tridiagonal(n,u,f,c,a,b,w);
 }
 
 template<class T>
-inline void tridiagonal(int n, T *u, const T *f, const Real *c, const Real *a,
-			const Real *b)
+inline void Allocate(T *&work, int &nwork, int n) 
 {
-  tridiagonal(n,u,f,c,a,b,(Real *) NULL);
+  if(n > nwork) work=new(work,nwork=n) T;
 }
 
+#if 0
 // Solve multiple problems Lu=f for u given f and u[0] and u[n+1],
 // where L is the n x (n+2) matrix
 //
@@ -172,6 +140,43 @@ inline void mtridiagonal(int n, T *u, const T *f, const Real *c, const Real *a,
   mtridiagonal(n,u,f,c,a,b,m,inc1,inc2,(Real *) NULL);
 }
 
+// Solve the problem Lu=f for u given f, subject to the Dirichlet boundary
+// condtions u[0]=u_0 and u[n+1]=u_{n+1},
+// where L is the n x (n+2) matrix
+//
+// [b a b           ]
+// [  b a b         ]
+// [    b a b       ]
+// [       ...      ]
+// [         b a b  ]
+// [           b a b]
+//
+// Note: u and f need not be distinct.
+
+template<class T>
+inline void Poisson1(int n, T *u, const T *f, Real b, Real a)
+{
+  if(n < 1) msg(ERROR,"Invalid matrix size (%d)",n);
+	
+  static int nwork=0;
+  static Real *work=NULL;
+  Allocate(work,nwork,n+1);
+  int i;
+	
+  Real temp=b/a;
+  work[1]=-temp;
+  Real binv=1.0/b;
+  u[1]=(f[1]*binv-u[0])*temp;
+	
+  for(i=2; i <= n; i++)	{
+    Real temp=b/(a+b*work[i-1]);
+    work[i]=-temp;
+    u[i]=(f[i]*binv-u[i-1])*temp;
+  }
+
+  for(i=n; i >= 1; i--) u[i] += work[i]*u[i+1];
+}
+
 // Solve the problem Lu=f for u given f, where L is the n x n matrix
 //
 // [ a b        b]
@@ -238,7 +243,7 @@ void Poisson1p(int n, T *u, T *f, Real b, Real a)
 
   u[n+1]=u[1];
 }
-
+v
 // Solve the problem Lu=f for u given f, where L is the n x n matrix
 //
 // [ -2b   b                   b ]
@@ -592,37 +597,141 @@ inline void mtridiagonalp(int n, T *u, const T *f,
   mtridiagonalp(n,u,f,c,a,b,m,inc1,inc2,(Real *) NULL,(Real *) NULL);
 }
 
-class CubicSpline() {
-protected:
-  vector D;
-public:
-  Calculate(Real t) {
-    unsigned int n=C.Size();
-    
-    static DynVector<V> temp(n);
-    if(n > temp.Alloc()) temp.Realloc(n);
-    static Array1<Real>::opt work0;
-      if(!Active(work0)) work0.Allocate(n-1);
-    
-      work[0]=-0.5;
-      u[0]=f[0]*0.5;
-	
-      for(i=1; i < n-1; i++) {
-	Real temp=1.0/(4.0+work[i-1]);
-	work[i]=-temp;
-	u[i]=(f[i]-u[i-1])*temp;
-      }
-      u[n-1]=(f[n-1]-u[n-2])/(2.0+work[n-2]);
-      
-      for(i=n-2; i >= 0; i--) u[i] += work[i]*u[i+1];
+#endif
 
-      return ;
+// Solve the problem Lu=f for u given f, where L is the n x n matrix
+//
+// [ a0 b0            ]
+// [ c1 a1 b1         ]
+// [    c2 a2 b2      ]
+// [           ...    ]
+// [            cm am ]
+//
+// where m=n-1. Note: u and f need not be distinct.
+// w is an optional work area of size n-1 that may be set to a or b.
+
+template<class T, class C>
+inline void Tridiagonal(unsigned int n, 
+			const typename array1<T>::opt& u,
+			const typename array1<T>::opt& f,
+			const typename array1<C>::opt& c,
+			const typename array1<C>::opt& a,
+			const typename array1<C>::opt& b,
+			const typename array1<C>::opt& w)
+{
+  if(n < 1) exit(-1);
+//  if(n < 1) msg(ERROR,"Invalid matrix size (%d)",n);
+    
+  C temp=1.0/a[0];
+  u[0]=f[0]*temp;
+  
+  if(n == 1) return;
+  
+  w[0]=-b[0]*temp;
+	
+  for(unsigned int i=1; i < n-1; i++) {
+    C temp=1.0/(a[i]+c[i]*w[i-1]);
+    w[i]=-b[i]*temp;
+    u[i]=(f[i]-c[i]*u[i-1])*temp;
   }
   
-  Interpolate()
+  temp=1.0/(a[n-1]+c[n-1]*w[n-2]);
+  u[n-1]=(f[n-1]-c[n-1]*u[n-2])*temp;
+
+  for(int i=(int)n-2; i >= 0; i--) u[i] += w[i]*u[i+1];
 }
 
-
+template<class T, class C>
+inline void Tridiagonal(unsigned int n, 
+			const typename array1<T>::opt& u,
+			const typename array1<T>::opt& f,
+			const typename array1<C>::opt& c,
+			const typename array1<C>::opt& a,
+			const typename array1<C>::opt& b)
+{
+  static typename array1<C>::opt w;
+  static unsigned int wsize=0;
+  CheckReallocate(w,n-1,wsize);
+  Tridiagonal<T,C>(n,u,f,c,a,b,w);
 }
 
+// Do a binary search of an ordered array to find an interval containing key.
+// Return the index corresponding to the left-hand endpoint of the matching
+// interval, or -1 if key is less than the first element.
+template<class X>
+unsigned int bintsearch(X key, unsigned int n, const typename array1<X>::opt x)
+{
+  if(key < x[0]) return -1;
+  if(key >= x[n-1]) return n-1;
+  
+  unsigned int l=0;
+  unsigned int u=n-1;
+	
+  while (l < u) {
+    unsigned int i=(l + u)/2;
+    if(x[i] <= key && key < x[i+1]) return i;
+    if(key < x[i]) u=i;
+    else l=i + 1;
+  }
+//  msg(ERROR,"Statement not reachable");
+  exit(1);
+}
+
+template<class Y, class X>
+class CubicSpline {
+protected:
+  static typename array1<X>::opt a,b,c;
+  static typename array1<Y>::opt y2,f;
+  static unsigned int size;
+public:
+  CubicSpline() {size=0;}
+  CubicSpline(unsigned int n, const typename array1<X>::opt x,
+	      const typename array1<Y>::opt y) {
+    if(n > size) {
+      Reallocate(y2,n);
+      Reallocate(a,n);
+      Reallocate(b,n);
+      Reallocate(c,n);
+      Reallocate(f,n);
+      size=n;
+    }
+    for(unsigned int i=1; i < n-1; i++) {
+      c[i]=(x[i]-x[i-1])/6.0;
+      a[i]=(x[i+1]-x[i-1])/3.0;
+      b[i]=(x[i+1]-x[i])/6.0;
+      f[i]=(y[i+1]-y[i])/(x[i+1]-x[i])-(y[i]-y[i-1])/(x[i]-x[i-1]);
+    }
+      
+    y2[0]=y2[n-1]=0.0;
+    if(n > 2) Tridiagonal<Y,X>(n-2,y2+1,f+1,c+1,a+1,b+1);
+    cout << y2 << endl;
+    return;
+  }
+  
+  Y Interpolate(unsigned int n, const typename array1<X>::opt x,
+	      const typename array1<Y>::opt y, X x0) {
+    return bintsearch(x0,n,x);
+  }
+};
+
+template<class Y, class X>
+unsigned int CubicSpline<Y,X>::size=0;
+
+template<class Y, class X>
+typename array1<X>::opt CubicSpline<Y,X>::a;
+
+template<class Y, class X>
+typename array1<X>::opt CubicSpline<Y,X>::b;
+
+template<class Y, class X>
+typename array1<X>::opt CubicSpline<Y,X>::c;
+
+template<class Y, class X>
+typename array1<Y>::opt CubicSpline<Y,X>::y2;
+
+template<class Y, class X>
+typename array1<Y>::opt CubicSpline<Y,X>::f;
+
+
+}
 #endif

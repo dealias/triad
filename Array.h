@@ -1361,6 +1361,18 @@ inline void Reallocate(Array1<T>& A, unsigned int n, int o)
   A.Reallocate(n,o);
 }
 
+template<class T>
+inline void CheckReallocate(T& A, unsigned int n, unsigned int& old)
+{
+  if(n > old) {Reallocate(A,n); old=n;}
+}
+
+template<class T>
+inline void CheckReallocate(T& A, unsigned int n, int o, unsigned int& old)
+{
+  if(n > old) {Reallocate(A,n,o); old=n;}
+}
+
 }
 
 // Abbreviated form for optimized 1D arrays:

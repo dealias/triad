@@ -222,7 +222,7 @@ inline void Mult(const array2<T>& A, const array2<U>& B, const array2<V>& C)
   
   static typename array1<V>::opt temp;
   static unsigned int tempsize=0;
-  if(n > tempsize) {Reallocate(temp,n); tempsize=n;}
+  CheckReallocate(temp,n,tempsize);
 	
   unsigned int bny=B.Ny();
   unsigned int cny=C.Ny();
@@ -253,7 +253,7 @@ inline void Mult(const array2<T>& A, const array2<U>& B, const array2<V>& C)
   } else {
     static typename array1<T>::opt work;
     static unsigned int worksize=0;
-    if(cny > worksize) {Reallocate(work,cny); worksize=cny;}
+    CheckReallocate(work,cny,worksize);
 		
     for(unsigned int i=0; i < bnx; i++) {
       typename array1<T>::opt Ai=A[i];
@@ -278,7 +278,7 @@ inline void Mult(const array1<T>& A, const array1<U>& B, const array2<V>& C)
   
   static typename array1<V>::opt temp;
   static unsigned int tempsize=0;
-  if(n > tempsize) {Reallocate(temp,n); tempsize=n;}
+  CheckReallocate(temp,n,tempsize);
   
   unsigned int bny=B.Nx();
   unsigned int cny=C.Ny();
@@ -302,7 +302,7 @@ inline void Mult(const array1<T>& A, const array1<U>& B, const array2<V>& C)
   } else {
     static typename array1<T>::opt work;
     static unsigned int worksize=0;
-    if(cny > worksize) {Reallocate(work,cny); worksize=cny;}
+    CheckReallocate(work,cny,worksize);
     
     unsigned int k;
     for(k=0; k < cny; k++) {
@@ -325,7 +325,7 @@ inline void MultAdd(const array1<T>& A, const array1<U>& B, const array2<V>& C,
   
   static typename array1<V>::opt temp;
   static unsigned int tempsize=0;
-  if(n > tempsize) {Reallocate(temp,n); tempsize=n;}
+  CheckReallocate(temp,n,tempsize);
   
   unsigned int bny=B.Nx();
   unsigned int cny=C.Ny();
@@ -349,7 +349,7 @@ inline void MultAdd(const array1<T>& A, const array1<U>& B, const array2<V>& C,
   } else {
     static typename array1<T>::opt work;
     static unsigned int worksize=0;
-    if(cny > worksize) {Reallocate(work,cny); worksize=cny;}
+    CheckReallocate(work,cny,worksize);
 		
     unsigned int k;
     for(k=0; k < cny; k++) {
@@ -413,7 +413,7 @@ inline void MultAdd(const array2<T>& A, const array2<U>& B, const array2<V>& C,
   
   static typename array1<V>::opt temp;
   static unsigned int tempsize=0;
-  if(n > tempsize) {Reallocate(temp,n); tempsize=n;}
+  CheckReallocate(temp,n,tempsize);
 	
   unsigned int cny=C.Ny();
   assert(cny == A.Ny() && cny == D.Ny());
@@ -443,7 +443,7 @@ inline void MultAdd(const array2<T>& A, const array2<U>& B, const array2<V>& C,
   } else {
     static typename array1<T>::opt work;
     static unsigned int worksize=0;
-    if(cny > worksize) {Reallocate(work,cny); worksize=cny;}
+    CheckReallocate(work,cny,worksize);
 		
     for(unsigned int i=0; i < bnx; i++) {
       typename array1<T>::opt Ai=A[i];
@@ -657,7 +657,7 @@ inline void Divide(const array2<T>& A, const array2<T>& C, const array2<T>& B)
   
   static typename array1<T>::opt temp;
   static unsigned int tempsize=0;
-  if(n > tempsize) {Reallocate(temp,n); tempsize=n;}
+  CheckReallocate(temp,n,tempsize);
 	
   array2<T> D(C.Nx(),C.Ny(),temp);
   D.Load(C);
@@ -678,7 +678,7 @@ inline void Divide(const array1<T>& A, const array2<T>& C, const array1<T>& B)
   
   static typename array1<T>::opt temp;
   static unsigned int tempsize=0;
-  if(n > tempsize) {Reallocate(temp,n); tempsize=n;}
+  CheckReallocate(temp,n,tempsize);
 	
   array2<T> D(C.Nx(),C.Ny(),temp);
   array2<T> A2(A.Nx(),1,A);

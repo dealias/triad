@@ -164,6 +164,12 @@ void *bsearch2(register const void *key,
 	       int (*compar)(const void *, const void *, const size_t),
 	       int *match_type);
 
+void *bintsearch(register const void *key,
+		 register const void *base,
+		 size_t nmemb,
+		 register size_t size,
+		 int (*compar)(const void *, const void *, const void *));
+  
 int check_match(int match_type, const char *object, const char *s, int warn=1);
 			   
 inline void vform(const char *format, va_list& vargs, ostream& os=cout)

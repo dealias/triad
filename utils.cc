@@ -84,7 +84,7 @@ int strcasecmpn(const char *s1, const char *s2, size_t n)
 
 // Like bsearch but also set flag match_type to:
 //
-//		-1 if no match is found,
+//	-1 if no match is found,
 //       0 if match is ambiguous,
 //       1 if match is an unambiguous abbreviation,
 //       2 if match is exact.
@@ -137,14 +137,43 @@ void *bsearch2(register const void *key,
       if(*match_type) return (void *) p;
     }
 
-    if (comparison < 0)
-      u = idx;
-    else if (comparison > 0)
-      l = idx + 1;
+    if(comparison < 0) u=idx;
+    else l=idx+1;
   }
 
   // No match found.
   return (void *) base;
+}
+
+// Like bsearch but search an ordered array for an interval containing key.
+// The compar routine is expected to have three arguments, which point to
+// the key object and to the previous and next array members, in that order.
+void *bintsearch(register const void *key,
+		 register const void *base,
+		 size_t nmemb,
+		 register size_t size,
+		 int (*compar)(const void *, const void *, const void *))
+{
+  register size_t l, u, idx;
+  register const void *p, *n;
+  register int comparison;
+
+  l = 0;
+  u = nmemb;
+	
+  while (l < u) {
+    idx=(l + u) / 2;
+    p=(void *) (((const char *) base) + (idx * size));
+    n=(idx < nmemb-1) ? p+size : p;
+    comparison = (*compar)((char *) key,p,n);
+    if(comparison == 0) 
+      return (void *) p;
+    if(comparison < 0) u=idx;
+    else l=idx+1;
+  }
+
+  // No match found.
+  return NULL;
 }
 
 int check_match(int match_type, const char *object, const char *key, int warn)
