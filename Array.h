@@ -24,12 +24,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 #ifdef NDEBUG
 #define check(i,n,dim,m)
+#define checkSize()
 #define checkActivate(i) CheckActivate(i)
-#define Size0 CheckSize
 #else
 #define check(i,n,dim,m) Check(i,n,dim,m)
+#define checkSize() CheckSize()
 #define checkActivate(i) Activate()
-#define Size0 Size
 #endif
 
 #include <iostream.h>
@@ -52,23 +52,23 @@ template<class T>
 class array1 {
 protected:
 	T *v;
-	int nx;
+	unsigned int size;
 	mutable int state;
 public:
     enum alloc_state {unallocated=0, allocated=1, temporary=2};
-	virtual unsigned int Size() const {return nx;}
+	virtual unsigned int Size() const {return size;}
 	unsigned int CheckSize() const {
-		if(!test(allocated) && Size() == 0)
+		if(!test(allocated) && size == 0)
 			cout << "WARNING: Operation attempted on unallocated array." 
 				 << endl;
-		return Size();
+		return size;
 	}
 	
 	int test(int flag) const {return state & flag;}
 	void clear(int flag) CONST {state &= ~flag;}
 	void set(int flag) CONST {state |= flag;}
 	void Activate() {
-		v=new T[Size()];
+		v=new T[size];
 		set(allocated);
 	}
 	void CheckActivate(int dim) {
@@ -85,15 +85,15 @@ public:
 		checkActivate(1);
 	}
 	void Deallocate() CONST {delete [] v; clear(allocated);}
-	void Dimension(unsigned int nx0) {nx=nx0;}
+	void Dimension(unsigned int nx0) {size=nx0;}
 	void Dimension(unsigned int nx0, T *v0) {
 		Dimension(nx0); v=v0; clear(allocated);
 	}
 
-	array1() : nx(0), state(unallocated) {}
+	array1() : size(0), state(unallocated) {}
 	array1(unsigned int nx0) : state(unallocated) {Allocate(nx0);}
 	array1(unsigned int nx0, T *v0) : state(unallocated) {Dimension(nx0,v0);}
-	array1(const array1<T>& A) : v(A.v), nx(A.nx), state(A.test(temporary)) {}
+	array1(const array1<T>& A) : v(A.v), size(A.size), state(A.test(temporary)) {}
 	virtual ~array1() {if(test(allocated)) Deallocate();}
 	
 	void Freeze() {state=unallocated;}
@@ -117,24 +117,24 @@ public:
 		}
 	}
 	
-	unsigned int Nx() const {return nx;}
-	unsigned int N1() const {return nx;}
-	T& operator [] (int ix) const {check(ix,nx,1,1); return v[ix];}
-	T& operator () (int ix) const {check(ix,nx,1,1); return v[ix];}
+	unsigned int Nx() const {return size;}
+	unsigned int N1() const {return size;}
+	T& operator [] (int ix) const {check(ix,size,1,1); return v[ix];}
+	T& operator () (int ix) const {check(ix,size,1,1); return v[ix];}
 	T* operator () () const {return v;}
 	operator T* () const {return v;}
 	
-	array1<T> operator + (int i) const {return array1<T>(nx-i,v+i);}
+	array1<T> operator + (int i) const {return array1<T>(size-i,v+i);}
 	
 	void Load(T a) const {
-		unsigned int size=Size0();
+		checkSize();
 		for(unsigned int i=0; i < size; i++) v[i]=a;
 	}
-	void Load(const T *a) const {memcpy(v,a,sizeof(T)*Size0());}
-	void Store(T *a) const {memcpy(a,v,sizeof(T)*Size0());}
+	void Load(const T *a) const {memcpy(v,a,sizeof(T)*size);}
+	void Store(T *a) const {memcpy(a,v,sizeof(T)*size);}
 	void Set(T *a) {v=a; clear(allocated);}
 	istream& Input (istream &s) const {
-		unsigned int size=Size0();
+		checkSize();
 		for(unsigned int i=0; i < size; i++) s >> v[i];
 		return s;
 	}
@@ -148,69 +148,72 @@ public:
 	}
 	
 	array1<T>& operator += (const array1<T>& A) {
-		unsigned int size=Size0();
+		checkSize();
 		for(unsigned int i=0; i < size; i++) v[i] += A(i);
 		return *this;
 	}
 	array1<T>& operator -= (const array1<T>& A) {
-		unsigned int size=Size0();
+		checkSize();
 		for(unsigned int i=0; i < size; i++) v[i] -= A(i);
 		return *this;
 	}
 	array1<T>& operator *= (const array1<T>& A) {
-		unsigned int size=Size0();
+		checkSize();
 		for(unsigned int i=0; i < size; i++) v[i] *= A(i);
 		return *this;
 	}
 	array1<T>& operator /= (const array1<T>& A) {
-		unsigned int size=Size0();
+		checkSize();
 		for(unsigned int i=0; i < size; i++) v[i] /= A(i);
 		return *this;
 	}
 	
 	array1<T>& operator += (T a) {
-		unsigned int size=Size0();
+		checkSize();
 		for(unsigned int i=0; i < size; i++) v[i] += a;
 		return *this;
 	}
 	array1<T>& operator -= (T a) {
-		unsigned int size=Size0();
+		checkSize();
 		for(unsigned int i=0; i < size; i++) v[i] -= a;
 		return *this;
 	}
 	array1<T>& operator *= (T a) {
-		unsigned int size=Size0();
+		checkSize();
 		for(unsigned int i=0; i < size; i++) v[i] *= a;
 		return *this;
 	}
 	array1<T>& operator /= (T a) {
-		unsigned int size=Size0();
+		checkSize();
 		T ainv=1.0/a;
 		for(unsigned int i=0; i < size; i++) v[i] *= ainv;
 		return *this;
 	}
 	
-	Real L1() {
-		unsigned int size=Size0();
-		Real norm=0.0;
+	double L1() {
+		checkSize();
+		double norm=0.0;
 		for(unsigned int i=0; i < size; i++) norm += abs(v[i]);
 		return norm/size;
 	}
-	Real L2() {
-		unsigned int size=Size0();
-		Real norm=0.0;
+	double Abs2() {
+		checkSize();
+		double norm=0.0;
 		for(unsigned int i=0; i < size; i++) norm += abs2(v[i]);
-		return sqrt(norm/size);
+		return norm;
 	}
-	Real LInfinity() {
-		unsigned int size=Size0();
-		Real norm=0.0;
+	double L2() {
+		return sqrt(Abs2()/size);
+	}
+	double LInfinity() {
+		checkSize();
+		double norm=0.0;
 		for(unsigned int i=0; i < size; i++) norm=max(norm,abs(v[i]));
 		return norm;
 	}
-	Real LMinusInfinity() {
-		unsigned int size=Size0();
-		Real norm=REAL_MAX;
+	double LMinusInfinity() {
+		checkSize();
+		double norm=DBL_MAX;
 		for(unsigned int i=0; i < size; i++) norm=min(norm,abs(v[i]));
 		return norm;
 	}
@@ -235,10 +238,12 @@ istream& operator >> (istream& s, const array1<T>& A)
 template<class T>
 class array2 : public array1<T> {
 protected:
-	int ny;
+	unsigned int nx;
+	unsigned int ny;
 public:
-	unsigned int Size() const {return nx*ny;}
-	void Dimension(unsigned int nx0, unsigned int ny0) {nx=nx0; ny=ny0;}
+	void Dimension(unsigned int nx0, unsigned int ny0) {
+		nx=nx0; ny=ny0; size=nx*ny;
+	}
 	void Dimension(unsigned int nx0, unsigned int ny0, T *v0) {
 		Dimension(nx0,ny0);
 		v=v0;
@@ -249,10 +254,11 @@ public:
 		checkActivate(2);
 	}
 	
-	array2() : ny(0) {}
+	array2() : nx(0), ny(0) {}
 	array2(unsigned int nx0, unsigned int ny0) {Allocate(nx0,ny0);}
 	array2(unsigned int nx0, unsigned int ny0, T *v0) {Dimension(nx0,ny0,v0);}
 	
+	unsigned int Nx() const {return nx;}
 	unsigned int Ny() const {return ny;}
 	unsigned int N2() const {return ny;}
 	array1<T> operator [] (int ix) const {
@@ -265,7 +271,7 @@ public:
 		return v[ix*ny+iy];
 	}
 	T& operator () (int i) const {
-		check(i,Size(),2,0);
+		check(i,size,2,0);
 		return v[i];
 	}
 	T* operator () () const {return v;}
@@ -279,29 +285,31 @@ public:
 	}
 	
 	array2<T>& operator += (const array2<T>& A) {
-		unsigned int size=Size0();
+		checkSize();
 		for(unsigned int i=0; i < size; i++) v[i] += A(i);
 		return *this;
 	}
 	array2<T>& operator -= (const array2<T>& A) {
-		unsigned int size=Size0();
+		checkSize();
 		for(unsigned int i=0; i < size; i++) v[i] -= A(i);
 		return *this;
 	}
 	array2<T>& operator *= (const array2<T>& A);
 	
 	array2<T>& operator += (T a) {
-		unsigned int inc=ny+1, size=Size0();
+		checkSize();
+		unsigned int inc=ny+1;
 		for(unsigned int i=0; i < size; i += inc) v[i] += a;
 		return *this;
 	}
 	array2<T>& operator -= (T a) {
-		unsigned int inc=ny+1, size=Size0();
+		checkSize();
+		unsigned int inc=ny+1;
 		for(unsigned int i=0; i < size; i += inc) v[i] -= a;
 		return *this;
 	}
 	array2<T>& operator *= (T a) {
-		unsigned int size=Size0();
+		checkSize();
 		for(unsigned int i=0; i < size; i++) v[i] *= a;
 		return *this;
 	}
@@ -330,16 +338,15 @@ istream& operator >> (istream& s, const array2<T>& A)
 template<class T>
 class array3 : public array2<T> {
 protected:
-	int nyz;
-	int nz;
+	unsigned int nyz;
+	unsigned int nz;
 public:
-	unsigned int Size() const {return nx*nyz;}
 	void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0) {
 		Dimension(nx0,ny0,nz0);
 		checkActivate(3);
 	}
 	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0) {
-		nx=nx0; ny=ny0; nz=nz0; nyz=ny*nz;
+		nx=nx0; ny=ny0; nz=nz0; nyz=ny*nz; size=nx*nyz;
 	}
 	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0, T *v0) {
 		Dimension(nx0,ny0,nz0);
@@ -366,7 +373,7 @@ public:
 		return v[ix*nyz+iy*nz+iz];
 	}
 	T& operator () (int i) const {
-		check(i,Size(),3,0);
+		check(i,size,3,0);
 		return v[i];
 	}
 	T* operator () () const {return v;}
@@ -380,23 +387,25 @@ public:
 	}
 	
 	array3<T>& operator += (array3<T>& A) {
-		unsigned int size=Size0();
+		checkSize();
 		for(unsigned int i=0; i < size; i++) v[i] += A(i);
 		return *this;
 	}
 	array3<T>& operator -= (array3<T>& A) {
-		unsigned int size=Size0();
+		checkSize();
 		for(unsigned int i=0; i < size; i++) v[i] -= A(i);
 		return *this;
 	}
 	
 	array3<T>& operator += (T a) {
-		unsigned int inc=nyz+nz+1, size=Size0();
+		checkSize();
+		unsigned int inc=nyz+nz+1;
 		for(unsigned int i=0; i < size; i += inc) v[i] += a;
 		return *this;
 	}
 	array3<T>& operator -= (T a) {
-		unsigned int inc=nyz+nz+1, size=Size0();
+		checkSize();
+		unsigned int inc=nyz+nz+1;
 		for(unsigned int i=0; i < size; i += inc) v[i] -= a;
 		return *this;
 	}
@@ -428,11 +437,10 @@ istream& operator >> (istream& s, const array3<T>& A)
 template<class T>
 class array4 : public array3<T> {
 protected:
-	int nyzw;
-	int nzw;
-	int nw;
+	unsigned int nyzw;
+	unsigned int nzw;
+	unsigned int nw;
 public:
-	unsigned int Size() const {return nx*nyzw;}
 	void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 				  unsigned int nw0) {
 		Dimension(nx0,ny0,nz0,nw0);
@@ -441,6 +449,7 @@ public:
 	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 				   unsigned int nw0) {
 		nx=nx0; ny=ny0; nz=nz0; nw=nw0; nzw=nz*nw; nyzw=ny*nzw;
+		size=nx*nyzw;
 	}
 	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 				   unsigned int w0, T *v0) {
@@ -471,7 +480,7 @@ public:
 		return v[ix*nyzw+iy*nzw+iz*nw+iw];
 	}
 	T& operator () (int i) const {
-		check(i,Size(),4,0);
+		check(i,size,4,0);
 		return v[i];
 	}
 	T* operator () () const {return v;}
@@ -485,23 +494,25 @@ public:
 	}
 	
 	array4<T>& operator += (array4<T>& A) {
-		unsigned int size=Size0();
+		checkSize();
 		for(unsigned int i=0; i < size; i++) v[i] += A(i);
 		return *this;
 	}
 	array4<T>& operator -= (array4<T>& A) {
-		unsigned int size=Size0();
+		checkSize();
 		for(unsigned int i=0; i < size; i++) v[i] -= A(i);
 		return *this;
 	}
 	
 	array4<T>& operator += (T a) {
-		unsigned int inc=nyzw+nzw+nw+1, size=Size0();
+		checkSize();
+		unsigned int inc=nyzw+nzw+nw+1;
 		for(unsigned int i=0; i < size; i += inc) v[i] += a;
 		return *this;
 	}
 	array4<T>& operator -= (T a) {
-		unsigned int inc=nyzw+nzw+nw+1, size=Size0();
+		checkSize();
+		unsigned int inc=nyzw+nzw+nw+1;
 		for(unsigned int i=0; i < size; i += inc) v[i] -= a;
 		return *this;
 	}
@@ -552,7 +563,7 @@ public:
 		voff=v-ox;
 	}
 	void Dimension(unsigned int nx0, int ox0=0) {
-		nx=nx0;
+		size=nx0;
 		ox=ox0;
 	}
 	void Dimension(unsigned int nx0, T *v0, int ox0=0) {
@@ -575,12 +586,12 @@ public:
 		Dimension(nx0,v0,ox0);
 	}
 
-	T& operator [] (int ix) const {check(ix,nx,ox,1,1); return voff[ix];}
-	T& operator () (int i) const {check(i,nx,0,1,1); return v[i];}
+	T& operator [] (int ix) const {check(ix,size,ox,1,1); return voff[ix];}
+	T& operator () (int i) const {check(i,size,0,1,1); return v[i];}
 	T* operator () () const {return voff;}
 	operator T* () const {return voff;}
 	
-	Array1<T> operator + (int i) const {return Array1<T>(nx-i,v+i,ox);}
+	Array1<T> operator + (int i) const {return Array1<T>(size-i,v+i,ox);}
 	void Set(T *a) {v=a; Offsets(); clear(allocated);}
 	
 	Array1<T>& operator = (T a) {Load(a); return *this;}
@@ -609,6 +620,7 @@ public:
 	}
 	void Dimension(unsigned int nx0, unsigned int ny0, int ox0=0, int oy0=0) {
 		nx=nx0; ny=ny0;
+		size=nx*ny;
 		ox=ox0; oy=oy0;
 	}
 	void Dimension(unsigned int nx0, unsigned int ny0, T *v0, int ox0=0,
@@ -642,7 +654,7 @@ public:
 		return voff[ix*ny+iy];
 	}
 	T& operator () (int i) const {
-		check(i,Size(),0,2,0);
+		check(i,size,0,2,0);
 		return v[i];
 	}
 	T* operator () () const {return voff;}
@@ -664,14 +676,15 @@ public:
 	Array2<T>& operator *= (const Array2<T>& A);
 	
 	Array2<T>& operator *= (T a) {
-		unsigned int size=Size0();
+		checkSize();
 		for(unsigned int i=0; i < size; i++) v[i] *= a;
 		return *this;
 	}
 	
 	void Identity() {
 		Load((T) 0.0);
-		unsigned int inc=ny+1, size=Size0();
+		checkSize();
+		unsigned int inc=ny+1;
 		for(unsigned int i=0; i < size; i += inc) v[i]=1.0;
 	}
 };
@@ -727,7 +740,7 @@ public:
 		return voff[ix*nyz+iy*nz+iz];
 	}
 	T& operator () (int i) const {
-		check(i,Size(),0,3,0);
+		check(i,size,0,3,0);
 		return v[i];
 	}
 	T* operator () () const {return voff;}
@@ -804,7 +817,7 @@ public:
 		return voff[ix*nyzw+iy*nzw+iz*nw+iw];
 	}
 	T& operator () (int i) const {
-		check(i,Size(),0,4,0);
+		check(i,size,0,4,0);
 		return v[i];
 	}
 	T* operator () () const {return voff;}
@@ -834,7 +847,6 @@ public:
 
 #undef check
 #undef checkActivate
-#undef Size0
 
 #endif
 

@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Arrayp_h__
 #define __Arrayp_h__ 1
 
-#define __ARRAYP_H_VERSION__ 1.09
+#define __ARRAYP_H_VERSION__ 1.10J
 
 // Defining NDEBUG improves optimization.
 
@@ -43,9 +43,9 @@ public:
 	Array1p() {}
 	Array1p(unsigned int nx0) {Allocate(nx0);}
 	Array1p(unsigned int nx0, T *v0) {Dimension(nx0,v0);}
-	Array1p(const Array1p<T>& A) {v=A.v; nx=A.nx; state=A.test(temporary);}
-	T& operator [] (int ix) const {Mod(ix,nx); return v[ix];}
-	T& operator () (int ix) const {Mod(ix,nx); return v[ix];}
+	Array1p(const Array1p<T>& A) {v=A.v; size=A.size; state=A.test(temporary);}
+	T& operator [] (int ix) const {Mod(ix,size); return v[ix];}
+	T& operator () (int ix) const {Mod(ix,size); return v[ix];}
 	Array1p<T>& operator = (T a) {Load(a); return *this;}
 };
 
@@ -65,7 +65,7 @@ public:
 		return v[ix*ny+iy];
 	}
 	T& operator () (int i) const {
-		Mod(i,Size());
+		Mod(i,size);
 		return v[i];
 	}
 	Array2p<T>& operator = (T a) {Load(a); return *this;}
@@ -75,8 +75,12 @@ template<class T>
 class Array3p : public array3<T>, public ArrayMod {
 public:	
 	Array3p() {}
-	Array3p(unsigned int nx0, unsigned int ny0, unsigned int nz0) {Allocate(nx0,ny0,nz0);}
-	Array3p(unsigned int nx0, unsigned int ny0, unsigned int nz0, T *v0) {Dimension(nx0,ny0,nz0,v0);}
+	Array3p(unsigned int nx0, unsigned int ny0, unsigned int nz0) {
+		Allocate(nx0,ny0,nz0);
+	}
+	Array3p(unsigned int nx0, unsigned int ny0, unsigned int nz0, T *v0) {
+		Dimension(nx0,ny0,nz0,v0);
+	}
 	Array2p<T> operator [] (int ix) const {
 		Mod(ix,nx);
 		return Array2p<T>(ny,nz,v+ix*nyz);
@@ -88,7 +92,7 @@ public:
 		return v[ix*nyz+iy*nz+iz];
 	}
 	T& operator () (int i) const {
-		Mod(i,Size());
+		Mod(i,size);
 		return v[i];
 	}
 };
@@ -97,8 +101,12 @@ template<class T>
 class Array4p : public array4<T>, public ArrayMod {
 public:	
 	Array4p() {}
-	Array4p(unsigned int nx0, unsigned int ny0, unsigned int nz0, unsigned int nw0) {Allocate(nx0,ny0,nz0,nw0);}
-	Array4p(unsigned int nx0, unsigned int ny0, unsigned int nz0, unsigned int nw0, T *v0) {
+	Array4p(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+			unsigned int nw0) {
+		Allocate(nx0,ny0,nz0,nw0);
+	}
+	Array4p(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+			unsigned int nw0, T *v0) {
 		Dimension(nx0,ny0,nz0,nw0,v0);
 	}
 	Array3p<T> operator [] (int ix) const {
@@ -113,7 +121,7 @@ public:
 		return v[ix*nyzw+iy*nzw+iz*nw+iw];
 	}
 	T& operator () (int i) const {
-		Mod(i,Size());
+		Mod(i,size);
 		return v[i];
 	}
 };
