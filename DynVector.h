@@ -23,12 +23,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #include <stdlib.h>
 #include <iostream.h>
 
-inline void DynVectorExit(char *x);
-
 #ifndef __ExternalDynVectorExit
 inline void DynVectorExit(char *x)
 {
-  cout << _newl << "ERROR: " << x << "." << endl;
+  cout << endl << "ERROR: " << x << "." << endl;
   exit(1);
 } 
 #endif
@@ -156,7 +154,7 @@ public:
       os << v[i];
       if((++i % nperline) == 0) os << endl;
     }
-    os << v[size-1] << newl;
+    os << v[size-1] << endl;
     return os;
   }
 };

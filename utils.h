@@ -28,6 +28,7 @@ size_t memory();
 
 #define __ArrayExtensions
 #define __ExternalArrayExit
+#define __ExternalDynVectorExit
 #include "Array.h"
 
 extern const double pi;
@@ -65,7 +66,7 @@ inline void set(T *to, const T * from, unsigned int n)
   memcpy(to,from,sizeof(*from)*n);
 }
 
-#ifndef __SGI_STL_INTERNAL_ALGOBASE_H
+#ifndef __mips
 template<class T>
 inline void swap(T& p, T& q)
 {
@@ -138,25 +139,14 @@ void *bsearch2(register const void *key,
 
 int check_match(int match_type, const char *object, const char *s, int warn=1);
 			   
-#ifdef __GNUC__ 	
 inline void vform(const char *format, va_list& vargs, ostream& os=cout)
 {
-  os.vform(format,vargs);
+  const int maxsize=256;
+  char buf[maxsize];
+  vsnprintf(buf,maxsize,format,vargs);
+  os << buf;
   os.flush();
 }
-#else
-// Lacking vsnprintf, formatting of arguments is available only for stdout.
-inline void vform(const char *format, va_list& vargs, ostream& os)
-{
-  os << format; 
-  os.flush();
-}
-inline void vform(const char *format, va_list& vargs)
-{
-  vprintf(format,vargs);
-  fflush(stdout);
-}
-#endif
 
 void msg(int severity, const char *file, int line, const char *format,...);
 

@@ -103,7 +103,7 @@ class ixstream : public xstream {
   ixstream() {}
   ixstream(const char *filename) {open(filename);}
   ixstream(const char *filename, open_mode mode) {open(filename,mode);}
-  ~ixstream() {close();}
+  virtual ~ixstream() {close();}
 	
   typedef ixstream& (*imanip)(ixstream&);
   ixstream& operator << (imanip func) { return (*func)(*this); }
@@ -137,7 +137,7 @@ class oxstream : public xstream {
   oxstream() {}
   oxstream(const char *filename) {open(filename);}
   oxstream(const char *filename, open_mode mode) {open(filename,mode);}
-  ~oxstream() {close();}
+  virtual ~oxstream() {close();}
 
   oxstream& flush() {if(buf) fflush(buf); return *this;}
 	
