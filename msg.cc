@@ -67,6 +67,10 @@ void msg(int severity, const char *file, int line, const char *format,...)
   if(*file) cout << " (\"" << file << "\":" << line << ")";
   cout << "." << endl;
 	
+#ifdef __USE_STD_IOSTREAM
+      // Work around cxx bug under linux
+      if(errno == ESPIPE) errno=0;
+#endif	
   if(errno) {
     char *text=strerror(errno);
     if(text) cout << text << "." << endl;

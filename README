@@ -86,7 +86,7 @@ enabled and it is desired to produce uniformly spaced output values.
 triad itmax=10 dynamic=0
 	This disables the dynamic time-stepping mechanism.
 
-The complete list of kernel command is
+The complete list of kernel commands is
 
 itmax
 microsteps
@@ -110,7 +110,7 @@ clobber
 override
 verbose
 run
-checkpoint=100
+checkpoint
 output
 method
 integrator
