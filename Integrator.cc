@@ -7,7 +7,7 @@ inline void IntegratorBase::ChangeTimestep(double& dt, double dtnew,
   // New time step must be <= sample.
   if(sample > 0.0 && dtnew > sample) dtnew=sample;
 	
-  if(abs(dt-dtnew) <= tprecision*abs(dt))	return;	// Don't adjust time step.
+  if(abs(dt-dtnew) <= tprecision*abs(dt)) return; // Don't adjust time step.
 	
   if(verbose > 1) cout << newl << "Time step changed from " << dt <<
 		    " to " << dtnew << " at t=" << t << "." << endl;
