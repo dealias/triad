@@ -7,9 +7,9 @@
 #include <fstream.h>
 #include <math.h>
 
-#if __mac
-#include "arch/mac.h"
-#else // !__mac
+#if _MAC
+#include ":arch:mac.h"
+#else // !_MAC
 
 #if __i386__
 #include "arch/i386.h"
@@ -17,7 +17,7 @@
 #include "arch/unix.h"
 #endif
 
-#endif // __mac
+#endif // _MAC
 
 #include "new.h"
 #include "precision.h"

@@ -121,6 +121,8 @@ void Partition<T>::GenerateWeights() {
 				else binaverage=ComputeBinAverage(&bin[k],&bin[p],&bin[q]);
 				
 				if(binaverage) {
+					if(verbose > 4) cout << k << "," << p << "," q << ": " <<
+									binaverage << endl;
 					kpq=WeightIndex(k,p,q);
 					if(kpq > lastkpq || Nweight==0) {
 						weight[Nweight++].Store(kpq,binaverage);
@@ -260,7 +262,12 @@ template<class T>
 void Partition<T>::ListBins(ostream &os)
 {
 	os << "         " << Name() << " Bin Geometry:" << endl;
+#if _CRAY	
+	for(int i=0; i < n; i++) os << "[" << bin[i].min << "\t" << bin[i].cen <<
+								 "\t" << bin[i].max << "]" << endl;
+#else	
 	for(int i=0; i < n; i++) os << bin[i];
+#endif	
 	cout << endl;
 }
 

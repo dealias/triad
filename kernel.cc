@@ -64,7 +64,7 @@ ProblemBase::ProblemBase()
 	VOCAB(tmax,-DBL_MAX,DBL_MAX);
 	VOCAB(dt,0.0,DBL_MAX);
 	VOCAB(average,0,1);
-	VOCAB(verbose,0,3);
+	VOCAB(verbose,0,4);
 	VOCAB(dynamic,0,1);
 	VOCAB(tolmax,0.0,DBL_MAX);
 	VOCAB(tolmin,0.0,DBL_MAX);
