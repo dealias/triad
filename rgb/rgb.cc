@@ -443,9 +443,9 @@ int main(int argc, char *argv[])
                {"xrange", 1, 0, XRANGE},
                {"yrange", 1, 0, YRANGE},
                {"zrange", 1, 0, ZRANGE},
-               {"xslice", 1, 0, XRANGE},
-               {"yslice", 1, 0, YRANGE},
-               {"zslice", 1, 0, ZRANGE},
+               {"xslice", 1, 0, XSLICE},
+               {"yslice", 1, 0, YSLICE},
+               {"zslice", 1, 0, ZSLICE},
                {"xmin", 1, 0, XMIN},
                {"xmax", 1, 0, XMAX},
                {"ymin", 1, 0, YMIN},
@@ -1308,9 +1308,9 @@ void Torus(Array2<Ivec>& Index)
 	Ayx=-cosTheta*sinPhi; Ayy=cosTheta*cosPhi; Ayz=sinTheta;
 	Azx=sinTheta*sinPhi; Azy=-sinTheta*cosPhi; Azz=cosTheta;
 	
-	int mini=256;
-	int minj=256;
-	int mink=256;
+	int mini=64;
+	int minj=64;
+	int mink=64;
 	
 	int maxk=cutoff ? min(nz,(int) ((cutoff/twopibynz)+1.5)) : nz;
 	
