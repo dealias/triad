@@ -84,6 +84,7 @@ void set_fft_parameters()
 void DiscretePad(Var *to, Var *from, Real *norm)
 {
 	int k=0;
+	*to=0.0;
 	to += xoffset;
 	*(to++)=0.0;
 	Var *tostop=to+Nx0;
@@ -113,6 +114,7 @@ void DiscretePad(Var *to, Var *from, Real *norm)
 #if _CRAYMVP
 void CartesianPad(Var *to_, Var *from)
 {
+	*to_=0.0;
 	Var *to=to_+xoffset;
 	*(to++)=0.0;
 	Var *tostop=to+Nx0;

@@ -258,6 +258,28 @@ void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	mfft(data,log2n,-1,nk,inc1,inc2,bitreverse);
 }
 
+// Return the two-dimensional Fourier transform of a Complex vector.
+// Before calling, data must be allocated as Complex[nx*ny].
+// On entry: data[ny*i+j] contains the ny Complex values for each i=0,...,nx-1.
+//           log2nx contains the base-2 logarithm of nx.
+//           log2ny contains the base-2 logarithm of ny.
+//           isign is +1 for a forward transform, -1 for an inverse transform.
+//           bitreverse is 0 for a true fft, 1 for a faster bit-reversed fft.
+// On exit:  data[ny*i+j] contains the ny Complex Fourier values for
+// each i=0,...nx-1.
+// Note: When computing an inverse transform, the result must be divided
+// by nx*ny.
+
+void fft2d(Complex *data, unsigned int log2nx, unsigned int log2ny, int isign,
+		   int bitreverse)
+{
+	unsigned int nx=1 << log2nx;
+	unsigned int ny=1 << log2ny;
+	
+	mfft(data,log2nx,isign,ny,ny,1,bitreverse);
+	mfft(data,log2ny,isign,nx,1,ny,bitreverse);
+}
+
 // Return the two-dimensional Fourier transform of nx*ny real values.
 // Before calling, data must be allocated as Complex[nx*(ny/2+1)].
 // On entry: ((Real *) data)[2*i+j+2*(nx-1)*(j/2)] must contain 
@@ -265,12 +287,13 @@ void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 //           log2nx contains the base-2 logarithm of nx.
 //           log2ny contains the base-2 logarithm of ny.
 //           isign is +1 for a forward transform, -1 for an inverse transform.
+//           bitreverse is 0 for a true fft, 1 for a faster bit-reversed fft.
 // On exit: data[i+nx*j] contains the nx Complex values for
 // each j=0,...,ny/2.
 // The origin of the Fourier domain is located at (nx/2,0).
 
 void rcfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
-			  int isign)
+			  int isign, int bitreverse)
 {
 	unsigned int i;
 	unsigned int nx=1 << log2nx;
@@ -279,7 +302,7 @@ void rcfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	const int nx1=nx+offset;
 	Complex *p;
 
-	mrcfft(data,log2ny,isign,nx,nx1,1);
+	mrcfft(data,log2ny,isign,nx,nx1,1,bitreverse);
 	
 	Complex *pstop=data+nx1*nyp;
 #if _CRAY
@@ -293,53 +316,62 @@ void rcfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	}
 #endif
 	
-	mfft(data,log2nx,isign,nyp,1,nx1);
+	mfft(data,log2nx,isign,nyp,1,nx1,bitreverse);
 }
 
 // Return the two-dimensional real inverse Fourier transform of the
-// nx*(ny/2+1) spectral values taken from the frequency half-plane.
+// nx*(ny/2+1) spectral values in the half-plane ky >= 0.
 // Before calling, data must be allocated as Complex[nx*(ny/2+1)].
-// On entry: data[i+nx*j] contains nx/2+1 Complex values for j=0
-// and nx values for j=1,...,ny/2.
+// On entry: data[i+nx*j] contains nx Complex values for each j=0,...,ny/2.
+// The values corresponding to ky=0 are assumed to satisfy the reality
+// condition (see crfft2dT_sym below).
 // The origin of the Fourier domain is located at (nx/2,0).
 //           log2nx contains the base-2 logarithm of nx.
 //           log2ny contains the base-2 logarithm of ny.
 //           isign is +1 for a forward transform, -1 for an inverse transform.
+//           bitreverse is 0 for a true fft, 1 for a faster bit-reversed fft.
 // On exit: ((Real *) data)[2*i+j+(nx-1)*(j/2)*2] contains 
 // the (i,j)th real value, indexed by i=0,...,nx-1 and j=0,...,ny-1.
 // Note: The final result must be divided by nx*ny.
 
 void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
-			  int isign)
+			  int isign, int bitreverse)
 {
-	unsigned int i;
 	unsigned int nx=1 << log2nx;
 	unsigned int ny=1 << log2ny;
 	const unsigned int nyp=ny/2+1;
-	const unsigned int nx2=nx/2;
 	const int nx1=nx+offset;
 	Complex *p;
 
-	// Enforce reality condition
-	data[0].im=0.0;
-#pragma ivdep
-	for(i=1; i < nx2; i++) data[i]=conj(data[nx-i]);
-	
-	mfft(data,log2nx,isign,nyp,1,nx1);
+	mfft(data,log2nx,isign,nyp,1,nx1,bitreverse);
 
 	Complex *pstop=data+nx1*nyp;
 #if _CRAY
-	for(i=1; i < nx; i += 2) {
+	for(unsigned int i=1; i < nx; i += 2) {
 #pragma ivdep
 		for(p=data+i; p < pstop; p += nx1) *p=-(*p);
 	}
 #else	
 	for(p=data; p < pstop; p += nx1) {
-		for(i=1; i < nx; i += 2) p[i]=-p[i];
+		for(unsigned int i=1; i < nx; i += 2) p[i]=-p[i];
 	}
 #endif	
 	
-	mcrfft(data,log2ny,isign,nx,nx1,1);
+	mcrfft(data,log2ny,isign,nx,nx1,1,bitreverse);
+}
+
+// Call crfft2dT but first enforce reality condition by symmetrizing data.
+
+void crfft2dT_sym(Complex *data, unsigned int log2nx, unsigned int log2ny,
+				  int isign, int bitreverse)
+{
+	unsigned int nx=1 << log2nx;
+	const unsigned int nx2=nx/2;
+	data[nx2].im=0.0;
+#pragma ivdep
+	for(unsigned int i=1; i < nx2; i++) data[i]=conj(data[nx-i]);
+	
+	crfft2dT(data,log2nx,log2ny,isign,bitreverse);
 }
 
 // Return the two-dimensional Fourier transform of nx*ny real values.
@@ -349,18 +381,19 @@ void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 //           log2nx contains the base-2 logarithm of nx.
 //           log2ny contains the base-2 logarithm of ny.
 //           isign is +1 for a forward transform, -1 for an inverse transform.
+//           bitreverse is 0 for a true fft, 1 for a faster bit-reversed fft.
 // On exit: data[(ny/2+1)*i+j] contains the ny/2+1 Complex values for
 // each i=0,...,nx-1. 
 // The origin of the Fourier domain is located at (nx/2,0).
 
 void rcfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
-			 int isign)
+			 int isign, int bitreverse)
 {
 	unsigned int nx=1 << log2nx;
 	unsigned int ny=1 << log2ny;
 	const unsigned int nyp=ny/2+1;
 
-	mrcfft(data,log2ny,isign,nx,1,nyp);
+	mrcfft(data,log2ny,isign,nx,1,nyp,bitreverse);
 
 	Complex *pstop=data+nx*nyp;
 	int pinc=2*nyp;
@@ -369,37 +402,33 @@ void rcfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 		for(unsigned int j=0; j < nyp; j++) p[j]=-p[j];
 	}
 	
-	mfft(data,log2nx,isign,nyp);
+	mfft(data,log2nx,isign,nyp,nyp,1,bitreverse);
 }
 
 // Return the two-dimensional real inverse Fourier transform of the
-// nx*(ny/2+1) spectral values taken from the non-negative frequency
-// half-plane. 
+// nx*(ny/2+1) spectral values in the half-plane ky >= 0.
 // Before calling, data must be allocated as Complex[nx*(ny/2+1)].
 // On entry: data[(ny/2+1)*i+j] contains the ny/2+1 Complex values for
 // each i=0,...,nx-1. 
+// The values corresponding to ky=0 are assumed to satisfy the reality
+// condition (see crfft2d_sym below).
 // The origin of the Fourier domain is located at (nx/2,0).
 //           log2nx contains the base-2 logarithm of nx.
 //           log2ny contains the base-2 logarithm of ny.
 //           isign is +1 for a forward transform, -1 for an inverse transform.
+//           bitreverse is 0 for a true fft, 1 for a faster bit-reversed fft.
 // On exit:  ((Real *) data)[(ny+2)*i+j] contains
 // the (i,j)th real value, indexed by i=0,...,nx-1 and j=0,...,ny-1.
 // Note: The final result must be divided by nx*ny.
 
 void crfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
-			 int isign)
+			 int isign, int bitreverse)
 {
 	unsigned int nx=1 << log2nx;
 	unsigned int ny=1 << log2ny;
 	const unsigned int nyp=ny/2+1;
-	const unsigned int nx2=nx/2;
 
-	// Enforce reality condition
-	data[0].im=0.0;
-#pragma ivdep
-	for(unsigned int i=1; i < nx2; i++) data[nyp*i]=conj(data[nyp*(nx-i)]);
-	
-	mfft(data,log2nx,isign,nyp);
+	mfft(data,log2nx,isign,nyp,nyp,1,bitreverse);
 	
 	Complex *pstop=data+nx*nyp;
 	int pinc=2*nyp;
@@ -408,7 +437,52 @@ void crfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 		for(unsigned int j=0; j < nyp; j++) p[j]=-p[j];
 	}
 	
-	mcrfft(data,log2ny,isign,nx,1,nyp);
+	mcrfft(data,log2ny,isign,nx,1,nyp,bitreverse);
+}
+
+// Call crfft2d but first enforce reality condition by symmetrizing data.
+
+void crfft2d_sym(Complex *data, unsigned int log2nx, unsigned int log2ny,
+				 int isign, int bitreverse)
+{
+	const unsigned int nx=1 << log2nx;
+	const unsigned int ny=1 << log2ny;
+	const unsigned int nx2=nx/2;
+	const unsigned int nyp=ny/2+1;
+	
+	data[nyp*nx2].im=0.0;
+#pragma ivdep
+	for(unsigned int i=1; i < nx2; i++) data[nyp*i]=conj(data[nyp*(nx-i)]);
+	
+	crfft2d(data,log2nx,log2ny,isign,bitreverse);
+}
+
+// Return the three-dimensional Fourier transform of a Complex vector.
+// Before calling, data must be allocated as Complex[nx*ny*nz].
+// On entry: data[nz*(ny*i+j)+k] contains the (i,j,k)th Complex value,
+// indexed by i=0,...,nx-1, j=0,...,ny-1, and k=0,...,nz-1.
+//           log2nx contains the base-2 logarithm of nx.
+//           log2ny contains the base-2 logarithm of ny.
+//           log2nz contains the base-2 logarithm of nz.
+//           isign is +1 for a forward transform, -1 for an inverse transform.
+//           bitreverse is 0 for a true fft, 1 for a faster bit-reversed fft.
+// On exit:  data[nz*(ny*i+j)+k] contains the (i,j,k)th Complex Fourier
+// values indexed by i=0,...,nx-1, j=0,...,ny-1, and k=0,...,nz-1.
+// Note: When computing an inverse transform, the result must be divided
+// by nx*ny*nz.
+
+void fft3d(Complex *data, unsigned int log2nx, unsigned int log2ny,
+		   unsigned int log2nz, int isign, int bitreverse)
+{
+	unsigned int nx=1 << log2nx;
+	unsigned int ny=1 << log2ny;
+	unsigned int nz=1 << log2nz;
+	int nyz=ny*nz;
+	
+	mfft(data,log2nx,isign,nyz,nyz,1,bitreverse);
+	for(unsigned int i=0; i < nx; i++)
+		mfft(data+i*nyz,log2ny,isign,nz,nz,1,bitreverse);
+	mfft(data,log2nz,isign,nx*ny,1,nz,bitreverse);
 }
 
 // Return the three-dimensional Fourier transform of nx*ny*nz real values.
@@ -420,12 +494,13 @@ void crfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 //           log2ny contains the base-2 logarithm of ny.
 //           log2nz contains the base-2 logarithm of nz.
 //           isign is +1 for a forward transform, -1 for an inverse transform.
+//           bitreverse is 0 for a true fft, 1 for a faster bit-reversed fft.
 // On exit: data[(nz/2+1)*(ny*i+j)+k] contains the nz/2+1 Complex values for
 // each i=0,...,nx-1 and j=0,...,ny-1. 
 // The origin of the Fourier domain is located at (nx/2,ny/2,0).
 
 void rcfft3d(Complex *data, unsigned int log2nx, unsigned int log2ny,
-			 unsigned int log2nz, int isign)
+			 unsigned int log2nz, int isign, int bitreverse)
 {
 	unsigned int i;
 	unsigned int nx=1 << log2nx;
@@ -434,7 +509,7 @@ void rcfft3d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	const unsigned int nzp=nz/2+1;
 	Complex *p,*pstop;
 
-	mrcfft(data,log2nz,isign,nx*ny,1,nzp);
+	mrcfft(data,log2nz,isign,nx*ny,1,nzp,bitreverse);
 	
 	int nyzp=ny*nzp;
 	int pinc=2*nzp;
@@ -449,71 +524,82 @@ void rcfft3d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 		}
 	}
 	
-	mfft(data,log2nx,isign,nyzp);
+	mfft(data,log2nx,isign,nyzp,nyzp,1,bitreverse);
 	
 	for(i=0; i < nx; i++)
-		mfft(data+i*nyzp,log2ny,isign,nzp);
+		mfft(data+i*nyzp,log2ny,isign,nzp,nzp,1,bitreverse);
 }
 
-// On exit:  ((Real *) data)[(ny+2)*i+j] contains
-// the (i,j)th real value, indexed by i=0,...,nx-1 and j=0,...,ny-1.
-// Note: The final result must be divided by nx*ny.
-
 // Return the three-dimensional real inverse Fourier transform of the
-// nx*ny*(nz/2+1) spectral values taken from the non-negative frequency
-// half-plane. 
+// nx*ny*(nz/2+1) spectral values in the half-space kz >= 0.
 // Before calling, data must be allocated as Complex[nx*ny*(nz/2+1)].
 // On entry: data[(nz/2+1)*(ny*i+j)+k] must contain the nz/2+1 Complex
 // values for each i=0,...,nx-1 and j=0,...,ny-1. 
+// The values corresponding to kz=0 are assumed to satisfy the reality
+// condition (see crfft3d_sym below).
 // The origin of the Fourier domain is located at (nx/2,ny/2,0).
 //           log2nx contains the base-2 logarithm of nx.
 //           log2ny contains the base-2 logarithm of ny.
 //           log2nz contains the base-2 logarithm of nz.
 //           isign is +1 for a forward transform, -1 for an inverse transform.
+//           bitreverse is 0 for a true fft, 1 for a faster bit-reversed fft.
 // On exit:  ((Real *) data)[(nz+2)*(ny*i+j)+k] contains the (i,j,k)th real
 // value, indexed by i=0,...,nx-1, j=0,...,ny-1, and k=0,...,nz-1.
 // Note: The final result must be divided by nx*ny*nz.
 
 void crfft3d(Complex *data, unsigned int log2nx, unsigned int log2ny,
-			 unsigned int log2nz, int isign)
+			 unsigned int log2nz, int isign, int bitreverse)
 {
 	unsigned int i;
 	unsigned int nx=1 << log2nx;
 	unsigned int ny=1 << log2ny;
 	unsigned int nz=1 << log2nz;
 	const unsigned int nzp=nz/2+1;
-	const unsigned int nx2=nx/2;
 	Complex *p,*pstop;
 
-	int nyzp=ny*nzp;
+	const int unsigned nyzp=ny*nzp;
 	
-	// Enforce reality condition
-	data[0].im=0.0;
-	for(i=1; i < nx2; i++) {
+	for(i=0; i < nx; i++)
+		mfft(data+i*nyzp,log2ny,isign,nzp,nzp,1,bitreverse);
+		
+	mfft(data,log2nx,isign,nyzp,nyzp,1,bitreverse);
+	
+	int pinc=2*nzp;
+	p=pstop=data;
+	for(i=0; i < nx; i++) {
+		if(i % 2) p -= nzp;
+		else p += nzp;
+		pstop += nyzp;
+		for(; p < pstop; p += pinc) {
+#pragma ivdep
+			for(unsigned int k=0; k < nzp; k++) p[k]=-p[k];
+		}
+	}
+		
+	mcrfft(data,log2nz,isign,nx*ny,1,nzp,bitreverse);
+}
+
+// Call crfft3d but first enforce reality condition by symmetrizing data.
+
+void crfft3d_sym(Complex *data, unsigned int log2nx, unsigned int log2ny,
+			 unsigned int log2nz, int isign, int bitreverse)
+{
+	const unsigned int nx=1 << log2nx;
+	const unsigned int ny=1 << log2ny;
+	const unsigned int nz=1 << log2nz;
+	const unsigned int nx2=nx/2;
+	const unsigned int nzp=nz/2+1;
+	const unsigned int nyzp=ny*nzp;
+	
+	data[nyzp*nx2].im=0.0;
+	for(unsigned int i=1; i < nx2; i++) {
 		data[nyzp*i]=conj(data[nyzp*(nx-i)]);
 #pragma ivdep
 		for(unsigned int j=1; j < ny; j++)
 			data[nzp*(ny*i+j)]=conj(data[nzp*(ny*(nx-i)+(ny-j))]);
 	}
 	
-	for(i=0; i < nx; i++)
-		mfft(data+i*nyzp,log2ny,isign,nzp);
-		
-	mfft(data,log2nx,isign,nyzp);
-	
-	int pinc=2*nzp;
-	p=pstop=data;
-	for(i=0; i < nx; i++) {
-		if(i % 2) p -= nzp;
-		else p += nzp;
-		pstop += nyzp;
-		for(; p < pstop; p += pinc) {
-#pragma ivdep
-			for(unsigned int k=0; k < nzp; k++) p[k]=-p[k];
-		}
-	}
-		
-	mcrfft(data,log2nz,isign,nx*ny,1,nzp);
+	crfft3d(data,log2nx,log2ny,log2nz,isign,bitreverse);
 }
 
 // Return the Fourier transform of a Complex vector of length n=power of 4.
@@ -578,49 +664,3 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 	mfft(data,log4n,isign,m);
 }
 
-// Return the two-dimensional Fourier transform of a Complex vector.
-// Before calling, data must be allocated as Complex[nx*ny].
-// On entry: data[ny*i+j] contains the ny Complex values for each i=0,...,nx-1.
-//           log2nx contains the base-2 logarithm of nx.
-//           log2ny contains the base-2 logarithm of ny.
-//           isign is +1 for a forward transform, -1 for an inverse transform.
-// On exit:  data[ny*i+j] contains the ny Complex Fourier values for
-// each i=0,...nx-1.
-// Note: When computing an inverse transform, the result must be divided
-// by nx*ny.
-
-void fft2d(Complex *data, unsigned int log2nx, unsigned int log2ny, int isign)
-{
-	unsigned int nx=1 << log2nx;
-	unsigned int ny=1 << log2ny;
-	
-	mfft(data,log2nx,isign,ny);
-	mfft(data,log2ny,isign,nx,1,ny);
-}
-
-// Return the three-dimensional Fourier transform of a Complex vector.
-// Before calling, data must be allocated as Complex[nx*ny*nz].
-// On entry: data[nz*(ny*i+j)+k] contains the (i,j,k)th Complex value,
-// indexed by i=0,...,nx-1, j=0,...,ny-1, and k=0,...,nz-1.
-//           log2nx contains the base-2 logarithm of nx.
-//           log2ny contains the base-2 logarithm of ny.
-//           log2nz contains the base-2 logarithm of nz.
-//           isign is +1 for a forward transform, -1 for an inverse transform.
-// On exit:  data[nz*(ny*i+j)+k] contains the (i,j,k)th Complex Fourier
-// values indexed by i=0,...,nx-1, j=0,...,ny-1, and k=0,...,nz-1.
-// Note: When computing an inverse transform, the result must be divided
-// by nx*ny*nz.
-
-void fft3d(Complex *data, unsigned int log2nx, unsigned int log2ny,
-		   unsigned int log2nz, int isign)
-{
-	unsigned int nx=1 << log2nx;
-	unsigned int ny=1 << log2ny;
-	unsigned int nz=1 << log2nz;
-	
-	mfft(data,log2nx,isign,ny*nz);
-	int nyz=ny*nz;
-	for(unsigned int i=0; i < nx; i++)
-		mfft(data+i*nyz,log2ny,isign,nz);
-	mfft(data,log2nz,isign,nx*ny,1,nz);
-}

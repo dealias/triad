@@ -119,6 +119,7 @@ void CartesianUnPad(Var *to, Var *from);
 #else
 inline void CartesianPad(Var *to, const Var *from)
 {
+	*to=0.0;
 	to += xoffset;
 	*(to++)=0.0;
 	set(to,from,Nx0);
