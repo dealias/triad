@@ -174,6 +174,24 @@ int PC::Corrector(double dt, int dynamic, int start, int stop)
 	return 1;
 }
 
+int Midpoint::Corrector(double dt, int dynamic, int start, int stop)
+{
+	for(int j=start; j < stop; j++) y1[j]=y0[j];
+	Source(source,y1,t+dt);
+	for(int i=0; i < 10000; i++) {
+		for(int j=start; j < stop; j++) 
+			y1[j]=0.99999*y1[j]+0.00001*(y0[j]+0.5*dt*(source0[j]+source[j]));
+		Source(source,y1,t+dt);
+		cout << y1[0] << endl;
+		for(int j=start; j < stop; j++) 
+			y1[j]=(y0[j]+0.5*dt*(source0[j]+source[j]));
+		cout << y1[0] << endl;
+		cout << endl;
+	}
+	cout << endl;
+	return 1;
+}
+
 void LeapFrog::Predictor(double t, double, int start, int stop)
 {
 	if(new_y0) {oldhalfdt=lasthalfdt;}

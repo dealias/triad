@@ -239,7 +239,10 @@ public:
 		for(int i=0; i < size; i += inc) v[i] -= a;
 		return *this;
 	}
-	Array2<T>& operator *= (T A);
+	Array2<T>& operator *= (T a) {
+		int size=Size0(); for(int i=0; i < size; i++) v[i] *= a;
+		return *this;
+	}
 };
 
 template<class T>

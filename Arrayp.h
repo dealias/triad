@@ -22,11 +22,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 // Defining NDEBUG improves optimization.
 
-#define check(i,n,dim,m) Check(i,n,dim,m)
-
 #include <iostream.h>
 #include <strstream.h>
 #include "Array.h"
+
+#define check(i,n,dim,m) Check(i,n,dim,m)
 
 class ArrayMod {
 public:	
@@ -55,6 +55,10 @@ public:
 	Array2p() {}
 	Array2p(int nx0, int ny0) {Allocate(nx0,ny0);}
 	Array2p(int nx0, int ny0, T *v0) {Dimension(nx0,ny0,v0);}
+	Array1p<T> operator [] (int ix) const {
+		check(ix,nx,2,1);
+		return Array1p<T>(ny,v+ix*ny);
+	}
 	void Check(int& i, int n, int dim, int m) const {Mod(i,n);}
 };
 
@@ -64,6 +68,10 @@ public:
 	Array3p() {}
 	Array3p(int nx0, int ny0, int nz0) {Allocate(nx0,ny0,nz0);}
 	Array3p(int nx0, int ny0, int nz0, T *v0) {Dimension(nx0,ny0,nz0,v0);}
+	Array2p<T> operator [] (int ix) const {
+		check(ix,nx,3,1);
+		return Array2p<T>(ny,nz,v+ix*nyz);
+	}
 	void Check(int& i, int n, int dim, int m) const {Mod(i,n);}
 };
 
@@ -74,6 +82,10 @@ public:
 	Array4p(int nx0, int ny0, int nz0, int nw0) {Allocate(nx0,ny0,nz0,nw0);}
 	Array4p(int nx0, int ny0, int nz0, int nw0, T *v0) {
 		Dimension(nx0,ny0,nz0,nw0,v0);
+	}
+	Array3p<T> operator [] (int ix) const {
+		check(ix,nx,3,1);
+		return Array3p<T>(ny,nz,nw,v+ix*nyzw);
 	}
 	void Check(int& i, int n, int dim, int m) const {Mod(i,n);}
 };

@@ -272,7 +272,6 @@ inline Array2<T> operator * (T C, const Array2<T>& B)
 	return A;
 }
 
-
 template<class T>
 inline Array2<T>& Array2<T>::operator *= (const Array2<T>& A)
 {
@@ -280,13 +279,14 @@ inline Array2<T>& Array2<T>::operator *= (const Array2<T>& A)
 	return *this;
 }
 
+#if 0 // Defined in Array.h
 template<class T>
 inline Array2<T>& Array2<T>::operator *= (T A)
 {
 	Mult(*this,*this,A);
 	return *this;
 }
-
+#endif
 
 template<class T>
 inline void Divide(const Array2<T>& A, const Array2<T>& B, T C)

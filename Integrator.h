@@ -70,6 +70,11 @@ public:
 	}
 };
 
+class Midpoint : public PC {
+	const char *Name() {return "Midpoint Rule";}
+	int Corrector(double, int, int, int);
+};
+
 class LeapFrog : public PC {
 	Var *yp,*yp0;
 	double oldhalfdt,lasthalfdt;
