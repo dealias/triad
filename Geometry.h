@@ -193,7 +193,7 @@ void Partition<T>::ComputeTriads() {
 		if(fin.eof()) fin.close();
 	}
 	if(fin) {
-		weight[Nweight-1];
+		(void) weight[Nweight-1];
 		fin.read((char *) weight.Base(),Nweight*sizeof(Weight));
 		if(!fin.good()) msg(ERROR,"Error reading from weight file %s",
 							filename);
