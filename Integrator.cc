@@ -139,7 +139,7 @@ Solve_RC PC::Solve(double t, double dt)
 	new_y0=(flag != UNSUCCESSFUL);
 	if(new_y0) {
 		set(y0,y,ny);
-		Problem->BackTransform(y,t,dt);
+		Problem->BackTransform(y0,t,dt);
 	}
 	return flag;
 }
