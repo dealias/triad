@@ -6,9 +6,9 @@ typedef void stack_t;
 #undef _ANSI_C_SOURCE
 #endif
 
-#include <stdlib.h>
+#include <cstdlib>
+#include <cstdio>
 #include <unistd.h>
-#include <stdio.h>
 #include <pwd.h>
 #include <sys/times.h>
 
@@ -18,9 +18,9 @@ typedef void stack_t;
 #include <time.h>
 #define __STRICT_ANSI__
 
-#include <string.h>
-#include <strstream.h>
-#include <stdlib.h>
+#include <string>
+#include <sstream>
+#include <cstdlib>
 #include <sys/utsname.h>
 
 #if _CRAY && !_CRAYMPP
@@ -65,10 +65,10 @@ static char mail_cmd[]="mail";
 void mailuser(const char *text)
 {
   if(time(NULL)-init_time < longrun) return;
-  strstream buf;
+  ostringstream buf;
   buf << mail_cmd << " -s 'Run " << run << " " << text << ".' "
       << getpwuid(getuid())->pw_name << " < /dev/null > /dev/null" << ends;
-  system(buf.str());
+  system(buf.str().c_str());
 }
 
 static char rmrf_cmd[]="rm -rf";
@@ -76,9 +76,9 @@ static char rmrf_cmd[]="rm -rf";
 // Recursively delete a directory and all of its contents.
 void remove_dir(const char *text)
 {
-  strstream buf;
+  ostringstream buf;
   buf << rmrf_cmd << " " << text << ends;
-  system(buf.str());
+  system(buf.str().c_str());
 }
 
 static char copy_cmd[]="cp -rf";
@@ -86,38 +86,37 @@ static char copy_cmd[]="cp -rf";
 // Copy a file or directory to a new location
 int copy(const char *oldname, const char *newname)
 {
-  strstream buf;
+  ostringstream buf;
   buf << copy_cmd << " " << oldname << " " << newname << ends;
-  return system(buf.str());
+  return system(buf.str().c_str());
 }
 
 static struct utsname platform;
 static const int ndomain=65;
 static char domain[ndomain];
 
-char *machine()
+const char *machine()
 {
   uname(&platform);
   getdomainname(domain,ndomain);
   if(strcmp(domain,"(none)") == 0) *domain=0;
-  strstream buf;
+  ostringstream buf;
   buf << platform.nodename << ((*domain) ? "." : "") << domain << " ("
       << platform.machine << ")" << ends;
-  buf.rdbuf()->freeze();
-  return buf.str();
+  return strdup(buf.str().c_str());
 }
 
 const int ndate=64;
 static char time_date[ndate]="";
 
-char *date()
+const char *date()
 {
   const time_t bintime=time(NULL);
   strftime(time_date,ndate,"%a %b %d %H:%M:%S %Z %Y",localtime(&bintime));
   return time_date;
 }
 
-char *tempdir()
+const char *tempdir()
 {
   return getenv("TMP_DIR");
 }

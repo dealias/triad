@@ -1,10 +1,7 @@
 #ifndef __Param_h__
 #define __Param_h__ 1
 
-#include <iostream.h>
-#include <stdlib.h>
-#include <string.h>
-
+#include <cstdlib>
 #include "kernel.h"
 
 extern unsigned int NParam;
@@ -140,11 +137,11 @@ inline void Param<T>::get_values(const char *arg, T (*rtn)(const char *))
 
       if(InRange(value)) var[i++]=value;
       else if(param_warn) {
-	strstream buf;
+	ostringstream buf;
 	buf << "Value \"" << value << "\" for "
 	    << name << " is invalid. Limits are "
 	    << min << " to " << max << ends;
-	msg(OVERRIDE_GLOBAL,"%s",buf.str());
+	msg(OVERRIDE_GLOBAL,"%s",buf.str().c_str());
       }
     }	
   } while ((ptr == optarg) ? 0 : (optarg=ptr+1));

@@ -1,5 +1,5 @@
 #include "options.h"
-#include <fstream.h>
+#include <fstream>
 #include <fftw.h>
 #include <rfftw.h>
 #include "fft.h"

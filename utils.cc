@@ -1,10 +1,9 @@
 #include "utils.h"
 
+#include <cerrno>
+#include <string>
 #include <ctype.h>
-#include <iostream.h>
-#include <errno.h>
 #include <time.h>
-#include <string.h>
 
 char* run="";
 ExitCode exit_signal=COMPLETE;

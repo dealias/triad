@@ -20,8 +20,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "options.h"
 #include "kernel.h"
 
-#include <sys/stat.h> // On the sun this must come after xstream.h
-#include <iomanip.h>
+#include <sys/stat.h> // On sun machines this must come after xstream.h
 
 using namespace Array;
 
@@ -77,7 +76,7 @@ static int microsteps=1;
 static double sample=0.0;
 static int initialize=0;
 static int clobber=0;
-static char *tmpdir=tempdir();
+static const char *tmpdir=tempdir();
 
 VocabularyBase::VocabularyBase()
 {
@@ -181,19 +180,12 @@ int main(int argc, char *argv[])
   fparam.open(pname);
 	
   if(fparam) {
-    const int blocksize=80;
-    char s[blocksize];
-    while(!fparam.eof()) {
-      ostringstream buf;
-      while(1) {
-	fparam.getline(s,blocksize);
-	buf << s;
-	if(fparam.eof() || !fparam.fail()) {errno=0; break;}
-	fparam.clear();
-      }
-      buf << ends;
-      Vocabulary->Parse(buf.str().c_str());
+    string s;
+    ostringstream buf;
+    while(getline(fparam,s)) {
+      buf << s;
     }
+    Vocabulary->Parse((char *) buf.str().c_str());
     fparam.close();
   } else {
     if(!testing)
@@ -405,10 +397,10 @@ void statistics(int it)
 	ostringstream rcheck;
 	if(tmpdir) rcheck << tmpdir << dirsep;
 	rcheck << rname << "." << last_iter << ends;
-	if(tmpdir ? copy(rname,rcheck.str()) : 
-	   rename(rname,rcheck.str()))
+	if(tmpdir ? copy(rname,rcheck.str().c_str()) : 
+	   rename(rname,rcheck.str().c_str()))
 	  msg(WARNING,"Cannot copy %s to checkpoint file %s",
-	      rname,rcheck.str());
+	      rname,rcheck.str().c_str());
       }
       last_iter=iter;
       if(rename(rtemp,rname))
@@ -442,6 +434,5 @@ const char *VocabularyBase::FileName(const char* delimiter, const char *suffix)
 {
   ostringstream buf;
   buf << Directory() << run << delimiter << suffix << ends;
-  buf.rdbuf()->freeze();
-  return buf.str().c_str();
+  return strdup(buf.str().c_str());
 }

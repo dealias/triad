@@ -2,7 +2,9 @@
 #define __utils_h__ 1
 
 #include "xstream.h"
+#include <iostream>
 #include <fstream>
+#include <iomanip>
 #include <cstddef>
 #include <cstdarg>
 #include <cstdlib>
@@ -33,12 +35,15 @@ size_t memory();
 
 using std::istream;
 using std::ostream;
+using std::ifstream;
+using std::ofstream;
 using std::cin;
 using std::cout;
 using std::cerr;
 using std::endl;
 using std::ends;
 using std::flush;
+using std::setw;
 
 extern const double pi;
 extern const double twopi;
@@ -192,7 +197,7 @@ void mailuser(const char *text);
 void remove_dir(const char *text);
 int copy(const char *oldname, const char *newname);
 
-char *machine(), *date(), *tempdir();
+const char *machine(), *date(), *tempdir();
 
 const int ncputime=3;
 void cputime(double *cpu);

@@ -1,8 +1,8 @@
 #ifndef __Table_h__
 #define __Table_h__ 1
 
-#include <iostream.h>
-#include <stdio.h>
+#include <iostream>
+#include <cstdio>
 
 #include "DynVector.h"
 
@@ -63,17 +63,18 @@ class Table {
       
 	const int blocksize=80;
 	char s[blocksize];
-	strstream buf;
+	ostringstream buf;
 	
 	int input=1;
 	while(1) {
-	  cin.getline(s,blocksize);
+	  string str;
+	  getline(cin,str);
 	  buf << s;
 	  cout << buf.str() << endl;
   	  if(cin.eof() || !cin.fail()) {input=errno=0; break;}
 	  cin.clear();
 	}
-	if(input && buf.str()) key=strdup(buf.str());
+	if(input && buf.str().c_str()) key=strdup(buf.str().c_str());
     }
     
     p=e->New();
