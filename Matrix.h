@@ -61,10 +61,9 @@ inline void Mult(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
 
 	static Array2<T> CT;
 	int n=C.Nx()*C.Ny();
-	static DynVector<T> Stack(n);
-	
-	if(n > Stack.Size()) Stack.Resize(n);
-	CT.Dimension(C.Ny(),C.Nx(),Stack());
+	static DynVector<T> temp(n);
+	if(n > temp.Size()) temp.Resize(n);
+	CT.Dimension(C.Ny(),C.Nx(),temp());
 	
 	Trans(CT,C);
 	
@@ -81,7 +80,10 @@ inline void Mult(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
 			}
 		}
 	} else {
-		T work[C.Ny()];
+		int n=C.Ny();
+		static DynVector<T> temp2(n);
+		if(n > temp2.Size()) temp2.Resize(n);
+		T *work=temp2();
 		
 		for(int i=0; i < A.Nx(); i++) {
 			Array1(T) Ai=A[i];
@@ -106,10 +108,10 @@ inline void MultAdd(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C,
 
 	static Array2<T> CT;
 	int n=C.Nx()*C.Ny();
-	static DynVector<T> Stack(n);
+	static DynVector<T> temp(n);
 	
-	if(n > Stack.Size()) Stack.Resize(n);
-	CT.Dimension(C.Ny(),C.Nx(),Stack());
+	if(n > temp.Size()) temp.Resize(n);
+	CT.Dimension(C.Ny(),C.Nx(),temp());
 	
 	Trans(CT,C);
 	
@@ -126,7 +128,10 @@ inline void MultAdd(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C,
 			}
 		}
 	} else {
-		T work[C.Ny()];
+		int n=C.Ny();
+		static DynVector<T> temp2(n);
+		if(n > temp2.Size()) temp2.Resize(n);
+		T *work=temp2();
 		
 		for(int i=0; i < A.Nx(); i++) {
 			Array1(T) Ai=A[i];
