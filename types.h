@@ -17,8 +17,10 @@ const Real I=0.0;
 
 #if(MCREAL)
 typedef Real Mc;
+typedef float McWeight;
 #else
 typedef Complex Mc;
+typedef Complex McWeight;
 #endif
 
 typedef Real Nu;

@@ -36,7 +36,7 @@ typedef unsigned int Index_t;
 
 class Weight {
 	Index_t index;
-	Mc value;
+	McWeight value;
 public:
 	void Store(Index_t index0, Mc value0) {
 		index=index0;
@@ -157,38 +157,59 @@ int Partition<T>::Create()
 template<class T>
 void Partition<T>::GenerateWeights() {
 	Mc binaverage;
-	int k,p,q;
-	Index_t kpq,nkpq,lastkpq=0;
+	int k,p,q,first;
+	int lastindex=0;
+	Index_t kpq,nkpq,previous,lastkpq=0;
 	double realtime,lasttime=time(NULL);
 	double interval=15.0;
+	ofstream fout;
+	
+	if(Nweight) {
+		previous=weight[Nweight-1].Index();
+		first=0;
+	} else {
+		previous=0;
+		first=1;
+	}
+	
+	char *filename=WeightFileName("");
+	fout.open(filename);
+	if(!fout) msg(ERROR,"Weight file %s could not be opened",filename);
+	fout.write((char *) &lastindex,sizeof(int));
 	
 	cout << endl << "GENERATING WEIGHT FACTORS." << endl;
-	Nweight=0;
 	nkpq=WeightIndex(Nmode,Nmode,n);
 	
 	for(k=0; k < Nmode; k++) {	// Loop for k < p < q
 		for(p=k+1; p < Nmode; p++) {
 			for(q=p+1; q < n; q++) {
-				if((coangular(&bin[k],&bin[p]) ||
-					coangular(&bin[p],&bin[q]) ||
-					coangular(&bin[q],&bin[k]))) binaverage=0.0;
-				else binaverage=ComputeBinAverage(&bin[k],&bin[p],&bin[q]);
+				kpq=WeightIndex(k,p,q);
+				if(kpq > previous || first) {
+					if((coangular(&bin[k],&bin[p]) ||
+						coangular(&bin[p],&bin[q]) ||
+						coangular(&bin[q],&bin[k]))) binaverage=0.0;
+					else binaverage=ComputeBinAverage(&bin[k],&bin[p],&bin[q]);
 				
-				if(binaverage) {
-					if(verbose > 3) cout << k << "," << p << "," << q <<
-										": " << binaverage << endl;
-					kpq=WeightIndex(k,p,q);
-					if(kpq > lastkpq || Nweight==0) {
-						weight[Nweight++].Store(kpq,binaverage);
-					} else msg(ERROR,"Index is not strictly increasing");
-					lastkpq=kpq;
-					
+					if(binaverage) {
+						if(verbose > 3) cout << k << "," << p << "," << q <<
+											": " << binaverage << endl;
+						if(kpq > lastkpq || first) {
+							weight[Nweight++].Store(kpq,binaverage);
+						} else msg(ERROR,"Index is not strictly increasing");
+						lastkpq=kpq; first=0;
+					}
 					realtime=time(NULL);
 					if(realtime-lasttime > interval || verbose > 2) {
 						lasttime=realtime;
 						cout << 100*(kpq+1)/nkpq << 
 							"% of weight factors generated (" << kpq+1 <<
 								"/" <<	nkpq << ")." << endl;
+						lock();
+						fout.write((char *) (weight.Base()+lastindex),
+								   Nweight*sizeof(Weight));
+						fout.flush();
+						unlock();
+						lastindex=Nweight;
 					}
 				}
 			}
@@ -234,65 +255,25 @@ inline Mc Partition<T>::FindWeight(int k, int p, int q) {
 	return 0.0;	// no match found.
 }
 
+int get_weights(DynVector<Weight>& weight, int *Nweight, char *filename,
+				char *filenamef);
+void save_weights(DynVector<Weight>& w, int n, char *filename);
+void save_formatted_weights(DynVector<Weight>& w, int n, char *filename);
+
 template<class T>
 void Partition<T>::ComputeTriads() {
 	Mc nkpq;
 	Real norm;
 	int k,p,q;
-	ifstream fin;
-	ofstream fout;
-	char *filename;
-	int i,formatted=0;
+	char *filename=WeightFileName(""),*filenamef=WeightFileName("f");
 	
+	if(!get_weights(weight,&Nweight,filename,filenamef)) {
+		GenerateWeights();
+		save_weights(weight,Nweight,filename);
+	}
+	if(output) save_formatted_weights(weight,Nweight,filenamef);
+
 	Ntriad=0;
-	
-	filename=WeightFileName("");
-	fin.open(filename);
-	if(!fin) {
-		filename=WeightFileName("f");
-		fin.open(filename);
-		formatted=1;
-	}
-	
-	if(fin) {
-		if(formatted) fin >> Nweight;
-		else fin.read((char *) &Nweight,sizeof(int));
-		if(fin.eof() || !Nweight) fin.close();
-	}
-	
-	if(fin) {
-		cout << endl << "READING WEIGHT FACTORS FROM " << filename << "."
-			 << endl;
-		weight.Resize(Nweight);
-		if(formatted) for(i=0; i < Nweight; i++) fin >> weight[i];
-		else fin.read((char *) weight.Base(),Nweight*sizeof(Weight));
-		fin.close();
-		if(!fin.good()) msg(ERROR,"Error reading from weight file %s",
-							filename);
-		if(!formatted && output) {
-			filename=WeightFileName("f");
-			fout.open(filename);
-			fout.precision(REAL_DIG);
-			if(!fout) msg(ERROR,"Weight file %s could not be opened",filename);
-			fout << Nweight << endl;
-			for(i=0; i < Nweight; i++) fout << weight[i] << endl;
-			fout.close();
-			if(!fout.good())
-				msg(ERROR,"Error writing to weight file %s",filename);
-		}
-	}
-	
-	if(!fin || formatted) {
-		errno=0;
-		filename=WeightFileName("");
-		fout.open(filename);
-		if(!fout) msg(ERROR,"Weight file %s could not be opened",filename);
-		if(!fin) GenerateWeights();
-		fout.write((char *) &Nweight,sizeof(int));
-		fout.write((char *) weight.Base(),Nweight*sizeof(Weight));
-		fout.close();
-		if(!fout.good()) msg(ERROR,"Error writing to weight file %s",filename);
-	}
 	
 	int npq=reality ? Nmode*(3*Nmode+1)/2 : pq(n,n);
 	pqbuffer=new Var[npq];

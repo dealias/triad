@@ -185,7 +185,9 @@ void msg(int fatal, char *file, int line, char *format,...)
 	
 	if(fatal == -1) {
 #if __unix
+		int errno_save=errno;
 		if(isatty(STDIN_FILENO)) {fatal=0; tty_override=1;}
+		else errno=errno_save;
 #endif	
 		if(override) {fatal=0; tty_override=0;}
 	}

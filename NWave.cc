@@ -20,7 +20,7 @@ Real *nuR_inv,*nuI;
 Real *forcing;
 extern Real tauforce;
 
-void PrimitiveNonlinearity(Var *source, Var *psi, double)
+void PrimitiveNonlinearitySR(Var *source, Var *psi, double)
 {
 	set(psibuffer,psi,Npsi);
 	
@@ -77,11 +77,15 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 		Var *k, *q=source+Npsi, *kstop=psibuffer+Npsi;
 #pragma ivdep
 		for(k=psibuffer; k < kstop; k++, q++) *q=product(*k,*k);   // psi^2
-		for(int n=1; n < Nmoment; n++) {
+		for(int n=1; n < Nmoment; n++) { // psi^n
 #pragma ivdep
-			for(k=psibuffer; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);  // psi^n
+			for(k=psibuffer; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);
 		}
 	}
+}
+
+void PrimitiveNonlinearity(Var *, Var *, double)
+{
 }
 
 void StandardLinearity(Var *source, Var *psi, double)

@@ -34,7 +34,6 @@ extern int dynamic;
 extern int digits;
 extern int restart;
 extern double polltime;
-extern int input;
 extern int output;
 extern int hybrid;
 extern int override;

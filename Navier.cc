@@ -70,7 +70,7 @@ NWave::NWave()
 	VOCAB(kthmin,0.0,twopi);
 	
 	LinearSrc=StandardLinearity;
-	NonlinearSrc=PrimitiveNonlinearity;
+	NonlinearSrc=PrimitiveNonlinearitySR;
 	ConstantSrc=ConstantForcing;
 	
 	GeometryTable=new Table<GeometryBase>("Geometry",GeometryCompare,

@@ -10,6 +10,7 @@ extern Real *forcing;
 
 const int Nmoment=7;	
 
+Source_t PrimitiveNonlinearitySR;
 Source_t PrimitiveNonlinearity;
 Source_t StandardLinearity;
 Source_t ExponentialLinearity;

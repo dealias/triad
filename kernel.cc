@@ -46,7 +46,6 @@ double dtmax=0.0;
 int digits=REAL_DIG;
 int restart=0;
 double polltime=0.0;
-int input=0;
 int output=0;
 int hybrid=0;
 int override=0;
@@ -79,7 +78,6 @@ ProblemBase::ProblemBase()
 	VOCAB(digits,1,INT_MAX);
 	VOCAB_NODUMP(restart,0,1);
 	VOCAB_NODUMP(initialize,0,1);
-	VOCAB_NODUMP(input,0,1);
 	VOCAB_NODUMP(clobber,0,1);
 	VOCAB_NODUMP(override,0,1);
 	VOCAB_NODUMP(run,"","");
@@ -243,23 +241,29 @@ void read_init()
 {
 	ifstream finit;
 	double t0,dt0;
+	int formatted=0;
 	
-	if(input) iname=Problem->FileName(dirsep,"restartf");
-	else iname=rname;
-	
+	iname=rname;
 	finit.open(iname);
-	if(!finit) msg(ERROR,"Initialization file %s could not be opened",iname);
+	if(!finit) {
+		errno=0;
+		formatted=1;
+		iname=Problem->FileName(dirsep,"restartf");
+		finit.open(iname);
+		if(!finit)
+			msg(ERROR,"Initialization file %s could not be opened",iname);
+	}
+	
 	cout << endl << "READING " << (restart ? "RESTART" : "INITIALIZATION") <<
 		" DATA FROM FILE " << iname << "." << endl;
 
-	if(input) {
+	if(formatted) {
 		int i;
 		finit >> t0 >> dt0;
 		for(i=0; i < ny; i++) finit >> y[i];
 		finit >> final_iteration;
 		for(i=0; i < ncputime; i++) finit >> cpu[i];
-	}
-	else {
+	} else {
 		finit.read((char *) &t0,sizeof(double));
 		finit.read((char *) &dt0,sizeof(double));
 		finit.read((char *) y,ny*sizeof(Var));
@@ -300,8 +304,7 @@ void testlock()
 		msg(OVERRIDE,"Lock file %s exists.\nFiles may be corrupted",lname);
 		flock.open(lname);
 		unlock();
-	}
-	else errno=0;
+	} else errno=0;
 }
 
 void dump(int it, int final, double tmax) 
@@ -326,7 +329,7 @@ void dump(int it, int final, double tmax)
 		fdump.close();
 		if(fdump.good()) rename(rtemp,rname);
 		else msg(WARNING,"Cannot write to restart file %s",rtemp);
-	} 
+	}
 	else if(it == 0) msg(ERROR,"Dump file %s could not be opened",rtemp);
 
 	if(output) {
