@@ -13,8 +13,6 @@
 #include "DynVector.h"
 #include "Table.h"
 
-char *machine(), *date(), *tempdir();
-
 // Global variables
 extern double t;
 extern double last_dump;

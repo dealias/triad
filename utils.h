@@ -126,6 +126,9 @@ extern Exit_code exit_signal;
 
 void mailuser(char *text);
 void remove_dir(char *text);
+void copy(char *oldname, char *newname);
+
+char *machine(), *date(), *tempdir();
 
 const int ncputime=3;
 void cputime(double *cpu);
