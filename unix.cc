@@ -10,6 +10,7 @@
 #include <time.h>
 #include <string.h>
 #include <malloc.h>
+#include <sys/utsname.h>
 
 #if _CRAY
 #include <sys/types.h>
@@ -54,4 +55,21 @@ void mailuser(char *text)
 	sprintf(buf,"%s -s 'Run %s %s.' %s < /dev/null > /dev/null",command,
 			run,text,user);
 	system(buf);
+}
+
+struct utsname platform;
+char machine_name[256];
+
+char *machine()
+{
+	uname(&platform);
+#if _CRAY	
+	char *domain="";
+#else	
+	char *domain=platform.domainname;
+#endif	
+	if(strcmp(domain,"(none)") == 0) domain="";
+	sprintf(machine_name,"%s%s%s (%s)",platform.nodename,
+			(*domain) ? "." : "",domain,platform.machine);
+	return machine_name;
 }

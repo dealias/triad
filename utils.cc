@@ -4,7 +4,6 @@
 #include <errno.h>
 #include <string.h>
 #include <time.h>
-#include <sys/utsname.h>
 
 #include "utils.h"
 
@@ -176,19 +175,6 @@ char *date()
 	return time_date;
 }
 
-struct utsname platform;
-char machine_name[256];
-
-char *machine()
-{
-	uname(&platform);
-	char *domain=platform.domainname;
-	if(strcmp(domain,"(none)") == 0) domain="";
-	sprintf(machine_name,"%s%s%s (%s)",platform.nodename,
-			(*domain) ? "." : "",domain,platform.machine);
-	return machine_name;
-}
-	
 int abort_flag=1; 	// If nonzero, abort program after a fatal error.
 int beep_enabled=1; // If nonzero, enable terminal beeping during errors.
 

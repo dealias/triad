@@ -46,11 +46,8 @@ void rfft_br(Complex *data, unsigned int log2n)
 	if(log2n > wpTableSize) fft_init(log2n+1);
 	
 	unsigned int log4n=log2n/2;
-#if 0	
 	if(2*log4n == log2n) fft4(data,log4n,1); // Special case for powers of 4.
-	else 
-#endif		
-		fft_br(data,log2n);
+	else fft_br(data,log2n);
 //	fft(data,log2n,1);
 	
 	unsigned int n2=1 << log2n;
@@ -97,10 +94,7 @@ void rfft_brinv(Complex *data, unsigned int log2n)
 	}
 	
 	unsigned int log4n=log2n/2;
-#if 0	
 	if(2*log4n == log2n) fft4(data,log4n,-1); // Special case for powers of 4.
-	else 
-#endif		
-		fft_brinv(data,log2n);
+	else fft_brinv(data,log2n);
 //	fft(data,log2n,-1);
 }
