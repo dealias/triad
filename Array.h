@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.33
+#define __ARRAY_H_VERSION__ 1.34
 
 // Defining NDEBUG improves optimization but disables argument checking.
 // Defining __NOARRAY2OPT inhibits special optimization of Array2[].
@@ -871,9 +871,8 @@ class Array1 : public array1<T> {
     Offsets();
   }
 	
-  void Deallocate();
   void Reallocate(unsigned int nx0, int ox0=0, size_t align=0) {
-    Deallocate();
+    this->Deallocate();
     Allocate(nx0,ox0,align);
   }
 

@@ -38,10 +38,10 @@ template<class T>
 class Array1p : public array1<T>, public ArrayMod {
  public:
   Array1p() {}
-  Array1p(unsigned int nx0) {Allocate(nx0);}
+  Array1p(unsigned int nx0) {this->Allocate(nx0);}
   Array1p(unsigned int nx0, T *v0) {Dimension(nx0,v0);}
-  T& operator [] (int ix) const {Mod(ix,size); return v[ix];}
-  T& operator () (int ix) const {Mod(ix,size); return v[ix];}
+  T& operator [] (int ix) const {Mod(ix,this->size); return this->v[ix];}
+  T& operator () (int ix) const {Mod(ix,this->size); return this->v[ix];}
   Array1p<T>& operator = (T a) {Load(a); return *this;}
 };
 
@@ -49,20 +49,20 @@ template<class T>
 class Array2p : public array2<T>, public ArrayMod {
  public:
   Array2p() {}
-  Array2p(unsigned int nx0, unsigned int ny0) {Allocate(nx0,ny0);}
+  Array2p(unsigned int nx0, unsigned int ny0) {this->Allocate(nx0,ny0);}
   Array2p(unsigned int nx0, unsigned int ny0, T *v0) {Dimension(nx0,ny0,v0);}
   Array1p<T> operator [] (int ix) const {
-    Mod(ix,nx);
-    return Array1p<T>(ny,v+ix*ny);
+    Mod(ix,this->nx);
+    return Array1p<T>(this->ny,this->v+ix*this->ny);
   }
   T& operator () (int ix, int iy) const {
-    Mod(ix,nx);
-    Mod(iy,ny);
-    return v[ix*ny+iy];
+    Mod(ix,this->nx);
+    Mod(iy,this->ny);
+    return this->v[ix*this->ny+iy];
   }
   T& operator () (int i) const {
-    Mod(i,size);
-    return v[i];
+    Mod(i,this->size);
+    return this->v[i];
   }
   Array2p<T>& operator = (T a) {Load(a); return *this;}
 };
@@ -72,24 +72,24 @@ class Array3p : public array3<T>, public ArrayMod {
  public:	
   Array3p() {}
   Array3p(unsigned int nx0, unsigned int ny0, unsigned int nz0) {
-    Allocate(nx0,ny0,nz0);
+    this->Allocate(nx0,ny0,nz0);
   }
   Array3p(unsigned int nx0, unsigned int ny0, unsigned int nz0, T *v0) {
     Dimension(nx0,ny0,nz0,v0);
   }
   Array2p<T> operator [] (int ix) const {
-    Mod(ix,nx);
-    return Array2p<T>(ny,nz,v+ix*nyz);
+    Mod(ix,this->nx);
+    return Array2p<T>(this->ny,this->nz,this->v+ix*this->nyz);
   }
   T& operator () (int ix, int iy, int iz) const {
-    Mod(ix,nx);
-    Mod(iy,ny);
-    Mod(iz,nz);
-    return v[ix*nyz+iy*nz+iz];
+    Mod(ix,this->nx);
+    Mod(iy,this->ny);
+    Mod(iz,this->nz);
+    return this->v[ix*this->nyz+iy*this->nz+iz];
   }
   T& operator () (int i) const {
-    Mod(i,size);
-    return v[i];
+    Mod(i,this->size);
+    return this->v[i];
   }
 };
 
@@ -99,26 +99,26 @@ class Array4p : public array4<T>, public ArrayMod {
   Array4p() {}
   Array4p(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 	  unsigned int nw0) {
-    Allocate(nx0,ny0,nz0,nw0);
+    this->Allocate(nx0,ny0,nz0,nw0);
   }
   Array4p(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 	  unsigned int nw0, T *v0) {
     Dimension(nx0,ny0,nz0,nw0,v0);
   }
   Array3p<T> operator [] (int ix) const {
-    Mod(ix,nx);
-    return Array3p<T>(ny,nz,nw,v+ix*nyzw);
+    Mod(ix,this->nx);
+    return Array3p<T>(this->ny,this->nz,this->nw,this->v+ix*this->nyzw);
   }
   T& operator () (int ix, int iy, int iz, int iw) const {
-    Mod(ix,nx);
-    Mod(iy,ny);
-    Mod(iz,nz);
-    Mod(iw,nw);
-    return v[ix*nyzw+iy*nzw+iz*nw+iw];
+    Mod(ix,this->nx);
+    Mod(iy,this->ny);
+    Mod(iz,this->nz);
+    Mod(iw,this->nw);
+    return this->v[ix*this->nyzw+iy*this->nzw+iz*this->nw+iw];
   }
   T& operator () (int i) const {
-    Mod(i,size);
-    return v[i];
+    Mod(i,this->size);
+    return this->v[i];
   }
 };
 
