@@ -8,5 +8,3 @@ FILES = Ode $(CORE) $(UTILS)
 DEPEND = $(TRIAD)
 
 include $(TRI)/config/Rules
-
-
