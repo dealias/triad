@@ -192,7 +192,7 @@ void montage(int nfiles, char *const argf[], int n, char *const type)
 	system(cmd);
 }
 
-void identify(int, char *const argf[], int n, char *type,
+void identify(int, char *const argf[], int n, char *const type,
 			  int& xsize, int& ysize)
 {
 	strstream buf;
@@ -213,7 +213,8 @@ void identify(int, char *const argf[], int n, char *type,
 	fin >> ysize;
 }
 
-void mpeg(int, char *const argf[], int n, char *type, int xsize, int ysize)
+void mpeg(int, char *const argf[], int n, char *const type,
+		  int xsize, int ysize)
 {
 	strstream buf;
 	buf << "mpeg -a 0 -b " << n << " -h " << xsize << " -v " << ysize
@@ -224,7 +225,7 @@ void mpeg(int, char *const argf[], int n, char *type, int xsize, int ysize)
 	system(cmd);
 }
 
-void animate(int, char *const argf[], int, char *, int xsize, int ysize)
+void animate(int, char *const argf[], int, char *const, int xsize, int ysize)
 {
 	strstream buf;
 	buf << "animate -size " << xsize << "x" << ysize
@@ -234,7 +235,8 @@ void animate(int, char *const argf[], int, char *, int xsize, int ysize)
 	system(cmd);
 }
 
-void manimate(int, char *const argf[], int n, char *type, int xsize, int ysize)
+void manimate(int, char *const argf[], int n, char *const type,
+			  int xsize, int ysize)
 {
 	strstream buf;
 	buf << "animate -scene 0-" << n << " -size " << xsize << "x" << ysize <<
