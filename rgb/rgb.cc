@@ -114,8 +114,8 @@ Real ymax=1.0;
 Real zmin=0.0;
 Real zmax=1.0;
 
-Real max=REAL_MAX;
-Real min=-max;
+Real maximum=REAL_MAX;
+Real minimum=-maximum;
 
 int xslice=8;
 int yslice=8;
@@ -236,8 +236,8 @@ int readframe(ixstream& xin, int nx, int ny, int nz, Array3<float> value,
 	  return EOF;
 	}
 				
-	if(v > max) v=max;
-	if(v < min) v=min;
+	if(v > maximum) v=maximum;
+	if(v < minimum) v=minimum;
 	
 	sumv += v*(i < nx1-rx ? weightx : rweightx)*
 	  ((j-start)*incr < ny1-ry ? weighty : rweighty);
@@ -348,6 +348,8 @@ void options()
   cerr << "-xrange x1,x2\t limit x-range to [x1,x2]" << endl; 
   cerr << "-yrange y1,y2\t limit y-range to [y1,y2]" << endl; 
   cerr << "-zrange z1,z2\t limit z-range to [z1,z1]" << endl; 
+  cerr << "-minimum min\t minimum threshold" << endl; 
+  cerr << "-maximum max\t maximum threshold" << endl; 
   cerr << "-vector\t\t plot 2 components using spectral intensity gradients"
        << endl; 
   cerr << "-vector2\t\t plot 2 components as red--blue values" << endl; 
@@ -484,8 +486,8 @@ int main(int argc, char *argv[])
     {"cutoff", 1, 0, CUTOFF},
     {"yxaspect", 1, 0, YXASPECT},
     {"zxaspect", 1, 0, ZXASPECT},
-    {"min", 1, 0, MINIMUM},
-    {"max", 1, 0, MAXIMUM},
+    {"minimum", 1, 0, MINIMUM},
+    {"maximum", 1, 0, MAXIMUM},
     {0, 0, 0, 0}
   };
 	
@@ -673,10 +675,10 @@ int main(int argc, char *argv[])
       zmax=atof(optarg);
       break;
     case MINIMUM:
-      min=atof(optarg);
+      minimum=atof(optarg);
       break;
     case MAXIMUM:
-      max=atof(optarg);
+      maximum=atof(optarg);
       break;
     case XSLICE:
       xslice=atoi(optarg);
