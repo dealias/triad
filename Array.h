@@ -43,8 +43,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #include <cstdlib>
 
 using std::istream;
+using std::ostream;
 using std::ostringstream;
 using std::cout;
+using std::endl;
 
 namespace Array {
   
@@ -56,7 +58,7 @@ inline void ArrayExit(const char *x);
 inline void ArrayExit(const char *x)
 {
   cout << _newl << "ERROR: " << x << "." << endl;
-  exit(1);`
+  exit(1);
 } 
 #endif
 
@@ -86,7 +88,7 @@ class array1 {
     if (test(allocated)) {
       ostringstream buf;
       buf << "Reallocation of Array" << dim
-	  << " attempted (must Deallocate first)" << ends;
+	  << " attempted (must Deallocate first)";
       ArrayExit(buf.str().c_str());
     }
     Activate();
@@ -127,7 +129,7 @@ class array1 {
       buf << "is out of bounds (" << i+o;
       if(i < 0) buf << " < " << o;
       else buf << " > " << n+o-1;
-      buf << ")" << ends;
+      buf << ")";
       ArrayExit(buf.str().c_str());
     }
   }
