@@ -643,7 +643,7 @@ int system (char *command) {
 			if (errno != EINTR) return -1;
 		} else {
 			if(status != 0) {
-				msg(ERROR,"%s\nSignal %d",command,status);
+				msg(ERROR,"%s\nReceived signal %d",command,status);
 			}
 			return status;
 		}
