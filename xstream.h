@@ -3,18 +3,32 @@
 
 #include <stdio.h>
 #include <iostream.h>
+
+/* typedefs for BSD unsigned things */
+typedef	unsigned char	u_char;
+typedef	unsigned short	u_short;
+typedef	unsigned int	u_int;
+typedef	unsigned long	u_long;
+typedef	char *caddr_t;	/* "core" (i.e. memory) address */
+#define	NBBY	8		/* number of bits in a byte */
+
 #include <rpc/rpc.h>
 
-class xios : virtual public ios {
-	iostate state;
+class xios {
 public:
-	int good() const { return state == 0; }
-	int eof() const { return state & eofbit; }
-	int fail() const { return state & (badbit|failbit); }
-	int bad() const { return state & badbit; }
-	void clear(iostate _state = 0) {state=_state;}
-	void set(iostate flag) {state |= flag;}
-    operator void*() const { return fail() ? (void*)0 : (void*)(-1); }
+    enum io_state {goodbit=0, eofbit=1, failbit=2, badbit=4};
+    enum open_mode {in=1, out=2, app=8, trunc=16};
+	typedef int iostate;
+private:	
+	int _state;
+public:	
+	int good() const { return _state == 0; }
+	int eof() const { return _state & eofbit; }
+	int fail() const { return _state & (badbit|failbit); }
+	int bad() const { return _state & badbit; }
+	void clear(int state = 0) {_state=state;}
+	void set(int flag) {_state |= flag;}
+	operator void*() const { return fail() ? (void*)0 : (void*)(-1); }
     int operator!() const { return fail(); }
 };
 
@@ -40,13 +54,13 @@ public:
 
 class ixstream : public xstream {
 public:
-    void open(const char *filename, openmode=in) {
+    void open(const char *filename, open_mode=in) {
 		xopen(filename,"r",XDR_DECODE);
 	}
 	
 	ixstream() {}
 	ixstream(const char *filename) {open(filename);}
-	ixstream(const char *filename, openmode mode) {open(filename,mode);}
+	ixstream(const char *filename, open_mode mode) {open(filename,mode);}
 	~ixstream() {close();}
 	
 	typedef ixstream& (*imanip)(ixstream&);
@@ -66,20 +80,13 @@ public:
 
 class oxstream : public xstream {
 public:
-    void open(const char *filename, openmode mode=trunc) {
-		char *smode;
-		switch(mode) {
-		case app:
-			smode="a"; break;
-		case trunc:
-			smode="w"; break;
-		}
-		xopen(filename,smode,XDR_ENCODE);
+    void open(const char *filename, open_mode mode=trunc) {
+		xopen(filename,(mode & app) ? "a" : "w",XDR_ENCODE);
 	}
 	
 	oxstream() {}
 	oxstream(const char *filename) {open(filename);}
-	oxstream(const char *filename, openmode mode) {open(filename,mode);}
+	oxstream(const char *filename, open_mode mode) {open(filename,mode);}
 	~oxstream() {close();}
 
 	oxstream& flush() {if(buf) fflush(buf); return *this;}

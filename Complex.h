@@ -16,9 +16,6 @@
 */
 
 #ifndef __Complex_h__
-#ifdef __GNUG__
-#pragma interface
-#endif
 #define __Complex_h__ 1
 
 #define __ATT_complex__
@@ -296,12 +293,6 @@ inline Complex polar(Real r, Real t)
 	return Complex(r * cos(t), r * sin(t));
 }
 
-#ifdef __GNUC__
-istream&  operator >> (istream& s, Complex& x);
-ostream&  operator << (ostream& s, const Complex& x);
-ixstream& operator >> (ixstream& s, Complex& y);
-oxstream& operator << (oxstream& s, const Complex& y);
-#else
 inline istream& operator >> (istream& s, Complex& y)
 {
 	s >> "(" >> y.re >> "," >> y.im >> ")";
@@ -325,6 +316,5 @@ inline oxstream& operator << (oxstream& s, const Complex& y)
 	s << y.re << y.im;
 	return s;
 }
-#endif
 
 #endif
