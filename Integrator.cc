@@ -158,6 +158,8 @@ void IntegratorBase::Alloc(vector2& Y)
 
 void IntegratorBase::Allocate()
 {
+  check_compatibility(DEBUG);
+  
   DynVector<unsigned int> *NY=Problem->Index();
   unsigned int nfields=NY->Size();
   ny=0;

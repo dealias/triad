@@ -454,3 +454,10 @@ const char *VocabularyBase::FileName(const char* delimiter, const char *suffix)
   buf << Directory() << run << delimiter << suffix;
   return strdup(buf.str().c_str());
 }
+
+void check_compatibility(const bool debug)
+{
+  const char *incompatible="Compiled with incompatible debugging modes";
+  if(DEBUG && !debug) msg(ERROR,incompatible);
+  if(!DEBUG && debug) msg(ERROR,incompatible);
+}  

@@ -13,6 +13,13 @@
 #include "utils.h"
 #include "Table.h"
 
+#ifdef NDEBUG
+const bool DEBUG=false;
+#else
+const bool DEBUG=true;
+#endif
+void check_compatibility(const bool debug);
+
 // Global variables
 extern double t;
 extern double last_dump;
