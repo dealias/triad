@@ -68,6 +68,7 @@ public:
 		Mod(i,Size());
 		return v[i];
 	}
+	Array2p<T>& operator = (T a) {Load(a); return *this;}
 };
 
 template<class T>
