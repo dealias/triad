@@ -1,0 +1,58 @@
+#include "options.h"
+#include "Matrix.h"
+
+extern "C" void zgees_(const char& jobvs, const char& sort, void *select,
+	  const int& n, Complex *a, const int& lda, int *sdim,Complex *w,
+	  Complex *vs, const int& ldvs, Complex *work, const int& lwork, 
+	  Real *rwork, char *bwork, int *info);
+
+// Compute the eigenvalues of a square complex matrix
+const Array1<Complex> eigen(const Array2<Complex>& A)
+{
+	unsigned int n=A.Nx();
+	assert(n == A.Ny());
+	
+	Array2<Complex> B(n,n);
+	Array1<Complex> E(n);
+	
+	char jobvs='N';
+	char sort='N';
+	void (*select)()=NULL;
+	B=A;
+	int lda=n;
+	int sdim;
+	Complex *w=E;
+	Complex *vs=NULL;
+	int ldvs=1;
+	int lwork=-1;
+	Real *rwork=new Real[n];
+	Complex work0[1];
+	char *bwork=NULL;
+	int info;
+		
+	zgees_(jobvs,sort,select,n,B,lda,&sdim,w,vs,ldvs,work0,lwork,rwork,bwork,
+		   &info);
+	
+	lwork=(int) work0[0].re;
+	Complex *work=new Complex[lwork];
+	
+	zgees_(jobvs,sort,select,n,B,lda,&sdim,w,vs,ldvs,work,lwork,rwork,bwork,
+		   &info);
+	
+	A.Purge();
+	E.Hold();
+	return E;
+}	
+
+#if 0
+int main()
+{
+	int n=3;
+	Array2<Complex> A(n,n);
+	cin >> A;
+	cout << endl;
+	cout << eigen(A) << endl;
+	cout << endl;
+	cout << A << endl;
+}
+#endif

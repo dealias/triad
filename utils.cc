@@ -9,6 +9,11 @@
 char* run="";
 ExitCode exit_signal=COMPLETE;
 
+void __ArrayExit(char *x)
+{
+	msg(ERROR,x);
+} 
+
 const double pi=PI;
 const double twopi=2.0*pi;
 const double twopi2=twopi*twopi;

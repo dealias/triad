@@ -156,13 +156,6 @@ inline void vform(const char *format, va_list& vargs)
 
 void msg(int severity, const char *file, int line, const char *format,...);
 
-#define __ArrayExtensions
-#define __ExternalArrayExit
-void __ArrayExit(char *x)
-{
-	msg(ERROR,x);
-} 
-	
 extern int abort_flag;
 extern int beep_enabled;
 extern int msg_override;
@@ -183,6 +176,13 @@ enum ErrorCode {WARNING_,OVERRIDE_,SLEEP_,ERROR_};
 enum ExitCode {FATAL=-1,CONTINUE,COMPLETE};
 extern ExitCode exit_signal;
 
+#define __ArrayExtensions
+#define __ExternalArrayExit
+void __ArrayExit(char *x)
+{
+	msg(ERROR,x);
+} 
+	
 void mailuser(const char *text);
 void remove_dir(const char *text);
 int copy(const char *oldname, const char *newname);
