@@ -12,19 +12,19 @@ Real kthmin=0.0;
 Real kthmax;
 Real kthneg;
 
-char *Partition<Polar>::Name() {return "Polar";}
+char *Partition<Polar,Cartesian>::Name() {return "Polar";}
 
-char *Partition<Polar>::WeightFileName(char *suffix) {
+char *Partition<Polar,Cartesian>::WeightFileName(char *suffix) {
 	char *filename=new char[strlen(Problem->Abbrev())+strlen(Name())+
 	strlen(suffix)+100];
-	sprintf(filename,"%s/%s/%dx%d_%g:%g_%g%s%s",Problem->Abbrev(),
+	sprintf(filename,"%s/%s/%dx%d_%g:%g_%g%s%s%s",Problem->Abbrev(),
 			downcase(Name()),Nr,Nth,krmin,krmax,kthmin,reality ? "R" : "",
-			suffix);
+			discrete ? "D" : "",suffix);
 	return filename;
 }
 
-void angular_grid(Bin<Polar> *grid, Real kthmin, Real kthmax, Real delta,
-				  int start, int stop)
+void angular_grid(Bin<Polar,Cartesian> *grid, Real kthmin, Real kthmax,
+				  Real delta, int start, int stop)
 {
 	Real kthbnd=kthmin;
 	Real kth=kthmin+0.5*delta;
@@ -39,8 +39,8 @@ void angular_grid(Bin<Polar> *grid, Real kthmin, Real kthmax, Real delta,
 	grid[stop-1].max.th=kthmax;
 }	
 
-void radial_grid(Bin<Polar> *grid, Real krmin, Real krmax, Real delta,
-				 int start, int stop)
+void radial_grid(Bin<Polar,Cartesian> *grid, Real krmin, Real krmax, Real
+				 delta, int start, int stop)
 {
 	Real krbnd=krmin;
 	Real kr=krmin*sqrt(delta);
@@ -55,25 +55,27 @@ void radial_grid(Bin<Polar> *grid, Real krmin, Real krmax, Real delta,
 	grid[stop-1].max.r=krmax;
 }	
 
-void Partition<Polar>::MakeBins() // Radial: logarithmic, Angular: uniform
+void Partition<Polar,Cartesian>::MakeBins()
+	// Radial: logarithmic, Angular: uniform
 {
-	Bin<Polar> *grid,*p;
+	Bin<Polar,Cartesian> *grid,*p;
 	Real delta;
 	int i,j,Nthpos;
 	
-	grid=new Bin<Polar> [max(Nr,Nth)];
+	grid=new Bin<Polar,Cartesian> [max(Nr,Nth)];
 	
 	if(reality) {
 		Nthpos=Nth/2;
 		if(2*Nthpos != Nth)
 			msg(ERROR,"The reality condition requires that Nth be even");
 		kthneg=kthmin-pi;
+		kthmax=kthmin+pi;
 	} else {
 		Nthpos=Nth;
 		kthneg=kthmin;
+		kthmax=kthmin+twopi;
 	}
 	
-	kthmax=kthneg+twopi;
 	delta=twopi/Nth;
 
 	// primary grid
@@ -86,7 +88,7 @@ void Partition<Polar>::MakeBins() // Radial: logarithmic, Angular: uniform
 	radial_grid(grid,krmin,krmax,delta,0,Nr);
 	
 	n=Nr*Nth;
-	p=bin=new Bin<Polar>[n];
+	p=bin=new Bin<Polar,Cartesian>[n];
 	Nmode=Nr*Nthpos;
 	nindependent=(reality || Nth % 2) ? Nmode : n/2;
 	
@@ -101,9 +103,34 @@ void Partition<Polar>::MakeBins() // Radial: logarithmic, Angular: uniform
 			p++;
 		}
 	}
+	
+	if(p-bin != n) 
+		msg(ERROR,"Calculated number and actual number of bins disagree."); 
+
+	if(discrete) for (i=0; i < n; i++) bin[i].MakeModes();
 	return;
 }
 
+void Bin<Polar,Cartesian>::MakeModes()
+{
+	int cx=(int) cen.X(), cy=(int) cen.Y();
+	int w=1, last_nmode=-1;
+	Count(Cartesian(cx,cy));
+	while(nmode != last_nmode) {
+		last_nmode=nmode;
+		for(int i=cx-w; i <= cx+w; i++) {
+			Count(Cartesian(i,cy+w));
+			Count(Cartesian(i,cy-w));
+		}
+		for(int j=cy-w+1; j < cy+w; j++) {
+			Count(Cartesian(cx+w,j));
+			Count(Cartesian(cx-w,j));
+		}
+		w++;
+	}
+	for(int i=0; i < nmode; i++) cout << mode[i] << endl;
+	cout << endl;
+}
 
 static const Real linacc=0.01;
 static const Real dxmax=REAL_MAX;
@@ -112,7 +139,7 @@ Real frequency(const Polar& v);
 Real growth(const Polar& v);
 
 static Real k0;
-static Bin<Polar> b;
+static Bin<Polar,Cartesian> b;
 
 static Real growthk(Real th)
 {
@@ -162,7 +189,7 @@ void BinAveragedLinearity(Complex& nu)
 	nu+=I*ans;
 }
 
-Nu Partition<Polar>::Linearity(int i)
+Nu Partition<Polar,Cartesian>::Linearity(int i)
 {
 	Nu nu;
 	b=bin[i];
@@ -170,11 +197,26 @@ Nu Partition<Polar>::Linearity(int i)
 	return nu/Area(i);
 }
 
-Mc Partition<Polar>::
-ComputeBinAverage(Bin<Polar> *k, Bin<Polar> *p, Bin<Polar> *q)
+Mc Partition<Polar,Cartesian>::
+ComputeBinAverage(Bin<Polar,Cartesian> *k, Bin<Polar,Cartesian> *p,
+				  Bin<Polar,Cartesian> *q)
 {
-	Real acc=1.0E-2;
-	return BinAverage(k,p,q,Jkpq,acc);
+	Real sum;
+	if(discrete) {
+		sum=0.0;
+		Cartesian *mk=k->mode.Base(), *mkstop=mk+k->nmode; 
+		Cartesian *mp=p->mode.Base(), *mpstop=mp+p->nmode; 
+		for(; mk < mkstop; mk++) {
+			for(; mp < mpstop; mp++) {
+				Cartesian mq=-*mk-*mp;
+				if(q->InBin(mq)) sum += Mkpq(*mk,*mp,mq);
+			}
+		}
+	} else {
+		Real acc=1.0E-2;
+		sum=BinAverage(k,p,q,Jkpq,acc);
+	}
+	return sum;
 }
 
 // For Navier-Stokes turbulence (velocity normalization):

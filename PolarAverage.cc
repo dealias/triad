@@ -8,7 +8,8 @@
 
 static int cnt; // Index to keep track of which variables have been swapped.
 
-inline void SortBins(Bin<Polar> *& k, Bin<Polar> *& q, int level) {
+inline void SortBins(Bin<Polar,Cartesian> *& k, Bin<Polar,Cartesian> *& q,
+					 int level) {
 	// Don't optimize these away.
 	volatile Polar Dk=k->Delta(), Dq=q->Delta();
 
@@ -20,13 +21,14 @@ inline void SortBins(Bin<Polar> *& k, Bin<Polar> *& q, int level) {
 static Real acc; // desired relative accuracy
 static Real eps,epsplus1;
 static int perm; // index to our permutation of the original input parameters.
-static double ComputeAverage(Bin<Polar> *k, Bin<Polar> *p, Bin<Polar> *q);
+static double ComputeAverage(Bin<Polar,Cartesian> *k, Bin<Polar,Cartesian> *p,
+							 Bin<Polar,Cartesian> *q);
 
 static POLAR_FCN *f; // pointer to function $\fkpq$
 static int permcnt[]= {0,3,1,2,5,4,2,1};
 
-Real BinAverage(Bin<Polar> *k, Bin<Polar> *p, Bin<Polar> *q,
-				POLAR_FCN *f0, Real acc0)
+Real BinAverage(Bin<Polar,Cartesian> *k, Bin<Polar,Cartesian> *p,
+				Bin<Polar,Cartesian> *q, POLAR_FCN *f0, Real acc0)
 {
 	f=f0; acc=acc0;
 	
@@ -77,7 +79,8 @@ static double pint(double);
 static double kint(double);
 static double rint0(double);
 
-static double ComputeAverage(Bin<Polar> *k, Bin<Polar> *p, Bin<Polar> *q)
+static double ComputeAverage(Bin<Polar,Cartesian> *k, Bin<Polar,Cartesian> *p,
+							 Bin<Polar,Cartesian> *q)
 {
 	double a,b,ans,dxmax,offset;
 	int iflag;

@@ -44,14 +44,13 @@ public:
 	Real K(int k) {return mode[k].K();}
 	Real K2(int k) {return mode[k].K2();}
 	Real Th(int k) {return mode[k].Th();}
-	Real Kx(int k) {return mode[k].Kx();}
-	Real Ky(int k) {return mode[k].Ky();}
+	Real X(int k) {return mode[k].X();}
+	Real Y(int k) {return mode[k].Y();}
 	
 // Factor which converts |y|^2 to energy:
 	Real Normalization(int);
 	
 	Nu Linearity(int);
-	inline Mc Mkpq(T& k, T& p, T& q);
 };
 
 template<class T>
@@ -91,6 +90,8 @@ void Basis<T>::ComputeTriads()
 	int k,p,q,sign=0,newchain;
 	int ck,cp,cq;
 	int lastp=-1;
+	Mc Mkpq(T& k, T& p, T& q);
+	
 	T mq;
 	
 	kinv2=new Real[Nmode];

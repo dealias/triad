@@ -113,7 +113,7 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 	for(i=0; i < Nchainp; i++) {
 		Chain *c=chainpBase+i;
 		mk=CartesianMode[c->k]; mp=CartesianMode[c->p];
-		Real kx=mk.Kx(), ky=mk.Ky(), py=mp.Ky();
+		Real kx=mk.X(), ky=mk.Y(), py=mp.Y();
 		Real kxpy=kx*py, py2=py*py;
 		Var sum=0.0, *psip=psibuffer+c->p, *psiq=c->psiq;
 		int end=c->end;
@@ -125,7 +125,7 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 	for(i=0; i < Nchainn; i++) {
 		Chain *c=chainnBase+i;
 		mk=CartesianMode[c->k]; mp=CartesianMode[c->p];
-		Real kx=mk.Kx(), ky=mk.Ky(), py=mp.Ky();
+		Real kx=mk.X(), ky=mk.Y(), py=mp.Y();
 		Real kxpy=kx*py, py2=py*py;
 		Var sum=0.0, *psip=psibuffer+c->p, *psiq=c->psiq;
 		int end=c->end;
@@ -137,11 +137,11 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 #else
 	int q=0, nn=2*Npsi;
 	for(int k=0; k < Npsi; k++) {
-		Real kx=CartesianMode[k].Kx();
-		Real ky=CartesianMode[k].Ky();
+		Real kx=CartesianMode[k].X();
+		Real ky=CartesianMode[k].Y();
 		for(int p=0; p < nn; p++)	{
-			Real px=CartesianMode[p].Kx();
-			Real py=CartesianMode[p].Ky();
+			Real px=CartesianMode[p].X();
+			Real py=CartesianMode[p].Y();
 			Cartesian mq = CartesianMode[k]-CartesianMode[p];
 			if(q < nn-1 && CartesianMode[q+1] == mq) q++;
 			else if(q > 1 && CartesianMode[q-1] == mq) q--;
@@ -178,7 +178,7 @@ void PrimitiveNonlinearityFFT(Complex *source, Complex *psi, double)
 #pragma ivdep	
 	for(i=0; i < Npsi; i++) {
 		source[i]=psi[i]*I*CartesianMode[i].K2();
-		psitemp[i]=source[i]*CartesianMode[i].Ky();
+		psitemp[i]=source[i]*CartesianMode[i].Y();
 	}
 	*convolution0=0.0;
 	CartesianPad(convolution,psitemp);
@@ -187,7 +187,7 @@ void PrimitiveNonlinearityFFT(Complex *source, Complex *psi, double)
 	CartesianUnPad(psitemp,convolution);
 	
 #pragma ivdep	
-	for(i=0; i < Npsi; i++) source[i] *= CartesianMode[i].Kx();
+	for(i=0; i < Npsi; i++) source[i] *= CartesianMode[i].X();
 	*convolution0=0.0;
 	CartesianPad(convolution,source);
 	
@@ -197,10 +197,10 @@ void PrimitiveNonlinearityFFT(Complex *source, Complex *psi, double)
 	
 #pragma ivdep	
 	for(i=0; i < Npsi; i++) {
-		source[i].re = -kinv2[i]*(CartesianMode[i].Ky()*psibuffer[i].im-
-								  CartesianMode[i].Kx()*psitemp[i].im);
-		source[i].im = kinv2[i]*(CartesianMode[i].Ky()*psibuffer[i].re-
-								 CartesianMode[i].Kx()*psitemp[i].re);
+		source[i].re = -kinv2[i]*(CartesianMode[i].Y()*psibuffer[i].im-
+								  CartesianMode[i].X()*psitemp[i].im);
+		source[i].im = kinv2[i]*(CartesianMode[i].Y()*psibuffer[i].re-
+								 CartesianMode[i].X()*psitemp[i].re);
 	}
 	
 	// Compute moments

@@ -20,7 +20,7 @@ int poll()
 	cputime(cpu);
 	for(int i=0; i < ncputime; i++) seconds += cpu[i];
 
-	if(2.0*seconds-last_seconds < 0.92*tlimit) {
+	if(2.0*seconds-last_seconds < 0.9*tlimit) {
 		last_seconds=seconds;
 		return 0;
 	}

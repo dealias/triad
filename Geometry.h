@@ -32,8 +32,8 @@ public:
 	virtual Real K(int)=0;
 	virtual Real K2(int)=0;
 	virtual Real Th(int)=0;
-	virtual Real Kx(int)=0;
-	virtual Real Ky(int)=0;
+	virtual Real X(int)=0;
+	virtual Real Y(int)=0;
 	
 	virtual Real Normalization(int)=0;
 	

@@ -12,10 +12,13 @@ public:
 	
 	Cartesian(int column=0, int row=0) : x(column), y(row) {}
 	Real K2() const {return x*x+y*y;}
-	Real K() const {return sqrt(this->K2());}
-	Real Th() const {return atan2(y,x);}
-	Real Kx() const {return x;}
-	Real Ky() const {return y;}
+	Real K() const {return sqrt(K2());}
+	Real Th() const {
+		Real th=atan2(y,x);
+		return (th == PI) ? -PI : th;
+	}
+	Real X() const {return x;}
+	Real Y() const {return y;}
 	
 	int Column() {return x;}
 	int Row() {return y;}
@@ -108,9 +111,9 @@ inline void CartesianUnPad(Var *to, const Var *from)
 // For Navier-Stokes turbulence (stream function normalization):
 
 template<class T>
-inline Mc Basis<T>::Mkpq(T& k, T& p, T&)
+inline Mc Mkpq(T& k, T& p, T&)
 {
-	return (k.Ky()*p.Kx()-k.Kx()*p.Ky())*p.K2()/k.K2();
+	return (k.Y()*p.X()-k.X()*p.Y())*p.K2()/k.K2();
 }
 
 // Factor which converts |y|^2 to energy in this normalization:

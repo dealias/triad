@@ -92,7 +92,7 @@ NWave::NWave()
 	INTEGRATOR(E_RK4);
 	INTEGRATOR(C_RK5);
 	
-	PARTITION(Polar);
+	PARTITION(Polar,Cartesian);
 	BASIS(Cartesian);
 }
 

@@ -2,6 +2,7 @@
 #define __Polar_h__ 1
 
 #include "Partition.h"
+#include "Cartesian.h"
 
 // Polar vocabulary
 extern int Nr;
@@ -26,49 +27,55 @@ public:
 	} 
 	
 	Real K() const {return r;}
-	Real K2() {return r*r;}
-	Real Th() {return th;}
-	Real Kx() {return r*cos(th);}
-	Real Ky() {return r*sin(th);}
+	Real K2() const {return r*r;}
+	Real Th() const {return th;}
+	Real X() const {return r*cos(th);}
+	Real Y() const {return r*sin(th);}
 };
 
-inline int operator > (const Polar& x, const Polar& y)
+inline int operator >= (const Cartesian& x, const Polar& y)
 {
-return (x.r > y.r || (x.r == y.r && x.th > y.th));	
+	return x.K() >= y.K() && x.Th() >= y.Th();
+}
+
+inline int operator < (const Cartesian& x, const Polar& y)
+{
+	return x.K() < y.K() && x.Th() < y.Th();
 }
 
 inline int operator == (const Polar& x, const Polar& y)
 {
-return (x.r == y.r && x.th == y.th);	
+	return x.r == y.r && x.th == y.th;	
 }
 
 inline Polar operator + (const Polar& x, const Polar& y)
 {
-return Polar(x.r+y.r, x.th+y.th);
+	return Polar(x.r+y.r, x.th+y.th);
 }
 
 inline Polar operator - (const Polar& x, const Polar& y)
 {
-return Polar(x.r-y.r, x.th-y.th);
+	return Polar(x.r-y.r, x.th-y.th);
 }
 
 inline Polar operator * (const Polar& x, const Polar& y)
 {
-return Polar(x.r*y.r, x.th*y.th);
+	return Polar(x.r*y.r, x.th*y.th);
 }
 
 inline Polar operator / (const Polar& x, const Polar& y)
 {
-return Polar(x.r/y.r, x.th/y.th);
+	return Polar(x.r/y.r, x.th/y.th);
 }
 
-inline void extract(Bin<Polar> *k, double& kl, double& kg,
+inline void extract(Bin<Polar,Cartesian> *k, double& kl, double& kg,
 					double& al, double& ag)
 {
 	kl=k->min.r; kg=k->max.r; al=k->min.th; ag=k->max.th;
 }
 
-inline void build(Bin<Polar> *k, double kl, double kg, double al, double ag)
+inline void build(Bin<Polar,Cartesian> *k, double kl, double kg, double al,
+				  double ag)
 {
 	k->min.r=kl; k->max.r=kg; k->min.th=al; k->max.th=ag;
 }
@@ -79,12 +86,13 @@ inline ostream& operator << (ostream& os, const Polar& y) {
 }
 	
 
-inline Real Bin<Polar>::Area()
+inline Real Bin<Polar,Cartesian>::Area()
 {
-	return 0.5*(max.r*max.r-min.r*min.r)*(max.th-min.th);
+	if(discrete) return nmode;
+	else return 0.5*(max.r*max.r-min.r*min.r)*(max.th-min.th);
 }
 
-inline int coangular(Bin<Polar> *k, Bin<Polar> *p)
+inline int coangular(Bin<Polar,Cartesian> *k, Bin<Polar,Cartesian> *p)
 {
 	Real tol=10.0*REAL_EPSILON*pi;
 	
@@ -100,17 +108,17 @@ typedef double POLAR_FCN(double, double, double,
 
 POLAR_FCN Jkpq;
 		
-Real BinAverage(Bin<Polar> *k, Bin<Polar> *p, Bin<Polar> *q,
-				POLAR_FCN *f0, Real acc0);
+Real BinAverage(Bin<Polar,Cartesian> *k, Bin<Polar,Cartesian> *p,
+				Bin<Polar,Cartesian> *q, POLAR_FCN *f0, Real acc0);
 
 // For Navier-Stokes turbulence (velocity normalization):
 
-inline Mc Partition<Polar>::Ckpq(Polar&, Polar& P, Polar& Q)
+inline Mc Partition<Polar,Cartesian>::Ckpq(Polar&, Polar& P, Polar& Q)
 {
 	return (Q.r-P.r)*(Q.r+P.r);
 }
 
 // Factor which converts |y|^2 to energy in this normalization:
-inline Real Partition<Polar>::Normalization(int) {return 1.0;}
+inline Real Partition<Polar,Cartesian>::Normalization(int) {return 1.0;}
 
 #endif

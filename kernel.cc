@@ -47,6 +47,7 @@ double polltime=0.0;
 int output=0;
 int hybrid=0;
 int override=0;
+int discrete=0;
 
 // Local vocabulary declarations and default values
 int microsteps=1;
@@ -80,6 +81,7 @@ ProblemBase::ProblemBase()
 	VOCAB_NODUMP(override,0,1);
 	VOCAB_NODUMP(run,"","");
 	VOCAB(output,0,1);
+	VOCAB(discrete,0,1);
 	VOCAB(approximation,"","");
 	VOCAB(integrator,"","");
 	

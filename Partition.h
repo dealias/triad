@@ -5,9 +5,10 @@
 
 #include "Geometry.h"
 #include "DynVector.h"
+#include "Cartesian.h"
 
-#define PARTITION(key) {new Entry<Partition<key>,GeometryBase>\
-(#key,GeometryTable);}
+#define PARTITION(key,discrete) {\
+new Entry<Partition<key,discrete>,GeometryBase>(#key,GeometryTable);}
 
 typedef unsigned int Index_t;
 
@@ -31,23 +32,33 @@ extern int *qStart;
 extern DynVector<Triad> triad;
 extern TriadLimits *triadLimits;
 
-template<class T>
+template<class T, class D>
 class Bin {
 public:
-	Bin() {}
 	T min,max,cen;
+	int nmode;
+	DynVector<D> mode;
+	
+	Bin() {nmode=0;}
 	T Delta() {return (max-min);}
 	Real Area();
+	
 	Real K() {return cen.K();}
 	Real K2() {return cen.K2();}
 	Real Th() {return cen.Th();}
-	Real Kx() {return cen.Kx();}
-	Real Ky() {return cen.Ky();}
+	Real X() {return cen.X();}
+	Real Y() {return cen.Y();}
+	
+	int InBin(const D& m) {return (m >= min && m < max);}
+	void Count(const D& m) {if(InBin(m)) mode[nmode++]=m;}
+	void MakeModes();
 };
 
-template<class T>
-ostream& operator << (ostream& os, const Bin<T>& y) {
-	os << "[" << y.min << "\t" << y.cen << "\t" << y.max << "]" << endl;
+template<class T, class D>
+ostream& operator << (ostream& os, const Bin<T,D>& y) {
+	os << "[" << y.min << "\t" << y.cen << "\t" << y.max << "]";
+	if(discrete) os << ": " << y.nmode;
+	os << endl;
 	return os;
 }
 
@@ -94,6 +105,7 @@ public:
 	}
 	
 	Hash(int nhash, int nvalue, T value(int)) {
+		if(nvalue < 1) return;
 		n=nhash; first=value(0); last=value(nvalue-1);
 		factor=((double) n-1)/(last-first); constant=0.5-first*factor;
 		table=new int[n+1];
@@ -116,20 +128,20 @@ inline Index_t HashWeightIndex(int j)
 	return weightBase[j].Index();
 }
 
-template<class T>
+template<class T, class D>
 class Partition : public GeometryBase {
 	DynVector<Weight> weight;
 	Hash<Index_t> *hash;
 	int Nweight,Nhash;
 	Index_t nmax;
-	Bin<T> *bin; // pointer to table of bins
+	Bin<T,D> *bin; // pointer to table of bins
 public:
 	char *Name();
 	int ValidApproximation(char *s) {return strcmp(s,"SR")==0;}
 	char *WeightFileName(char *suffix);
 	void MakeBins();
 	void List(ostream &os);
-	Mc ComputeBinAverage(Bin<T> *k, Bin<T> *p, Bin<T> *q);
+	Mc ComputeBinAverage(Bin<T,D> *k, Bin<T,D> *p, Bin<T,D> *q);
 	Mc FindWeight(int k, int p, int q);
 
 	void GenerateWeights();
@@ -140,8 +152,8 @@ public:
 	Real K(int k) {return bin[k].K();}
 	Real K2(int k) {return bin[k].K2();}
 	Real Th(int k) {return bin[k].Th();}
-	Real Kx(int k) {return bin[k].Kx();}
-	Real Ky(int k) {return bin[k].Ky();}
+	Real X(int k) {return bin[k].X();}
+	Real Y(int k) {return bin[k].Y();}
 	
 // Factor which converts |y|^2 to energy in various normalizations:
 	Real Normalization(int);
@@ -159,8 +171,8 @@ public:
 
 int out_weights(ofstream& fout, Weight* w, int lastindex, int n);
 	
-template<class T>
-void Partition<T>::GenerateWeights() {
+template<class T, class D>
+void Partition<T,D>::GenerateWeights() {
 	Mc binaverage;
 	int k,p,q,first;
 	int lastindex=0;
@@ -208,7 +220,7 @@ void Partition<T>::GenerateWeights() {
 						lasttime=realtime;
 						cout << 100*(kpq+1)/nmax << 
 							"% of weight factors generated (" << kpq+1 <<
-								"/" <<	nmax << ")." << endl;
+							"/" <<	nmax << ")." << endl;
 						lastindex=out_weights(fout,weight.Base(),lastindex,
 											  Nweight);
 					}
@@ -222,8 +234,8 @@ void Partition<T>::GenerateWeights() {
 
 
 
-template<class T>
-inline Mc Partition<T>::FindWeight(int k, int p, int q) {
+template<class T, class D>
+inline Mc Partition<T,D>::FindWeight(int k, int p, int q) {
 	if(k==p || p==q || q==k) return 0.0;
 	
 	int dummy, sign=1, conjflag=0, k0=k;
@@ -264,12 +276,13 @@ int get_weights(DynVector<Weight>& weight, int nmax, int *Nweight,
 void save_weights(DynVector<Weight>& w, int n, char *filename);
 void save_formatted_weights(DynVector<Weight>& w, int n, char *filename);
 
-template<class T>
-void Partition<T>::ComputeTriads() {
+template<class T, class D>
+void Partition<T,D>::ComputeTriads() {
 	Mc nkpq;
 	Real norm;
 	int k,p,q;
-	char *filename=WeightFileName(""),*filenamef=WeightFileName("f");
+	
+	char *filename=WeightFileName(""), *filenamef=WeightFileName("f");
 	
 	nmax=WeightIndex(Nmode,Nmode,n);
 	if(!get_weights(weight,nmax,&Nweight,filename,filenamef)) {
@@ -277,7 +290,13 @@ void Partition<T>::ComputeTriads() {
 		save_weights(weight,Nweight,filename);
 	}
 	if(output) save_formatted_weights(weight,Nweight,filenamef);
+	
+	weightBase=weight.Base();
 
+	Nhash=2*Nweight;
+	hash=new Hash<Index_t>(Nhash,Nweight,HashWeightIndex);
+	cout << "HASH TABLE CONSTRUCTED." << endl;
+	
 	Ntriad=0;
 	
 	int npq=reality ? Nmode*(3*Nmode+1)/2 : pq(n,n);
@@ -290,21 +309,16 @@ void Partition<T>::ComputeTriads() {
 	int NmodeR=psibufferR-psibuffer;
 	Var *pq=pqbuffer;
 	for(p=0; p < n; p++) {
-			int m=max(NmodeR,p);
-			pqIndex[p]=pq-m;
-			if(n > m) pq += n-m;
+		int m=max(NmodeR,p);
+		pqIndex[p]=pq-m;
+		if(n > m) pq += n-m;
 	}
 	for(p=0; p < n; p++) qStart[p]=max(p,NmodeR);
 	
-	weightBase=weight.Base();
-
-	Nhash=2*Nweight;
-	hash=new Hash<Index_t>(Nhash,Nweight,HashWeightIndex);
-	cout << "HASH TABLE CONSTRUCTED." << endl;
-
 	triad.Resize(Nmode*n);
 	for(k=0; k < Nmode; k++) {
-		norm=1.0/Area(k);
+		norm=Area(k);
+		if(norm != 0.0); norm=1.0/norm;
 		pq=pqbuffer;
 		for(p=0; p < n; p++) {
 			for(q=max(NmodeR,p); q < n; q++, pq++) {
@@ -333,8 +347,8 @@ void Partition<T>::ComputeTriads() {
 	cout << Ntriad << " WAVENUMBER TRIADS ALLOCATED." << endl;
 }
 
-template<class T>
-void Partition<T>::ListTriads() {
+template<class T, class D>
+void Partition<T,D>::ListTriads() {
 	int j;
 	cout << endl << Ntriad << " Triads:" << endl;
 	for(j=0; j < Ntriad; j++) {
@@ -342,8 +356,8 @@ void Partition<T>::ListTriads() {
 	}
 }
 
-template<class T>
-void Partition<T>::List(ostream &os)
+template<class T, class D>
+void Partition<T,D>::List(ostream &os)
 {
 	os << "         " << Name() << " Bin Geometry:" << endl;
 #if _CRAY	
