@@ -267,6 +267,7 @@ void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 //           isign is +1 for a forward transform, -1 for an inverse transform.
 // On exit: data[i+nx*j] contains the nx Complex values for
 // each j=0,...,ny/2.
+// The origin of the Fourier domain is located at (nx/2,0).
 
 void rcfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 			  int isign)
@@ -300,6 +301,7 @@ void rcfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 // Before calling, data must be allocated as Complex[nx*(ny/2+1)].
 // On entry: data[i+nx*j] contains nx/2+1 Complex values for j=0
 // and nx values for j=1,...,ny/2.
+// The origin of the Fourier domain is located at (nx/2,0).
 //           log2nx contains the base-2 logarithm of nx.
 //           log2ny contains the base-2 logarithm of ny.
 //           isign is +1 for a forward transform, -1 for an inverse transform.
@@ -349,6 +351,7 @@ void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 //           isign is +1 for a forward transform, -1 for an inverse transform.
 // On exit: data[(ny/2+1)*i+j] contains the ny/2+1 Complex values for
 // each i=0,...,nx-1. 
+// The origin of the Fourier domain is located at (nx/2,0).
 
 void rcfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 			 int isign)
@@ -375,6 +378,7 @@ void rcfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 // Before calling, data must be allocated as Complex[nx*(ny/2+1)].
 // On entry: data[(ny/2+1)*i+j] contains the ny/2+1 Complex values for
 // each i=0,...,nx-1. 
+// The origin of the Fourier domain is located at (nx/2,0).
 //           log2nx contains the base-2 logarithm of nx.
 //           log2ny contains the base-2 logarithm of ny.
 //           isign is +1 for a forward transform, -1 for an inverse transform.
@@ -418,6 +422,7 @@ void crfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 //           isign is +1 for a forward transform, -1 for an inverse transform.
 // On exit: data[(nz/2+1)*(ny*i+j)+k] contains the nz/2+1 Complex values for
 // each i=0,...,nx-1 and j=0,...,ny-1. 
+// The origin of the Fourier domain is located at (nx/2,ny/2,0).
 
 void rcfft3d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 			 unsigned int log2nz, int isign)
@@ -460,6 +465,7 @@ void rcfft3d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 // Before calling, data must be allocated as Complex[nx*ny*(nz/2+1)].
 // On entry: data[(nz/2+1)*(ny*i+j)+k] must contain the nz/2+1 Complex
 // values for each i=0,...,nx-1 and j=0,...,ny-1. 
+// The origin of the Fourier domain is located at (nx/2,ny/2,0).
 //           log2nx contains the base-2 logarithm of nx.
 //           log2ny contains the base-2 logarithm of ny.
 //           log2nz contains the base-2 logarithm of nz.
