@@ -8,7 +8,7 @@ int Ntotal;
 // (0 => evolve all modes, 1 => evolve only half of the modes).
 int reality=1; // Reality condition flag 
 
-Var *psibuffer,*psibuffer0,*psibufferR,*psibufferStop,*pqbuffer;
+Var *psibuffer,*psibuffer0,*psibufferR,*psibufferStop,*pqbuffer,*psitemp;
 Var *convolution,*convolution0;
 int pseudospectral=0;
 unsigned int log2n; // Number of FFT levels
@@ -84,12 +84,12 @@ void PrimitiveNonlinearitySR(Var *source, Var *psi, double)
 	
 	// Compute moments
 	if(average && Nmoment > 0) {
-		Var *k, *q=source+Npsi, *kstop=psibuffer+Npsi;
+		Var *k, *q=source+Npsi, *kstop=psi+Npsi;
 #pragma ivdep
-		for(k=psibuffer; k < kstop; k++, q++) *q=product(*k,*k);   // psi^2
+		for(k=psi; k < kstop; k++, q++) *q=product(*k,*k);   // psi^2
 		for(int n=1; n < Nmoment; n++) { // psi^n
 #pragma ivdep
-			for(k=psibuffer; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);
+			for(k=psi; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);
 		}
 	}
 }
@@ -99,8 +99,6 @@ Cartesian *CartesianMode;
 void PrimitiveNonlinearity(Var *source, Var *psi, double)
 {
 	int i;
-	Cartesian mk,mp;
-
 	set(psibuffer,psi,Npsi);
 	
 	// Compute reflected psi's
@@ -109,15 +107,18 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 	
 	for(i=0; i < Npsi; i++) source[i]=0.0;
 		
+#if 0	
+	Cartesian mk,mp;
+	
 	for(i=0; i < Nchainp; i++) {
 		Chain *c=chainpBase+i;
 		mk=CartesianMode[c->k]; mp=CartesianMode[c->p];
 		Real kx=mk.Kx(), ky=mk.Ky(), py=mp.Ky();
 		Real kxpy=kx*py, py2=py*py;
 		Var sum=0.0, *psip=psibuffer+c->p, *psiq=c->psiq;
-		int stop=c->stop;
-		for(int px=mp.Column(); px < stop; px++,psiq++)
-			sum += (ky*px-kxpy)*(px*px+py2)*conj(psip[px]*(*psiq));
+		int end=c->end;
+		for(int px=mp.Column(); px <= end; px++,psiq++)
+			sum += (kxpy-ky*px)*(px*px+py2)*psip[px]*(*psiq);
 		source[c->k] += sum;
 	}
 	
@@ -127,65 +128,90 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 		Real kx=mk.Kx(), ky=mk.Ky(), py=mp.Ky();
 		Real kxpy=kx*py, py2=py*py;
 		Var sum=0.0, *psip=psibuffer+c->p, *psiq=c->psiq;
-		int stop=c->stop;
-		for(int px=mp.Column(); px < stop; px++,psiq--)
-			sum += (ky*px-kxpy)*(px*px+py2)*conj(psip[px]*(*psiq));
+		int end=c->end;
+		for(int px=mp.Column(); px <= end; px++,psiq--)
+			sum += (kxpy-ky*px)*(px*px+py2)*psip[px]*(*psiq);
 		source[c->k] += sum;
 	}
 	
-	for(i=0; i < Npsi; i++) source[i] *= kinv2[i];
+#else
+	int q=0, nn=2*Npsi;
+	for(int k=0; k < Npsi; k++) {
+		Real kx=CartesianMode[k].Kx();
+		Real ky=CartesianMode[k].Ky();
+		for(int p=0; p < nn; p++)	{
+			Real px=CartesianMode[p].Kx();
+			Real py=CartesianMode[p].Ky();
+			Cartesian mq = CartesianMode[k]-CartesianMode[p];
+			if(q < nn-1 && CartesianMode[q+1] == mq) q++;
+			else if(q > 1 && CartesianMode[q-1] == mq) q--;
+			else for(q=0; q < nn && CartesianMode[q] != mq; q++);
+			if(q < nn) source[k] += (kx*py-ky*px)*(px*px+py*py)*
+				psibuffer[p]*psibuffer[q];
+		}
+	}
+#endif
 
+	for(i=0; i < Npsi; i++) source[i] *= kinv2[i];
+	
 	// Compute moments
 	if(average && Nmoment > 0) {
-		Var *k, *q=source+Npsi, *kstop=psibuffer+Npsi;
+		Var *k, *q=source+Npsi, *kstop=psi+Npsi;
 #pragma ivdep
-		for(k=psibuffer; k < kstop; k++, q++) *q=product(*k,*k);   // psi^2
+		for(k=psi; k < kstop; k++, q++) *q=product(*k,*k);   // psi^2
 		for(int n=1; n < Nmoment; n++) { // psi^n
 #pragma ivdep
-			for(k=psibuffer; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);
+			for(k=psi; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);
 		}
 	}
 }
 
 	
+void convolve_direct(Complex *H, Complex *F, Complex *G, unsigned int m);
 void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
 			  int log2n);
 void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
 			   int log2n);
-	
+
 void PrimitiveNonlinearityFFT(Var *source, Var *psi, double)
 {
 	int i;
 	extern Cartesian *CartesianMode;
-
+	
 	*psibuffer0=0.0;
-	*convolution0=0.0;
-	set(psibuffer,psi,Npsi);
-	set(convolution,psi,Npsi);
+	int Npsibuffer=CartesianPad(psibuffer,psi);
+	
+	set(psitemp,psi,Npsi);
 	for(i=0; i < Npsi; i++)
-		convolution[i] *= CartesianMode[i].K2()*CartesianMode[i].Ky();
-	convolve(convolution0,convolution0,psibuffer0,Npsi+1,log2n);
-	set(source,convolution,Npsi);
+		psitemp[i] *= I*CartesianMode[i].K2()*CartesianMode[i].Ky();
+	*convolution0=0.0;
+	CartesianPad(convolution,psitemp);
+	
+	convolve(convolution0,convolution0,psibuffer0,Npsibuffer+1,log2n);
+	CartesianUnPad(source,convolution);
 							
+	set(psitemp,psi,Npsi);
+	for(i=0; i < Npsi; i++)
+		psitemp[i] *= I*CartesianMode[i].K2()*CartesianMode[i].Kx();
 	*convolution0=0.0;
-	set(convolution,psi,Npsi);
-	for(i=0; i < Npsi; i++)
-		convolution[i] *= CartesianMode[i].K2()*CartesianMode[i].Kx();
+	CartesianPad(convolution,psitemp);
+	
 	// Reuse FFT of psibuffer0.
-	convolve0(convolution0,convolution0,psibuffer0,Npsi+1,log2n);
-		
+	convolve0(convolution0,convolution0,psibuffer0,Npsibuffer+1,log2n);
+	CartesianUnPad(psibuffer,convolution);
+	
 	for(i=0; i < Npsi; i++)
-		source[i] = kinv2[i]*(CartesianMode[i].Kx()*source[i]-
-							  CartesianMode[i].Ky()*convolution[i]);
-		
+		source[i] = I*kinv2[i]*(CartesianMode[i].Ky()*psibuffer[i]-
+								CartesianMode[i].Kx()*source[i]);
+	
 	// Compute moments
 	if(average && Nmoment > 0) {
-		Var *k, *q=source+Npsi, *kstop=psibuffer+Npsi;
+		Var *k, *q=source+Npsi, *kstop=psi+Npsi;
 #pragma ivdep
-		for(k=psibuffer; k < kstop; k++, q++) *q=product(*k,*k);   // psi^2
+		for(k=psi; k < kstop; k++, q++) *q=product(*k,*k);   // psi^2
 		for(int n=1; n < Nmoment; n++) { // psi^n
 #pragma ivdep
-			for(k=psibuffer; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);
+			for(k=psi; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);
 		}
 	}
 }

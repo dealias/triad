@@ -5,7 +5,7 @@
 #include "utils.h"
 
 extern int reality; // Reality condition flag 
-extern Var *psibuffer,*psibuffer0,*psibufferR,*psibufferStop;
+extern Var *psibuffer,*psibuffer0,*psibufferR,*psibufferStop,*psitemp;
 extern Var *convolution,*convolution0;
 extern int pseudospectral;
 extern unsigned int log2n; // Number of FFT levels
@@ -41,13 +41,14 @@ public:
 		MakeBins();
 
 		if(pseudospectral) {
-			for(log2n=0; Nmode+1 > (1 << log2n)/3; log2n++);
-			int n2=1 << (log2n-1);
+			int n2=1;
+			for(log2n=1; Nmode+1 > 4*n2/9; log2n++, n2 *= 2);
 			cout << n2 << " FFT COMPONENTS ALLOCATED." << endl;
 			convolution0=new Var[n2];
 			convolution=convolution0+1;
 			psibuffer0=new Var[n2];
 			psibuffer=psibuffer0+1;
+			psitemp=new Var[Nmode];
 		} else {
 			psibuffer=new Var[n];
 			psibufferR=(reality ? psibuffer+Nmode : psibuffer);

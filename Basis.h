@@ -9,10 +9,10 @@
 class Chain {
 public:
 	int k,p; // mode indices
-	int stop; // column index where chain stops
+	int end; // column index of final member of chain;
 	Var *psiq;
-	void Store(int k0, int p0, int stop0, Var *q0) {
-		k=k0; p=p0; stop=stop0; psiq=q0;
+	void Store(int k0, int p0, int end0, Var *q0) {
+		k=k0; p=p0; end=end0; psiq=q0;
 	}
 };
 
@@ -47,7 +47,7 @@ public:
 	Real Kx(int k) {return mode[k].Kx();}
 	Real Ky(int k) {return mode[k].Ky();}
 	
-// Factor which converts |y|^2 to energy in various normalizations:
+// Factor which converts |y|^2 to energy:
 	Real Normalization(int);
 	
 	Nu Linearity(int);
@@ -59,8 +59,8 @@ void Basis<T>::ListChains(Chain *chain, int Nchain, char *type) {
 	cout << endl << Nchain << " " << type << " Chains:" << endl;
 	Chain *c,*chainStop=chain+Nchain;
 	for(c=chain; c < chainStop; c++) {
-		cout << "k=" << mode[c->k] << " p=" << mode[c->p] << " stop=" <<
-			c->stop << " q=" << mode[c->psiq-psibuffer] << endl;
+		cout << "k=" << mode[c->k] << " p=" << mode[c->p] << " end=" <<
+			c->end << " q=" << mode[c->psiq-psibuffer] << endl;
 	}
 }
 
@@ -80,7 +80,7 @@ void Basis<T>::List(ostream &os)
 
 inline void StoreChain(int k, int p, int stop, Var *q, int sign)
 {
-	if(sign >= 0) chainp[Nchainp++].Store(k,p,stop,q);
+	if(sign > 0) chainp[Nchainp++].Store(k,p,stop,q);
 	else chainn[Nchainn++].Store(k,p,stop,q);
 }
 
@@ -106,33 +106,36 @@ void Basis<T>::ComputeTriads()
 	
 	for(k=0; k < Nmode; k++) {
 		newchain=1;
-		for(p=0; p < n; p++) {
-			mq = -(mode[k]+mode[p]);
-			if(mode[p].Row() != mode[cp].Row() || mq.Row() != mode[cq].Row())
-			   newchain=1;
-			if(InGrid(mq) && !(newchain && Mkpq(mode[k],mode[p],mq) == 0.0)) {
-				if(!newchain) {
-				    if(sign == 0) {
-						if(q < n-1 && mode[q+1] == mq) sign=1;
-						else if(q > 0 && mode[q-1] == mq) sign=-1;
+		for(int pdir=0; pdir < 2; pdir++) { // Only works with reality=1!
+			for(pdir ? p=n-1 : p=0;
+				pdir ? p >= Nmode : p < Nmode; pdir ? p-- : p++) {
+				mq = mode[k]-mode[p];
+				if(mode[p].Row() != mode[cp].Row() || mq.Row() != mode[cq].Row())
+					newchain=1;
+				if(InGrid(mq) && !(newchain && Mkpq(mode[k],mode[p],mq) == 0.0)) {
+					if(!newchain) {
+						if(sign == 0) {
+							if(q < n-1 && mode[q+1] == mq) sign=1;
+							else if(q > 0 && mode[q-1] == mq) sign=-1;
+						}
+						q += sign;
 					}
-					q += sign;
+					if(newchain || mode[q] != mq) {
+						for(q=0; q < n && mode[q] != mq; q++);
+						if(q == n) msg(ERROR, "Invalid beat mode computed");
+						if(lastp >= 0) StoreChain(ck,cp,mode[lastp].Column(),
+												  psibuffer+cq,sign);
+						ck=k; cp=p; cq=q;
+						sign=0; newchain=0;
+					}
+					Ntriad++;
+					lastp=p;
 				}
-				if(newchain || mode[q] != mq) {
-					for(q=0; q < n && mode[q] != mq; q++);
-					if(q == n) msg(ERROR, "Invalid beat mode computed");
-					if(lastp >= 0) StoreChain(ck,cp,mode[lastp].Column()+1,
-											  psibuffer+cq,sign);
-					ck=k; cp=p; cq=q;
-					sign=0; newchain=0;
-				}
-				Ntriad++;
-				lastp=p;
+				else newchain=1;
 			}
-			else newchain=1;
 		}
 	}
-	if(lastp >= 0) StoreChain(ck,cp,mode[lastp].Column()+1,psibuffer+cq,sign);
+	if(lastp >= 0) StoreChain(ck,cp,mode[lastp].Column(),psibuffer+cq,sign);
 
 	chainp.Resize(Nchainp);
 	chainpBase=chainp.Base();
@@ -140,7 +143,8 @@ void Basis<T>::ComputeTriads()
 	chainn.Resize(Nchainn);
 	chainnBase=chainn.Base();
 
-	cout << Nchainp+Nchainn << " WAVENUMBER CHAINS ALLOCATED." << endl;
+	cout << Nchainp << " INCREASING WAVENUMBER CHAINS ALLOCATED." << endl;
+	cout << Nchainn << " DECREASING WAVENUMBER CHAINS ALLOCATED." << endl;
 	cout << Ntriad << " WAVENUMBER TRIADS ALLOCATED." << endl;
 }
 

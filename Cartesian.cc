@@ -9,6 +9,10 @@ char *Basis<Cartesian>::Name() {return "Cartesian";}
 int Nx=17; // Number of modes in x-direction
 int Ny=17; // Number of modes in y-direction
 
+int NRows,NPad;
+int *RowBoundary;
+Var *ZeroBuffer; 
+
 void Basis<Cartesian>::MakeBins()
 {
 	Cartesian *p;
@@ -27,9 +31,18 @@ void Basis<Cartesian>::MakeBins()
 	Nmode=(reality ? n/2 : n);
 	nindependent=(reality || n % 2) ? Nmode : n/2;
 	
-	for(j=0; j <= high.Row(); j++) // Evolved modes
+	NRows=high.Row()+1;
+	RowBoundary=new int[NRows+1];
+	
+	for(j=0; j <= high.Row(); j++) { // Evolved modes
+		RowBoundary[j]=p-mode;
 		for(i=((j == 0) ? 1 : low.Column()); i <= high.Column(); i++)
 			*(p++)=Cartesian(i,j);
+		}
+	RowBoundary[NRows]=p-mode;
+	NPad=RowBoundary[1]-RowBoundary[0];
+	ZeroBuffer=new Var[NPad];
+	for(i=0; i < NPad; i++) ZeroBuffer[i]=0.0;
 	
 	for(j=0; j >= low.Row(); j--) // Reflected modes
 		for(i=((j == 0) ? -1 : high.Column()); i >= low.Column(); i--)
