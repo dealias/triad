@@ -135,7 +135,8 @@ public:
   }
     
   virtual void fftNormalized(Complex *in, Complex *out=NULL) {
-    fft(in,out);
+    Setout(in,out);
+    Execute(in,out);
     for(unsigned int i=0; i < size; i++) out[i] *= norm;
   }
   
@@ -145,7 +146,8 @@ public:
     if(stride == 1 && dist == nx) fftw::fftNormalized(in,out);
     else if(stride == nx && dist == 1) fftw::fftNormalized(in,out);
     else {
-      fft(in,out);
+      Setout(in,out);
+      Execute(in,out);
       for(unsigned int k=0; k < m; k++) {
 	for(unsigned int j=0; j < nx; j++) {
 	  out[j*stride+k*dist] *= norm;
