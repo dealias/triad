@@ -379,9 +379,9 @@ INLINE int Partition<T,D>::get_weights()
 	ixstream fin(filename);
 	if(fin) {
 		fin >> N;
-		if(fin.eof()) {fin.close(); errno=0;}
+		if(fin.eof()) fin.close();
 		if(N == 0) testlock();
-	}
+	} else errno=0;
 	
 	complete=(N ? 1 : 0);
 		
