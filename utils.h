@@ -25,6 +25,7 @@ size_t memory();
 #include "precision.h"
 #include "Complex.h"
 #include "pow.h"
+#include "Array.h"
 
 extern const double pi;
 extern const double twopi;
