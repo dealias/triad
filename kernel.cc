@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
 	// Allow time step to be overridden from command line (even on restarts).
 	if(dt) explicit_dt=1; 
 	
-	if(*run == 0) {run="test"; testing=1; clobber=1;}
+	if(*run == 0) {run="test"; testing=1;}
 	
 	lname=Vocabulary->FileName(dirsep,"LOCK");
 	rname=Vocabulary->FileName(dirsep,"restart");
@@ -237,14 +237,6 @@ int main(int argc, char *argv[])
 	Vocabulary->GraphicsDump(gparam);
 	gparam.close();
 	
-	t=0.0;
-	Problem->InitialConditions();
-	y=Problem->Vector();
-	ny=Problem->Size();
-	if(restart || initialize) read_init();
-	if(restart && dynamic < 0) dynamic=1;
-	if(!restart) Problem->Initialize();
-	
 	fdump.open(ptemp);
 	Vocabulary->Dump(fdump);
 	fdump.close();
@@ -253,6 +245,14 @@ int main(int argc, char *argv[])
 			msg(WARNING,"Cannot rename parameter file %s",ptemp);
 	}	
 	else msg(WARNING,"Cannot write to parameter file %s",ptemp);
+	
+	t=0.0;
+	Problem->InitialConditions();
+	y=Problem->Vector();
+	ny=Problem->Size();
+	if(restart || initialize) read_init();
+	if(restart && dynamic < 0) dynamic=1;
+	if(!restart) Problem->Initialize();
 	
 	Integrator->Allocate(ny);
 	

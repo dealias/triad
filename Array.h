@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.02
+#define __ARRAY_H_VERSION__ 1.03J
 
 // Defining NDEBUG improves optimization but disables argument checking.
 
@@ -78,7 +78,7 @@ public:
 	
 	void Check(int i, int n, int dim, int m) const {
 		if(i < 0 || i >= n) {
-			cout << "ERROR: Array" << dim << " index ";
+			cout << newl << "ERROR: Array" << dim << " index ";
 			if(m) cout << m << " ";
 			cout << "is out of bounds (" << i;
 			if(i < 0) cout << " < " << 0;
@@ -94,6 +94,8 @@ public:
 	T& operator () (int ix) const {check(ix,nx,1,1); return v[ix];}
 	T* operator () () const {return v;}
 	operator T* () const {return v;}
+	
+	Array1<T> operator + (int i) const {return Array1<T>(nx,v+i);}
 	
 	void Load(T a) const {
 		int size=Size0();
@@ -206,7 +208,7 @@ public:
 	Array2<T>& operator = (T a) {Load(a); return *this;}
 	Array2<T>& operator = (T *a) {Load(a); return *this;}
 	Array2<T>& operator = (const Array2<T>& A) {
-		Load(A);
+		Load(A());
 		A.Purge();
 		return *this;
 	}
