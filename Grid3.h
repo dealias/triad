@@ -7,9 +7,9 @@ template<class T>
 class Grid3 : public Grid<Array3<T>,T> {
 protected:	
 	// number of points in previous and current levels and incl. boundaries
-	int nx1, nx, nx1bc, nxbc, sx, rx, offx;
-	int ny1, ny, ny1bc, nybc, sy, ry, offy;
-	int nz1, nz, nz1bc, nzbc, sz, rz, offz;
+	int nx1, nx, nx1bc, nxbc, sx, rx, offx, ox;
+	int ny1, ny, ny1bc, nybc, sy, ry, offy, oy;
+	int nz1, nz, nz1bc, nzbc, sz, rz, offz, oz;
 	Array1(Real) x;
 	Array1(Real) y;
 	Array1(Real) z;
@@ -45,15 +45,18 @@ public:
 	Real Hz() {return hz;}
 
 	void Allocate(int allocate=1) {
-		Mesh(x,XMeshRange(),nx1,nx,nx1bc,nxbc,hx,hxinv,hx2,hx2inv,sx,rx,offx);
-		Mesh(y,YMeshRange(),ny1,ny,ny1bc,nybc,hy,hyinv,hy2,hy2inv,sy,ry,offy);
-		Mesh(z,ZMeshRange(),nz1,nz,nz1bc,nzbc,hz,hzinv,hz2,hz2inv,sz,rz,offz);
+		Mesh(x,XMeshRange(),nx1,nx,nx1bc,nxbc,hx,hxinv,hx2,hx2inv,sx,rx,
+			 offx,ox);
+		Mesh(y,YMeshRange(),ny1,ny,ny1bc,nybc,hy,hyinv,hy2,hy2inv,sy,ry,
+			 offy,oy);
+		Mesh(z,ZMeshRange(),nz1,nz,nz1bc,nzbc,hz,hzinv,hz2,hz2inv,sz,rz,
+			 offz,oz);
 		hxyinv=1.0/(hx*hy); hxzinv=1.0/(hx*hz); hyzinv=1.0/(hy*hz);
 		if(!allocate) return;
-		d.Allocate(nxbc,nybc,nzbc);
+		d.Allocate(nxbc,nybc,nzbc,ox,oy,oz);
 		if(level > 0) {
-			v.Allocate(nx1bc,ny1bc,nz1bc);
-			if(nonlinear) v2.Allocate(nx1bc,ny1bc,nz1bc);
+			v.Allocate(nx1bc,ny1bc,nz1bc,ox,oy,oz);
+			if(nonlinear) v2.Allocate(nx1bc,ny1bc,nz1bc,ox,oy,oz);
 		}
 	}
 

@@ -57,6 +57,7 @@ public:
 		Offsets();
 		set(allocated);
 	}
+	
 	Array1o() : ox(0) {}
 	Array1o(unsigned int nx0, int ox0=0) {
 		Allocate(nx0,ox0);
@@ -64,7 +65,7 @@ public:
 	Array1o(unsigned int nx0, T *v0, int ox0=0) {
 		Dimension(nx0,v0,ox0);
 	}
-	
+
 	T& operator [] (int ix) const {check(ix,nx,ox,1,1); return voff[ix];}
 	T& operator () (int i) const {check(i,nx,0,1,1); return v[i];}
 	T* operator () () const {return voff;}
@@ -72,6 +73,14 @@ public:
 	
 	Array1o<T> operator + (int i) const {return Array1o<T>(nx-i,v+i,ox+i);}
 	void Set(T *a) {v=a; Offsets(); clear(allocated);}
+	
+	Array1o<T>& operator = (T a) {Load(a); return *this;}
+	Array1o<T>& operator = (const T *a) {Load(a); return *this;}
+	Array1o<T>& operator = (const Array1<T>& A) {
+		Load(A());
+		A.Purge();
+		return *this;
+	}
 };
 
 template<class T>
@@ -125,6 +134,14 @@ public:
 	}
 	T* operator () () const {return voff;}
 	void Set(T *a) {v=a; Offsets(); clear(allocated);}
+	
+	Array2o<T>& operator = (T a) {Load(a); return *this;}
+	Array2o<T>& operator = (T *a) {Load(a); return *this;}
+	Array2o<T>& operator = (const Array2<T>& A) {
+		Load(A());
+		A.Purge();
+		return *this;
+	}
 };
 
 template<class T>
@@ -184,6 +201,14 @@ public:
 	}
 	T* operator () () const {return voff;}
 	void Set(T *a) {v=a; Offsets(); clear(allocated);}
+	
+	Array3o<T>& operator = (T a) {Load(a); return *this;}
+	Array3o<T>& operator = (T *a) {Load(a); return *this;}
+	Array3o<T>& operator = (const Array3<T>& A) {
+		Load(A());
+		A.Purge(); 
+		return *this;
+	}
 };
 
 template<class T>
@@ -249,6 +274,14 @@ public:
 	}
 	T* operator () () const {return voff;}
 	void Set(T *a) {v=a; Offsets(); clear(allocated);}
+	
+	Array4o<T>& operator = (T a) {Load(a); return *this;}
+	Array4o<T>& operator = (T *a) {Load(a); return *this;}
+	Array4o<T>& operator = (const Array4<T>& A) {
+		Load(A());
+		A.Purge();
+		return *this;
+	}
 };
 
 #ifdef NDEBUG

@@ -7,8 +7,8 @@ template<class T>
 class Grid2 : public Grid<Array2<T>,T> {
 protected:	
 	// number of points in previous and current levels and incl. boundaries
-	int nx1, nx, nx1bc, nxbc, sx, rx, offx;
-	int ny1, ny, ny1bc, nybc, sy, ry, offy;
+	int nx1, nx, nx1bc, nxbc, sx, rx, offx, ox;
+	int ny1, ny, ny1bc, nybc, sy, ry, offy, oy;
 	Array1(Real) x;
 	Array1(Real) y;
 	Real hx, hxinv, hx2, hx2inv;
@@ -34,14 +34,16 @@ public:
 	Real Hy() {return hy;}
 
 	void Allocate(int allocate=1) {
-		Mesh(x,XMeshRange(),nx1,nx,nx1bc,nxbc,hx,hxinv,hx2,hx2inv,sx,rx,offx);
-		Mesh(y,YMeshRange(),ny1,ny,ny1bc,nybc,hy,hyinv,hy2,hy2inv,sy,ry,offy);
+		Mesh(x,XMeshRange(),nx1,nx,nx1bc,nxbc,hx,hxinv,hx2,hx2inv,sx,rx,
+			 offx,ox);
+		Mesh(y,YMeshRange(),ny1,ny,ny1bc,nybc,hy,hyinv,hy2,hy2inv,sy,ry,
+			 offy,oy);
 		hxyinv=1.0/(hx*hy);
 		if(!allocate) return;
-		d.Allocate(nxbc,nybc);
+		d.Allocate(nxbc,nybc,ox,oy);
 		if(level > 0) {
-			v.Allocate(nx1bc,ny1bc);
-			if(nonlinear) v2.Allocate(nx1bc,ny1bc);
+			v.Allocate(nx1bc,ny1bc,ox,oy);
+			if(nonlinear) v2.Allocate(nx1bc,ny1bc,ox,oy);
 		}
 	}
 

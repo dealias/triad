@@ -8,17 +8,19 @@ class BC {
 protected:
 	int internal,external;
 	int offset; // Offset for implementing Neumann boundary condition
+	int ioff;
 public:	
-	BC() {}
+	BC() : offset(0), ioff(0) {}
 	int Internal() const {return internal;}
 	int External() const {return external;}
 	int Offset() const {return offset;}
+	int Ioff() const {return ioff;}
 	virtual int Resolution(int radix, int lvl) const =0;
 };
 
 class DirichletBC : public BC {
 public:	
-	DirichletBC() {internal=2; external=0; offset=0;}
+	DirichletBC() {internal=2; external=0;}
 	int Resolution(int radix, int lvl) const {return pow(radix,lvl+1)-1;}
 };
 
@@ -30,20 +32,33 @@ public:
 
 class PeriodicBC : public BC {
 public:	
-	PeriodicBC() {internal=1; external=1; offset=0;}
+	PeriodicBC() {internal=1; external=1;}
 	int Resolution(int radix, int lvl) const {return pow(radix,lvl+1);}
 };
 
-class PeriodicBC2 : public BC {
+class DirichletBC2 : public DirichletBC {
 public:	
-	PeriodicBC2() {internal=1; external=3; offset=-1;}
-	int Resolution(int radix, int lvl) const {return pow(radix,lvl+1);}
+	DirichletBC2() {external += 2; ioff=-1;}
+};
+
+class NeumannBC2 : public NeumannBC {
+public:	
+	NeumannBC2() {external += 2; ioff=-1;}
+};
+
+class PeriodicBC2 : public PeriodicBC {
+public:	
+	PeriodicBC2() {external += 2; ioff=-1;}
 };
 
 const DirichletBC Dirichlet[1];
 const NeumannBC Neumann[1];
 const PeriodicBC Periodic[1];
 const PeriodicBC Mixed1[1];
+
+const DirichletBC2 Dirichlet2[1];
+const PeriodicBC2 Periodic2[1];
+const NeumannBC2 Neumann2[1];
 
 class Limits {
 public:
@@ -89,7 +104,8 @@ public:
 	
 	virtual void Mesh(Array1(Real) &x, Limits limits, int& n1, int& n,
 					  int& n1bc, int& nbc, Real& h, Real& hinv,
-					  Real& h2, Real& h2inv, int& start, int& r, int& offset) {
+					  Real& h2, Real& h2inv, int& start, int& r, int& offset,
+					  int &ioff) {
 		// number of points in one direction
 		int lvl=max(level-limits.skiplevels,0);
 		n=limits.n0*limits.bc->Resolution(radix,lvl);
@@ -102,13 +118,14 @@ public:
 		h=(limits.max-limits.min)/(n+limits.bc->Internal()-1);
 		hinv=1.0/h;
 		h2=h*h; h2inv=hinv*hinv;
+		ioff=limits.bc->Ioff();
 #ifdef NDEBUG		
-		x=new Real[nbc];
+		x=new Real[nbc]-ioff;
 #else		
-		x.Allocate(nbc);
+		x.Allocate(nbc,ioff);
 #endif		
 		offset=limits.bc->Offset();
-		for(int i=0; i < nbc; i++)
+		for(int i=ioff; i < nbc+ioff; i++)
 			x[i]=limits.min+(i+offset)*h;
 		if(level <= limits.skiplevels) {start=1; r=1; offset=0;}
 		else {start=-offset; r=radix;}

@@ -7,7 +7,7 @@ template<class T>
 class Grid1 : public Grid<Array1<T>,T> {
 protected:	
 	// number of points in previous and current levels and incl. boundaries
-	int nx1, nx, nx1bc, nxbc, sx, rx, offx;
+	int nx1, nx, nx1bc, nxbc, sx, rx, offx, ox;
 	Array1(Real) x;
 	Real hx, hxinv, hx2, hx2inv;
 public:
@@ -23,12 +23,13 @@ public:
 	Real Hx() {return hx;}
 	
 	void Allocate(int allocate=1) {
-		Mesh(x,XMeshRange(),nx1,nx,nx1bc,nxbc,hx,hxinv,hx2,hx2inv,sx,rx,offx);
+		Mesh(x,XMeshRange(),nx1,nx,nx1bc,nxbc,hx,hxinv,hx2,hx2inv,sx,rx,
+			 offx,ox);
 		if(!allocate) return;
-		d.Allocate(nxbc);
+		d.Allocate(nxbc,ox);
 		if(level > 0) {
-			v.Allocate(nx1bc);
-			if(nonlinear) v2.Allocate(nx1bc);
+			v.Allocate(nx1bc,ox);
+			if(nonlinear) v2.Allocate(nx1bc,ox);
 		}
 	}
 
@@ -94,6 +95,13 @@ public:
 		u[nx+1]=u[nx-1];
 	}
 	
+	void XNeumann2(const Array1<T>& u) {
+		u[-1]=u[3];
+		u[0]=u[2];
+		u[nx+1]=u[nx-1];
+		u[nx+2]=u[nx-2];
+	}
+	
 	void XDirichletInterpolate(const Array1<T>& u, T b0, T b1) {
 		if(homogeneous) {b0=b1=0.0;}
 		else {b0 *= 2.0; b1 *= 2.0;}
@@ -117,6 +125,13 @@ public:
 	void XPeriodic(const Array1<T>& u) {
 		u[0]=u[nx];
 		u[nx+1]=u[1];
+	}
+	
+	void XPeriodic2(const Array1<T>& u) {
+		u[-1]=u[nx-1];
+		u[0]=u[nx];
+		u[nx+1]=u[1];
+		u[nx+2]=u[2];
 	}
 };
 
