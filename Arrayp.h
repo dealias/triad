@@ -46,6 +46,7 @@ public:
 	Array1p(const Array1p<T>& A) {v=A.v; nx=A.nx; state=A.test(temporary);}
 	T& operator [] (int ix) const {Mod(ix,nx); return v[ix];}
 	T& operator () (int ix) const {Mod(ix,nx); return v[ix];}
+	Array1p<T>& operator = (T a) {Load(a); return *this;}
 };
 
 template<class T>
