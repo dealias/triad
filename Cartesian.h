@@ -75,59 +75,6 @@ inline int Basis<Cartesian>::InGrid(Cartesian& m)
 		(low.Row() <= m.Row() && m.Row() <= high.Row());
 }
 
-
-extern int NRows,NPad;
-extern int *RowBoundary;
-extern Var *ZeroBuffer; 
-
-inline int CartesianPad(Var *to, Var *from)
-{
-	for(int i=0; i < NRows; i++) {
-		int ncol=RowBoundary[i+1]-RowBoundary[i];
-		set(to,from,ncol);
-		to += ncol; from += ncol;
-		set(to,ZeroBuffer,NPad);
-		to += NPad;
-	}
-	return to-psibuffer;
-}
-
-inline int CartesianPad(Var *to, Var *from, Var *factor)
-{
-	for(int i=0; i < NRows; i++) {
-		int ncol=RowBoundary[i+1]-RowBoundary[i];
-		Var *kstop=to+ncol;
-#pragma ivdep
-		for(Var *k=to; k < kstop; k++)
-			*k=*(from++)*(*factor++);
-		to=kstop; from += ncol;
-		set(to,ZeroBuffer,NPad);
-		to += NPad;
-	}
-	return to-psibuffer;
-}
-
-inline void CartesianUnPad(Var *to, Var *from)
-{
-	for(int i=0; i < NRows; i++) {
-		int ncol=RowBoundary[i+1]-RowBoundary[i];
-		set(to,from,ncol);
-		to += ncol; from += ncol+NPad;
-	}
-}
-
-inline void CartesianUnPad(Var *to, Var *from, Var *factor)
-{
-	for(int i=0; i < NRows; i++) {
-		int ncol=RowBoundary[i+1]-RowBoundary[i];
-		Var *kstop=to+ncol;
-#pragma ivdep
-		for(Var *k=to; k < kstop; k++)
-			*k=*(from++)*(*factor++);
-		to=kstop; from += ncol+NPad;
-	}
-}
-
 // For Navier-Stokes turbulence (stream function normalization):
 
 template<class T>

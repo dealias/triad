@@ -167,6 +167,38 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 }
 
 	
+extern int NRows,NPad;
+extern int *RowBoundary;
+extern Var *ZeroBuffer; 
+
+int CartesianPad(Var *to, Var *from)
+{
+	for(int i=0; i < NRows; i++) {
+		int ncol=RowBoundary[i+1]-RowBoundary[i];
+		Var *k,*kstop=to+ncol;
+#pragma ivdep
+		for(k=to; k < kstop; k++) *k=*(from++);
+		k=kstop; from += ncol;
+		kstop += NPad;
+		Var *zero=ZeroBuffer;
+#pragma ivdep
+		for(; k < kstop; k++) *k=*(zero++);
+		to=kstop;
+	}
+	return to-psibuffer;
+}
+
+void CartesianUnPad(Var *to, Var *from)
+{
+	for(int i=0; i < NRows; i++) {
+		int ncol=RowBoundary[i+1]-RowBoundary[i];
+		Var *k,*kstop=to+ncol;
+#pragma ivdep
+		for(k=to; k < kstop; k++) *k=*(from++);
+		to += ncol; from += ncol+NPad;
+	}
+}
+
 void convolve_direct(Complex *H, Complex *F, Complex *G, unsigned int m);
 void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
 			  int log2n);
@@ -184,6 +216,7 @@ void PrimitiveNonlinearityFFT(Var *source, Var *psi, double)
 #pragma ivdep		
 	for(i=0; i < Npsi; i++)
 		psitemp[i]=psi[i]*CartesianMode[i].K2();
+#pragma ivdep		
 	for(i=0; i < Npsi; i++)
 		psitemp[i] *= I*CartesianMode[i].Ky();
 	*convolution0=0.0;
@@ -195,6 +228,7 @@ void PrimitiveNonlinearityFFT(Var *source, Var *psi, double)
 #pragma ivdep		
 	for(i=0; i < Npsi; i++)
 		psitemp[i]=psi[i]*CartesianMode[i].K2();
+#pragma ivdep		
 	for(i=0; i < Npsi; i++)
 		psitemp[i] *= I*CartesianMode[i].Kx();
 	*convolution0=0.0;
@@ -207,6 +241,7 @@ void PrimitiveNonlinearityFFT(Var *source, Var *psi, double)
 #pragma ivdep		
 	for(i=0; i < Npsi; i++)
 		source[i] *= CartesianMode[i].Kx();
+#pragma ivdep		
 	for(i=0; i < Npsi; i++)
 		source[i] = I*kinv2[i]*(CartesianMode[i].Ky()*psibuffer[i]-source[i]);
 	
