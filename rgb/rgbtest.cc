@@ -12,7 +12,6 @@ main()
 	  for(unsigned j=0; j < Ny; j++) {
 	    for(unsigned i=0; i < Nx; i++) {
 	      fout << (float) (i+Nx*j);
-	      std::cout << (float) (i+Nx*j) << std::endl;
 	    }
 	  }
 	fout.close();
