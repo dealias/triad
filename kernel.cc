@@ -159,8 +159,8 @@ int main(int argc, char *argv[])
 	
   cout << newl << "MACHINE: " << machine() << " [" << date() << "]" << newl;
 	
-  cout << newl << "PROBLEM: " << Vocabulary->Name() << " version "
-       << problem_version << "" << newl;
+  cout << newl << "PROBLEM: " << Vocabulary->Name() << " (version "
+       << problem_version << ")" << newl;
 	
   cout << newl << "COMMAND LINE: ";
   for(i=1; i < argc; i++) cout << argv[i] << " ";
