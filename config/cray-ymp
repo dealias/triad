@@ -1,0 +1,4 @@
+G++ = CC
+OPT = $(CFLAGS)
+MDOPT = -I /usr/include/CC
+
