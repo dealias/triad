@@ -50,6 +50,9 @@ char yuvinterlace[]="";
 const double pi=PI;
 const double twopi=2.0*PI;
 
+// Number of digits used to index intermediate files.
+const int NDIGITS 4
+
 static double *vminf, *vmaxf;
 static char *rgbdir;
 static strstream rgbdirbuf;
@@ -619,7 +622,7 @@ int main(int argc, char *const argv[])
 			if(!floating_scale) {vmin=gmin; vmax=gmax;}
 			
 			strstream buf;
-			buf << rgbdir << fieldname << setfill('0') << setw(4)
+			buf << rgbdir << fieldname << setfill('0') << setw(NDIGITS)
 				<< set << "." << format << ends;
 			char *oname=buf.str();
 			ofstream fout(oname);
@@ -743,7 +746,8 @@ int main(int argc, char *const argv[])
 			
 			if(make_mpeg) mpeg(nfiles,argf,nset-1,"mpg",xsize,ysize);
 			else animate(nfiles,argf,nset-1,"miff","%d",xsize,ysize);
-		} else animate(nfiles,argf,nset-1,format,"%04d",xsize,ysize);
+		} else animate(nfiles,argf,nset-1,format,"%0" << NDIGITS << "d",
+					   xsize,ysize);
 	}
 	
 	cleanup();
@@ -785,7 +789,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 			buf << fieldname << "\" ";
 		}
 		buf << format << ":" << rgbdir << fieldname
-			<< setfill('0') << setw(4) << n << "." << format << " ";
+			<< setfill('0') << setw(NDIGITS) << n << "." << format << " ";
 	}
 	buf << yuvinterlace << type << ":" << rgbdir << argf[0] << n;
 #if !NEW_IMAGEMAGIK	
@@ -803,8 +807,8 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 		buf << "rm ";
 		for(int f=0; f < nfiles; f++) {
 			char *fieldname=argf[f];
-			buf << rgbdir << fieldname << setfill('0') << setw(4) << n << "."
-				<< format << " ";
+			buf << rgbdir << fieldname << setfill('0') << setw(NDIGITS)
+				<< n << "." << format << " ";
 		}
 		if(!verbose) buf << " > /dev/null 2>&1";
 		buf << ends;
