@@ -1,0 +1,7 @@
+C++ = CC -64 -D_POSIX_SOURCE
+OPT = $(CFLAGS)
+MAKEDEPEND = $(C++) -M
+INCL = -I$(TRI)
+LIB = $(LFLAGS) -lm
+
+FFT = wfft
