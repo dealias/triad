@@ -30,7 +30,7 @@ static Var random_factor=0.0;
 
 static Real last_t=-REAL_MAX;
 
-inline void ConstantForcing(Var *source, double t)
+void ConstantForcing(Var *source, double t)
 {
 	if(t-last_t > tauforce) {last_t=t; crand_gauss(&random_factor);}
 #pragma ivdep
