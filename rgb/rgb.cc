@@ -889,7 +889,7 @@ int main(int argc, char *argv[])
       ostringstream buf;
       buf << rgbdir << fieldname << setfill('0') << setw(NDIGITS)
 	  << set << "." << format;
-      const char *oname=buf.str().c_str();
+      const char *oname=strdup(buf.str().c_str());
       ofstream fout(oname);
       if(!fout) {
 	cleanup();
