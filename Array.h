@@ -704,7 +704,8 @@ class Array2 : public array2<T> {
 
 #ifndef __NOARRAY2OPT
   T *operator [] (int ix) const {
-    return voff+ix*ny;
+    int offset=ix*ny;
+    return voff+offset;
   }
 #else
   Array1<T> operator [] (int ix) const {
