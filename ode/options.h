@@ -4,7 +4,8 @@
 #define DOUBLE_PRECISION 1
 #define COMPLEX 0
 
-#include "precision.h"
+#include "utils.h"
+
 typedef Real Var;
 
 typedef Var Nu;
