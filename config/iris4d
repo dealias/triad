@@ -1,6 +1,6 @@
 C++ = CC -64 -D_POSIX_SOURCE
 INCL = -I . -I $(TRI)
 OPT = $(CFLAGS)
+LIB = $(LFLAGS) -lrfftw -lfftw -lm
 MAKEDEPEND = $(C++) -M -DDEPEND
-LIB = $(LFLAGS) $(HOME)/lib/libfftw.a -lm
 FFT = wfft
