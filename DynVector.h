@@ -2,6 +2,7 @@
 #define __DynVector_h__ 1
 
 #include <stdlib.h>
+#include <iostream>
 
 #if __AIX
 #define CONST const
@@ -13,6 +14,7 @@
 template<class T>
 class DynVector
 {
+protected:	
 	T *v;
 	unsigned int size;
 	unsigned int alloc;
@@ -93,7 +95,15 @@ public:
 		A.Purge();
 		return *this;
 	}
-	
+
+	ostream& List(ostream& os, int nperline=1) {
+		for(unsigned int i=0; i < size-1;) {
+			os << v[i];
+			if((++i % nperline) == 0) os << endl;
+		}
+		os << v[size-1] << newl;
+		return os;
+	}
 };
 
 #undef CONST
