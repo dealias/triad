@@ -238,8 +238,8 @@ int readframe(ixstream& xin, int nx, int ny, int nz, Array3<float> value,
 		xin >> nx0 >> ny0 >> nz0;
 		if(xin.eof()) return 1;
 		if(nx0 != nx1 || ny0 != ny1 || nz0 != nz1) {
-			cleanup();
-			msg(ERROR,"Inconsistent image size");
+			msg(WARNING,"Inconsistent image size");
+			return EOF;
 		}
 	}
 	return 0;
@@ -653,6 +653,9 @@ int main(int argc, char *const argv[])
 		xin.close();
 		openfield(xin,fieldname,nx,ny,nz);
 		
+		if(begin < 0) begin += nset;
+		if(end < 0) end += nset;
+		
 		n=0;
 		int rc;
 		int s=1;
@@ -789,8 +792,8 @@ int main(int argc, char *const argv[])
 			if(make_mpeg) montage(nfiles,argf,0,format,"miff");
 			
 			for(n=0; n < nset; n++) 
-				montage(nfiles,argf,n,format,make_mpeg ? yuvformat : 
-						extract ? extract : "miff");
+				montage(nfiles,argf,n,format,extract ? extract : 
+						(make_mpeg ? yuvformat : "miff"));
 			if(!extract) {
 				identify(nfiles,argf,0,"miff",xsize,ysize);
 				if(make_mpeg) mpeg(nfiles,argf,nset-1,"mpg",xsize,ysize);
