@@ -1,6 +1,6 @@
 /* C++ interface to the XDR External Data Representation I/O routines
-   Version 1.41
-   Copyright (C) 1999-2003 John C. Bowman <bowman@math.ualberta.ca>
+   Version 1.42
+   Copyright (C) 1999-2004 John C. Bowman <bowman@math.ualberta.ca>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __xstream_h__
 #define __xstream_h__ 1
 
+namespace xdr {
+  
 #ifndef _ALL_SOURCE
 #define _ALL_SOURCE 1
 #endif
@@ -66,6 +68,7 @@ class xstream : virtual public xios {
   FILE *buf;
   XDR xdrs;
  public:
+  virtual ~xstream() {}
   xstream() {buf=NULL;}
   void xopen(const char *filename, const char *mode, xdr_op xop) {
     clear();
@@ -170,5 +173,7 @@ inline oxstream& flush(oxstream& s) {s.flush(); return s;}
 
 #undef IXSTREAM
 #undef OXSTREAM
+
+}
 
 #endif
