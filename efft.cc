@@ -4,8 +4,8 @@ extern "C" void dcft(const int& init,
 					 Complex *x, const int& inc1x, const int& inc2x,
 					 Complex *y, const int& inc1y, const int& inc2y,
 					 const int& n, const int& m, const int& isign,
-					 const double& scale, double *aux1, const int& naux,
-					 double *aux2, const int& naux); 
+					 const double& scale, double *aux1, const int& naux1,
+					 double *aux2, const int& naux2); 
 
 static int zero=0, one=1;
 static double scale=1.0;
