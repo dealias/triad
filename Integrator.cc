@@ -186,8 +186,9 @@ void RK2::Predictor(double t, double, int start, int stop)
 
 int RK2::Corrector(double dt, double& errmax, int start, int stop)
 {
-	for(int j=start; j < stop; j++) y[j]=y0[j]+dt*source[j];
-	if(dynamic) for(int j=start; j < stop; j++)
+	int j;
+	for(j=start; j < stop; j++) y[j]=y0[j]+dt*source[j];
+	if(dynamic) for(j=start; j < stop; j++)
 		calc_error(y0[j],y[j],y0[j]+dt*source0[j],y[j],errmax);
 	return 1;
 }
@@ -213,7 +214,6 @@ void RK4::Predictor(double t, double dt, int start, int stop)
 int RK4::Corrector(double, double& errmax, int start, int stop)
 {
 	Var pred;
-	
 	if(dynamic) for(int j=start; j < stop; j++) {
 		pred=y[j];
 		y[j]=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+
