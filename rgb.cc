@@ -6,9 +6,6 @@
 #include <strstream.h>
 #include <iomanip.h>
 #include <unistd.h>
-#if __GNUC__
-#include <getopt.h>
-#endif
 
 #include "DynVector.h"
 #include "rgb.h"
@@ -29,7 +26,10 @@ void manimate(int argc, char *const argf[], int n, char *const type,
 			  int xsize, int ysize);
 
 int verbose=0;
-extern int optind, opterr, optopt;
+
+extern "C" int getopt(int argc, char *const argv[], const char *optstring);
+extern int optind;
+extern char *optarg;
 
 int main(int argc, char *const argv[])
 {
