@@ -36,15 +36,15 @@ ltype 0
 abscissa
 
 ctype red
-connectlegend "\0" "PC" tpc ypc
+connectlegend "" "PC" tpc ypc
 ctype magenta
-#connectlegend "\0" "RK-2" trk2 yrk2
+#connectlegend "" "RK-2" trk2 yrk2
 ctype blue
-connectlegend "\0" "I-PC" ti_pc yi_pc
+connectlegend "" "I-PC" ti_pc yi_pc
 ctype green
-connectlegend "\0" "E-PC" te_pc ye_pc
+connectlegend "" "E-PC" te_pc ye_pc
 #ctype magenta
-#connectlegend "\0" "exact" texact yexact
+#connectlegend "" "exact" texact yexact
 
 expand $expand0/1.4
 ctype purple

@@ -37,15 +37,15 @@ ltype 0
 abscissa
 
 lctype 5 magenta
-connectlegend "\0" "RB1" trb1 yrb1
+connectlegend "" "RB1" trb1 yrb1
 lctype 2 green
-connectlegend "\0" "E-Euler" te_euler ye_euler
+connectlegend "" "E-Euler" te_euler ye_euler
 lctype 0 red
-connectlegend "\0" "Euler" teuler yeuler
+connectlegend "" "Euler" teuler yeuler
 lctype 1 blue
-connectlegend "\0" "I-Euler" ti_euler yi_euler
+connectlegend "" "I-Euler" ti_euler yi_euler
 #ctype purple
-#connectlegend "\0" "exact" texact yexact
+#connectlegend "" "exact" texact yexact
 
 expand $expand0/1.4
 ctype purple
