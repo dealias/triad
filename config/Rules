@@ -1,5 +1,5 @@
 .cc.o:
-	$(C++) $(OPT) $(INCL) -o $@ -c $<
+	$(C++) -Wno-deprecated $(OPT) $(INCL) -o $@ -c $<
 
 triad: $(TRIAD:=.o)
 	$(C++) $(OPT) -o triad $(TRIAD:=.o) $(LIB)

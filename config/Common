@@ -11,8 +11,6 @@ ifdef Cpp
 C++ = $(Cpp)
 endif
 
-C++ += -Wno-deprecated
-
 UTILS = utils msg strcasecmp new $(ARCH) $(POLL)
 CORE = kernel Integrator Param
 
