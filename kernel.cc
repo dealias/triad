@@ -389,7 +389,7 @@ void statistics(double t, double dt, int it)
 {
   int i;
   if(restart && it == 0) return;
-  double lastcputime=0.0;
+  static double lastcputime=0.0;
   
 	
   static int last_iter=0;
