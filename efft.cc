@@ -36,7 +36,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		 aux1,naux,aux2,naux);
 }
 
-inline void fft(Complex *data, unsigned int log2n, int isign, int)
+void fft(Complex *data, unsigned int log2n, int isign, int)
 {
 	mfft(data,log2n,isign,1,1,1,1);
 }
