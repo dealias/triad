@@ -13,7 +13,7 @@ public:
 	void Allocate(int s) {v=new T[sz=s]; top=-1;}
 	void Deallocate() {delete [] v; sz=0;}
 	
-	DynVector() : v(NULL), sz(0); top(-1) {}
+	DynVector() : v(NULL), sz(0), top(-1) {}
 	DynVector(int s) {Allocate(s);}
 	~DynVector() {Deallocate();}
 
