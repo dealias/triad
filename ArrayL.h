@@ -50,7 +50,9 @@ class array2L : public array1<T> {
   array2L() {}
   array2L(uint n) {Allocate(n);}
   array2L(uint n, T *v0) {Dimension(n,v0);}
-  array2L(const array2L<T>& A) {v=A.v; size=A.size; state=A.test(temporary);}
+  array2L(const array2L<T>& A) : n(A.n) {
+    v=A.v; size=A.size; state=A.test(temporary);
+  }
 	
   array1<T> operator [] (uint i) const {
     __check(i,n,1,1);
