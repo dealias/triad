@@ -67,6 +67,7 @@ void NWave::InitialConditions()
 
 	pqbuffer=new Var[Npsi*(Npsi+1)/2];
 	pqIndex=new Var*[Npsi];
+	qStart=new int[Npsi];
 	triadLimits=new TriadLimits[Npsi];
 	
 	Var *pq=pqbuffer;
@@ -74,6 +75,7 @@ void NWave::InitialConditions()
 			pqIndex[p]=pq-p;
 			pq += Npsi-p;
 	}
+	for(p=0; p < n; p++) qStart[p]=p;
 	
 	triad[0].Store(pqbuffer+4,Mkpq[0]);
 	triad[1].Store(pqbuffer+2,Mkpq[1]);
