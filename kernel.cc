@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
 	if(restart) {
 		ftest.open(lname);
 		if(ftest) {
-			msg(OVERRIDE,"Lock file %s exists; output files may be corrupted",
+			msg(OVERRIDE,"Lock file %s exists.\n Output files may be corrupted",
 				lname);
 		}
 		else errno=0;
