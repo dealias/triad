@@ -760,7 +760,6 @@ int main(int argc, char *const argv[])
 							}
 							
 							if(grey) {
-								if(index == -1) index=background;
 								for(int i2=0; i2 < mx; i2++)
 									fout << (unsigned char) index;
 							} else {
