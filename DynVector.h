@@ -82,6 +82,22 @@ public:
     if(size) size--;
   }
   
+  int Pop(T& value) {
+    if(size) {
+      size--;
+      value=v[size];
+      return 1;
+    } else return 0;
+  }
+  
+  // Need to discuss this with Malcolm; should pop v[i], close up, and
+  // optionally return v[i]. Proposed code for Pop(unsigned int):
+//  void Pop(unsigned int i) {
+//    if(size) {
+//      for (unsigned int j=i+1; j < size; j++) v[j-1]=v[j];
+//      size--;
+//    }
+//  }
   void Pop(unsigned int i) {
     if(size) {
       for (unsigned int j = i; j < size; j++) v[j-1]=v[j];
