@@ -498,8 +498,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 {
 	strstream buf;
 	buf << "montage -display none -size " << xsize << "x" << ysize
-	    << " -geometry " << xsize << "x" << ysize << " -interlace none"
-		<< " -colors 256 -colorspace YUV";
+	    << " -geometry " << xsize << "x" << ysize << " -interlace none";
 	for(int f=0; f < nfiles; f++) {
 		char *fieldname=argf[f];
 		buf << " -label \"";
@@ -514,7 +513,8 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 	if(strcmp(type,"yuv3") != 0)
 #endif
 		buf << "." << type;
-	buf << ends; 
+	if(!verbose) buf << " >& /dev/null";
+	buf << ends;
 	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;
 	system(cmd);
