@@ -4,8 +4,8 @@
 #include "xstream.h"
 #include <stddef.h>
 #include <stdarg.h>
-#include <stdlib.h>
 #include <fstream.h>
+#include <stdlib.h>
 #include <math.h>
 #include <memory.h>
 
