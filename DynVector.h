@@ -41,8 +41,8 @@ public:
 	
   unsigned int Alloc() const {return alloc;}
   unsigned int Size() const {return size;}
-	
-  void Resize(unsigned int i) {
+  
+  void Realloc(unsigned int i) {
     if (i == 0 && alloc && test(allocated)) delete [] v;
     else if(i > alloc) {
       T *v0=v;
@@ -55,15 +55,14 @@ public:
     alloc=i;
     if(size > alloc) size=alloc;
   }
-
-  void SetTop(unsigned int i){
-    if (alloc < i)
-      Resize(i);
+  
+  void Size(unsigned int i) {
+    if(i > alloc) Realloc(i);
     size=i;
   }
-
+	
   T& operator [] (unsigned int i) {
-    if (i >= alloc) Resize(max(i+1,2*alloc));
+    if (i >= alloc) Realloc(max(i+1,2*alloc));
     if (i >= size) size=i+1;
     return v[i];
   }
@@ -74,14 +73,10 @@ public:
   operator T* () const {return v;}
 	
   void Push(const T& value) {
-    if (size == alloc) Resize(alloc ? 2*alloc : 1);
+    if (size == alloc) Realloc(alloc ? 2*alloc : 1);
     v[size++]=value;
   }
 	
-  void Pop() {
-    if(size) size--;
-  }
-  
   int Pop(T& value) {
     if(size) {
       size--;
@@ -90,22 +85,32 @@ public:
     } else return 0;
   }
   
-  // Need to discuss this with Malcolm; should pop v[i], close up, and
-  // optionally return v[i]. Proposed code for Pop(unsigned int):
-//  void Pop(unsigned int i) {
-//    if(size) {
-//      for (unsigned int j=i+1; j < size; j++) v[j-1]=v[j];
-//      size--;
-//    }
-//  }
-  void Pop(unsigned int i) {
+  int Pop() {
     if(size) {
-      for (unsigned int j = i; j < size; j++) v[j-1]=v[j];
       size--;
-    }
+      return 1;
+    } else return 0;
   }
-
-  void Expand(unsigned int i) {if (i > alloc) Resize(i);}
+  
+  // Pop v[i], close up, and return v[i].
+  int Pop(unsigned int i, T& value) {
+    if(size) {
+      value=v[i];
+     for (unsigned int j=i+1; j < size; j++) v[j-1]=v[j];
+      size--;
+      return 1;
+    } else return 0;
+  }
+  
+  int Pop(unsigned int i) {
+    if(size) {
+     for (unsigned int j=i+1; j < size; j++) v[j-1]=v[j];
+      size--;
+      return 1;
+    } else return 0;
+  }
+    
+  void Expand(unsigned int i) {if (i > alloc) Realloc(i);}
 
   void Load(T a) const {for(unsigned int i=0; i < size; i++) v[i]=a;}
   void Load(const T *a) const {memcpy(v,a,size*sizeof(T));}

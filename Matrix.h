@@ -229,7 +229,7 @@ inline void Mult(const Array2<T>& A, const Array2<U>& B, const Array2<V>& C)
 {
   unsigned int n=C.Size();
   static DynVector<V> temp(n);
-  if(n > temp.Alloc()) temp.Resize(n);
+  if(n > temp.Alloc()) temp.Realloc(n);
 	
   unsigned int bny=B.Ny();
   unsigned int cny=C.Ny();
@@ -259,7 +259,7 @@ inline void Mult(const Array2<T>& A, const Array2<U>& B, const Array2<V>& C)
     B.Purge();
   } else {
     static DynVector<T> temp2(cny);
-    if(cny > temp2.Alloc()) temp2.Resize(cny);
+    if(cny > temp2.Alloc()) temp2.Realloc(cny);
     T *work=temp2;
 		
     for(unsigned int i=0; i < bnx; i++) {
@@ -283,7 +283,7 @@ inline void Mult(const Array1<T>& A, const Array1<U>& B, const Array2<V>& C)
 {
   unsigned int n=C.Size();
   static DynVector<V> temp(n);
-  if(n > temp.Alloc()) temp.Resize(n);
+  if(n > temp.Alloc()) temp.Realloc(n);
 	
   unsigned int bny=B.Nx();
   unsigned int cny=C.Ny();
@@ -306,7 +306,7 @@ inline void Mult(const Array1<T>& A, const Array1<U>& B, const Array2<V>& C)
     B.Purge();
   } else {
     static DynVector<T> temp2(cny);
-    if(cny > temp2.Alloc()) temp2.Resize(cny);
+    if(cny > temp2.Alloc()) temp2.Realloc(cny);
     T *work=temp2;
 		
     unsigned int k;
@@ -328,7 +328,7 @@ inline void MultAdd(const Array1<T>& A, const Array1<U>& B, const Array2<V>& C,
 {
   unsigned int n=C.Size();
   static DynVector<V> temp(n);
-  if(n > temp.Alloc()) temp.Resize(n);
+  if(n > temp.Alloc()) temp.Realloc(n);
 	
   unsigned int bny=B.Nx();
   unsigned int cny=C.Ny();
@@ -351,7 +351,7 @@ inline void MultAdd(const Array1<T>& A, const Array1<U>& B, const Array2<V>& C,
     B.Purge();
   } else {
     static DynVector<T> temp2(cny);
-    if(cny > temp2.Alloc()) temp2.Resize(cny);
+    if(cny > temp2.Alloc()) temp2.Realloc(cny);
     T *work=temp2;
 		
     unsigned int k;
@@ -415,7 +415,7 @@ inline void MultAdd(const Array2<T>& A, const Array2<U>& B, const Array2<V>& C,
 
   unsigned int n=C.Size();
   static DynVector<V> temp(n);
-  if(n > temp.Alloc()) temp.Resize(n);
+  if(n > temp.Alloc()) temp.Realloc(n);
 	
   unsigned int cny=C.Ny();
   assert(cny == A.Ny() && cny == D.Ny());
@@ -444,7 +444,7 @@ inline void MultAdd(const Array2<T>& A, const Array2<U>& B, const Array2<V>& C,
     B.Purge();
   } else {
     static DynVector<T> temp2(cny);
-    if(cny > temp2.Alloc()) temp2.Resize(cny);
+    if(cny > temp2.Alloc()) temp2.Realloc(cny);
     T *work=temp2;
 		
     for(unsigned int i=0; i < bnx; i++) {
@@ -660,7 +660,7 @@ inline void Divide(const Array2<T>& A, const Array2<T>& C, const Array2<T>& B)
 	
   unsigned int n=C.Size();
   static DynVector<T> temp(n);
-  if(n > temp.Alloc()) temp.Resize(n);
+  if(n > temp.Alloc()) temp.Realloc(n);
 	
   Array2<T> D(C.Nx(),C.Ny(),temp);
   D.Load(C);
@@ -679,7 +679,7 @@ inline void Divide(const Array1<T>& A, const Array2<T>& C, const Array1<T>& B)
 	
   unsigned int n=C.Size();
   static DynVector<T> temp(n);
-  if(n > temp.Alloc()) temp.Resize(n);
+  if(n > temp.Alloc()) temp.Realloc(n);
 	
   Array2<T> D(C.Nx(),C.Ny(),temp);
   Array2<T> A2(A.Nx(),1,A);
