@@ -4,7 +4,7 @@ LIB = $(LFLAGS) -lessl -lm
 MAKEDEPEND = $(C++) -M -P
 D = u
 
-ARCH = unix.o
-FFT = efft.o
-#POLL = idle.o
+ARCH = unix
+FFT = efft
+#POLL = idle
 
