@@ -153,8 +153,8 @@ int PC::Corrector(double dt, double& errmax, int start, int stop)
 {
 	int j;
 	const double halfdt=0.5*dt;
-	for(j=start; j < stop; j++) 
-		y[j]=y0[j]+halfdt*(source0[j]+source[j]);
+	Var *y0_=y0; // Workaround Cray bug;
+	for(j=start; j < stop; j++) y[j]=y0_[j]+halfdt*(source0[j]+source[j]);
 	if(dynamic) for(j=start; j < stop; j++) 
 		calc_error(y0[j],y[j],y0[j]+dt*source0[j],y[j],errmax);
 	return 1;
