@@ -361,4 +361,3 @@ char *VocabularyBase::FileName(const char* delimiter, const char *suffix)
 	sprintf(filename,"%s%s%s%s",Directory(),run,delimiter,suffix);
 	return filename;
 }
-

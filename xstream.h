@@ -120,4 +120,7 @@ public:
 inline oxstream& endl(oxstream& s) {s.flush(); return s;}
 inline oxstream& flush(oxstream& s) {s.flush(); return s;}
 
+#undef IXSTREAM
+#undef OXSTREAM
+
 #endif

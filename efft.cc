@@ -58,6 +58,14 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		 aux1[i][j],naux,aux2[i][j],naux);
 }
 
+void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
+			unsigned int inc1, unsigned int inc2, int bitreverse)
+{		 
+	dcrft(zero,data,inc2,data,inc2,n,nk,isign,scale,
+		  aux1[i][j],naux,aux2[i][j],naux);
+}
+	
+	
 void fft(Complex *data, unsigned int log2n, int isign, int)
 {
 	mfft(data,log2n,isign,1,1,1,1);

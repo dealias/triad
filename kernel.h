@@ -181,21 +181,24 @@ void unlock();
 void testlock();
 void dump(int it, int final, double tmax);
 
-template<class T>
-inline void open_output(T& fout, const char *delimiter, char *suffix)
-{
-	open_output(fout,delimiter,suffix,restart);
-}
-
-template<class T>
-inline void open_output(T& fout, const char *delimiter, char *suffix,
-						int append)
+// Cfront can't seem to handle a template here.
+inline void open_output(ofstream& fout, const char *delimiter, char *suffix,
+						int append=0)
 {
 	char *filename=Vocabulary->FileName(delimiter,suffix);
 	if(append) fout.open(filename,fout.app); // Append to end of output file.
 	else fout.open(filename);
 	if(!fout) msg(ERROR,"Output file %s could not be opened",filename);
 	fout.precision(digits);
+}
+
+inline void open_output(oxstream& fout, const char *delimiter, char *suffix,
+						int append=0)
+{
+	char *filename=Vocabulary->FileName(delimiter,suffix);
+	if(append) fout.open(filename,fout.app); // Append to end of output file.
+	else fout.open(filename);
+	if(!fout) msg(ERROR,"Output file %s could not be opened",filename);
 }
 
 #endif

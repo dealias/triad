@@ -3,7 +3,6 @@
 #include "options.h"
 #include "fft.h"
 
-static double *table,*work;
 static int zero=0;
 
 extern "C" void CFTFAX(const int& n, int* ifax, Real *trigs);
@@ -19,18 +18,18 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	static unsigned int nlast=0;
 	static Real *trigs;
 	static int ifax[19];
+	static Real *work;
 	
 	if(n != nlast) {
 		nlast=n;
-		work=new(work,2*n*nk) Complex;
+		work=new(work,4*n*nk) Real;
 		trigs=new(trigs,2*n) Real;
 		CFTFAX(n,ifax,trigs);
 	}
 	
-	int inc1 *= 2;
-	int inc2 *= 2; // Should be odd. JCB
-	CFFTMLT(&data[0].re,&data[0].im,&work[0].re,trigs,ifax,inc1,inc2,n,nk,
-			isign);
+	inc1 *= 2;
+	inc2 *= 2; // Should be odd. JCB
+	CFFTMLT(&data[0].re,&data[0].im,work,trigs,ifax,inc1,inc2,n,nk,isign);
 }
 
 extern "C" void CCFFT(const int& isign, const int& n, Real& scale,
@@ -39,6 +38,7 @@ extern "C" void CCFFT(const int& isign, const int& n, Real& scale,
 		 
 void fft(Complex *data, unsigned int log2n, int isign, int)
 {
+	static double *table,*work;
 	unsigned int n=1 << log2n;
 	static int nlast=0, isys[1]={0};
 	Real scale=1.0;
