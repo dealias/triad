@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <string>
 
+using std::string;
+
 #include "DynVector.h"
 
 template<class B>
