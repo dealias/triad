@@ -18,16 +18,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 const char PROGRAM[]="RGB";
 const char VERSION[]="1.06J";
 
-#define NEW_IMAGEMAGICK 1
-
-#if NEW_IMAGEMAGICK
-char yuvformat[]="yuv";
-char yuvinterlace[]="-interlace partition ";
-#else
-char yuvformat[]="yuv3";
-char yuvinterlace[]="";
-#endif 
-
 #include "xstream.h"
 #include <iostream.h>
 #include <limits.h>
@@ -816,20 +806,20 @@ int main(int argc, char *const argv[])
 	if((remote || !label) && make_mpeg) putenv("DISPLAY=");
 
 	if(nset) {
-			for(n=0; n < nset; n++) 
-				montage(nfiles,argf,n,format,extract ? extract : 
-						(make_mpeg ? yuvformat : "miff"));
-		if(label || make_mpeg || extract) { 
-			if(make_mpeg) montage(nfiles,argf,0,format,"miff");
-			for(n=0; n < nset; n++) 
-				montage(nfiles,argf,n,format,make_mpeg ? yuvformat : "miff");
-				if(n == 0) identify(nfiles,argf,0,"miff",xsize,ysize);
+		if(extract) montage(nfiles,argf,n,format,extract);
+		else {
+			if(label || make_mpeg) { 
+				if(make_mpeg) montage(nfiles,argf,0,format,"miff");
+				for(n=0; n < nset; n++) 
+					montage(nfiles,argf,n,format,make_mpeg ? "yuv" : "miff");
+				identify(nfiles,argf,0,"miff",xsize,ysize);
 				if(make_mpeg) mpeg(nfiles,argf,nset-1,"mpg",xsize,ysize);
 				else animate(nfiles,argf,nset-1,"miff","%d",xsize,ysize);
-		} else {
-			strstream buf;
-			buf << "%0" << NDIGITS << "d" << ends;
-			animate(nfiles,argf,nset-1,format,buf.str(),xsize,ysize);
+			} else {
+				strstream buf;
+				buf << "%0" << NDIGITS << "d" << ends;
+				animate(nfiles,argf,nset-1,format,buf.str(),xsize,ysize);
+			}
 		}
 	}
 	
@@ -874,13 +864,9 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 		buf << format << ":" << rgbdir << fieldname
 			<< setfill('0') << setw(NDIGITS) << n << "." << format << " ";
 	}
-	buf << yuvinterlace << type << ":";
+	buf << "-interlace partition " << type << ":";
 	if(!extract) buf << rgbdir;
-	buf << argf[0] << n;
-#if !NEW_IMAGEMAGIK	
-	if(strcmp(type,"yuv3") != 0)
-#endif
-		buf << "." << type;
+	buf << argf[0] << n << "." << type;
 	if(!verbose) buf << ">& /dev/null";
 	buf << ends;
 	char *cmd=buf.str();
