@@ -1,5 +1,5 @@
-/* Array2n.h:  A high-performance periodic multi-dimensional C++ array class
-Copyright (C) 1999 John C. Bowman (bowman@math.ualberta.ca)
+/* ArrayL.h:  A high-performance periodic multi-dimensional C++ array class
+Copyright (C) 2001 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __ArrayL_h__
 #define __ArrayL_h__ 1
 
-#define __ARRAYL_H_VERSION__ 1.20
+#define __ARRAYL_H_VERSION__ 1.21
 
 // Lower triangular Array class
 
