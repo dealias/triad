@@ -121,7 +121,7 @@ void Partition<T>::GenerateWeights() {
 				else binaverage=ComputeBinAverage(&bin[k],&bin[p],&bin[q]);
 				
 				if(binaverage) {
-					if(verbose > 4) cout << k << "," << p << "," << q <<
+					if(verbose > 3) cout << k << "," << p << "," << q <<
 										": " << binaverage << endl;
 					kpq=WeightIndex(k,p,q);
 					if(kpq > lastkpq || Nweight==0) {
