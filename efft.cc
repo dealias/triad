@@ -13,6 +13,7 @@ extern "C" void dcrft(const int& init, Complex *x, const int& inc2x,
 				  double *aux2, const int& naux2);  
 
 static int mone=-1, zero=0, one=1;
+static double scale=1.0;
 
 void init_aux(int n, double *& aux1, int& naux1, double *& aux2, int& naux2)
 {
@@ -27,28 +28,26 @@ void init_aux(int n, double *& aux1, int& naux1, double *& aux2, int& naux2)
 void rfft(Complex *data, unsigned int log2n, int) {
 	static int naux1,naux2,nlast=0;	
 	static double *aux1,*aux2;
-	static double scale=1.0;
-	unsigned int n=1 << (log2n+1);
+	unsigned int n=1 << log2n;
 	
 	if(n != nlast) {
 		nlast=n;
 		init_aux(n,aux1,naux1,aux2,naux2);
-		drcft(one,data,zero,data,zero,n,one,one,scale,aux1,naux1,aux2,naux2);
+		drcft(one,data,zero,data,zero,n,one,mone,scale,aux1,naux1,aux2,naux2);
 	}
-	drcft(zero,data,zero,data,zero,n,one,one,scale,aux1,naux1,aux2,naux2);
+	drcft(zero,data,zero,data,zero,n,one,mone,scale,aux1,naux1,aux2,naux2);
 }
 
 void rfft_inv(Complex *data, unsigned int log2n, int) {
 	static int naux1,naux2,nlast=0;	
 	static double *aux1,*aux2;
-	static double scale=0.5;
-	unsigned int n=1 << (log2n+1);
+	unsigned int n=1 << log2n;
 	
 	if(n != nlast) {
 		nlast=n;
 		init_aux(n,aux1,naux1,aux2,naux2);
-		dcrft(one,data,zero,data,zero,n,one,mone,scale,aux1,naux1,aux2,naux2);
+		dcrft(one,data,zero,data,zero,n,one,one,scale,aux1,naux1,aux2,naux2);
 	}
-	dcrft(zero,data,zero,data,zero,n,one,mone,scale,aux1,naux1,aux2,naux2);
+	dcrft(zero,data,zero,data,zero,n,one,one,scale,aux1,naux1,aux2,naux2);
 }
 

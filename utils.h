@@ -325,12 +325,6 @@ inline double drand_gauss()
 	return w;
 }
 
-void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
-			  int log2n);
-void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
-			   int log2n);
-
-
 inline ixstream& operator >> (ixstream& s, Complex& y)
 {
 	s >> y.re >> y.im;

@@ -3,11 +3,11 @@
 
 // Compute H = F (*) G, where F and G contain the non-negative Fourier
 // components of real functions f and g, respectively. Dealiasing via
-// zero-padding is implemented automatically. (For a 1D convolution,
-// 3*m must be less than n+2.)
+// zero-padding is implemented automatically.
 //
 // Arrays F[n/2+1], G[n/2+1] must be distinct, with n=2^log2n.
 // Input F[i] (0 <= i < m <= n/3), g[i] (0 <= i < n/2).
+// For a 1D convolution, 3*m must be less than n+2.
 // Output H[i] = F (*) G  (0 <= i < m), f[i], g[i] (0 <= i < n/2).
 //
 // Array H[n/2+1] can coincide with either F or G, in which case the output H
@@ -16,31 +16,31 @@
 void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
 			   int log2n)
 {
-	unsigned int n=1 << log2n;
-	unsigned int i, n2=n/2;
+	unsigned int n=1 << log2n, n2=n/2;
+	unsigned int i;
 
 #pragma ivdep	
-	for(i=m; i < n/2+1; i++) F[i]=0.0;
-	rfft_inv(F,log2n-1,1);
+	for(i=m; i < n2+1; i++) F[i]=0.0;
+	crfft(F,log2n,-1,1);
 	
-	Real ninv=2.0/n2;
+	Real ninv=1.0/n;
 #pragma ivdep	
 	for(i=0; i < n2; i++) {
 		H[i].re=F[i].re*g[i].re*ninv;
 		H[i].im=F[i].im*g[i].im*ninv;
 	}
 	
-	rfft(H,log2n-1,1);
+	rcfft(H,log2n,1,1);
 	H[0].im=0.0;
 }
 
 // Compute H = F (*) G, where F and G contain the non-negative Fourier
 // components of real functions f and g, respectively. Dealiasing via
-// zero-padding is implemented automatically. (For a 1D convolution,
-// 3*m must be less than n+2.)
+// zero-padding is implemented automatically.
 //
 // Arrays F[n/2+1], G[n/2+1] must be distinct, with n=2^log2n.
 // Input F[i], G[i] (0 <= i < m), where m <= n/3.
+// For a 1D convolution, 3*m must be less than n+2.
 // Output H[i] = F (*) G  (0 <= i < m), F[i]=f[i], G[i]=g[i] (0 <= i < n/2).
 //
 // Array H[n/2+1] can coincide with either F or G, in which case the output H
@@ -54,7 +54,7 @@ void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
 
 #pragma ivdep	
 	for(i=m; i < n/2+1; i++) G[i]=0.0;
-	rfft_inv(G,log2n-1,1);
+	crfft(G,log2n,-1,1);
 	
 	convolve0(H,F,G,m,log2n);
 }	

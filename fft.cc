@@ -223,11 +223,12 @@ void fft(Complex *data, unsigned int log2n, int isign, int bitreverse)
 
 	j=0;
 	for(i=0; i < n-1; i++) {
-		if (j > i) {Complex *p=data+i, *q=data+j;
-					Real temp;
-					temp=q->re; q->re=p->re; p->re=temp;
-					temp=p->im; p->im=q->im; q->im=temp;
-				}
+		if (j > i) {
+			Complex *p=data+i, *q=data+j;
+			Real temp;
+			temp=q->re; q->re=p->re; p->re=temp;
+			temp=p->im; p->im=q->im; q->im=temp;
+		}
 		
 		m=n >> 1;
 		while (j >= m) {
@@ -302,31 +303,37 @@ void fft(Complex *data, unsigned int log2n, int isign, int bitreverse)
 
 // Return the Fourier transform of nk Complex vector's.
 // Before calling, data must be allocated as Complex[nk*n].
-// On entry: data[k+nk*j] contains the n Complex values for each k=0,...,nk.
+// On entry: data contains the n Complex values for each k=0,...,nk.
 //           log2n contains the base-2 logarithm of n.
 //           isign is +1 for a forward transform, -1 for an inverse transform.
+//           inc1 is the stride between the elements of each Complex vector.
+//           inc2 is the stride between first elements of the vectors.
 // On exit:  data contains the n Complex Fourier values for each k=0,...nk.
 // Note: When computing an inverse transform, the result must be divided by n.
 
-void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk)
+void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
+		  unsigned int inc1, unsigned int inc2, int)
 {
-	unsigned int i,j,k,n,m,istep;
+	unsigned int i,j,k,n,m,istep,kstop;
 	static unsigned int tempsize=0;
 	static Complex *temp;
 
+	if(inc1 == 0) inc1=nk;
+	kstop=nk*inc2;
+	
 	n=1 << log2n;
 
-	if(nk > tempsize) {
-		tempsize=nk;
+	if(kstop > tempsize) {
+		tempsize=kstop;
 		temp=new(temp,tempsize) Complex;
 	}
 	
 	j=0;
 	for(i=0; i < n-1; i++) {
 		if (j > i) {
-			Complex *p=data+i*nk, *q=data+j*nk;
+			Complex *p=data+i*inc1, *q=data+j*inc1;
 #pragma ivdep			
-			for(k=0; k < nk; k++) {
+			for(k=0; k < kstop; k += inc2) {
 				temp[k].re=q[k].re; q[k].re=p[k].re; p[k].re=temp[k].re;
 				temp[k].im=p[k].im; p[k].im=q[k].im; q[k].im=temp[k].im;
 			}
@@ -342,13 +349,14 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk)
 	
 	if(log2n > wpTableSize) fft_init(log2n);
 	
-	Complex *pstop=data+n*nk, *wp=wpTable+1;
+	Complex *pstop=data+n*inc1, *wp=wpTable+1;
+	int twoinc1=2*inc1;
 	
 	if(n > 1) {
-		for(Complex *p=data; p < pstop; p += 2*nk) {
-			Complex *q=p+nk;
+		for(Complex *p=data; p < pstop; p += twoinc1) {
+			Complex *q=p+inc1;
 #pragma ivdep			
-			for(k=0; k < nk; k++) {
+			for(k=0; k < kstop; k += inc2) {
 				temp[k].re=p[k].re-q[k].re;
 				temp[k].im=p[k].im-q[k].im;
 				p[k].re += q[k].re;
@@ -362,13 +370,13 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk)
 	unsigned int mmax=2; 
  	while (mmax < n) {
 		istep=mmax << 1;
-		int istepnk=istep*nk;
-		int mmaxnk=mmax*nk;
+		int istepnk=istep*inc1;
+		int mmaxnk=mmax*inc1;
 		Complex *p;
 		for(p=data; p < pstop; p += istepnk) {
 			Complex *q=p+mmaxnk;
 #pragma ivdep			
-			for(k=0; k < nk; k++) {
+			for(k=0; k < kstop; k += inc2) {
 				temp[k].re=p[k].re-q[k].re;
 				temp[k].im=p[k].im-q[k].im;
 				p[k].re += q[k].re;
@@ -381,10 +389,10 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk)
 		wp++;
 		Real c=1.0+wpre, s=wpim;
 		for(m=1; m < mmax-1; m++) {
-			for(p=data+m*nk; p < pstop; p += istepnk) {
+			for(p=data+m*inc1; p < pstop; p += istepnk) {
 				Complex *q=p+mmaxnk;
 #pragma ivdep			
-				for(k=0; k < nk; k++) {
+				for(k=0; k < kstop; k += inc2) {
 					temp[k].re=c*q[k].re-s*q[k].im;
 					temp[k].im=c*q[k].im+s*q[k].re;
 					q[k].re=p[k].re-temp[k].re;
@@ -397,10 +405,10 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk)
 			c += c*wpre-s*wpim;
 			s += s*wpre+wtemp*wpim;
 		}
-		for(p=data+mmaxnk-nk; p < pstop; p += istepnk) {
+		for(p=data+mmaxnk-inc1; p < pstop; p += istepnk) {
 			Complex *q=p+mmaxnk;
 #pragma ivdep			
-			for(k=0; k < nk; k++) {
+			for(k=0; k < kstop; k += inc2) {
 				temp[k].re=c*q[k].re-s*q[k].im;
 				temp[k].im=c*q[k].im+s*q[k].re;
 				q[k].re=p[k].re-temp[k].re;
@@ -475,3 +483,22 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 	mfft(data,log4n,isign,m);
 }
 
+// Return the two-dimensional Fourier transform of a Complex vector.
+// Before calling, data must be allocated as Complex[nx*ny].
+// On entry: data[ny*i+j] contains the ny Complex values for each i=0,...,nx.
+//           log2nx contains the base-2 logarithm of nx.
+//           log2ny contains the base-2 logarithm of ny.
+//           isign is +1 for a forward transform, -1 for an inverse transform.
+// On exit:  data[ny*i+j] contains the ny Complex Fourier values for
+// each i=0,...nx.
+// Note: When computing an inverse transform, the result must be divided
+// by nx*ny.
+
+void fft2d(Complex *data, unsigned int log2nx, unsigned int log2ny, int isign)
+{
+	unsigned int nx=1 << log2nx;
+	unsigned int ny=1 << log2ny;
+	
+	mfft(data,log2nx,isign,ny);
+	mfft(data,log2ny,isign,nx,1,ny);
+}

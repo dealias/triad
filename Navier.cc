@@ -306,17 +306,56 @@ void NWave::Output(int)
 		favgy.close();
 	}
 	
-	fpsi << ngrid << ngrid << 1;
-	for(int j=0; j < ngrid; j++) {
-		Complex *q=ycoeff+j*Npsi;
-		for(int i=0; i < ngrid; i++) {
-			Complex *p=xcoeff+i*Npsi;
-			Real sum=0.0;
-			for(int m=0; m < Npsi; m++) {
-				Complex pq=p[m]*q[m];
-				sum += pq.re*y[m].re-pq.im*y[m].im;
+	if(strcmp(method,"SR")) {
+		fpsi << ngrid << ngrid << 1;
+		for(int j=0; j < ngrid; j++) {
+			Complex *q=ycoeff+j*Npsi;
+			for(int i=0; i < ngrid; i++) {
+				Complex *p=xcoeff+i*Npsi;
+				Real sum=0.0;
+				for(int m=0; m < Npsi; m++) {
+					Complex pq=p[m]*q[m];
+					sum += pq.re*y[m].re-pq.im*y[m].im;
+				}
+				fpsi << (float) sum;
 			}
-			fpsi << (float) sum;
+		}
+	} else {
+		int i,j;
+		unsigned int log2nx, log2ny;
+		for(log2nx=0; Nxb=(1 << log2nx) < Nx; log2nx++);
+		for(log2ny=0; Nyb=(1 << log2ny) < Ny; log2ny++);
+		
+		int Nxb=1 << log2nx;
+		int Nyb=1 << log2ny;
+		int Nyp=Nyb/2+1;
+		static Complex *xbuffer;
+		xbuffer=new Complex[Nxb*Nyp];
+		for(i=0; i < Nxb*Nyp; i++) xbuffer[i]=0.0;
+		
+		int imax=(Nx-1)/2, imin=-imax;
+		
+		int xoffset=Nxb-(Nx+1)/2;
+		for(int k=0; k < Npsi; k++) {
+			Cartesian m=mode[k];
+			xbuffer[(xoffset+m.i)*Nyp+m.j]=y[k];
+		}
+		xbuffer[xoffset*Nyp]=0.0;
+		for(i=1; i <= imax; i++) {
+			xbuffer[(xoffset-i)*Nyp]=xbuffer[(xoffset+i)*Nyp];
+		}
+		
+		rfft2d_inv(xbuffer,log2nx,log2ny);
+		// Don't forget to divide by nx*ny; also fix up fft sign. JCB
+		
+		fpsi << Nx << Ny << 1;
+		Real *rxbuffer=(Real *) xbuffer;
+		
+		for(j=Nyb/2; j >= 0; j--) {
+			for(i=imin; i <= imax; i++) fpsi << (float) rxbuffer[(Nyb+2)*(xoffset+i)+j];
+		}
+		for(j=Ny-1; j > Nyb/2; j--) {
+			for(int i=imin; i <= imax; i++) fpsi << (float) rxbuffer[(Nyb+2)*(xoffset+i)+j];
 		}
 	}
 	fpsi.flush();

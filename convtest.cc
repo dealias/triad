@@ -6,7 +6,7 @@ void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
 			  int log2n);
 void convolve_direct(Complex *H, Complex *F, Complex *G, unsigned int m);
 	
-void main()
+int main()
 {	
 	unsigned int i;
 	unsigned int log2n=5;
