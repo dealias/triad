@@ -369,10 +369,15 @@ inline void out_curve(S& os, T f, char *text)
 }
 
 template<class S>
-void out_real(S& os, Real *f, char *textre, char *, int n,
-					 int nperline=default_nperline) 
+void out_real(S& os, Real *f, char *textre, char *, int n, int nperline) 
 {
 	out_curve(os,f,textre,n,nperline);
+}
+
+template<class S>
+void out_real(S& os, Real *f, char *textre, char *, int n)
+{
+	out_curve(os,f,textre,n,default_nperline);
 }
 
 extern Complex *out_base;

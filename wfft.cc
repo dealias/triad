@@ -1,6 +1,6 @@
 #include "options.h"
 #include "fft.h"
-#include "rfftw.h"
+#include "fftwlocal.h"
 
 static ifstream ifwisdom;
 static ofstream ofwisdom;
