@@ -20,7 +20,11 @@ extern double last_dump;
 extern int iteration;
 extern int invert_cnt;
 
-// Kernel vocabulary
+extern char *run;
+extern char *integrator;
+extern char *approximation;
+
+// Global vocabulary
 extern int itmax; 
 extern double tmax;
 extern double dt;
@@ -33,10 +37,7 @@ extern double polltime;
 extern int input;
 extern int output;
 extern int hybrid;
-
-extern char *run;
-extern char *integrator;
-extern char *approximation;
+extern int override;
 
 class ParamBase {
 	int nvar;

@@ -14,6 +14,7 @@ const double twopi2=twopi*twopi;
 
 char beep='\a';
 
+extern int override;
 extern int sys_nerr;
 extern char *sys_errlist[];
 
@@ -175,16 +176,19 @@ int beep_enabled=1; // If nonzero, enable terminal beeping during errors.
 
 void msg(int fatal, char *file, int line, char *format,...)
 {
-	int override=0;
+	int tty_override=0;
 	char c;
 	va_list vargs;
 
 	cout << endl;
 	if(beep_enabled) {beep_enabled=0; cout << beep;}
 	
+	if(fatal == -1) {
 #if __unix
-	if(fatal == -1 && isatty(STDIN_FILENO)) {fatal=0; override=1;}
+		if(isatty(STDIN_FILENO)) {fatal=0; tty_override=1;}
 #endif	
+		if(override) {fatal=0; tty_override=0;}
+	}
 
 	if(fatal) cout << "ERROR: ";
 	else cout << "WARNING: ";
@@ -198,7 +202,7 @@ void msg(int fatal, char *file, int line, char *format,...)
 	
 	if(errno && errno < sys_nerr) cout << sys_errlist[errno] << "." << endl;
 	
-	if(override) {
+	if(tty_override) {
 		cout << "Override (y/n)? ";
 		cin >> c;
 		if(c != 'Y' && c !='y') fatal=1;

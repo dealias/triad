@@ -283,6 +283,7 @@ void Partition<T>::ComputeTriads() {
 	}
 	
 	if(!fin || formatted) {
+		errno=0;
 		filename=WeightFileName("");
 		fout.open(filename);
 		if(!fout) msg(ERROR,"Weight file %s could not be opened",filename);

@@ -31,7 +31,7 @@ static char *pname,*rname,*iname,*ptemp,*rtemp,*lname;
 static ifstream fparam,fin;
 static ofstream fdump,fstat,fout,flock;
 
-// Kernel vocabulary declarations and default values
+// Global vocabulary declarations and default values
 int itmax=100;
 double tmax=0.0;
 double dt=0.0;
@@ -49,7 +49,9 @@ double polltime=0.0;
 int input=0;
 int output=0;
 int hybrid=0;
+int override=0;
 
+// Local vocabulary declarations and default values
 int microsteps=1;
 double sample=0.0;
 int initialize=0;
@@ -79,6 +81,7 @@ ProblemBase::ProblemBase()
 	VOCAB_NODUMP(initialize,0,1);
 	VOCAB_NODUMP(input,0,1);
 	VOCAB_NODUMP(clobber,0,1);
+	VOCAB_NODUMP(override,0,1);
 	VOCAB_NODUMP(run,"","");
 	VOCAB(output,0,1);
 	VOCAB(approximation,"","");
