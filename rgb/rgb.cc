@@ -752,7 +752,7 @@ int main(int argc, char *argv[])
 		if(kmax > upper) kmax=upper;
 		
 		int mpal=nobar ? 0 : max(5,my);
-		int msep=max(2,my);
+		int msep=nobar ? 0 : max(2,my);
 		
 		if(rescale && trans != IDENTITY) 
 				msg(ERROR, "Rescale for transforms not yet implemented");
