@@ -80,16 +80,18 @@ Real Rfactor=1.0;
 Real Theta=0.0;
 Real Phi=0.0;
 
+const int Undefined=-2;
+
 void cleanup();
 int system (char *command);
 
 class Ivec {
 public:
-	int i;
-	int j;
-	int k;
+	float i;
+	float j;
+	float k;
 	Ivec() {}
-	Ivec(int i0, int j0, int k0) : i(i0), j(j0), k(k0) {}
+	Ivec(Real i0, Real j0, Real k0) : i(i0), j(j0), k(k0) {}
 };
 
 typedef void Transform(Array3<Ivec>);
@@ -536,14 +538,35 @@ int main(int argc, char *const argv[])
 							Ivec x;
 							if(trans) x=Index(i,j,k);
 							else x=Ivec(i,j,k);
-							int index=(step == 0.0 || 
-									   x.i < 0 || x.i >= nx ||
-									   x.j < 0 || x.j >= ny ||
-								       x.k < 0 || x.k >= nz) ? 
-								-1 : (int) ((value[x.k][x.i+nx*x.j]-vmin)*step
-											+0.5)+PaletteMin;
+							int index;
+							
+							if(x.i < 0 || x.i >= nx) x.i=Undefined;
+							if(x.j < 0) x.j=0; 
+							if(x.j > ny-1) x.j=ny-0.5; 
+							if (step == 0.0 ||
+								x.i == Undefined || 
+								x.j == Undefined ||
+								x.k == Undefined) index=-1;
+							else {
+								Real val;
+								int ci=(int) floor(x.i);
+								int cj=(int) floor(x.j);
+								int ck=(int) floor(x.k);
+								if(ck == -1) {
+									val=(ck+1-x.k)*value[nz-1][ci+nx*cj]+
+										(x.k-ck)*value[ck+1][ci+nx*cj];
+								} else if (ck == nz-1) {
+									val=((ck+1)-x.k)*value[ck][ci+nx*cj]+
+										(x.k-ck)*value[0][ci+nx*cj];
+								} else {
+									val=((ck+1)-x.k)*value[ck][ci+nx*cj]+
+										(x.k-ck)*value[ck+1][ci+nx*cj];
+								}
+								index=(int) ((val-vmin)*step+0.5)+PaletteMin;
+							}
+							
 							if(gray) {
-								if(index == -1) 
+								if(index == Undefined) 
 									index=PaletteMin+PaletteRange/2; 
 								for(int i2=0; i2 < mx; i2++)
 									fout << (unsigned char) index;
@@ -765,14 +788,22 @@ int system (char *command) {
 
 void Circle(Array3<Ivec> Index)
 {
+	for(int u=0; u < Nx; u++)  {
+		for(int v=0; v < Ny; v++)  {
+			for(int k=kmin; k <= kmax; k++)
+				Index(u,v,k)=Ivec(Undefined,Undefined,Undefined);
+		}
+	}
+	
 	for(int i=0; i < Nx; i++)  {
 		for(int j=0; j < Ny; j++)  {
 			int i0=i-a;
 			int j0=j-a;
-			int ip=int(sqrt(i0*i0+j0*j0)-a0+0.5);
-			int jp=int((atan2(j0,i0)+pi)*ny/twopi+0.5);
-			if(jp == ny) jp=0;
-			for(int k=kmin; k <= kmax; k++) Index(i,j,k)=Ivec(ip,jp,k);
+			Real xi=sqrt(i0*i0+j0*j0)-a0;
+			Real xj=(atan2(j0,i0)+pi)*ny/twopi;
+			if(xj > ny-1) xj=ny-1; // * JCB *
+			for(int k=kmin; k <= kmax; k++)
+				Index(i,j,k)=Ivec(xi,xj,(double) k);
 		}
 	}
 }
@@ -781,14 +812,14 @@ void ProjectedTorus(Array3<Ivec> Index)
 {
 	for(int u=0; u < Nx; u++)  {
 		for(int v=0; v < Ny; v++)  {
-			Index(u,v,0)=Ivec(-1,-1,-1);
+			Index(u,v,0)=Ivec(Undefined,Undefined,Undefined);
 		}
 	}
 	
 	const int Nxfine=4;
 	const int Nyfine=5;
 //	const int Nzfine=200;
-	const int Nzfine=2;
+	const int Nzfine=10;
 
 	const Real xfinestep=1.0/(2.0*Nxfine+1.0);
 	const Real yfinestep=1.0/(2.0*Nyfine+1.0);
@@ -819,19 +850,22 @@ void ProjectedTorus(Array3<Ivec> Index)
 	
 	for(int j=0; j < ny; j++)  {
 		for(int j2=-Nyfine; j2 <= Nyfine; j2++)  {
-			Real theta=(j+j2*yfinestep)*twopibyny;
+			Real xj=j+j2*yfinestep;
+			Real theta=xj*twopibyny;
 			Real sintheta,costheta;
 			sincos(theta,&sintheta,&costheta);
 			for(int k=0; k < nz; k++)  {
-				for(int k2=-Nzfine; k2 <= Nzfine; k2++)  {
-					Real phi=(k+k2*zfinestep)*twopibynz;
+				for(int k2=-Nzfine;	k2 <= Nzfine; k2++)  {
+					Real xk=k+k2*zfinestep;
+					Real phi=xk*twopibynz;
 					if(phi >= 0 && phi <= cutoff) {
 						Real cosphi,sinphi;
 						sincos(phi,&sinphi,&cosphi);
 						for(int i=0; i < nx; i++)  {
-							Real a0i=a0+i+Nxfine*xfinestep;
-							for(int i2=-Nxfine; i2 <= Nxfine; i2++)  {
-								Real r=a0i+i2*xfinestep;
+							for(int i2=(i == 0 ? 0 : -Nxfine);
+								i2 <= (i == nx-1 ? 0 : Nxfine); i2++)  {
+								Real xi=i+i2*xfinestep;
+								Real r=a0+xi;
 								Real rperp=R0+r*costheta;
 								Real x=rperp*cosphi;
 								Real y=rperp*sinphi;
@@ -847,7 +881,7 @@ void ProjectedTorus(Array3<Ivec> Index)
 								if(u >= 0 && u < Nx && v >=0 && v < Ny
 								   && zp > zmax(u,v)) {
 									zmax(u,v)=zp;
-									Index(u,v,0)=Ivec(i,j,k);
+									Index(u,v,0)=Ivec(xi,xj,xk);
 								}	
 							}
 						}
