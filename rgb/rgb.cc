@@ -1371,8 +1371,9 @@ void animate(int, const char *filename, int n, const char *type,
 
 extern char **environ;
 
-int System(char *command) {
-  int pid, status;
+int System(const char *command) 
+{
+  int pid;
   static int cleaning=0;
 
   if (command == 0) return 1;
@@ -1389,13 +1390,13 @@ int System(char *command) {
   }
 	
   for(;;) {
+    int status;
     if (waitpid(pid, &status, 0) == -1) {
-      if (errno == ECHILD) return 0;
       if (errno != EINTR) msg(ERROR,"Process %d failed", pid);
     } else {
       if(WIFEXITED(status)) status=WEXITSTATUS(status);
       else return -1;
-      if(cleaning) return status;
+      if(cleaning || preserve) return status;
       cleaning=1; cleanup();
       msg(ERROR,"%s\nReceived signal %d",command,status);
     }
