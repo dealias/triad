@@ -1,4 +1,4 @@
- C++ = CC -D_POSIX_SOURCE
+C++ = CC -D_POSIX_SOURCE
 OPT = $(CFLAGS)
 INCL = -I . -I $(TRI)
 LIB = $(LFLAGS) -lsci -lm
