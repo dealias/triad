@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.14";
+const char VERSION[]="1.15";
 
 #include "xstream.h"
 #include <iostream>
@@ -79,6 +79,7 @@ int rescale=0;
 int invert=0;
 int reverse=0;
 int vector=0;
+int vector2=0;
 int vector3=0;
 int crop=0;
 int make_mpeg=0;
@@ -340,7 +341,9 @@ void options()
   cerr << "-xrange x1,x2\t limit x-range to [x1,x2]" << endl; 
   cerr << "-yrange y1,y2\t limit y-range to [y1,y2]" << endl; 
   cerr << "-zrange z1,z2\t limit z-range to [z1,z1]" << endl; 
-  cerr << "-vector\t\t plot 2 components as red--blue values" << endl; 
+  cerr << "-vector\t\t plot 2 components using spectral intensity gradients"
+       << endl; 
+  cerr << "-vector2\t\t plot 2 components as red--blue values" << endl; 
   cerr << "-vector3\t\t plot 3 components as red--green--blue values" << endl; 
   cerr << "-reverse\t reverse palette direction" << endl;
   cerr << "-ncolors n\t maximum number of colors to generate (default 65536)"
@@ -402,7 +405,7 @@ int main(int argc, char *argv[])
   int nset=0, mx=1, my=1;
   int n, end=INT_MAX;
   int trans=0;
-  int palette=BWRAINBOW;
+  int palette=-1;
   int bar=5;
   int band=2;
   int bandcolor=BLACK;
@@ -435,7 +438,7 @@ int main(int argc, char *argv[])
     {"torus", 0, &trans, TORUS},
     {"reverse", 0, &reverse, 1},
     {"vector", 0, &vector, 1},
-    {"vector2", 0, &vector, 1},
+    {"vector2", 0, &vector2, 1},
     {"vector3", 0, &vector3, 1},
     {"symmetric", 0, &symmetric, 1},
     {"rescale", 0, &rescale, 1},
@@ -715,7 +718,6 @@ int main(int argc, char *argv[])
   }	
 	
   char **argf=argv+optind;
-  if(outname == NULL) outname=argf[0];
 		
   if(!floating_scale) {
     vminf=new double[nfiles];
@@ -740,13 +742,15 @@ int main(int argc, char *argv[])
   system(cmd);
   rgbdir=strdup(rgbdirbuf.str().c_str());
 	
+  if(palette == -1) palette=vector ? RAINBOW : BWRAINBOW; //Default palette
   if(!grey) MakePalette(palette);
 	
-  if(vector3) vector=1;
+  if(vector3) vector2=1;
+  if(vector2) vector=1;
   
   const char *format=grey ? "gray" : "rgb";
-  int PaletteMin=(grey || vector) ? 0 : FirstColor;
-  int PaletteRange=(grey || vector) ? 255 : NColors-1;
+  int PaletteMin=(grey || vector2) ? 0 : FirstColor;
+  int PaletteRange=(grey || vector2) ? 255 : NColors-1;
   int PaletteMax=PaletteMin+PaletteRange;
   if(background == Undefined) background=grey ? 255 : BLACK;
 	
@@ -763,25 +767,28 @@ int main(int argc, char *argv[])
   char **files=new char*[nfiles];
   int mfiles=0;
   for(unsigned int f=0; f < nfiles; f++) {
-    const char *fieldname=argf[f];
+    ostringstream fieldname;
+    fieldname << argf[f];
     ixstream xin,xin2,xin3;
-    openfield(xin,fieldname,nx,ny,nz);
-    files[mfiles]=argf[f];
+    openfield(xin,argf[f],nx,ny,nz);
     
     int nx2,ny2,nz2;
     if(vector) {
       if(f+1 >= nfiles) msg(ERROR, "Too few files specified");
+      fieldname << argf[f+1];
       openfield(xin2,argf[f+1],nx2,ny2,nz2);
       if(nx2 != nx || ny2 != ny && nz2 != nz)
 	msg(ERROR,"Inconsistent component image sizes");
     }
     if(vector3) {
       if(f+2 >= nfiles) msg(ERROR, "Too few files specified");
+      fieldname << argf[f+2];
       openfield(xin3,argf[f+2],nx,ny,nz);
       if(nx2 != nx || ny2 != ny && nz2 != nz)
 	msg(ERROR,"Inconsistent component image sizes");
     }
-
+    files[mfiles]=strdup(fieldname.str().c_str());
+    cout << files[mfiles] << endl;
     
     if(vector3) bar=0;
     if((lower == upper || nz == 1) && bar == 0) band=0;
@@ -946,7 +953,7 @@ int main(int argc, char *argv[])
 	vmaxf3[f]=gmax3;
       }
       xin.close();
-      openfield(xin,fieldname,nx,ny,nz);
+      openfield(xin,argf[f],nx,ny,nz);
       if(vector) {
 	xin2.close();
 	openfield(xin2,argf[f+1],nx,ny,nz);
@@ -991,7 +998,7 @@ int main(int argc, char *argv[])
       if(!floating_scale) {vmin3=gmin3; vmax3=gmax3;}
 			
       ostringstream buf;
-      buf << rgbdir << fieldname << setfill('0') << setw(NDIGITS)
+      buf << rgbdir << fieldname.str() << setfill('0') << setw(NDIGITS)
 	  << set << "." << format;
       const char *oname=strdup(buf.str().c_str());
       ofstream fout(oname);
@@ -1019,6 +1026,7 @@ int main(int argc, char *argv[])
 	    for(int i=istart; i < istop; i++)  {
 	      Ivec x;
 	      int index, indexg=0, indexb=0;
+	      Real factor=0;
 	      
 	      if(trans) {
 		x=Index(i,j);
@@ -1072,8 +1080,10 @@ int main(int argc, char *argv[])
 		}
 	      } else {
 		index=((int)((value(k,j,i)-vmin)*step+0.5))*sign+offset;
-		if(vector)
+		if(vector2)
 		  indexb=((int)((value2(k,j,i)-vmin2)*step2+0.5))*sign+offset;
+		else if(vector)
+		  factor=(value2(k,j,i)-vmin2)/(vmax2-vmin2);
 		if(vector3) {
 		  indexg=indexb;
 		  indexb=((int)((value3(k,j,i)-vmin3)*step3+0.5))*sign+offset;
@@ -1087,8 +1097,12 @@ int main(int argc, char *argv[])
 		unsigned char r,g,b;
 		if(vector3) {
 		  r=index; g=indexg; b=indexb;
-		} else if(vector) {
+		} else if(vector2) {
 		  r=index; g=0; b=indexb;
+		} else if(vector) {
+		  r=(int) (Red[index]*factor+0.5);
+		  g=(int) (Green[index]*factor+0.5);
+		  b=(int) (Blue[index]*factor+0.5);
 		} else {
 		  r=Red[index]; g=Green[index]; b=Blue[index];
 		}
@@ -1114,8 +1128,19 @@ int main(int argc, char *argv[])
 	  for(int j=mpalsize-1; j >= 0; j--)  {
 	    unsigned char indexb=((int) (j*step2+0.5))*sign+offset;
 	    for(int i=0; i < Nxmx; i++)  {
-	      unsigned char index=((int) (i*step+0.5))*sign+offset;
-	      fout << index << uzero << indexb;
+	      int index=((int) (i*step+0.5))*sign+offset;
+	      unsigned char r,g,b;
+	      if(vector2) {
+		r=index;
+		g=uzero;
+		b=indexb;
+	      } else {
+		Real factor=((Real) j)/(mpalsize-1);
+		r=(int) (Red[index]*factor+0.5);
+		g=(int) (Green[index]*factor+0.5);
+		b=(int) (Blue[index]*factor+0.5);
+	      }
+     	      fout << r << g << b;
 	    }
 	  }
 	} else {
@@ -1151,7 +1176,8 @@ int main(int argc, char *argv[])
     if(vector3) f++;
     mfiles++;
   }
-	
+  
+  if(outname == NULL) outname=files[0];
   convertprog=(mfiles > 1 || label) ? "montage" : "convert";
 	
   if((remote || !label) && make_mpeg) putenv("DISPLAY=");
