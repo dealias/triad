@@ -1,5 +1,5 @@
 C++ = CC -64 -D_POSIX_SOURCE
-INCL = -I . -I $(TRI) -I -
+INCL = -I . -I $(TRI) -I-
 OPT = $(CFLAGS)
 MAKEDEPEND = $(C++) -M -DDEPEND
 LIB = $(LFLAGS) -lm
