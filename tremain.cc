@@ -18,7 +18,7 @@ int poll()
 	if(!tlimit) TREMAIN(tlimit);
 	
 	cputime(cpu);
-	for(i=0; i < ncputime; i++) seconds += cpu[i];
+	for(int i=0; i < ncputime; i++) seconds += cpu[i];
 
 	if(2*seconds-last_seconds < 0.95*tlimit) {
 		last_seconds=seconds;
