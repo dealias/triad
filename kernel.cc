@@ -34,7 +34,6 @@ int itmax=100;
 double tmax=0.0;
 double dt=0.0;
 int average=1;
-int verbose=1;
 int dynamic=1;
 double tolmax=0.005;
 double tolmin=0.0;
@@ -47,6 +46,7 @@ double polltime=0.0;
 int output=0;
 int hybrid=0;
 int override=0;
+int verbose=1;
 int discrete=0;
 
 // Local vocabulary declarations and default values
@@ -64,7 +64,6 @@ ProblemBase::ProblemBase()
 	VOCAB(tmax,-DBL_MAX,DBL_MAX);
 	VOCAB(dt,0.0,DBL_MAX);
 	VOCAB(average,0,1);
-	VOCAB(verbose,0,4);
 	VOCAB(dynamic,0,1);
 	VOCAB(tolmax,0.0,DBL_MAX);
 	VOCAB(tolmin,0.0,DBL_MAX);
@@ -79,6 +78,7 @@ ProblemBase::ProblemBase()
 	VOCAB_NODUMP(initialize,0,1);
 	VOCAB_NODUMP(clobber,0,1);
 	VOCAB_NODUMP(override,0,1);
+	VOCAB_NODUMP(verbose,0,4);
 	VOCAB_NODUMP(run,"","");
 	VOCAB(output,0,1);
 	VOCAB(discrete,0,1);

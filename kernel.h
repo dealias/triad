@@ -29,7 +29,6 @@ extern int itmax;
 extern double tmax;
 extern double dt;
 extern int average;
-extern int verbose;
 extern int dynamic;
 extern int digits;
 extern int restart;
@@ -37,6 +36,7 @@ extern double polltime;
 extern int output;
 extern int hybrid;
 extern int override;
+extern int verbose;
 extern int discrete;
 
 class ParamBase {

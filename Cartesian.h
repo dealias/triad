@@ -20,7 +20,6 @@ public:
 #endif		
 		Real th=atan2(y,x);
 		if(!reality && th < 0) th += twopi;
-		else if (th == PI) th=-PI;
 		return th;
 	}
 	Real X() const {return x;}
