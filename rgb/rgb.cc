@@ -159,7 +159,7 @@ public:
 };
 
 enum Transforms {IDENTITY,CIRCLE,TORUS};
-typedef void Transform(Array2<Ivec> &);
+typedef void Transform(array2<Ivec> &);
 Transform Circle,Torus;
 Transform *transform[]={NULL,Circle,Torus};
 unsigned int Ntransform=sizeof(transform)/sizeof(Transform *);
@@ -185,7 +185,7 @@ void openfield(T& fin, const char *fieldname, int& nx, int& ny, int& nz)
 				
 }
 
-int readframe(ixstream& xin, int nx, int ny, int nz, Array3<float> value,
+int readframe(ixstream& xin, int nx, int ny, int nz, array3<float> value,
 	      double& gmin, double& gmax, double *vmink, double *vmaxk)
 {
   gmin=DBL_MAX; gmax=-DBL_MAX;
@@ -195,7 +195,7 @@ int readframe(ixstream& xin, int nx, int ny, int nz, Array3<float> value,
   errno=0;
   for(int k=0; k < nz; k++) {
     if(floating_section) {vmin=DBL_MAX; vmax=-DBL_MAX;}
-    Array2<float> valuek=value[k];
+    array2<float> valuek=value[k];
     int start,stop,incr;
     if(invert) {
       start=ny1-1;
@@ -222,7 +222,7 @@ int readframe(ixstream& xin, int nx, int ny, int nz, Array3<float> value,
 			
       int init=0;
       if((j-start) % sy == 0) {j0 += incr; init=1;}
-      Array1<float>::opt valuekj=valuek[j0];
+      array1<float>::opt valuekj=valuek[j0];
       if(init) for(int i0=0; i0 < nx; i0++) valuekj[i0]=0.0;
 			
       Real sumv=0.0;
@@ -912,7 +912,7 @@ int main(int argc, char *argv[])
     }
 		
     int nz0=kmax-kmin+1;
-    Array2<Ivec> Index;
+    array2<Ivec> Index;
 		
     if(trans) {
       Index.Allocate(Nx,Ny);
@@ -960,7 +960,7 @@ int main(int argc, char *argv[])
       if(ysize % 2) ysize++;
     }
 		
-    Array3<float> value,value2,value3;
+    array3<float> value,value2,value3;
     value.Allocate(nz,ny,nx);
     if(vector) value2.Allocate(nz,ny,nx);
     if(vector3) value3.Allocate(nz,ny,nx);
@@ -1472,7 +1472,7 @@ int System(char *command)
   }
 }
 
-void Circle(Array2<Ivec>& Index)
+void Circle(array2<Ivec>& Index)
 {
   for(int u=0; u < Nx; u++)  {
     for(int v=0; v < Ny; v++)  {
@@ -1569,10 +1569,10 @@ Real Ayx,Ayy,Ayz;
 Real Azx,Azy,Azz;
 
 Real twopibyny,twopibynz;
-Array2<Real> maxz;
-Array2<Ivec> index0;
+array2<Real> maxz;
+array2<Ivec> index0;
 
-void Torus(Array2<Ivec>& Index)
+void Torus(array2<Ivec>& Index)
 {
   for(int u=0; u < Nx; u++)  {
     for(int v=0; v < Ny; v++)  {
