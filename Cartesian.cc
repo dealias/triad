@@ -64,7 +64,7 @@ void Basis<Cartesian>::MakeBins()
 	return;
 }
 
-#if _CRAY || 1
+#if _CRAY
 void CartesianPad(Var *to_, Var * from)
 {
 	Var *to=to_+xoffset;
@@ -72,7 +72,7 @@ void CartesianPad(Var *to_, Var * from)
 	Var *tostop=to+Nx0;
 #pragma ivdep		
 	for(; to < tostop; to++) *to=*(from++);
-    for(int j=0; j < NRows; j++) {
+    for(int j=0; j < NRows-1; j++) {
         tostop += NPad;
 #pragma ivdep		
         for(; to < tostop; to++) *to=0.0;
