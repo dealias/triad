@@ -239,7 +239,7 @@ inline void out_function(ostream& os, Real (*f)(int), char *text, int n,
 						 int nperline)
 #else
 template<class T>
-void out_function(ostream& os, T (*f)(int), char *text, int n, int nperline)
+inline void out_function(ostream& os, T (*f)(int), char *text, int n, int nperline)
 #endif	
 {
 	int i;
@@ -256,7 +256,7 @@ void out_function(ostream& os, T (*f)(int), char *text, int n, int nperline)
 inline void out_curve(ostream& os, Real *f, char *text, int n, int nperline)
 #else
 template<class T>	
-void out_curve(ostream& os, T *f, char *text, int n, int nperline)
+inline void out_curve(ostream& os, T *f, char *text, int n, int nperline)
 #endif
 {
 	int i;
