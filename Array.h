@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.14
+#define __ARRAY_H_VERSION__ 1.15
 
 // Defining NDEBUG improves optimization but disables argument checking.
 
@@ -663,7 +663,6 @@ class Array2 : public array2<T> {
     return Array1<T>(ny,vtemp+ix*ny,oy);
   }
   T& operator () (int ix, int iy) const {
-    cout << nx << endl;
     __check(ix,nx,ox,2,1);
     __check(iy,ny,oy,2,2);
     return voff[ix*ny+iy];
