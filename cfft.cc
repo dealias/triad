@@ -114,8 +114,10 @@ extern "C" void CCFFT(const int& isign, const int& n, Real& scale,
 					 Complex *x, Complex *y, Real *table, Real *work, 
 					 int* isys);
 		 
-inline void ccfft(Complex *data, unsigned int n, int isign, Real scale)
+void fft(Complex *data, unsigned int log2n, int isign, int)
 {
+	unsigned int n=1 << log2n;
+	Real scale=1.0;
 	if(n != nlast) {
 		nlast=n;
 		table=new(table,100+8*n) Real;
@@ -125,15 +127,5 @@ inline void ccfft(Complex *data, unsigned int n, int isign, Real scale)
 	CCFFT(isign,n,scale,data,data,table,work,isys);
 }
 
-void fft_br(Complex *data, unsigned int log2n)
-{
-	unsigned int n=1 << log2n;
-	ccfft(data,n,1,1.0);
-}
 
-void fft_brinv(Complex *data, unsigned int log2n)
-{
-	unsigned int n=1 << log2n;
-	ccfft(data,n,-1,1.0);
-}
 

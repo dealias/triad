@@ -1,7 +1,5 @@
-#include "utils.h"
-
-void rfft_br(Complex *data, unsigned int log2n);
-void rfft_brinv(Complex *data, unsigned int log2n);
+#include "options.h"
+#include "fft.h"
 
 // Compute H = F (*) G, where F and G contain the non-negative Fourier
 // components of real functions f and g, respectively. Dealiasing via
@@ -23,7 +21,7 @@ void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
 
 #pragma ivdep	
 	for(i=m; i < n/2+1; i++) F[i]=0.0;
-	rfft_brinv(F,log2n-1);
+	rfft_inv(F,log2n-1,1);
 	
 	Real ninv=2.0/n2;
 #pragma ivdep	
@@ -32,7 +30,7 @@ void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
 		H[i].im=F[i].im*g[i].im*ninv;
 	}
 	
-	rfft_br(H,log2n-1);
+	rfft(H,log2n-1,1);
 	H[0].im=0.0;
 }
 
@@ -56,7 +54,7 @@ void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
 
 #pragma ivdep	
 	for(i=m; i < n/2+1; i++) G[i]=0.0;
-	rfft_brinv(G,log2n-1);
+	rfft_inv(G,log2n-1,1);
 	
 	convolve0(H,F,G,m,log2n);
 }	

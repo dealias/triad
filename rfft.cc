@@ -33,22 +33,22 @@ void rfft_init(unsigned int log2n)
 	for(unsigned int i=1; i < n4; i++) WTable[i]=WTable[i-1]*wp;
 }
 
-// Return the bit-reversed Fourier transform of n real values.
+// Return the Fourier transform of n real values.
 // Before calling, data must be allocated as Complex[n/2+1].
 // On entry: data contains the n real values stored as a Complex array of
 // length n/2.
 //           log2n contains the base-2 logarithm of n.
+//           bitreverse is 0 for a true fft, 1 for a faster bit-reversed fft.
 // On exit:  data contains the n/2+1 Complex Fourier values.
 
-void rfft_br(Complex *data, unsigned int log2n)
+void rfft(Complex *data, unsigned int log2n, int bitreverse)
 {		 
 	unsigned int i;
 	if(log2n > wpTableSize) fft_init(log2n+1);
 	
 	unsigned int log4n=log2n/2;
 	if(2*log4n == log2n) fft4(data,log4n,1); // Special case for powers of 4.
-	else fft_br(data,log2n);
-//	fft(data,log2n,1);
+	else fft(data,log2n,1,bitreverse);
 	
 	unsigned int n2=1 << log2n;
 	unsigned int n4=n2 >> 1;
@@ -66,15 +66,16 @@ void rfft_br(Complex *data, unsigned int log2n)
 }
 
 
-// Return the bit-reversed real inverse Fourier transform of the n/2+1
+// Return the real inverse Fourier transform of the n/2+1
 // Complex values corresponding to the non-negative part of the frequency
 // spectrum. Before calling, data must be allocated as Complex[n/2+1].
 // On entry: data contains the n/2+1 Complex Fourier transform values.
 //           log2n contains the base-2 logarithm of n.
+//           bitreverse is 0 for a true fft, 1 for a faster bit-reversed fft.
 // On exit:  data contains the n real inverse Fourier transform values
 // stored as a Complex array of length n/2.
 
-void rfft_brinv(Complex *data, unsigned int log2n)
+void rfft_inv(Complex *data, unsigned int log2n, int bitreverse)
 {		 
 	unsigned int i;
 	if(log2n > wpTableSize) fft_init(log2n+1);
@@ -95,6 +96,5 @@ void rfft_brinv(Complex *data, unsigned int log2n)
 	
 	unsigned int log4n=log2n/2;
 	if(2*log4n == log2n) fft4(data,log4n,-1); // Special case for powers of 4.
-	else fft_brinv(data,log2n);
-//	fft(data,log2n,-1);
+	else fft(data,log2n,-1,bitreverse);
 }

@@ -24,7 +24,7 @@ void init_aux(int n, double *& aux1, int& naux1, double *& aux2, int& naux2)
 }
 	 
 
-void rfft_br(Complex *data, unsigned int log2n) {
+void rfft(Complex *data, unsigned int log2n, int) {
 	static int naux1,naux2,nlast=0;	
 	static double *aux1,*aux2;
 	static double scale=1.0;
@@ -38,7 +38,7 @@ void rfft_br(Complex *data, unsigned int log2n) {
 	drcft(zero,data,zero,data,zero,n,one,one,scale,aux1,naux1,aux2,naux2);
 }
 
-void rfft_brinv(Complex *data, unsigned int log2n) {
+void rfft_inv(Complex *data, unsigned int log2n, int) {
 	static int naux1,naux2,nlast=0;	
 	static double *aux1,*aux2;
 	static double scale=0.5;
