@@ -6,16 +6,13 @@ char *NWave::Abbrev() {return "w3";}
 char *approximation="none";
 char *integrator="PC";
 
-const Nu Zero=0.0;
-
 // Three-wave variables
 int randomIC=0;
 Mc Mkpq[]={1.0,1.0,-2.0};
-static Nu nu0[]={Zero,Zero,Zero};
+static Nu nu0[]={0.0,0.0,0.0};
 static Var IC[]={sqrt(1.5),0.0,sqrt(1.5)};
-Real K0[]={sqrt(3.0),sqrt(9.0),sqrt(6.0)};
 Real Area0[]={1.0,1.0,1.0};
-Real *K=K0,*Area=Area0,*y2;
+Real *K,*Area=Area0,*y2;
 Real continuum_factor=1.0;
 
 NWave::NWave()
@@ -52,12 +49,17 @@ ofstream fout;
 void NWave::InitialConditions()
 {
 	int k,j;
-	
+
 	nyconserve=Npsi=3; 
 	psibuffer=new Var[Npsi];
 	ny=(average ? Nmoment+1 : 1)*Npsi;
 	y=new Var[ny];
 	y2=new Real[Npsi];
+	K=new Real [Npsi];
+	
+	K[0]=sqrt(3.0);
+	K[1]=sqrt(9.0);
+	K[2]=sqrt(6.0);
 	
 	nu=nu0;
 

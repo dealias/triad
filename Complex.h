@@ -86,8 +86,14 @@ Complex	  pow(const Complex& x, const Complex& p);
 Complex	  pow(const Complex& x, Real y);
 Complex	  sqrt(const Complex& x);
    
-istream&  operator >> (istream& s, Complex& x);
-ostream&  operator << (ostream& s, const Complex& x);
+#ifdef __GNUC__
+#define INLINE
+#else
+#define INLINE inline
+#endif
+
+INLINE istream&  operator >> (istream& s, Complex& x);
+INLINE ostream&  operator << (ostream& s, const Complex& x);
 
 // other functions defined as inlines
 
