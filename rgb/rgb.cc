@@ -1397,11 +1397,13 @@ int System(char *command)
     } else {
       if(WIFEXITED(status)) {
 	status=WEXITSTATUS(status);
-	if(status) msg(WARNING,"%s\nReceived signal %d",command,status);
-      }
-      else msg(ERROR,"Process %d exited abnormally", pid);
+	if(status == 0) return;
+	msg(WARNING,"%s\nReceived signal %d",command,status);
+      } else msg(WARNING,"Process %d exited abnormally", pid);
       if(cleaning) return status;
-      cleaning=true; cleanup();
+      cleaning=true;
+      cleanup();
+      exit(-1);
     }
   }
 }
