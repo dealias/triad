@@ -87,7 +87,8 @@ inline void Mult(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
 		
 		for(int i=0; i < A.Nx(); i++) {
 			Array1(T) Ai=A[i];
-			for(int k=0; k < C.Ny(); k++) {
+			int k;
+			for(k=0; k < C.Ny(); k++) {
 				T sum=0.0;
 				Array1(T) CTk=CT[k];
 				for(int j=0; j < A.Ny(); j++) {
@@ -95,7 +96,7 @@ inline void Mult(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
 				}
 				work[k]=sum;
 			}
-			for(int k=0; k < C.Ny(); k++) Ai[k]=work[k];
+			for(k=0; k < C.Ny(); k++) Ai[k]=work[k];
 		}
 	}		
 }
