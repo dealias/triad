@@ -177,7 +177,7 @@ void PS::NonLinearSrc(Var *source, Var *psi, double)
 	CartesianPad(psiy,source);
 	crfft2dT(psiy,log2Nxb,log2Nyb,1);
 
-#if 0	
+#if 0 // Compute x-space velocity increments
 	Real *v2;
 	// Strictly speaking, v2 should be divided by (Nxb*Nyb)^2 afterwards
 	Real psix0=psix[0].re;

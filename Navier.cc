@@ -228,7 +228,7 @@ void NWave::InitialConditions()
 	fparam.close();
 	
 	if(movie && strcmp(method,"SR") == 0) {
-		if(truefield) {
+		if(discrete && truefield) {
 			set_fft_parameters();
 			psix=new Var[nfft];
 		} else {
@@ -242,23 +242,22 @@ void NWave::InitialConditions()
 			
 			xcoeff=new Complex [ngridx*Npsi];
 			for(m=0; m < Npsi; m++) {
-				Real area_factor=sqrt(sqrt(Geometry->Area(m)));
+				Real sqrtArea=sqrt(Geometry->Area(m));
 				Real kx=Geometry->X(m);
 				for(i=0; i < ngridx; i++) {
 					Complex *p=xcoeff+i*Npsi;
 					Real X=i*L/ngridx;
-					p[m]=expi(kx*X)*area_factor;
+					p[m]=expi(kx*X)*sqrtArea;
 				}				
 			}
 			
 			ycoeff=new Complex [ngridy*Npsi];
 			for(m=0; m < Npsi; m++) {
-				Real area_factor=sqrt(sqrt(Geometry->Area(m)));
 				Real ky=Geometry->Y(m);
 				for(int j=0; j < ngridy; j++) {
 					Complex *q=ycoeff+j*Npsi;
 					Real Y=j*L/ngridy;
-					q[m]=expi(ky*Y)*area_factor;
+					q[m]=expi(ky*Y);
 				}
 			}
 		}
