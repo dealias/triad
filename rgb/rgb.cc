@@ -1135,8 +1135,8 @@ int main(int argc, char *argv[])
 	      } else {
 		Real factor=((Real) j)/(mpalsize-1);
 		ramp(index,factor,r,g,b);
-		fout << r << g << b;
 	      }
+	      fout << r << g << b;
 	    }
 	  }
 	} else {
