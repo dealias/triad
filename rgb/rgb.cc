@@ -769,8 +769,20 @@ int main(int argc, char *argv[])
     files[mfiles]=argf[f];
     mfiles++;
     
-    if(vector) openfield(xin2,argf[f+1],nx,ny,nz);
-    if(vector3) openfield(xin3,argf[f+2],nx,ny,nz);
+    int nx2,ny2,nz2;
+    if(vector) {
+      if(f+1 >= nfiles) msg(ERROR, "Too few files specified");
+      openfield(xin2,argf[f+1],nx2,ny2,nz2);
+      if(nx2 != nx || ny2 != ny && nz2 != nz)
+	msg(ERROR,"Inconsistent component image sizes");
+    }
+    if(vector3) {
+      if(f+2 >= nfiles) msg(ERROR, "Too few files specified");
+      openfield(xin3,argf[f+2],nx,ny,nz);
+      if(nx2 != nx || ny2 != ny && nz2 != nz)
+	msg(ERROR,"Inconsistent component image sizes");
+    }
+
     
     double *vmink,*vmaxk;
     double *vmink2=NULL,*vmaxk2=NULL;
