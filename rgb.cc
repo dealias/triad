@@ -36,6 +36,7 @@ char yuvinterlace[]="";
 #include <iomanip.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/wait.h>
 
 #include "DynVector.h"
 #include "rgb.h"
@@ -59,6 +60,7 @@ int invert=0;
 int gray=0;
 
 void cleanup();
+int system (char *command);
 
 template<class T>
 void openfield(T& fin, char *fieldname, int& nx, int& ny, int& nz)
@@ -610,3 +612,34 @@ void manimate(int, char *const argf[], int n, char *const type,
 	if(verbose) cout << cmd << endl;
 	system(cmd);
 }
+
+extern char **environ;
+
+int system (char *command) {
+	int pid, status;
+
+	if (command == 0) return 1;
+	pid = fork();
+	if (pid == -1) return -1;
+	if (pid == 0) {
+		char *argv[4];
+		argv[0] = "sh";
+		argv[1] = "-c";
+		argv[2] = command;
+		argv[3] = 0;
+		execve("/bin/sh",argv,environ);
+		exit(127);
+	}
+	
+	do {
+		if (waitpid(pid, &status, 0) == -1) {
+			if (errno != EINTR) return -1;
+		} else {
+			if(status != 0) {
+				msg(ERROR,"%s\n\nreturned signal %d",command,status);
+			}
+			return status;
+		}
+	} while(1);
+}
+
