@@ -139,6 +139,7 @@ void MakePalette(int palette)
 		
 	case GENERAL:
 		for(i=0; i <= n; i++) AddColor(r1+r2*i*ninv,g1+g2*i*ninv,b1+b2*i*ninv);
+		return;
 		
 	case YELLOW: 
 		for(i=0; i <= n; i++) AddColor((n-i)*ninv,(n-i)*ninv,0.0);
