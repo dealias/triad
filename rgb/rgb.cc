@@ -314,7 +314,7 @@ void options()
 		 << endl;
 	cerr << "-crop geometry\t crop to specified geometry" << endl;
 	cerr << "-reverse\t reverse palette direction" << endl;
-	cerr << "-ncolors n\t maximum number of colors to generate (default 256)"
+	cerr << "-ncolors n\t maximum number of colors to generate (default 65536)"
 		 << endl; 
 	cerr << "-background n\t background color" << endl; 
 	cerr << endl;

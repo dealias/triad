@@ -1,7 +1,7 @@
 #include "utils.h"
 #include "rgb.h"
 
-int NColors=256;
+int NColors=65536;
 
 Array1<u_char> Red;
 Array1<u_char> Blue;
