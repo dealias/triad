@@ -38,8 +38,7 @@ class Discrete
 public:
 	D value;
 	Real weight;
-	Discrete() {}
-	Discrete(const D& value0, const Real weight0) {
+	void Store(const D& value0, const Real weight0) {
 		value=value0; weight=weight0;
 	}
 };
@@ -73,7 +72,7 @@ public:
 		const Real weight=InBin(m); 
 		if(weight) {
 			area += weight;
-			mode[nmode++].Discrete(m,weight);
+			mode[nmode++].Store(m,weight);
 		}
 	}
 	void MakeModes();
