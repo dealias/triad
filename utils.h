@@ -11,7 +11,7 @@
 #include <cmath>
 #include <memory>
 
-#if _MAC
+#ifdef _MAC
 #include ":arch:mac.h"
 #else // !_MAC
 
@@ -201,6 +201,7 @@ int copy(const char *oldname, const char *newname);
 
 const char *machine(), *date(), *tempdir();
 
+
 const int ncputime=3;
 void cputime(double *cpu);
 
@@ -222,7 +223,7 @@ inline Real min(Real x)
   return x;
 }
 
-#if !_AIX || __GNUC__
+#if !defined(_AIX) || defined(__GNUC__)
 inline Real abs(Real x)
 {
   return fabs(x);
@@ -354,7 +355,7 @@ unsigned int atou(const char *s);
 
 const int default_nperline=4;
 
-static const char *outerror="Cannot write %s to output stream";
+const char *const outerror="Cannot write %s to output stream";
 
 template<class T>	
 inline void out_curve(oxstream& os, T *f, const char *text, unsigned int n,

@@ -5,7 +5,7 @@
 #include <ctype.h>
 #include <time.h>
 
-char* run="";
+const char* run="";
 ExitCode exit_signal=COMPLETE;
 
 const double pi=PI;
@@ -15,13 +15,13 @@ const double twopi2=twopi*twopi;
 char *upcase(const char *s, char *s2)
 {
   char *p,*pstop;
-  unsigned n;
+  size_t n;
 
   n = strlen(s);
   if(s2==NULL) s2=new char[n+1];
   pstop=s2+n;
 	
-  for(p=s2; p < pstop; p++) *p = toupper(*s++);
+  for(p=s2; p < pstop; p++) *p = (char) toupper(*s++);
   *p='\0';
 
   return s2;
@@ -30,13 +30,13 @@ char *upcase(const char *s, char *s2)
 char *downcase(const char *s, char *s2)
 {
   char *p,*pstop;
-  unsigned n;
+  size_t n;
 
   n = strlen(s);
   if(s2==NULL) s2=new char[n+1];
   pstop=s2+n;
 	
-  for(p=s2; p < pstop; p++) *p = tolower(*s++);
+  for(p=s2; p < pstop; p++) *p = (char) tolower(*s++);
   *p='\0';
 
   return s2;

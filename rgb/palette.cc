@@ -19,11 +19,11 @@ extern int reverse;
 
 static int k,incr;
 
-int ColorByte(double r) {
+unsigned char ColorByte(double r) {
   int a=(int)(256.0*r);
   if(a == 256) a=255;
   if(a < 0 || a > 255) msg(ERROR,"Invalid color: %d",a);
-  return a;
+  return (unsigned char) a;
 }
 
 void AddColor(double r, double g, double b) {

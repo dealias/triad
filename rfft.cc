@@ -24,7 +24,7 @@ unsigned int wpTableSize=0;
 static Complex *WTable;
 static unsigned int WTableSize=0;
 
-#if _CRAY
+#ifdef _CRAY
 const int offset=1;
 #else
 const int offset=0;
@@ -484,7 +484,7 @@ void rcfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
   mrcfft0(data,log2ny,isign,nx,nx1,1,scale,bitreverse);
 	
   Complex *pstop=data+nx1*nyp;
-#if _CRAY
+#ifdef _CRAY
   for(i=1; i < nx; i += 2) {
     //#pragma ivdep
     for(p=data+i; p < pstop; p += nx1) *p=-(*p);
@@ -528,7 +528,7 @@ void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	
   Complex *p;
   Complex *pstop=data+nx1*nyp;
-#if _CRAY
+#ifdef _CRAY
   for(unsigned int i=1; i < nx; i += 2) {
     //#pragma ivdep
     for(p=data+i; p < pstop; p += nx1) *p=-(*p);

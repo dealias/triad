@@ -10,7 +10,7 @@ inline void fftw_export_wisdom(void (*emitter)(char c, ofstream& s),
   fftw_export_wisdom((void (*) (char, void *)) emitter, (void *) &s);
 }
 
-inline fftw_status fftw_import_wisdom(char (*g)(ifstream& s), ifstream &s)
+inline fftw_status fftw_import_wisdom(int (*g)(ifstream& s), ifstream &s)
 {
   return fftw_import_wisdom((int (*) (void *)) g, (void *) &s);
 }
@@ -20,7 +20,7 @@ inline void put_wisdom(char c, ofstream& s)
   s.put(c);
 }
 
-inline char get_wisdom(ifstream& s)
+inline int get_wisdom(ifstream& s)
 {
   return s.get();
 }
@@ -28,7 +28,7 @@ inline char get_wisdom(ifstream& s)
 static ifstream ifwisdom;
 static ofstream ofwisdom;
 
-static char *wisdom_name="wisdom.txt";
+static const char *wisdom_name="wisdom.txt";
 
 static fftw_plan *plan=NULL, *planinv=NULL;
 static unsigned int nplan=0;
@@ -40,7 +40,7 @@ static rfftwnd_plan *rcplan=NULL;
 static unsigned int nrcplan=0;
 
 // Create plans for size n
-static int init_plan(unsigned int n, int inc1)
+static int init_plan(unsigned int n, int)
 {
   nplan++;
   plan=new(plan,nplan) fftw_plan;

@@ -486,7 +486,7 @@ int main(int argc, char *argv[])
 #endif	
   int croparg=-1;
   errno=0;
-  while (1) {
+  for (;;) {
     int c = getopt_long_only(argc,argv,
 			     "2bfghilmprvFo:x:H:V:B:E:L:O:U:S:X:Y:Z:",
 			     long_options,&option_index);
@@ -1096,9 +1096,13 @@ int main(int argc, char *argv[])
 	      } else {
 		unsigned char r,g,b;
 		if(vector3) {
-		  r=index; g=indexg; b=indexb;
+		  r=(unsigned char) index;
+		  g=(unsigned char) indexg;
+		  b=(unsigned char) indexb;
 		} else if(vector2) {
-		  r=index; g=0; b=indexb;
+		  r=(unsigned char) index;
+		  g=0; 
+		  b=(unsigned char) indexb;
 		} else if(vector) {
 		  ramp(index,factor,r,g,b);
 		} else {
@@ -1121,17 +1125,16 @@ int main(int argc, char *argv[])
       
       if(!vector3) {
 	if(vector && mpalsize) {
-	  int uzero=(unsigned char) 0;
 	  double step2=((double) PaletteRange)/mpalsize;
 	  for(int j=mpalsize-1; j >= 0; j--)  {
-	    unsigned char indexb=((int) (j*step2+0.5))*sign+offset;
+	    int indexb=((int) (j*step2+0.5))*sign+offset;
 	    for(int i=0; i < Nxmx; i++)  {
 	      int index=((int) (i*step+0.5))*sign+offset;
 	      unsigned char r,g,b;
 	      if(vector2) {
-		r=index;
-		g=uzero;
-		b=indexb;
+		r=(unsigned char) index;
+		g=0;
+		b=(unsigned char) indexb;
 	      } else {
 		Real factor=((Real) j)/(mpalsize-1);
 		ramp(index,factor,r,g,b);
@@ -1223,10 +1226,10 @@ void cleanup()
   }
 }
 
-#if sun
-char *separator="_______________________________________________";
+#ifdef sun
+const char *separator="_______________________________________________";
 #else
-char *separator="                                               ";
+const char *separator="                                               ";
 #endif
 
 void ramp(int index, Real x, u_char& r, u_char& g, u_char& b) 
@@ -1361,15 +1364,15 @@ int System(const char *command) {
   if (pid == -1) return -1;
   if (pid == 0) {
     char *argv[4];
-    argv[0] = "sh";
-    argv[1] = "-c";
+    argv[0] = strdup("sh");
+    argv[1] = strdup("-c");
     argv[2] = strdup(command);
     argv[3] = 0;
     execve("/bin/sh",argv,environ);
     exit(127);
   }
 	
-  do {
+  for(;;) {
     if (waitpid(pid, &status, 0) == -1) {
       if (errno != EINTR) return -1;
     } else {
@@ -1381,7 +1384,7 @@ int System(const char *command) {
 	msg(ERROR,"%s\nReceived signal %d",command,status);
       }
     }
-  } while(1);
+  }
 }
 
 void Circle(Array2<Ivec>& Index)
@@ -1533,14 +1536,14 @@ void Torus(Array2<Ivec>& Index)
 	int define1,refine1;
 	int num1=1;
 	Real denom1=0.5;
-	while(1) {
+	for(;;) {
 	  define1=0; refine1=0;
 	  for(int kp=0; kp < num1; kp++) {
 	    Real k2=k+denom1*(2*kp+1);
 	    Real denom2=0.5;
 	    int define2,refine2;
 	    int num2=1;
-	    while(1) {
+	    for(;;) {
 	      define2=0; refine2=0;
 	      for(int jp=0; jp < num2; jp++) {
 		Real j2=j+denom2*(2*jp+1);
@@ -1574,14 +1577,14 @@ void Torus(Array2<Ivec>& Index)
 	int define1,refine1;
 	int num1=1;
 	Real denom1=0.5;
-	while(1) {
+	for(;;) {
 	  define1=0; refine1=0;
 	  for(int ip=0; ip < num1; ip++) {
 	    Real i2=i+denom1*(2*ip+1);
 	    Real denom2=0.5;
 	    int define2,refine2;
 	    int num2=1;
-	    while(1) {
+	    for(;;) {
 	      define2=0; refine2=0;
 	      for(int jp=0; jp < num2; jp++) {
 		Real j2=j+denom2*(2*jp+1);

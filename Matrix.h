@@ -666,7 +666,7 @@ inline void Divide(const Array2<T>& A, const Array2<T>& C, const Array2<T>& B)
   D.Load(C);
   C.Purge();
   GaussJordan(D,A);
-};
+}
 	
 template<class T>
 inline void Divide(const Array1<T>& A, const Array2<T>& C, const Array1<T>& B)
@@ -687,7 +687,7 @@ inline void Divide(const Array1<T>& A, const Array2<T>& C, const Array1<T>& B)
   D.Load(C);
   C.Purge();
   GaussJordan(D,A2);
-};
+}
 	
 template<class T>
 inline void Divide(const Array2<T>& A, T C, const Array2<T>& B)

@@ -62,7 +62,7 @@ public:
                                      alloc=A.alloc; state(A.test(temporary));}
   DynVector(const DynVector<T>& A) {SetDynVector(A);}
   DynVector(unsigned int s) {Allocate(s);}
-  ~DynVector() {Deallocate();}
+  virtual ~DynVector() {Deallocate();}
 
   void Freeze() {state=unallocated;}
   void Hold() {if(test(allocated)) {state=temporary;}}

@@ -1,5 +1,5 @@
 /* C++ interface to the XDR External Data Representation I/O routines
-   Version 1.3
+   Version 1.4
    Copyright (C) 1999 John C. Bowman <bowman@math.ualberta.ca>
 
 This program is free software; you can redistribute it and/or modify
@@ -38,6 +38,7 @@ class xbyte {
  public:
   xbyte() {};
   xbyte(unsigned char c0) : c(c0) {};
+  xbyte(int c0) : c((unsigned char) c0) {};
   int byte() const {return c;}
   operator unsigned char () const {return c;}
 };
@@ -73,7 +74,7 @@ class xstream : virtual public xios {
   }
   void close() {
     if(buf) {
-#if !(_CRAY || (__i386__ && !__ELF__))
+#if !defined(_CRAY) && (!defined(__i386__) || defined(__ELF__))
       xdr_destroy(&xdrs);
 #endif			
       fclose(buf);

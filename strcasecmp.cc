@@ -7,13 +7,13 @@
 
 #define ISUPPER(C) ((C) >= 'A' && (C) <= 'Z')
 #define TOLOWER(C) ((C) - 'A' + 'a')
-#define NORMAL(C) (ISUPPER(C) ? TOLOWER(C) : (C))
+#define NORMAL(C) (char) (ISUPPER(C) ? TOLOWER(C) : (C))
 
 int strcasecmp(const char *s1, const char *s2)
 {
   char c1,c2;
 
-  while (1) {
+  for (;;) {
     c1 = NORMAL(*s1);
     c2 = NORMAL(*s2);
     if (c1 != c2) return(c1-c2);

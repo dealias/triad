@@ -1,4 +1,4 @@
-#if sun
+#ifdef sun
 typedef void stack_t;
 #endif
 
@@ -23,7 +23,7 @@ typedef void stack_t;
 #include <cstdlib>
 #include <sys/utsname.h>
 
-#if _CRAY && !_CRAYMPP
+#if defined(_CRAY) && !defined(_CRAYMPP)
 #include <sys/types.h>
 #include <sys/jtab.h>
 #endif
@@ -36,7 +36,7 @@ static const double ticktime=1.0/sysconf(_SC_CLK_TCK);
 
 void cputime(double *cpu)
 {
-#if _CRAY && !_CRAYMPP
+#if defined(_CRAY) && !defined(_CRAYMPP)
   struct jtab jbuf;
   getjtab(&jbuf);
 	
@@ -55,7 +55,7 @@ void cputime(double *cpu)
 // Don't notify user about runs shorter than this many seconds.
 static const double longrun=500.0;
 
-#if _CRAY
+#if defined(_CRAY)
 static char mail_cmd[]="mailx";
 #else
 static char mail_cmd[]="mail";
