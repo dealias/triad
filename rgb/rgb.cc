@@ -1310,7 +1310,7 @@ void Torus(Array2<Ivec>& Index)
 	
 	int mini=1;
 	int minj=1;
-	int mink=512;
+	int mink=1024;
 	
 	int maxk=cutoff ? min(nz,(int) ((cutoff/twopibynz)+1.5)) : nz;
 	
