@@ -18,7 +18,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.22";
+const char VERSION[]="1.23";
 
 #include "xstream.h"
 #include <iostream>
@@ -954,12 +954,17 @@ int main(int argc, char *argv[])
     xsize=mx*(istop-istart);
     ysize=my*(jstop-jstart)*nz0+msep*nz0+mpalsize;
     
+    bool padx=false;
+    bool pady=false;
     if(yuv) {
 // YUV 4:2:0 requires even dimensions (due to downsampling of UV channels)
-      if(xsize % 2) xsize++;
-      if(ysize % 2) ysize++;
+      if(xsize % 2) {xsize++; padx=true;}
+      if(ysize % 2) {ysize++; pady=true;}
     }
 		
+    if(verbose) cerr << "Producing image of dimensions " << xsize << " x " 
+		     << ysize << "." << endl;
+    
     array3<float> value,value2,value3;
     value.Allocate(nz,ny,nx);
     if(vector) value2.Allocate(nz,ny,nx);
@@ -1184,7 +1189,7 @@ int main(int argc, char *argv[])
 		} else outpixel(index);
 	      }
 	    }
-	    if(!htoggle) fout << YBlack;
+	    if(padx) fout << YBlack;
 	    vtoggle=!vtoggle;
 	  }
 	}
@@ -1231,7 +1236,7 @@ int main(int argc, char *argv[])
 	}
       }
 	  
-      if(yuv && !vtoggle) for(int i=0; i < xsize; i++)  fout << YBlack;
+      if(pady) for(int i=0; i < xsize; i++)  fout << YBlack;
       
       fout.close();
       if(yuv) {
@@ -1371,7 +1376,7 @@ void montage(unsigned int nfiles, char *argf[], int n, const char *format,
 	
   if(n > 0 && !preserve) {
     ostringstream buf;
-    buf << "rm ";
+    buf << "rm -f ";
     for(unsigned int f=0; f < nfiles; f++) {
       const char *fieldname=argf[f];
       buf << rgbdir << fieldname << n << "." << format << " ";
