@@ -349,7 +349,9 @@ void dump(int it, int final, double tmax)
 				if(tmpdir) rcheck << tmpdir << dirsep;
 				rcheck << rname << "." << iter-microsteps << ends;
 				if(tmpdir) {
-					mkdir(tmpdir,0xFFFF);
+					strstream buf;
+					buf << tmpdir << FileName("","");
+					mkdir(buf,0xFFFF);
 					rename(rname,rcheck.str());
 					msg(WARNING,"Cannot rename %s to checkpoint file %s",rname,
 						rcheck.str());
