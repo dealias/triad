@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.15";
+const char VERSION[]="1.16";
 
 #include "xstream.h"
 #include <iostream>
@@ -278,6 +278,7 @@ int readframe(ixstream& xin, int nx, int ny, int nz, Array3<float> value,
   return 0;
 }
 
+void ramp(int index, Real x, u_char& r, u_char& g, u_char& b);
 void montage(unsigned int nfiles, char *argf[], int n, const char *format,
 	     const char *type);
 void identify(int argc, int n, const char *type, int& xsize, int& ysize);
@@ -1099,9 +1100,7 @@ int main(int argc, char *argv[])
 		} else if(vector2) {
 		  r=index; g=0; b=indexb;
 		} else if(vector) {
-		  r=(int) (Red[index]*factor+0.5);
-		  g=(int) (Green[index]*factor+0.5);
-		  b=(int) (Blue[index]*factor+0.5);
+		  ramp(index,factor,r,g,b);
 		} else {
 		  r=Red[index]; g=Green[index]; b=Blue[index];
 		}
@@ -1135,11 +1134,9 @@ int main(int argc, char *argv[])
 		b=indexb;
 	      } else {
 		Real factor=((Real) j)/(mpalsize-1);
-		r=(int) (Red[index]*factor+0.5);
-		g=(int) (Green[index]*factor+0.5);
-		b=(int) (Blue[index]*factor+0.5);
+		ramp(index,factor,r,g,b);
+		fout << r << g << b;
 	      }
-     	      fout << r << g << b;
 	    }
 	  }
 	} else {
@@ -1231,6 +1228,22 @@ char *separator="_______________________________________________";
 #else
 char *separator="                                               ";
 #endif
+
+void ramp(int index, Real x, u_char& r, u_char& g, u_char& b) 
+{
+  static const Real fivethirds=5.0/3.0;
+  Real factor=fivethirds*(x-0.5);
+  if(factor >= 0.0) {
+    r=(u_char) (Red[index]*(1.0-factor)+256.0*factor);
+    g=(u_char) (Green[index]*(1.0-factor)+256.0*factor);
+    b=(u_char) (Blue[index]*(1.0-factor)+256.0*factor);
+  } else {
+    r=(u_char) (Red[index]*(1.0+factor));
+    g=(u_char) (Green[index]*(1.0+factor));
+    b=(u_char) (Blue[index]*(1.0+factor));
+  }
+}
+
 
 void montage(unsigned int nfiles, char *argf[], int n, const char *format,
 	     const char *type)

@@ -20,7 +20,8 @@ extern int reverse;
 static int k,incr;
 
 int ColorByte(double r) {
-  int a=(int)(255.0*r+0.5);
+  int a=(int)(256.0*r);
+  if(a == 256) a=255;
   if(a < 0 || a > 255) msg(ERROR,"Invalid color: %d",a);
   return a;
 }
