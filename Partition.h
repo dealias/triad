@@ -80,7 +80,7 @@ public:
 	void Count(const D& m) {
 		if(InBin(m)) {
 			mode[nmode++].Store(m,1.0);
-			area=1.0;
+			area += 1.0;
 		}
 	}
 	
