@@ -33,43 +33,26 @@ public:
 	Real Y() const {return r*sin(th);}
 };
 
-inline Real InInterval(const Cartesian& x, const Polar& a, const Polar& b)
+inline Real InInterval(const Cartesian& m, const Polar& a, const Polar& b)
 {
-	const Real width=10000.0;
-	const Real fuzz=width*REAL_EPSILON;
+	const Real xK2=m.K2();
+	if(xK2 < a.K2() || xK2 >= b.K2()) return 0.0;
 	
-	const Real K2fuzz=(b.K2()-a.K2())*fuzz;
-	const Real a1=a.K2()-K2fuzz, a2=a.K2()+K2fuzz;
-	const Real b1=b.K2()-K2fuzz, b2=b.K2()+K2fuzz;
+	const Real A=a.Th();
+	const Real B=b.Th();
+	Real opposite, xTh=m.Th();
 	
-	const Real xK2=x.K2();
-	if(xK2 < a1 || xK2 >= b2) return 0.0;
-	
-	const Real Thfuzz=(b.Th()-a.Th())*fuzz;
-	const Real A1=a.Th()-Thfuzz, A2=a.Th()+Thfuzz;
-	const Real B1=b.Th()-Thfuzz, B2=b.Th()+Thfuzz;
-	Real opposite, xTh=x.Th();
-	
-	if(reality) {
-		opposite=0.0;
-	} else {
+	if(reality) opposite=0.0;
+	else {
 		if(xTh < 0) xTh += twopi;
 		opposite=pi;
 	}
 	
-	if(a.Th() == kthneg && xTh >= opposite) xTh -= twopi;
-	if(b.Th() == kthmax && xTh < opposite) xTh += twopi;
+	if(A == kthneg && xTh >= opposite) xTh -= twopi;
+	if(B == kthmax && xTh < opposite) xTh += twopi;
 	
-	if(xTh < A1 || xTh >= B2) return 0.0;
-	if(xK2 >= a2 && xK2 < b1 && xTh >= A2 && xTh < B1) return 1.0;
-	
-	Real factor=1.0;
-	if(xK2 < a2 && a.K() > krmin) factor *= (xK2-a1)/(a2-a1);
-	else if(xK2 >= b1 && b.K() < krmax) factor *= (xK2-b1)/(b2-b1);
-	if(xTh < A2) factor *= (xTh-A1)/(A2-A1);
-	if(xTh >= B1) factor *= (xTh-B1)/(B2-B1);
-	
-	return factor;
+	if(xTh < A || xTh >= B) return 0.0;
+	return 1.0;
 }
 
 inline int operator == (const Polar& x, const Polar& y)

@@ -8,6 +8,7 @@ extern int Ny;
 
 extern int xoffset;
 extern int Nx0,NRows,NPad,NPadTop;
+extern int Nevolved,Ndiscrete;
 extern unsigned int log2Nxb,log2Nyb; // Order of FFT in each direction
 extern double scale;
 
@@ -25,6 +26,12 @@ public:
 #endif		
 		return atan2(y,x);
 	}
+	
+	int ModeIndex() {
+		if(y > 0 || (y == 0 && x > 0)) return y*Nx+x-1;
+		else return Nevolved-y*Nx-x-1; // Reflected Modes;
+	}
+	
 	Real X() const {return x;}
 	Real Y() const {return y;}
 	

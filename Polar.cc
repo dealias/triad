@@ -15,6 +15,8 @@ Real kthmin=0.0;
 Real kthmax;
 Real kthneg;
 
+int *ModeBin;
+
 char *Partition<Polar,Cartesian>::Name() {return "Polar";}
 
 char *Partition<Polar,Cartesian>::WeightFileName() {
@@ -110,7 +112,29 @@ void Partition<Polar,Cartesian>::MakeBins()
 	if(p-bin != n) 
 		msg(ERROR,"Calculated number and actual number of bins disagree."); 
 
-	if(discrete) for (i=0; i < n; i++) bin[i].MakeModes();
+	if(discrete) {
+		
+		int ModeCount=0;
+		ModeBin=new int[ndiscrete];
+		for (i=0; i < n; i++) {
+			bin[i].MakeModes();
+			int nmode=bin[i].nmode;
+			for(int m=0; m < nmode; m++) {
+				int ModeIndex=bin.mode[m].ModeIndex()
+				if(ModeBin[mode_index] != -1) 
+					msg(ERROR,
+						"Discrete mode (%d) is assigned to another bin",m);
+				ModeBin[ModeIndex]=i;
+				ModeCount++;
+			}
+		}
+		if(ModeCount != ndiscrete) 
+			msg(ERROR, "Actual and calculated number of modes disagree");
+		for(i=0; i < ndiscrete; i++) {
+			if(ModeBin[i] == -1) msg(ERROR, "Discrete mode (%d) is not
+contained in any bin",i);
+		}
+	}
 	
 	delete [] grid;
 	return;
@@ -134,14 +158,17 @@ void Bin<Polar,Cartesian>::MakeModes()
 		w++;
 	}
 	mode.Resize(nmode);
-	if(verbose > 3) for(int i=0; i < nmode; i++) {
+	
+	if(verbose > 3) {
+		for(int i=0; i < nmode; i++) {
 #if _CRAY
-		cout << mode[i].value << ": " << mode[i].weight << newl;
+			cout << mode[i].value << ": " << mode[i].weight << newl;
 #else
-		cout << mode[i] << newl;
+			cout << mode[i] << newl;
 #endif	
-	}
+		}
 	cout << flush;
+	}
 }
 
 static const Real linacc=0.01;

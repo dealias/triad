@@ -67,7 +67,7 @@ public:
 	
 	Real InBin(const D& m) {return InInterval(m,min,max);}
 	void Count(const D& m) {
-		const Real weight=InBin(m); 
+		const Real weight=InBin(m);
 		if(weight) {
 			area += weight;
 			mode[nmode++].Store(m,weight);

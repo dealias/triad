@@ -11,6 +11,7 @@ int Nx=17; // Number of modes in x-direction
 int Ny=17; // Number of modes in y-direction
 
 int Nx0,NRows,NPad,NPadTop,xoffset;
+int Nevolved,Ndiscrete;
 unsigned int log2Nxb,log2Nyb;
 int nfft; // Total number of FFT elements;
 int Nxb,Nxb1,Nyb,Nyp;
@@ -35,11 +36,22 @@ void Basis<Cartesian>::MakeBins()
 	nindependent=(reality || n % 2) ? Nmode : n/2;
 	
 	NRows=high.Row()+1;
+	Nevolved=high.Row()*Nx+high.Column();
+	Ndiscrete=n;
 	
-	for(j=0; j <= high.Row(); j++) { // Evolved modes
-		for(i=((j == 0) ? 1 : low.Column()); i <= high.Column(); i++)
-			*(p++)=Cartesian(i,j);
+	Cartesian mode0=Cartesian(0,0);
+	for(i=0; i < n; i++) mode[i]=mode0;
+		
+	for(j=low.Row; j <= high.Row(); j++) {
+		for(i=low.Column(); i <= high.Column(); i++) {
+			Cartesian mode(i,j);
+			if(mode != mode0) p[mode.ModeIndex()]=mode;
 		}
+	}
+	
+	for(i=0; i < n; i++) {
+		if(mode[i] == mode0) msg(ERROR,"Zero mode (%d) encountered",i);
+	}
 	
 	int nminx=(3*Nx-1)/2;
 	int nminy=(3*Ny-1)/2;
@@ -58,13 +70,6 @@ void Basis<Cartesian>::MakeBins()
 	Nx0=(Nx-1)/2;
 	NPad=Nxb1-Nx;
 	NPadTop=(Nyp-(Ny+1)/2)*Nxb1+Nxb1-((Nx+1)/2+xoffset);
-	
-	for(j=0; j >= low.Row(); j--) // Reflected modes
-		for(i=((j == 0) ? -1 : high.Column()); i >= low.Column(); i--)
-			*(p++)=Cartesian(i,j);
-	
-	if(p-mode != n) 
-		msg(ERROR,"Calculated number and actual number of modes disagree."); 
 
 	return;
 }
