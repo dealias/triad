@@ -96,11 +96,12 @@ public:
 	}
 	virtual void Predictor(double, double, unsigned int, unsigned int);
 	virtual int Corrector(double, int, unsigned int, unsigned int);
-	virtual void StandardPredictor(double t, double dt, unsigned int start, int stop) {
+	virtual void StandardPredictor(double t, double dt, unsigned int start,
+								   unsigned int stop) {
 		PC::Predictor(t,dt,start,stop);
 	}
 	virtual int StandardCorrector(double dt, int dynamic, unsigned int start,
-								  int stop) {
+								  unsigned int stop) {
 		return PC::Corrector(dt,dynamic,start,stop);
 	}
 };
