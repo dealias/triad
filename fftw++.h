@@ -47,6 +47,24 @@ static Array2<Complex> NULL2;
 static Array3<Complex> NULL3;  
 #endif
 
+static Complex FFTW;
+
+inline void *operator new [](size_t size, Complex)
+{
+  size_t offset=sizeof(Complex)-(size % sizeof(Complex));
+  void *p=fftw_malloc(size+offset);
+  p=(char *) p+offset;
+  if(size && !p) cerr << endl << "Memory limits exceeded" << endl;
+  return p;
+}
+
+inline void operator delete [] (void *p, Complex, size_t size)
+{
+  for(size_t i=size-1; i != (size_t) -1; i--) ((Complex *) p)[i].~Complex();
+  p=(char *) p-sizeof(Complex);
+  fftw_free(p);
+}
+
 inline void fftw_export_wisdom(void (*emitter)(char c, ofstream& s),
 			       ofstream& s)
 {
@@ -60,18 +78,6 @@ inline int fftw_import_wisdom(int (*g)(ifstream& s), ifstream &s)
 
 inline void PutWisdom(char c, ofstream& s) {s.put(c);}
 inline int GetWisdom(ifstream& s) {return s.get();}
-
-inline Complex *fftnew(size_t size)
-{
-  void *mem=fftw_malloc(size*sizeof(Complex));  
-  if(size && !mem) cerr << endl << "Memory limits exceeded" << endl;
-  return (Complex *) mem;
-}
-
-inline void fftdelete(Complex *ptr)
-{
-  fftw_free(ptr);
-}
 
 // Base clase for fft routines
 //
@@ -146,7 +152,7 @@ public:
   void Setup(Complex *in, Complex *out) {
     if(!Wise) LoadWisdom();
     bool alloc=!in;
-    if(alloc) in=fftnew(size);
+    if(alloc) in=new(FFTW) Complex[size];
     CheckAlign(in,"constructor input");
     if(out) CheckAlign(out,"constructor output");
     else out=in;
@@ -157,7 +163,7 @@ public:
       exit(1);
     }
     
-    if(alloc) fftdelete(in);
+    if(alloc) operator delete [] (in,FFTW,size);
     SaveWisdom();
   }
   
