@@ -49,6 +49,7 @@ static int verbose=0;
 static int floating_scale=0;
 static int floating_section=0;
 static int preserve=0;
+static int remote=0;
 
 int byte=0;
 int implicit=1;
@@ -164,12 +165,14 @@ void manimate(int argc, char *const argf[], int n, char *const type,
 	
 extern "C" int getopt(int argc, char *const argv[], const char *optstring);
 
+extern "C" void unsetenv(const char *);
+
 void usage(char *program)
 {
 	cerr << PROGRAM << " version " << VERSION
 		 << " [(C) John C. Bowman <bowman@math.ualberta.ca> 1997]" << endl
 		 << endl << "Usage: " << program
-		 << " [-bfFghilmpvz] [-x mag] [-H hmag] [-V vmag] " << endl
+		 << " [-bfFghilmprvz] [-x mag] [-H hmag] [-V vmag] " << endl
 		 << "           [-B begin] [-E end] [-L lower] [-U upper]" << endl
          << "           [-P palette] [-S skip]" << endl
 		 << "           [-X xsize -Y ysize [-Z zsize]] file1 [file2 ...]"
@@ -189,6 +192,7 @@ void options()
 	cerr << "-l\t\t label frames with file names and values" << endl;
 	cerr << "-m\t\t generate mpeg (.mpg) file" << endl;
 	cerr << "-p\t\t preserve temporary output files" << endl;
+	cerr << "-r\t\t remote X-server (substitute Postscript fonts)" << endl;
 	cerr << "-v\t\t verbose output" << endl;
 	cerr << "-z\t\t make color palette symmetric about zero" <<
 		" (if possible)" << endl;
@@ -226,7 +230,7 @@ int main(int argc, char *const argv[])
 #endif	
 	errno=0;
 	while (1) {
-		int c = getopt(argc,argv,"bfghilmpvzFx:H:V:B:E:L:U:P:S:X:Y:Z:");
+		int c = getopt(argc,argv,"bfghilmprvzFx:H:V:B:E:L:U:P:S:X:Y:Z:");
 		if (c == -1) break;
 		switch (c) {
 		case 'b':
@@ -258,6 +262,9 @@ int main(int argc, char *const argv[])
 			break;
 		case 'p':
 			preserve=1;
+			break;
+		case 'r':
+			remote=1;
 			break;
 		case 'v':
 			verbose=1;
@@ -517,9 +524,8 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 			 char *const type)
 {
 	strstream buf;
-#ifndef __i386__  /* Workaround bug in ImageMagick-3.9.1-1.i386.rpm */
-	unsetenv("DISPLAY");
-#endif	
+	
+	if(remote) unsetenv("DISPLAY");
 	buf << "montage -size " << xsize << "x" << ysize
 	    << " -geometry " << xsize << "x" << ysize << " -interlace none";
 	for(int f=0; f < nfiles; f++) {
