@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
       while(1) {
 	fparam.getline(s,blocksize);
 	buf << s;
-	if(fparam.eof() || !fparam.fail()) break;
+	if(fparam.eof() || !fparam.fail()) {errno=0; break;}
 	fparam.clear();
       }
       buf << ends;

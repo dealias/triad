@@ -65,13 +65,14 @@ class Table {
 	char s[blocksize];
 	strstream buf;
 	
+	int input=1;
 	while(1) {
 	  cin.getline(s,blocksize);
 	  buf << s;
-  	  if(cin.eof() || !cin.fail()) {errno=0; break;}
+  	  if(cin.eof() || !cin.fail()) {input=errno=0; break;}
 	  cin.clear();
 	}
-	if(buf.str()) key=strdup(buf.str());
+	if(input && buf.str()) key=strdup(buf.str());
     }
     
     p=e->New();
