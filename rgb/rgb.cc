@@ -1,5 +1,5 @@
 /* RGB:  A movie production utility
-Copyright (C) 2000, 2002 John C. Bowman (bowman@math.ualberta.ca)
+Copyright (C) 2000-2004 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.17";
+const char VERSION[]="1.18";
 
 #include "xstream.h"
 #include <iostream>
@@ -216,7 +216,7 @@ int readframe(ixstream& xin, int nx, int ny, int nz, Array3<float> value,
 			
       int init=0;
       if((j-start) % sy == 0) {j0 += incr; init=1;}
-      Array1(float) valuekj=valuek[j0];
+      Array1<float>::opt valuekj=valuek[j0];
       if(init) for(int i0=0; i0 < nx; i0++) valuekj[i0]=0.0;
 			
       Real sumv=0.0;
