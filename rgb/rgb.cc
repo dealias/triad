@@ -1402,12 +1402,11 @@ int Project(double xi, double xj, double xk)
 		Real projection=Pz/(Pz-zp);
 		int u=(int)(xp*projection+uoffset);
 		int v=Ny-((int)(yp*projection+voffset));
-		Real Maxz=maxz(u,v);
 		if(u >= 0 && u < Nx && v >=0 && v < Ny
-		   && zp > Maxz) {
+		   && zp > maxz(u,v)) {
 			maxz(u,v)=zp;
 			index0(u,v)=Ivec(xi,xj,xk);
-			return (Maxz == -REAL_MAX) ? 1 : 2;
+			return 1;
 		}	
 	}
 	return 0;
