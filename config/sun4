@@ -1,6 +1,6 @@
 C++ = CC -D_POSIX_SOURCE -xtarget=native
 OPT = $(CFLAGS)
 MAKEDEPEND = $(C++) -xM -DDEPEND
-INCL = -I$(TRI)
+INCL = -I$(TRI) -I.
 LIB = $(LFLAGS) -lm -lnsl
 CLEAN = Templates.DB/ 
