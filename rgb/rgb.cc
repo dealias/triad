@@ -64,7 +64,6 @@ static int grey=0;
 static char *convertprog;
 static strstream option;
 static int Nx,Ny;
-static int kmin,kmax;
 static Real Pz;
 static int a0,a;
 static int R0,R,Rp;
@@ -80,17 +79,21 @@ int invert=0;
 int reverse=0;
 int crop=0;
 int make_mpeg=0;
-int lower=0;
-int upper=INT_MAX;
 
-int istart,istop;
-int jstart,jstop;
+static int istart,istop;
+static int jstart,jstop;
+static int kmin,kmax;
+
+static int xbegin=0, xend=INT_MAX-1;
+static int ybegin=0, yend=INT_MAX-1;
+static int lower=0, upper=INT_MAX-1;
 
 char *extract=NULL;
 
 enum Parameters {RFACTOR=256,THETA,PHI,YXASPECT,ZXASPECT,POINTSIZE,AVGX,AVGY,\
 				 EXTRACT,NCOLORS,BACKGROUND,XMIN,XMAX,YMIN,YMAX,ZMIN,ZMAX,
-				 LABEL,ALPHA,CROP,NXFINE,NYFINE,NZFINE,CONST,RATE};
+				 LABEL,ALPHA,CROP,XRANGE,YRANGE,ZRANGE,NXFINE,NYFINE,NZFINE,
+				 CONST,RATE};
 
 Real Rfactor=2.0;
 Real Theta=0.9;
@@ -169,6 +172,7 @@ int readframe(ixstream& xin, int nx, int ny, int nz, Array3<float> value,
 	
 	errno=0;
 	for(int k=0; k < nz; k++) {
+		if(floating_section) {vmin=DBL_MAX; vmax=-DBL_MAX;}
 		Array2<float> valuek=value[k];
 		int start,stop,incr;
 		if(invert) {
@@ -222,11 +226,12 @@ int readframe(ixstream& xin, int nx, int ny, int nz, Array3<float> value,
 				if((i+1) % sx == 0 || (i+1) == nx1) {
 					sumv += valuekj[i0];
 					valuekj[i0++]=sumv;
-					if((j-start+incr) % sy == 0) {
-						if(k >= lower && k <= upper) {
-							if(sumv < vmin) vmin=sumv;
-							if(sumv > vmax) vmax=sumv;
-						}
+					if((j-start+incr) % sy == 0
+					   && i >= xbegin && i <= xend 
+					   && j >= ybegin && j <= yend 
+					   && k >= lower && k <= upper) {
+						if(sumv < vmin) vmin=sumv;
+						if(sumv > vmax) vmax=sumv;
 					}
 					sumv=0.0;
 				}
@@ -422,6 +427,9 @@ int main(int argc, char *const argv[])
                {"shear", 1, 0, ALPHA},
                {"label", 1, 0, LABEL},
                {"crop", 1, 0, CROP},
+               {"xrange", 1, 0, XRANGE},
+               {"yrange", 1, 0, YRANGE},
+               {"zrange", 1, 0, ZRANGE},
                {"xmin", 1, 0, XMIN},
                {"xmax", 1, 0, XMAX},
                {"ymin", 1, 0, YMIN},
@@ -564,6 +572,18 @@ int main(int argc, char *const argv[])
 				msg(ERROR,"Invalid geometry: %s",optarg);
 			istop += istart;
 			jstop += jstart;
+			break;
+		case XRANGE:
+			if(sscanf(optarg,"%d,%d",&xbegin,&xend) != 2)
+				msg(ERROR,"Invalid X range: %s",optarg);
+			break;
+		case YRANGE:
+			if(sscanf(optarg,"%d,%d",&ybegin,&yend) != 2)
+				msg(ERROR,"Invalid Y range: %s",optarg);
+			break;
+		case ZRANGE:
+			if(sscanf(optarg,"%d,%d",&lower,&upper) != 2)
+				msg(ERROR,"Invalid Z range: %s",optarg);
 			break;
 		case LABEL:
 			label=1;
@@ -744,6 +764,12 @@ int main(int argc, char *const argv[])
 			if(jstart < 0) jstart=0;
 			if(jstop > Ny) jstop=Ny;
 		}
+		
+		if(istart < xbegin) istart=xbegin;
+		if(istop > xend+1) istop=xend+1;
+		
+		if(jstart < ybegin) jstart=ybegin;
+		if(jstop > yend+1) jstop=yend+1;
 						
 		if(istop <= istart || jstop <= jstart) msg(ERROR,"Null image");
 			
