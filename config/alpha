@@ -3,5 +3,5 @@ CC = gcc -Wall -ansi $(OPT)
 LIB = $(LFLAGS) -lcpml -lm
 MAKEDEPEND = $(C++) -M -DDEPEND
 
-FFT = wfft
-LIBFFT = -lrfftw -lfftw 
+FFT = fftw++
+LIBFFT = -lfftw3
