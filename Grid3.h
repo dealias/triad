@@ -12,7 +12,7 @@ class Grid3 : public Grid<Array3<T>,T> {
   int nx, nx1bc, nxbc, rx, offx, ox, i1, i1p, i2, i2p;
   int ny, ny1bc, nybc, ry, offy, oy, j1, j1p, j2, j2p;
   int nz, nz1bc, nzbc, rz, offz, oz, k1, k1p, k2, k2p;
-  typename Array1<Real>::opt x,y,z;
+  Array1<Real>::opt x,y,z;
   Real hx, hxinv, hx2, hx2inv;
   Real hy, hyinv, hy2, hy2inv;
   Real hz, hzinv, hz2, hz2inv;
@@ -380,7 +380,8 @@ class Grid3 : public Grid<Array3<T>,T> {
   void YConstant(const Array3<T>& u) {
     for(int i=0; i < nxbc; i++) {
       Array2<T> ui=u[i];
-      typename Array1<T>::opt ui0=ui[j1-1], ui1=ui[j1], uiny=ui[j2], uiny1=ui[j2+1];
+      typename Array1<T>::opt ui0=ui[j1-1], ui1=ui[j1];
+      typename Array1<T>::opt uiny=ui[j2], uiny1=ui[j2+1];
       for(int k=0; k < nzbc; k++) {
 	ui0[k]=ui1[k];
 	uiny1[k]=uiny[k];
@@ -391,7 +392,8 @@ class Grid3 : public Grid<Array3<T>,T> {
   void YPeriodic(const Array3<T>& u) {
     for(int i=0; i < nxbc; i++) {
       Array2<T> ui=u[i];
-      typename Array1<T>::opt ui0=ui[j1-1], ui1=ui[j1], uiny=ui[j2], uiny1=ui[j2+1];
+      typename Array1<T>::opt ui0=ui[j1-1], ui1=ui[j1];
+      typename Array1<T>::opt uiny=ui[j2], uiny1=ui[j2+1];
       for(int k=0; k < nzbc; k++) {
 	ui0[k]=uiny[k];
 	uiny1[k]=ui1[k];

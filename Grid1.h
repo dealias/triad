@@ -11,7 +11,7 @@ class Grid1 : public Grid<Array1<T>,T> {
   // number of points in previous and current levels and incl. boundaries
   // index limits
   int nx, nx1bc, nxbc, rx, offx, ox, i1, i1p, i2, i2p;
-  typename Array1<Real>::opt x;
+  Array1<Real>::opt x;
   Real hx, hxinv, hx2, hx2inv;
  public:
   Grid1() {radix=2; dimension=1;}
