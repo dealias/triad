@@ -16,7 +16,7 @@ class DynVector
   enum alloc_state {unallocated=0, allocated=1, temporary=2};
   void Allocate(unsigned int s) {v=new T[alloc=s]; size=0; set(allocated);}
   void Deallocate() const {
-    if(test(allocated) && size) delete [] v;
+    if(test(allocated)) delete [] v;
     size=0; alloc=0; clear(allocated);
   }
 	
@@ -50,7 +50,13 @@ class DynVector
     alloc=i;
     if(size > alloc) size=alloc;
   }
-	
+
+  void SetTop(unsigned int i){
+      if (alloc < i)
+	  Resize(i);
+      size = i;
+  }
+
   T& operator [] (unsigned int i) {
     if (i >= alloc) Resize(max(i+1,2*alloc));
     if (i >= size) size=i+1;
@@ -69,6 +75,17 @@ class DynVector
 	
   void Pop() {
     if(size) size--;
+  }
+  
+  void Pop(unsigned int i) {
+      if (size) 
+      {
+	  for (unsigned int j = i; j < size; j++)
+	  {
+	      v[j-1] = v[j];
+	  }
+	  size--;
+      }
   }
 
   void Expand(unsigned int i) {if (i > alloc) Resize(i);}
