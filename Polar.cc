@@ -22,7 +22,7 @@ char *Partition<Polar,Cartesian>::WeightFileName() {
 	buf << Vocabulary->Abbrev() << "/" << downcase(Name()) << "/" 
 		<< Nr << "x" << Nth << "_" << krmin << ":" << krmax << "_" << kthmin
 		<< (reality ? "R" : "") << (discrete ? "D" : "") << ends;
-	buf.freeze();
+	buf.rdbuf()->freeze();
 	return buf.str();
 }
 

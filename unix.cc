@@ -83,6 +83,6 @@ char *machine()
 	strstream buf;
 	buf << platform.nodename << ((*domain) ? "." : "") << domain << " ("
 		<< platform.machine << ")" << ends;
-	buf.freeze();
+	buf.rdbuf()->freeze();
 	return buf.str();
 }

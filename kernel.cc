@@ -383,6 +383,6 @@ char *VocabularyBase::FileName(const char* delimiter, const char *suffix)
 {
 	strstream buf;
 	buf << Directory() << run << delimiter << suffix << ends;
-	buf.freeze();
+	buf.rdbuf()->freeze();
 	return buf.str();
 }

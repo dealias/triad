@@ -152,7 +152,7 @@ public:
 	virtual char *Directory() {
 		strstream buf;
 		buf << Abbrev() << dirsep << ends;
-		buf.freeze();
+		buf.rdbuf()->freeze();
 		return buf.str();
 	}
 
