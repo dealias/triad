@@ -112,7 +112,7 @@ extern "C" int getopt(int argc, char *const argv[], const char *optstring);
 void usage(char *program)
 {
 	cerr << "Usage: " << program
-		 << " [-bcfghlmvz] [-x mag] [-H hmag] [-V vmag] [-B beg] [-E end]"
+		 << " [-bfghlmtvz] [-x mag] [-H hmag] [-V vmag] [-B beg] [-E end]"
 		 << endl 
 		 << "           [-X xsize -Y ysize [-Z zsize]] file1 [file2 ...]"
 		 << endl << endl;
@@ -123,12 +123,12 @@ void options()
 	cerr << "Options: " << endl;
 	cerr << "-b\t\t single-byte (unsigned char instead of float) input"
 		 << endl;
-	cerr << "-c\t\t clean up temporary files on exit" << endl;
 	cerr << "-f\t\t use a floating scale for each frame" << endl;
 	cerr << "-g\t\t produce grey-scale output" << endl;
 	cerr << "-h\t\t help" << endl;
 	cerr << "-l\t\t label frames with file names and values" << endl;
 	cerr << "-m\t\t generate mpeg (.mpg) file" << endl;
+	cerr << "-p\t\t preserve temporary output files" << endl;
 	cerr << "-v\t\t verbose output" << endl;
 	cerr << "-z\t\t make color palette symmetric about zero" <<
 		" (if possible)" << endl;
@@ -148,7 +148,7 @@ int main(int argc, char *const argv[])
 	int nx=1,ny=1,nz=1;
 	int nset=0, mx=1, my=1;
 	int n,begin=0, end=INT_MAX;
-	int cleanup=0;
+	int preserve=0;
 	int gray=0;
 	int label=0;
 	int make_mpeg=0;
@@ -160,14 +160,11 @@ int main(int argc, char *const argv[])
 	optind=0;
 #endif	
 	while (1) {
-		int c = getopt(argc,argv,"bcfghlmvzx:H:V:B:E:X:Y:Z:");
+		int c = getopt(argc,argv,"bfghlmpvzx:H:V:B:E:X:Y:Z:");
 		if (c == -1) break;
 		switch (c) {
 		case 'b':
 			byte=1;
-			break;
-		case 'c':
-			cleanup=1;
 			break;
 		case 'f':
 			floating_scale=1;
@@ -184,6 +181,9 @@ int main(int argc, char *const argv[])
 			break;
 		case 'm':
 			make_mpeg=1;
+			break;
+		case 'p':
+			preserve=1;
 			break;
 		case 'v':
 			verbose=1;
@@ -246,6 +246,7 @@ int main(int argc, char *const argv[])
 	strstream buf;
 	buf << "mkdirhier " << rgbdirbuf.str() << ends;
 	char *cmd=buf.str();
+	if(verbose) cout << cmd << endl;
 	system(cmd);
 	rgbdirbuf << "/" << ends;
 	rgbdir=rgbdirbuf.str();
@@ -269,12 +270,6 @@ int main(int argc, char *const argv[])
 		float **value=new float* [nz];
 		double gmin=DBL_MAX, gmax=-DBL_MAX; // Global min and max
 		for(int k=0; k < nz; k++) value[k]=new float[nx*ny];
-		
-		if(cleanup) {
-			buf << "rm -rf " << rgbdir << " > /dev/null 2>&1" << ends;
-			if(verbose) cout << cmd << endl;
-			system(cmd);
-		}
 		
 		if(!floating_scale)	{
 			n=0;
@@ -367,8 +362,13 @@ int main(int argc, char *const argv[])
 		
 		if(make_mpeg) mpeg(nfiles,argf,nset-1,"mpg",xsize,ysize);
 		else manimate(nfiles,argf,nset-1,"miff",xsize,ysize);
-	} else
-		animate(nfiles,argf,nset-1,format,xsize,ysize);
+	} else animate(nfiles,argf,nset-1,format,xsize,ysize);
+	
+	if(!preserve) {
+		buf << "rm -r " << rgbdir << " > /dev/null 2>&1" << ends;
+		if(verbose) cout << cmd << endl;
+		system(cmd);
+	}
 }
 
 #if sun
