@@ -42,7 +42,7 @@ public:
 };
 
 template<class D>
-ostream& operator << (ostream& os, const Discrete<D>& y) {
+inline ostream& operator << (ostream& os, const Discrete<D>& y) {
 	os << y.value << ": " << y.weight;
 	return os;
 }
