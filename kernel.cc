@@ -239,16 +239,14 @@ int main(int argc, char *argv[])
 	if(restart && dynamic < 0) dynamic=1;
 	if(!restart) Problem->Initialize();
 	
-	if(!testing) {
-		fdump.open(ptemp);
-		Vocabulary->Dump(fdump);
-		fdump.close();
-		if(fdump) {
-			if(rename(ptemp,pname)) 
-				msg(WARNING,"Cannot rename parameter file %s",ptemp);
-		}
-		else msg(WARNING,"Cannot write to parameter file %s",ptemp);
-	}
+	fdump.open(ptemp);
+	Vocabulary->Dump(fdump);
+	fdump.close();
+	if(fdump) {
+		if(rename(ptemp,pname)) 
+			msg(WARNING,"Cannot rename parameter file %s",ptemp);
+	}	
+	else msg(WARNING,"Cannot write to parameter file %s",ptemp);
 	
 	Integrator->Allocate(ny);
 	
