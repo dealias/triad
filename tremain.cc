@@ -1,11 +1,19 @@
+#include <iostream.h>
+#include <sys/machd.h>
+
 extern "C" TREMAIN(const double& seconds);
+extern "C" SECOND(const double& seconds);
 
 extern double polltime;
+
+static double tlimit=0.0;
 
 int poll()
 {
 	double seconds;
-	TREMAIN(seconds);
-	if(seconds > 10.0*polltime) return 0;
-	return 1; // Process is running out of CPU time; force a graceful exit.
+	if(!tlimit) TREMAIN(tlimit);
+	SECOND(seconds);
+	if(seconds+NCPU*polltime < tlimit) return 0;
+	cout << endl << "CPU time limit is approaching; exit forced." << endl;
+	return 1;
 }

@@ -7,6 +7,7 @@
 #include "utils.h"
 
 char* run=NULL;
+Exit_code exit_signal=COMPLETE;
 
 const double pi=PI;
 const double twopi=2.0*pi;
@@ -216,7 +217,7 @@ void msg(int fatal, char *file, int line, char *format,...)
 		sprintf(buf,"terminated with error from \"%s\":%d; %s",
 				file,line,format);
 		mailuser(buf);
-		exit(1);
+		exit(FATAL);
 	}
 	cout << flush;
 }

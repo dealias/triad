@@ -11,8 +11,8 @@
 #include <string.h>
 
 #if _CRAY
-#include <sys/mtimes.h>
-static struct mtms buf;
+extern "C" SECOND(const double& seconds);
+extern "C" TSECND(const double& seconds);
 static int parallel=-1;
 #endif
 
@@ -22,13 +22,13 @@ static const double init_time=time(NULL);
 void cputime(double *cpu)
 {
 #if _CRAY
-	if(parallel == -1) {
-		parallel=strcmp(getenv("NCPUS"),"1");
-		if(parallel) mtimes(&buf);
-	}
+	if(parallel == -1) parallel=strcmp(getenv("NCPUS"),"1");
 	if(parallel) {
-		cpu[0] = buf.mtms_mutime ? ((double) buf.mtms_mutime[0])/CLK_TCK : 0.0;
-		cpu[1] = 0.0;
+		double seconds,tseconds;
+		SECOND(seconds);
+		TSECND(tseconds);
+		cpu[0] = tseconds;
+		cpu[1] = seconds-tseconds;
 		cpu[2] = 0.0;
 		return;
 	}

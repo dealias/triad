@@ -19,7 +19,7 @@ inline void IntegratorBase::ChangeTimestep(double& dt, const double dtnew,
 	TimestepDependence(dt=dtnew);
 }
 
-static clock_t realtime,lasttime=time(NULL);
+static clock_t realtime,lasttime=0;
 static const int nperline=10;
 
 void IntegratorBase::Integrate(Var *const y0, double& t, double tmax,
@@ -68,7 +68,7 @@ void IntegratorBase::Integrate(Var *const y0, double& t, double tmax,
 			if(polltime) {
 				realtime=time(NULL);
 				if(realtime-lasttime > polltime) {
-					if (!poll()) tmax=tstop=t;
+					if (poll()) {tmax=tstop=t; exit_signal=CONTINUE;}
 					lasttime=realtime;
 				}
 			}

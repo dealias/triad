@@ -166,13 +166,8 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 	}
 }
 
-	
-void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
-			  int log2n);
-void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
-			   int log2n);
 
-void PrimitiveNonlinearityFFT(Var *source, Var *psi, double)
+void PrimitiveNonlinearityFFT(Complex *source, Complex *psi, double)
 {
 	int i;
 	extern Cartesian *CartesianMode;
@@ -220,6 +215,11 @@ void PrimitiveNonlinearityFFT(Var *source, Var *psi, double)
 	}
 }
 
+void PrimitiveNonlinearityFFT(Real *source, Real *psi, double)
+{
+	msg(ERROR,"Pseudospectral approximation requires COMPLEX=1");
+}
+	
 void StandardLinearity(Var *source, Var *psi, double)
 {
 #pragma ivdep

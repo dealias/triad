@@ -103,6 +103,9 @@ void msg(int fatal, char *file, int line, char *format,...);
 #define INVALID_CALL msg(ERROR, "Invalid call")
 #define INVALID_ARG msg(ERROR, "Invalid argument")
 
+enum Exit_code {FATAL=-1,CONTINUE,COMPLETE};
+extern Exit_code exit_signal;
+
 void mailuser(char *text);
 
 const int ncputime=3;
@@ -241,6 +244,11 @@ inline double drand_gauss()
 	crand_gauss(&w);
 	return w;
 }
+
+void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
+			  int log2n);
+void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
+			   int log2n);
 
 #endif
 
