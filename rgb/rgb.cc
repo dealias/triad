@@ -1308,7 +1308,7 @@ void Torus(Array2<Ivec>& Index)
 	Ayx=-cosTheta*sinPhi; Ayy=cosTheta*cosPhi; Ayz=sinTheta;
 	Azx=sinTheta*sinPhi; Azy=-sinTheta*cosPhi; Azz=cosTheta;
 	
-	int mini=64;
+	int mini=1;
 	int minj=1;
 	int mink=64;
 	
