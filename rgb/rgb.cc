@@ -467,7 +467,7 @@ int main(int argc, char *const argv[])
 	errno=0;
 	while (1) {
 		int c = getopt_long_only(argc,argv,
-								 "bdfghilmprvFo:x:H:V:B:E:L:O:U:S:X:Y:Z:",
+								 "2bfghilmprvFo:x:H:V:B:E:L:O:U:S:X:Y:Z:",
 								 long_options,&option_index);
 		if (c == -1) break;
 		int nargs;
@@ -478,7 +478,7 @@ int main(int argc, char *const argv[])
  		case 'b':
 			byte=1;
 			break;
- 		case 'd':
+ 		case '2':
 			two=1;
 			break;
 		case 'f':
@@ -836,7 +836,7 @@ int main(int argc, char *const argv[])
 		
 		if(begin < 0) begin += nset;
 		if(end < 0) end += nset;
-		if(display) end=begin;
+		if(display) {end=begin; floating_scale=1;}
 		
 		n=0;
 		int rc;
@@ -944,8 +944,7 @@ int main(int argc, char *const argv[])
 			double step=((double) PaletteRange)/Nxmx;
 			for(int j2=0; j2 < mpal; j2++) { // Output palette
 				for(int i=0; i < Nxmx; i++)  {
-					int index;
-					index=((int) (i*step+0.5))*sign+offset;
+					int index=((int) (i*step+0.5))*sign+offset;
 					if(grey) fout << (unsigned char) index;
 					else fout << Red[index] << Green[index] << Blue[index];
 				}
