@@ -9,8 +9,8 @@ read {texact 1 yexact 2}
 data "$!run/pc"
 read {tpc 1 ypc 2}
 
-data "$!run/rk2"
-read {trk2 1 yrk2 2}
+data "$!run/rk5"
+read {trk5 1 yrk5 2}
 
 data "$!run/implicit"
 read {timplicit 1 yimplicit 2}
@@ -45,13 +45,13 @@ abscissa
 lctype 0 red
 connectlegend "" "PC" tpc ypc
 lctype 1 magenta
-#connectlegend "" "RK-2" trk2 yrk2
+connectlegend "" "RK-5" trk5 yrk5
 ctype blue
-connectlegend "" "implicit" timplicit yimplicit
+#connectlegend "" "implicit" timplicit yimplicit
 ltype 1 ctype green
 connectlegend "" "E-PC" te_pc ye_pc
 ltype 3 ctype black
-connectlegend "" "LE-PC" tle_pc yle_pc
+#connectlegend "" "LE-PC" tle_pc yle_pc
 ltype 2 ctype magenta
 connectlegend "" "exact" texact yexact
 

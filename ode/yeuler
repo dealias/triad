@@ -46,7 +46,7 @@ lctype 5 magenta
 lctype 2 green
 #connectlegend "" "E-Euler" te_euler ye_euler
 lctype 0 red
-#connectlegend "" "Euler" teuler yeuler
+connectlegend "" "Euler" teuler yeuler
 lctype 1 blue
 #connectlegend "" "I-Euler" ti_euler yi_euler
 lctype 0 fuchsia

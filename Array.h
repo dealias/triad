@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.22
+#define __ARRAY_H_VERSION__ 1.24
 
 // Defining NDEBUG improves optimization but disables argument checking.
 // Defining __NOARRAY2OPT inhibits special optimization of Array2[].
@@ -102,6 +102,9 @@ class array1 {
   void Dimension(unsigned int nx0, T *v0) {
     Dimension(nx0); v=v0; clear(allocated);
   }
+  void Dimension(const array1<T>& A) {
+     Dimension(A.size,A.v);
+  }
 
   void Allocate(unsigned int nx0) {
     Dimension(nx0);
@@ -159,6 +162,7 @@ class array1 {
   void Load(const T *a) const {memcpy(v,a,sizeof(T)*size);}
   void Store(T *a) const {memcpy(a,v,sizeof(T)*size);}
   void Set(T *a) {v=a; clear(allocated);}
+  void Set(const array1<T> &A) {v=A.v; state=A.test(temporary);}
   istream& Input (istream &s) const {
     __checkSize();
     for(unsigned int i=0; i < size; i++) s >> v[i];
@@ -254,6 +258,23 @@ class array1 {
 #endif	
 };
 
+template<class T>
+void swaparray(T& A, T& B) {
+  T C;
+  C.Dimension(A);
+  A.Dimension(B);
+  B.Dimension(C);
+}
+  
+template<class T>
+void leftshiftarray(T& A, T& B, T& C) {
+  T D;
+  D.Dimension(A);
+  A.Dimension(B);
+  B.Dimension(C);
+  C.Dimension(D);
+}
+  
 template<class T>
 ostream& operator << (ostream& s, const array1<T>& A)
 {
@@ -757,6 +778,9 @@ class Array1 : public array1<T> {
     Offsets();
     clear(allocated);
   }
+  void Dimension(const Array1<T>& A) {
+    Dimension(A.size,A.v,A.ox);
+  }
   void Allocate(unsigned int nx0, int ox0=0) {
     Dimension(nx0,ox0);
     __checkActivate(1);
@@ -1138,6 +1162,78 @@ class Array5 : public array5<T> {
     return *this;
   }
 };
+
+template<class T>
+void Set1(T *&A, T *v)
+{
+  A=v;
+}
+
+template<class T>
+void Set1(array1<T>& A, T *v)
+{
+  A.Set(v);
+}
+
+template<class T>
+void Set1(array1<T>& A, const array1<T> &v)
+{
+  A.Set(v);
+}
+
+template<class T>
+void Dimension1(T *&A, unsigned int, T *v)
+{
+  A=v;
+}
+
+template<class T>
+void Dimension1(array1<T>& A, unsigned int n, T *v)
+{
+  A.Dimension(n,v);
+}
+
+template<class T>
+void Dimension1(T *&A, T *v)
+{
+  A=v;
+}
+
+template<class T>
+void Dimension1(array1<T>& A, const array1<T>& B)
+{
+  A.Dimension(B);
+}
+
+template<class T>
+void Dimension1(Array1<T>& A, unsigned int n, T *v, int o)
+{
+  A=Dimension(n,v,o);
+}
+
+template<class T>
+void Allocate1(T *&A, unsigned int n)
+{
+  A=new T[n];
+}
+
+template<class T>
+void Allocate1(T *&A, unsigned int n, int o)
+{
+  A=new T[n]-o;
+}
+
+template<class T>
+void Allocate1(array1<T>& A, unsigned int n)
+{  
+  A.Allocate(n);
+}
+
+template<class T>
+void Allocate1(Array1<T>& A, unsigned int n, int o)
+{  
+  A.Allocate(n,o);
+}
 
 }
 

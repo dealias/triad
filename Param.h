@@ -2,10 +2,88 @@
 #define __Param_h__ 1
 
 #include <cstdlib>
+
 #include "kernel.h"
+#include "Integrator.h"
 
 extern unsigned int NParam;
 extern int param_warn;
+
+class ParamBase {
+  int nvar;
+ public:
+  ParamBase() {}
+  virtual void Display(ostream& os)=0;
+  virtual void Help(ostream& os)=0;
+  virtual void GraphicsOutput(ostream& os)=0;
+  virtual void Output(ostream& os)=0;
+  virtual void SetStr(const char *)=0;		// Set from string	
+  virtual const char *Name()=0;
+};
+
+class VocabularyBase {
+ protected:
+  DynVector<ParamBase *> ParamList;
+ public:	
+  VocabularyBase();
+  virtual ~VocabularyBase() {}
+  Table<ProblemBase> *ProblemTable;
+  Table<IntegratorBase> *IntegratorTable;
+	
+  ParamBase *Locate(const char *key, int *match_type);
+  void ParamAdd(ParamBase *p);
+  void Parse(char *s);
+  void Assign(const char *s, int warn=1);
+  void Sort();
+  void List(ostream& os);
+  void Dump(ostream& os);
+  void GraphicsDump(ostream& os);
+  virtual const char *Name()=0;
+  virtual const char *Abbrev()=0;
+  virtual const char *Directory() {return "";}
+
+  ProblemBase *NewProblem(const char *& key) {
+    ProblemBase *p=ProblemTable->Locate(key);
+    p->SetAbbrev(key);
+    return p;
+  }
+	
+  IntegratorBase *NewIntegrator(const char *& key) {
+    char *key2=strdup(key);
+    undashify(key,key2);
+    const char *key0=key2;
+    IntegratorBase *p=IntegratorTable->Locate(key0);
+    p->SetAbbrev(key0);
+    return p;
+  }
+	
+  virtual const char *FileName(const char* delimiter="", 
+			       const char *suffix="");
+};
+
+extern VocabularyBase *Vocabulary;
+
+#define METHOD(key) (void) new Entry<key,ProblemBase> (#key,ProblemTable);
+
+#define PLURAL(x) ((x)==1 ? "" : "s")
+
+template<class T>
+inline void open_output(T& fout, const char *delimiter, const char *suffix,
+			int append)
+{
+  const char *filename=Vocabulary->FileName(delimiter,suffix);
+  if(append) fout.open(filename,fout.app); // Append to end of output file.
+  else fout.open(filename);
+  if(!fout) msg(ERROR,"Output file %s could not be opened",filename);
+  fout.precision(digits);
+  errno=0;
+}
+
+template<class T>
+inline void open_output(T& fout, const char *delimiter, const char *suffix)
+{
+  open_output(fout,delimiter,suffix,restart);
+}	
 
 inline void VocabularyBase::ParamAdd(ParamBase *p)
 {
@@ -26,10 +104,10 @@ class Param : public ParamBase {
   T *var;
   T min;
   T max;
-  char *help;
+  const char *help;
   int dump;
  public:
-  Param(T *address, const char *s, int n, T min0, T max0, char *help0,
+  Param(T *address, const char *s, int n, T min0, T max0, const char *help0,
 	int dump0) {
     name=s; nvar=n; var=address; min=min0; max=max0; help=help0; dump=dump0;
     Vocabulary->ParamAdd(this);
@@ -78,7 +156,8 @@ class Param : public ParamBase {
 };
 
 template<class T>
-inline void Vocab(T *var, char *s, T min, T max, char *help, int n, int dump)
+inline void Vocab(T *var, const char *s, T min, T max, const char *help, int n,
+		  int dump)
 {
   (void) new Param<T>(var,s,n,min,max,help,dump);
 }

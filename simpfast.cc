@@ -44,7 +44,7 @@ simpfast(Real (*f)(Real),	// Pointer to function to be integrated.
   //  Bisect and compute estimates on left and right half intervals.
   //  Sum is better value for integral.
 
-  while(1) {
+  for(;;) {
     dx=0.5*da;
     arg=alpha+0.5*dx;
     fv[1]=(*f)(arg);
@@ -63,7 +63,7 @@ simpfast(Real (*f)(Real),	// Pointer to function to be integrated.
       //  interval, process right interval. Array lorr indicates left
       //  or right interval at each level.
 
-      while (1) {
+      for(;;) {
 	if (p->lorr == 0) { //  process right-half interval
 	  alpha += da;
 	  p->lorr=1;

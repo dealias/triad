@@ -25,7 +25,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 using namespace Array;
 
 const char PROGRAM[]="TRIAD";
-const char VERSION[]="1.22";
+const char VERSION[]="1.40";
 int restart_version=1;
 
 // Global variables
@@ -40,7 +40,7 @@ ProblemBase *Problem;
 IntegratorBase *Integrator;
 
 // Kernel variables
-static Var *y;
+static vector y;
 static int ny;
 static int explicit_dt=0;
 static int testing=0;
@@ -238,8 +238,9 @@ int main(int argc, char *argv[])
   t=0.0; nout=0;
   Problem->InitialConditions();
   
-  y=Problem->Vector();
+  Dimension1(y,Problem->vect());
   ny=Problem->Size();
+  
   if(restart || initialize) read_init();
   if(restart && dynamic < 0) dynamic=1;
   if(!restart) Problem->Initialize();
@@ -253,12 +254,13 @@ int main(int argc, char *argv[])
   Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,dtmin,dtmax,
 		       itmax,microsteps,verbose,dynamic);
 	
-  Integrator->Allocate(ny);
+  Integrator->SetProblem(*Problem);
+  Integrator->Allocate();
 	
   cout << newl << "INTEGRATING:" << endl;
   set_timer();
 	
-  Integrator->Integrate(*Problem,y,t,tmax,dt,sample,iteration,nout);
+  Integrator->Integrate(t,tmax,dt,sample,iteration,nout);
 	
   Problem->FinalOutput();
 	
@@ -288,7 +290,7 @@ void read_init()
   unsigned long nout0;
   double t0,dt0;
   const char *type=restart ? "restart" : "initialization";
-  char *ny_msg=
+  const char *ny_msg=
     "Current value of ny (%d) disagrees with value (%d) in file\n%s. Perhaps you need to specify oldversion=%d";
   int init_version;
 	
@@ -338,7 +340,7 @@ void testlock()
   } else errno=0;
 }
 
-void dump(int it, int final, double tmax) 
+void dump(double t, int it, int final, double tmax) 
 {
   if((!restart || it > 0) && (tmax-t >= tprecision*tmax || final) &&
      t > last_dump) {
@@ -377,11 +379,12 @@ void set_timer()
 	   << " " << setw(w) << "invert_cnt"
 	   << " " << setw(w) << "CPU"
 	   << " " << setw(w) << "CHILD"
-	   << " " << setw(w) << "SYS" << endl;
+	   << " " << setw(w) << "SYS" 
+	   << " " << setw(w) << "memory" << endl;
   }
 }
 
-void statistics(int it)
+void statistics(double t, double dt, int it)
 {
   int i;
   if(restart && it == 0) return;
@@ -419,22 +422,23 @@ void statistics(int it)
       frestart.open(rtemp);
       frestart.close();
       msg(SLEEP,"Cannot write to restart file %s",rtemp);
-      statistics(it); // Try again;
+      statistics(t,dt,it); // Try again;
       return;
     }		  
   } else if(it == 0) msg(ERROR,"Could not open restart file %s",rtemp);
 	
   lock();
-  fstats << setw(w) << it << " " << iter << " " << setw(e) << t << " " <<
-    setw(e) << dt << " " << setw(w) << invert_cnt << " ";
+  fstats << setw(w) << it << " " << iter << " " << setw(e) << t << " " 
+	 << setw(e) << dt << " " << setw(w) << invert_cnt << " ";
 
   total_invert_cnt += invert_cnt;
   invert_cnt=0;
 	
   for(i=0; i < ncputime; i++) {
-    fstats << setw(w) << cpu_restart[i]+cpu[i] << " ";
+    fstats << setw(e) << cpu_restart[i]+cpu[i] << " ";
   }
-  fstats << endl;
+  fstats << setw(w) << memory() << endl;
+  
   if(!fstats) msg(WARNING,"Cannot write to statistics file");
   unlock();
 }

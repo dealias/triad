@@ -12,15 +12,15 @@ using std::string;
 template<class B>
 class EntryBase {
  protected:	
-  char *key;
+  const char *key;
  public:
-  char *Key() {return key;}
+  const char *Key() {return key;}
   virtual B* New()=0;
 };
 
 template<class B>
 class Table {
-  char *name;
+  const char *name;
   Compare_t *Compare;
   KeyCompare_t *KeyCompare;
   DynVector<EntryBase<B> *>list;
@@ -35,10 +35,10 @@ class Table {
     return strcasecmpn((char *) key, (*(EntryBase<B> **)p)->Key(), n);
   }
 	
-  Table(char *name0, Compare_t Compare0, KeyCompare_t KeyCompare0) {
+  Table(const char *name0, Compare_t Compare0, KeyCompare_t KeyCompare0) {
     name=name0; n=0; Compare=Compare0; KeyCompare=KeyCompare0;
   }
-  Table(char *name0) {
+  Table(const char *name0) {
     name=name0; n=0; Compare=DefaultCompare; KeyCompare=DefaultKeyCompare;
   }
   void Add(EntryBase<B> *ptr) {list[n++]=ptr;}
@@ -55,7 +55,7 @@ class Table {
     B *p;
     qsort(Base(),Size(),sizeof(*Base()),Compare);
     
-    while(1) {
+    for(;;) {
 	e=*(EntryBase<B> **) bsearch2(key,Base(),Size(),sizeof(*Base()),
 				      KeyCompare,&match_type);
 	if(check_match(match_type,name,key,2)) break;
@@ -82,7 +82,7 @@ class Table {
 template<class T, class B>
 class Entry : public EntryBase<B> {
  public:
-  Entry(char *key0,Table<B> *t) {key=key0; t->Add(this);}
+  Entry(const char *key0,Table<B> *t) {key=key0; t->Add(this);}
   B *New() {return new T;}
 };
 

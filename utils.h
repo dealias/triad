@@ -79,7 +79,14 @@ inline Real dmod(Real x, Real n) {
 template<class T> 
 inline void set(T *to, const T * from, unsigned int n)
 {
-  memcpy(to,from,sizeof(*from)*n);
+  memcpy(to,from,sizeof(T)*n);
+}
+
+template<class T> 
+inline void set(Array::array1<T> to, const Array::array1<T> from,
+		unsigned int n)
+{
+  memcpy(to(),from(),sizeof(T)*n);
 }
 
 template<class T>
