@@ -14,6 +14,7 @@ static Var IC[]={sqrt(1.5),0.0,sqrt(1.5)};
 Real Area0[]={1.0,1.0,1.0};
 Real *K,*Area=Area0,*y2;
 Real continuum_factor;
+Real tauforce=0.0;
 
 NWave::NWave()
 {
@@ -40,11 +41,10 @@ NWave::NWave()
 }
 
 void None::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
-							  Source_t **ConstantSrc);
+						  Source_t **ConstantSrc)
 {
 	*LinearSrc=StandardLinearity;
 	*NonlinearSrc=PrimitiveNonlinearitySR;
-	*ConstantSrc=ConstantForcing;
 	continuum_factor=1.0;
 }
 
@@ -54,7 +54,7 @@ ofstream fout;
 
 void NWave::InitialConditions()
 {
-	int k;
+	int k,p;
 
 	nyconserve=Npsi=Ntotal=3;
 	NpsiR=Ntotal-Npsi;
@@ -77,11 +77,11 @@ void NWave::InitialConditions()
 	triadLimits=new TriadLimits[Npsi];
 	
 	Var *pq=pqbuffer;
-	for(int p=0; p < Npsi; p++) {
+	for(p=0; p < Npsi; p++) {
 			pqIndex[p]=pq-p;
 			pq += Npsi-p;
 	}
-	for(p=0; p < n; p++) qStart[p]=p;
+	for(p=0; p < Npsi; p++) qStart[p]=p;
 	
 	triad[0].Store(pqbuffer+4,Mkpq[0]);
 	triad[1].Store(pqbuffer+2,Mkpq[1]);
