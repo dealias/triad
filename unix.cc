@@ -13,6 +13,8 @@
 #include <malloc.h>
 #include <sys/utsname.h>
 
+#include "arch/unix.h"
+
 #if _CRAYMVP
 #include <sys/types.h>
 #include <sys/jtab.h>
