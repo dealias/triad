@@ -113,26 +113,31 @@ void Partition<Polar,Cartesian>::MakeBins()
 		msg(ERROR,"Calculated number and actual number of bins disagree."); 
 
 	if(discrete) {
-		
 		int ModeCount=0;
-		ModeBin=new int[ndiscrete];
+		Nevolved=(Ny-1)/2*Nx+(Nx-1)/2;
+		Ndiscrete=Nx*Ny-1;
+		ModeBin=new int[Ndiscrete];
+		const int unassigned=-1;
+		for(i=0; i < Ndiscrete; i++) ModeBin[i]=unassigned;
 		for (i=0; i < n; i++) {
-			bin[i].MakeModes();
-			int nmode=bin[i].nmode;
+			p=&bin[i];
+			p->MakeModes();
+			int nmode=p->nmode;
 			for(int m=0; m < nmode; m++) {
-				int ModeIndex=bin.mode[m].ModeIndex()
-				if(ModeBin[mode_index] != -1) 
+				int Index=p->mode[m].value.ModeIndex();
+				if(ModeBin[Index] != unassigned) 
 					msg(ERROR,
-						"Discrete mode (%d) is assigned to another bin",m);
-				ModeBin[ModeIndex]=i;
+						"Discrete mode (%d) is already assigned to bin %d",
+						m,ModeBin[Index]);
+				ModeBin[Index]=i;
 				ModeCount++;
 			}
 		}
-		if(ModeCount != ndiscrete) 
+		if(ModeCount != Ndiscrete) 
 			msg(ERROR, "Actual and calculated number of modes disagree");
-		for(i=0; i < ndiscrete; i++) {
-			if(ModeBin[i] == -1) msg(ERROR, "Discrete mode (%d) is not
-contained in any bin",i);
+		for(i=0; i < Ndiscrete; i++) {
+			if(ModeBin[i] == unassigned) 
+				msg(ERROR, "Discrete mode (%d) is not contained in any bin",i);
 		}
 	}
 	

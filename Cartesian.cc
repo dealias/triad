@@ -19,7 +19,6 @@ Cartesian *CartesianMode;
 
 void Basis<Cartesian>::MakeBins()
 {
-	Cartesian *p;
 	int i,j;
 	
 	if(reality && ((Nx/2)*2 == Nx || (Ny/2)*2 == Ny))
@@ -31,7 +30,7 @@ void Basis<Cartesian>::MakeBins()
 	high=Cartesian(halfNx,halfNy);
 		
 	n=Nx*Ny-1;
-	p=mode=CartesianMode=new Cartesian[n];
+	mode=CartesianMode=new Cartesian[n];
 	Nmode=(reality ? n/2 : n);
 	nindependent=(reality || n % 2) ? Nmode : n/2;
 	
@@ -42,10 +41,10 @@ void Basis<Cartesian>::MakeBins()
 	Cartesian mode0=Cartesian(0,0);
 	for(i=0; i < n; i++) mode[i]=mode0;
 		
-	for(j=low.Row; j <= high.Row(); j++) {
+	for(j=low.Row(); j <= high.Row(); j++) {
 		for(i=low.Column(); i <= high.Column(); i++) {
-			Cartesian mode(i,j);
-			if(mode != mode0) p[mode.ModeIndex()]=mode;
+			Cartesian m(i,j);
+			if(m != mode0) mode[m.ModeIndex()]=m;
 		}
 	}
 	
