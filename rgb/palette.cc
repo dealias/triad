@@ -17,7 +17,7 @@ extern int r2,g2,b2;
 static int k,incr;
 
 int ColorByte(double r) {
-	int a=255.0*r+0.5;
+	int a=(int)(255.0*r+0.5);
 	if(a < 0 || a > 255) msg(ERROR,"Invalid color: %d",a);
 	return a;
 }

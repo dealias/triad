@@ -544,18 +544,18 @@ int main(int argc, char *const argv[])
 			break;
 		case CONST:
 			palette=GENERAL;
-			if(sscanf(optarg,"%d,%d,%d",&r1,&g1,&b1)
-			   != 3) msg(ERROR,"Invalid color constant: %s",optarg);
+			if(sscanf(optarg,"%d,%d,%d",&r1,&g1,&b1) != 3)
+				msg(ERROR,"Invalid color constant: %s",optarg);
 			break;
 		case RATE:
 			palette=GENERAL;
-			if(sscanf(optarg,"%d,%d,%d",&r2,&g2,&b2)
-			   != 3) msg(ERROR,"Invalid color rate: %s",optarg);
+			if(sscanf(optarg,"%d,%d,%d",&r2,&g2,&b2) != 3)
+				msg(ERROR,"Invalid color rate: %s",optarg);
 			break;
 		case CROP:
 			crop=1;
-			if(sscanf(optarg,"%dx%d+%d+%d",&istop,&jstop,&istart,&jstart)
-			   != 4) msg(ERROR,"Invalid geometry: %s",optarg);
+			if(sscanf(optarg,"%dx%d+%d+%d",&istop,&jstop,&istart,&jstart) != 4)
+				msg(ERROR,"Invalid geometry: %s",optarg);
 			istop += istart;
 			jstop += jstart;
 			break;
