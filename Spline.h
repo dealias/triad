@@ -8,7 +8,8 @@ namespace Array {
   
 // Do a binary search of an ordered array of n elements to find an interval
 // containing key. Return the index corresponding to the left-hand endpoint
-// of the matching interval, or n if the key is less than the first element.
+// of the matching interval, n-1 if the key is greater than the last
+// element, or n if the key is less than the first element.
 template<class X>
 unsigned int bintsearch(X key, unsigned int n, const typename array1<X>::opt x)
 {
@@ -32,7 +33,9 @@ unsigned int bintsearch(X key, unsigned int n, const typename array1<X>::opt x)
 // Compute a natural cubic spline (zero second derivatives at the endpoints)
 // of n data points (x_i,y_i) where the x_i are listed in ascending order.
 // The constructor computes the second derivatives at each point;
-// interpolated values can then be computed with Interpolate.
+// interpolated values can then be computed with Interpolate. Values
+// outside the available data range are computed via linear extrapolation,
+// based on the value of the first derivative at the nearest endpoint.
   
 template<class Y, class X>
 class CubicSpline {
@@ -88,7 +91,14 @@ public:
 		const typename array1<X>::opt x,
 		const typename array1<Y>::opt y, X x0, unsigned int i) {
     if(x0 == x[n-1]) return y[n-1];
-    if(i >= n-1) ArrayExit("Spline index out of range");
+    if(i >= n) {
+      X dx=x[1]-x[0];
+      return y[0]+((y[1]-y[0])/dx-sixth*dx*y2[1])*(x0-x[0]);
+    }
+    if(i == n-1) {
+      X dx=x[n-1]-x[n-2];
+      return y[n-1]+((y[n-1]-y[n-2])/dx+sixth*dx*y2[n-2])*(x0-x[n-1]);
+    }
     X D=x[i+1]-x[i];
     X B=(x0-x[i])/D;
     X A=1.0-B;
