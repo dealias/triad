@@ -238,7 +238,7 @@ void identify(int argc, char *const argf[], int n, char *const type,
 void mpeg(int argc, char *const argf[], int n, char *const type,
 		  int xsize, int ysize);
 void animate(int argc, char *const argf[], int n, char *const type,
-			 int xsize, int ysize);
+			 char *pattern, int xsize, int ysize);
 	
 #ifdef __i386__
 extern "C" void putenv(const char *);
@@ -742,8 +742,8 @@ int main(int argc, char *const argv[])
 			identify(nfiles,argf,0,"miff",xsize,ysize);
 			
 			if(make_mpeg) mpeg(nfiles,argf,nset-1,"mpg",xsize,ysize);
-			else animate(nfiles,argf,nset-1,"miff",xsize,ysize);
-		} else animate(nfiles,argf,nset-1,format,xsize,ysize);
+			else animate(nfiles,argf,nset-1,"miff","%d",xsize,ysize);
+		} else animate(nfiles,argf,nset-1,format,"%04d",xsize,ysize);
 	}
 	
 	cleanup();
@@ -851,12 +851,12 @@ void mpeg(int, char *const argf[], int n, char *const type,
 	system(cmd);
 }
 
-void animate(int, char *const argf[], int n, char *const type,
+void animate(int, char *const argf[], int n, char *const type, char *pattern
 			 int xsize, int ysize)
 {
 	strstream buf;
 	buf << "animate -scene 0-" << n << " -size " << xsize << "x" << ysize
-		<< " " << type << ":" << rgbdir << argf[0] << "%d" << "." << type
+		<< " " << type << ":" << rgbdir << argf[0] << pattern << "." << type
 		<< ends;
 	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;
