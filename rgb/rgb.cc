@@ -301,7 +301,7 @@ void options()
 		 << "[default " << sy << "]" << endl;
 	cerr << "-symmetric\t make color palette symmetric about zero"
 		 << " (if possible)" << endl;
-	cerr << "-nobar\t inhibit palette bar" << endl;
+	cerr << "-nobar\t\t inhibit palette bar" << endl;
 	cerr << "-extract format\t extract individual images as tiff, gif, etc." 
 		 << endl;
 	cerr << endl;
