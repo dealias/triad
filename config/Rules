@@ -2,7 +2,7 @@
 	$(C++) $(OPT) $(INCL) -o $@ -c $<
 
 clean:
-	rm -f *.o *mon.out $(ALL)
+	rm -f *.o *.$(D) *mon.out $(ALL)
 
 %.$(D): %.cc
 	$(MAKEDEPEND) $(INCL) $(MDOPTS) $< > $@

@@ -21,11 +21,6 @@
 extern char* run;
 static const double init_time=time(NULL);
 
-#if defined(__alpha__)
-#undef CLK_TCK
-#define CLK_TCK CLOCKS_PER_SEC
-#endif
-
 void cputime(double *cpu)
 {
 #if _CRAY && !_CRAYMPP
