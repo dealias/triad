@@ -91,12 +91,12 @@ void NWave::InitialConditions()
 	if(randomIC) {
 		for(int i=0; i < Npsi; i++) {
 			Var w;
-			crand_gauss(w);
+			crand_gauss(&w);
 			y[i] *= w;
 		}
 	}
 	
-	open_output(fout,".",downcase(undashify(Integrator->Abbrev())));
+	open_output(fout,dirsep,downcase(undashify(Integrator->Abbrev())));
 }
 
 void NWave::Initialize()

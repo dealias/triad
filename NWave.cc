@@ -117,7 +117,7 @@ static Complex randomfactor=0.0;
 
 void ConstantForcing(Var *source, Var *, double t)
 {
-	if(t-last_t > tauforce) {last_t=t; crand_gauss(randomfactor);}
+	if(t-last_t > tauforce) {last_t=t; crand_gauss(&randomfactor);}
 #pragma ivdep
 	for(int k=0; k < Npsi; k++) source[k] += forcing[k]*randomfactor;
 }

@@ -186,7 +186,7 @@ void NWave::InitialConditions()
 		n=(reality || Npsi % 2) ? Npsi : Npsi/2;
 		for(i=0; i < n; i++) {
 			Var w;
-			crand_gauss(w);
+			crand_gauss(&w);
 			y[i] *= w;
 		}
 		for(i=n; i < Npsi; i++) y[i]=conj(y[i-n]);

@@ -283,7 +283,6 @@ void Partition<T>::ComputeTriads() {
 	}
 	
 	if(!fin || formatted) {
-		errno=0;
 		filename=WeightFileName("");
 		fout.open(filename);
 		if(!fout) msg(ERROR,"Weight file %s could not be opened",filename);
@@ -294,7 +293,6 @@ void Partition<T>::ComputeTriads() {
 		if(!fout.good()) msg(ERROR,"Error writing to weight file %s",filename);
 	}
 	
-	errno=0;
 	int npq=reality ? Nmode*(3*Nmode+1)/2 : pq(n,n);
 	pqbuffer=new Var[npq];
 	pqIndex=new Var*[n];

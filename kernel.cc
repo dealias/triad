@@ -27,9 +27,9 @@ static final_iteration=0;
 static int total_invert_cnt=0;
 void Integrand(Var *, Var *, double);
 
-static char *pname,*rname,*iname,*rtemp,*filedir,*tempdir;
-static ifstream fparam,fin;
-static ofstream fdump,fstat,fout;
+static char *pname,*rname,*iname,*rtemp,*lname;
+static ifstream fparam,fin,ftest;
+static ofstream fdump,fstat,fout,flock;
 
 // Kernel vocabulary declarations and default values
 int itmax=100;
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 	// Allow time step to be overridden from command line (even on restarts).
 	if(dt) override_dt=1; 
 	
-	if(run == NULL) {run="out"; testing=1; clobber=1;}
+	if(run == NULL) {run="test"; testing=1; clobber=1;}
 	
 	pname=Problem->FileName(dirsep,"p");
 	fparam.open(pname);
@@ -176,8 +176,19 @@ int main(int argc, char *argv[])
 		if(fin && !clobber) 
 			msg(OVERRIDE,"Restart file %s already exists",rname);
 		fin.close();	
+		errno=0;
 	}
 	
+	lname=Problem->FileName(dirsep,"LOCK");
+	if(restart) {
+		ftest.open(lname);
+		if(ftest) {
+			msg(OVERRIDE,"Lock file %s exists; output files may be corrupted",
+				lname);
+		}
+		else errno=0;
+	} 
+
 	if(!restart && initialize) {
 		char *sname=Problem->FileName(dirsep,"stat");
 		fin.open(sname);
@@ -186,9 +197,6 @@ int main(int argc, char *argv[])
 		fin.close();
 	}
 
-	filedir=Problem->FileName();
-	tempdir=Problem->FileName("=");
-	
 	t=0.0;
 	Problem->InitialConditions();
 	y=Problem->Vector();
@@ -267,23 +275,33 @@ void read_init()
 }
 
 
+inline void lock()
+{
+	flock.open(lname);
+	if(!flock) {
+		msg(WARNING,"Couldn't create lock file %s",lname);
+		errno=0;
+	} 
+}
+
+inline void unlock()
+{
+	if(flock) {
+		flock.close();
+		if(remove(lname) == -1)
+			msg(ERROR,"Couldn't remove lock file %s",lname);
+	}
+}
+
 void dump(int it, int final, double tmax) 
 {
 	if(!restart || it > 0) {
-		int rc=-1;
-		char *text="Rename of directory %s to %s failed";
-		if(!testing) {
-			rc=rename(filedir,tempdir);
-			if(rc == -1) {msg(WARNING,text,filedir,tempdir); errno=0;}
-		}
+		if(!testing) lock();
 		if((tmax-t >= 1.0E-6*tmax || final) && t > last_dump) {
 			Problem->Output(it); last_dump=t;
 		}
 		statistics();
-
-		if(rc != -1) {
-			if(rename(tempdir,filedir) == -1) msg(ERROR,text,filedir,tempdir);
-		}
+		if(!testing) unlock();
 	}
 	
 	int iter=final_iteration+iteration;
