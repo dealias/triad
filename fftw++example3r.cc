@@ -6,15 +6,17 @@
 using std::cout;
 using Array::array3;
 
-int main() 
+int main()
 {
   unsigned int nx=4, ny=5, nz=6;
+  unsigned int nzp=nz/2+1;
   size_t align=sizeof(Complex);
   
-  array3<Complex> f(nx,ny,nz,align);
+  array3<double> f(nx,ny,nz,align);
+  array3<Complex> g(nx,ny,nzp,align);
   
-  fft3d Forward3(-1,f);
-  fft3d Backward3(1,f);
+  rcfft3d Forward3(f,g);
+  crfft3d Backward3(g,f);
   
   for(unsigned int i=0; i < nx; i++) 
     for(unsigned int j=0; j < ny; j++) 
@@ -23,11 +25,11 @@ int main()
 	
   cout << f << endl;
   
-  Forward3.fft(f);
+  Forward3.fft(f,g);
   
-  cout << f << endl;
+  cout << g << endl;
   
-  Backward3.fftNormalized(f);
+  Backward3.fftNormalized(g,f);
   
   cout << f << endl;
 }

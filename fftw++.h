@@ -83,6 +83,7 @@ protected:
   unsigned int size;
   int sign;
   double norm;
+  bool shift;
 
   bool inplace;
   fftw_plan plan;
@@ -98,6 +99,7 @@ protected:
   }
   
   unsigned int realsize(unsigned int n, Complex *in, Complex *out) {
+//    return n/2+(in == out);
     return n/2+(!out || in == out);
   }
   
@@ -137,7 +139,7 @@ protected:
 
 public:
   fftw(unsigned int size, int sign, unsigned int n=0) : 
-    size(size), sign(sign), norm(1.0/(n ? n : size)) {}
+    size(size), sign(sign), norm(1.0/(n ? n : size)), shift(false) {}
   
   virtual ~fftw() {}
   
@@ -150,7 +152,7 @@ public:
 //    exit(1);
   }
   
-  void Setup(Complex *in, Complex *out) {
+  void Setup(Complex *in, Complex *out=NULL) {
     if(!Wise) LoadWisdom();
     bool alloc=!in;
     if(alloc) in=new(FFTW) Complex[size];
@@ -203,7 +205,7 @@ public:
     Execute(in,out);
   }
     
-  void fft(double *in, Complex *out=NULL) {
+  void fft(double *in, Complex *out) {
     fft((Complex *) in,out);
   }
   
@@ -211,18 +213,53 @@ public:
     fft(in,(Complex *) out);
   }
   
+  void fft0(Complex *in, Complex *out=NULL) {
+    Setout(in,out);
+    shift=true;
+    Execute(in,out);
+    shift=false;
+  }
+    
+  void fft0(double *in, Complex *out) {
+    fft0((Complex *) in,out);
+  }
+  
+  void fft0(Complex *in, double *out) {
+    fft0(in,(Complex *) out);
+  }
+  
+  void Normalize(Complex *out) {
+    for(unsigned int i=0; i < size; i++) out[i] *= norm;
+  }
+  
   virtual void fftNormalized(Complex *in, Complex *out=NULL) {
     Setout(in,out);
     Execute(in,out);
-    for(unsigned int i=0; i < size; i++) out[i] *= norm;
+    Normalize(out);
   }
   
   void fftNormalized(Complex *in, double *out) {
     fftNormalized(in,(Complex *) out);
   }
   
-  void fftNormalized(double *in, Complex *out=NULL) {
+  void fftNormalized(double *in, Complex *out) {
     fftNormalized((Complex *) in,out);
+  }
+  
+  void fft0Normalized(Complex *in, Complex *out=NULL) {
+    Setout(in,out);
+    shift=true;
+    Execute(in,out);
+    shift=false;
+    Normalize(out);
+  }
+  
+  void fft0Normalized(Complex *in, double *out) {
+    fft0Normalized(in,(Complex *) out);
+  }
+  
+  void fft0Normalized(double *in, Complex *out) {
+    fft0Normalized((Complex *) in,out);
   }
   
   void fftNormalized(Complex *in, Complex *out,
@@ -329,7 +366,7 @@ public:
 };
   
 // Compute the complex Fourier transform of n real values, using phase sign -1.
-// Before calling fft(), the array in must be allocated as Complex[n/2] and
+// Before calling fft(), the array in must be allocated as Real[n] and
 // the array out must be allocated as Complex[n/2+1]. The arrays in and out
 // may coincide, in which case they must both be allocated as Complex[n/2+1].
 //
@@ -350,18 +387,18 @@ public:
 class rcfft1d : public fftw {
   unsigned int nx;
 public:  
-  rcfft1d(unsigned int nx, Complex *in=NULL, Complex *out=NULL) 
-    : fftw(nx/2+1,-1,nx), nx(nx) {Setup(in,out);} 
+  rcfft1d(unsigned int nx, Complex *out=NULL) 
+    : fftw(nx/2+1,-1,nx), nx(nx) {Setup(out);} 
   
   rcfft1d(unsigned int nx, double *in, Complex *out) 
     : fftw(nx/2+1,-1,nx), nx(nx) {Setup(in,out);} 
   
 #ifdef __Array_h__
-  rcfft1d(const array1<Complex>& in, const array1<Complex>& out=NULL1)
-    : fftw(in.Size(),-1,2*(in.Nx()-1)), nx(2*(in.Nx()-1)) {Setup(in,out);} 
+  rcfft1d(const array1<Complex>& in)
+    : fftw(in.Size(),-1,2*(in.Nx()-1)), nx(2*(in.Nx()-1)) {Setup(in);} 
   
   rcfft1d(const array1<double>& in, const array1<Complex>& out)
-    : fftw(out.Size(),-1,2*(out.Nx()-1)), nx(2*(out.Nx()-1)) {Setup(in,out);} 
+    : fftw(out.Size(),-1,in.Size()), nx(in.Nx()) {Setup(in,out);} 
 #endif  
   
   fftw_plan Plan(Complex *in, Complex *out) {
@@ -377,7 +414,7 @@ public:
 // corresponding to the non-negative part of the frequency spectrum, using
 // phase sign +1.
 // Before calling fft(), the array in must be allocated as Complex[n/2+1]
-// and the array out must be allocated as Complex[n/2]. The arrays in and out
+// and the array out must be allocated as Real[n]. The arrays in and out
 // may coincide, in which case they must both be allocated as Complex[n/2+1]. 
 //
 // Out-of-place usage: 
@@ -397,18 +434,18 @@ public:
 class crfft1d : public fftw {
   unsigned int nx;
 public:  
-  crfft1d(unsigned int nx, Complex *in=NULL, Complex *out=NULL) 
-    : fftw(realsize(nx,in,out),1,nx), nx(nx) {Setup(in,out);} 
+  crfft1d(unsigned int nx, Complex *in=NULL) 
+    : fftw(nx/2+1,1,nx), nx(nx) {Setup(in);} 
   
   crfft1d(unsigned int nx, Complex *in, double *out) 
     : fftw(realsize(nx,in,out),1,nx), nx(nx) {Setup(in,out);} 
   
 #ifdef __Array_h__
-  crfft1d(const array1<Complex>& in, const array1<Complex>& out=NULL1) 
-    : fftw(in.Size(),1,2*(in.Nx()-1)), nx(2*(in.Nx()-1)) {Setup(in,out);} 
+  crfft1d(const array1<Complex>& in)
+    : fftw(in.Size(),1,2*(in.Nx()-1)), nx(2*(in.Nx()-1)) {Setup(in);} 
   
   crfft1d(const array1<Complex>& in, const array1<double>& out) 
-    : fftw(in.Size(),1,2*(in.Nx()-1)), nx(2*(in.Nx()-1)) {Setup(in,out);} 
+    : fftw(out.Size()/2,1,out.Size()), nx(out.Nx()) {Setup(in,out);} 
 #endif  
   
   fftw_plan Plan(Complex *in, Complex *out) {
@@ -568,7 +605,7 @@ public:
 
 // Compute the complex two-dimensional Fourier transform of nx times ny real
 // values, using phase sign -1.
-// Before calling fft(), the array in must be allocated as Complex[nx*ny/2] and
+// Before calling fft(), the array in must be allocated as double[nx*ny] and
 // the array out must be allocated as Complex[nx*(ny/2+1)]. The arrays in
 // and out may coincide, in which case they must both be allocated as
 // Complex[nx*(ny/2+1)]. 
@@ -577,14 +614,14 @@ public:
 //
 //   rcfft2d Forward(nx,ny,in,out);
 //   Forward.fft(in,out);	// Origin of Fourier domain at (0,0)
-//   Forward.fft(in,out,true);	// Origin of Fourier domain at (nx/2,0)
+//   Forward.fft0(in,out);	// Origin of Fourier domain at (nx/2,0)
 //
 //
 // In-place usage:
 //
 //   rcfft2d Forward(nx,ny);
 //   Forward.fft(in);     	// Origin of Fourier domain at (0,0)
-//   Forward.fft(in,in,true);	// Origin of Fourier domain at (nx/2,0)
+//   Forward.fft0(in);		// Origin of Fourier domain at (nx/2,0)
 // 
 // Notes:
 //   in contains the nx*ny real values stored as a Complex array;
@@ -593,19 +630,20 @@ public:
 class rcfft2d : public fftw {
   unsigned int nx;
   unsigned int ny;
-  bool shift;
 public:  
-  rcfft2d(unsigned int nx, unsigned int ny, Complex *in=NULL,
-	  Complex *out=NULL) : fftw(nx*(ny/2+1),-1,nx*ny), nx(nx), ny(ny),
-			       shift(false) {Setup(in,out);} 
-#ifdef __Array_h__
-  rcfft2d(const array2<Complex>& in, const array2<Complex>& out=NULL2)
-    : fftw(in.Size(),-1,in.Nx()*2*(in.Ny()-1)),
-      nx(in.Nx()), ny(2*(in.Ny()-1)), shift(false) {Setup(in,out);} 
+  rcfft2d(unsigned int nx, unsigned int ny, Complex *out=NULL) : 
+    fftw(nx*(ny/2+1),-1,nx*ny), nx(nx), ny(ny) {Setup(out);} 
   
-  rcfft2d(const array2<double>& in, const array2<Complex>& out)
-    : fftw(out.Size(),-1,out.Nx()*2*(out.Ny()-1)),
-      nx(out.Nx()), ny(2*(out.Ny()-1)), shift(false) {Setup(in,out);} 
+  rcfft2d(unsigned int nx, unsigned int ny, double *in, Complex *out) : 
+    fftw(nx*(ny/2+1),-1,nx*ny), nx(nx), ny(ny) {Setup(in,out);} 
+  
+#ifdef __Array_h__
+  rcfft2d(const array2<Complex>& in) :
+    fftw(in.Size(),-1,in.Nx()*2*(in.Ny()-1)), nx(in.Nx()), ny(2*(in.Ny()-1))
+  {Setup(in);} 
+  
+  rcfft2d(const array2<double>& in, const array2<Complex>& out) :
+    fftw(out.Size(),-1,in.Size()), nx(in.Nx()), ny(in.Ny()) {Setup(in,out);} 
 #endif  
   
   fftw_plan Plan(Complex *in, Complex *out) {
@@ -613,24 +651,6 @@ public:
 			      effort);
   }
   
-  void fft(Complex *in, Complex *out=NULL) {
-    fftw::fft(in,out);
-  }
-    
-  void fft(Complex *in, bool shift0, Complex *out=NULL) {
-    shift=shift0;
-    fftw::fft(in,out);
-  }
-    
-  void fftNormalized(Complex *in, Complex *out=NULL) {
-    fftw::fftNormalized(in,out);
-  }
-    
-  void fftNormalized(Complex *in, bool shift0, Complex *out=NULL) {
-    shift=shift0;
-    fftw::fftNormalized(in,out);
-  }
-    
   void Execute(Complex *in, Complex *out) {
     if(shift) Shift(in,nx,ny);
     fftw_execute_dft_r2c(plan,(double *) in,(fftw_complex *) out);
@@ -642,21 +662,21 @@ public:
 // half-plane ky >= 0, using phase sign +1.
 // Before calling fft(), the array in must be allocated as
 // Complex[nx*(ny+1)/2] and the array out must be allocated as
-// Complex[nx*ny]. The arrays in and out may coincide, in which case they
+// double[nx*ny]. The arrays in and out may coincide, in which case they
 // must both be allocated as Complex[nx*(ny/2+1)]. 
 //
 // Out-of-place usage: 
 //
 //   crfft2d Backward(nx,ny,in,out);
 //   Backward.fft(in,out);	// Origin of Fourier domain at (0,0)
-//   Backward.fft(in,out,true);	// Origin of Fourier domain at (nx/2,0)
+//   Backward.fft0(in,out);	// Origin of Fourier domain at (nx/2,0)
 //
 //
 // In-place usage:
 //
 //   crfft2d Backward(nx,ny);
 //   Backward.fft(in);		// Origin of Fourier domain at (0,0)
-//   Backward.fft(in,in,true);	// Origin of Fourier domain at (nx/2,0)
+//   Backward.fft0(in);		// Origin of Fourier domain at (nx/2,0)
 // 
 // Notes:
 //   in contains the upper-half portion (ky >= 0) of the Complex transform;
@@ -665,52 +685,28 @@ public:
 class crfft2d : public fftw {
   unsigned int nx;
   unsigned int ny;
-  bool shift;
 public:  
-  crfft2d(unsigned int nx, unsigned int ny, Complex *in=NULL,
-	  Complex *out=NULL) 
-    : fftw(nx*(realsize(ny,in,out)),1,nx*ny), nx(nx), ny(ny), shift(false) {
-    Setup(in,out);
-  } 
+  crfft2d(unsigned int nx, unsigned int ny, Complex *in=NULL) 
+    : fftw(nx*(ny/2+1),1,nx*ny), nx(nx), ny(ny) {Setup(in);} 
   
   crfft2d(unsigned int nx, unsigned int ny, Complex *in, double *out) 
-    : fftw(nx*(realsize(ny,in,out)),1,nx*ny), nx(nx), ny(ny), shift(false) {
-    Setup(in,out);
-  } 
+    : fftw(nx*(realsize(ny,in,out)),1,nx*ny), nx(nx), ny(ny) {Setup(in,out);} 
   
 #ifdef __Array_h__
-  crfft2d(const array2<Complex>& in, const array2<Complex>& out=NULL2)
-    : fftw(in.Size(),1,in.Nx()*2*(in.Ny()-1)),
-      nx(in.Nx()), ny(2*(in.Ny()-1)), shift(false) {Setup(in,out);} 
+  crfft2d(const array2<Complex>& in) :
+    fftw(in.Size(),1,in.Nx()*2*(in.Ny()-1)), nx(in.Nx()), ny(2*(in.Ny()-1))
+  {Setup(in);} 
   
-  crfft2d(const array2<Complex>& in, const array2<double>& out)
-    : fftw(in.Size(),1,in.Nx()*2*(in.Ny()-1)),
-      nx(in.Nx()), ny(2*(in.Ny()-1)), shift(false) {Setup(in,out);} 
-#endif  
+  crfft2d(const array2<Complex>& in, const array2<double>& out) :
+    fftw(out.Size()/2,1,out.Size()), nx(out.Nx()), ny(out.Ny())
+  {Setup(in,out);} 
+#endif
   
   fftw_plan Plan(Complex *in, Complex *out) {
     return fftw_plan_dft_c2r_2d(nx,ny,(fftw_complex *) in,(double *) out,
 			      effort);
   }
   
-  void fft(Complex *in, Complex *out=NULL) {
-    fftw::fft(in,out);
-  }
-    
-  void fft(Complex *in, bool shift0, Complex *out=NULL) {
-    shift=shift0;
-    fftw::fft(in,out);
-  }
-    
-  void fftNormalized(Complex *in, Complex *out=NULL) {
-    fftw::fftNormalized(in,out);
-  }
-    
-  void fftNormalized(Complex *in, bool shift0, Complex *out=NULL) {
-    shift=shift0;
-    fftw::fftNormalized(in,out);
-  }
-    
   void Execute(Complex *in, Complex *out) {
     fftw_execute_dft_c2r(plan,(fftw_complex *) in,(double *) out);
     if(shift) Shift(out,nx,ny);
@@ -769,7 +765,7 @@ public:
 
 // Compute the complex two-dimensional Fourier transform of
 // nx times ny times nz real values, using phase sign -1.
-// Before calling fft(), the array in must be allocated as Complex[nx*ny*nz/2]
+// Before calling fft(), the array in must be allocated as double[nx*ny*nz]
 // and the array out must be allocated as Complex[nx*ny*(nz/2+1)]. The
 // arrays in and out may coincide, in which case they must both be allocated as
 // Complex[nx*ny*(nz/2+1)]. 
@@ -778,14 +774,14 @@ public:
 //
 //   rcfft3d Forward(nx,ny,nz,in,out);
 //   Forward.fft(in,out);	// Origin of Fourier domain at (0,0)
-//   Forward.fft(in,out,true);	// Origin of Fourier domain at (nx/2,ny/2,0)
+//   Forward.fft0(in,out);	// Origin of Fourier domain at (nx/2,ny/2,0)
 //
 //
 // In-place usage:
 //
 //   rcfft3d Forward(nx,ny,nz);
 //   Forward.fft(in);		// Origin of Fourier domain at (0,0)
-//   Forward.fft(in,in,true);	// Origin of Fourier domain at (nx/2,ny/2,0)
+//   Forward.fft0(in);		// Origin of Fourier domain at (nx/2,ny/2,0)
 // 
 // Notes:
 //   in contains the nx*ny*nz real values stored as a Complex array;
@@ -795,28 +791,22 @@ class rcfft3d : public fftw {
   unsigned int nx;
   unsigned int ny;
   unsigned int nz;
-  bool shift;
 public:  
-  rcfft3d(unsigned int nx, unsigned int ny, unsigned int nz, Complex *in=NULL,
-	  Complex *out=NULL) : fftw(nx*ny*(nz/2+1),-1,nx*ny*nz),
-			       nx(nx), ny(ny), nz(nz),
-			       shift(false) {Setup(in,out);} 
+  rcfft3d(unsigned int nx, unsigned int ny, unsigned int nz, Complex *out=NULL)
+    : fftw(nx*ny*(nz/2+1),-1,nx*ny*nz), nx(nx), ny(ny), nz(nz) {Setup(out);} 
   
   rcfft3d(unsigned int nx, unsigned int ny, unsigned int nz, double *in,
 	  Complex *out) : fftw(nx*ny*(nz/2+1),-1,nx*ny*nz),
-			  nx(nx), ny(ny), nz(nz),
-			  shift(false) {Setup(in,out);} 
+			  nx(nx), ny(ny), nz(nz) {Setup(in,out);} 
   
 #ifdef __Array_h__
-  rcfft3d(const array3<Complex>& in, const array3<Complex>& out=NULL3) :
+  rcfft3d(const array3<Complex>& in) :
     fftw(in.Size(),-1,in.Nx()*in.Ny()*2*(in.Nz()-1)),
-    nx(in.Nx()), ny(in.Ny()), nz(2*(in.Nz()-1)), shift(false) {Setup(in,out);} 
+    nx(in.Nx()), ny(in.Ny()), nz(2*(in.Nz()-1)) {Setup(in);} 
   
   rcfft3d(const array3<double>& in, const array3<Complex>& out) :
-    fftw(out.Size(),-1,out.Nx()*out.Ny()*2*(out.Nz()-1)),
-    nx(out.Nx()), ny(out.Ny()), nz(2*(out.Nz()-1)), shift(false)	{
-    Setup(in,out);
-  } 
+    fftw(out.Size(),-1,in.Size()),
+    nx(in.Nx()), ny(in.Ny()), nz(in.Nz()) {Setup(in,out);} 
 #endif  
   
   fftw_plan Plan(Complex *in, Complex *out) {
@@ -824,24 +814,6 @@ public:
 			      effort);
   }
   
-  void fft(Complex *in, Complex *out=NULL) {
-    fftw::fft(in,out);
-  }
-    
-  void fft(Complex *in, bool shift0, Complex *out=NULL) {
-    shift=shift0;
-    fftw::fft(in,out);
-  }
-    
-  void fftNormalized(Complex *in, Complex *out=NULL) {
-    fftw::fftNormalized(in,out);
-  }
-    
-  void fftNormalized(Complex *in, bool shift0, Complex *out=NULL) {
-    shift=shift0;
-    fftw::fftNormalized(in,out);
-  }
-    
   void Execute(Complex *in, Complex *out) {
     if(shift) Shift(in,nx,ny,nz);
     fftw_execute_dft_r2c(plan,(double *) in,(fftw_complex *) out);
@@ -853,20 +825,20 @@ public:
 // half-plane kz >= 0, using phase sign +1.
 // Before calling fft(), the array in must be allocated as
 // Complex[nx*ny*(nz+1)/2] and the array out must be allocated as
-// Complex[nx*ny*nz]. The arrays in and out may coincide, in which case they
+// double[nx*ny*nz]. The arrays in and out may coincide, in which case they
 // must both be allocated as Complex[nx*ny*(nz/2+1)]. 
 //
 // Out-of-place usage: 
 //
 //   crfft3d Backward(nx,ny,nz,in,out);
 //   Backward.fft(in,out);	// Origin of Fourier domain at (0,0)
-//   Backward.fft(in,out,true);	// Origin of Fourier domain at (nx/2,ny/2,0)
+//   Backward.fft0(in,out);	// Origin of Fourier domain at (nx/2,ny/2,0)
 //
 // In-place usage:
 //
 //   crfft3d Backward(nx,ny,nz);
 //   Backward.fft(in);		// Origin of Fourier domain at (0,0)
-//   Backward.fft(in,in,true);	// Origin of Fourier domain at (nx/2,ny/2,0)
+//   Backward.fft0(in);		// Origin of Fourier domain at (nx/2,ny/2,0)
 // 
 // Notes:
 //   in contains the upper-half portion (kz >= 0) of the Complex transform;
@@ -876,24 +848,21 @@ class crfft3d : public fftw {
   unsigned int nx;
   unsigned int ny;
   unsigned int nz;
-  bool shift;
 public:  
-  crfft3d(unsigned int nx, unsigned int ny, unsigned int nz, Complex *in=NULL,
-	  Complex *out=NULL) : fftw(nx*ny*(realsize(nz,in,out)),1,nx*ny*nz),
-			       nx(nx), ny(ny), nz(nz),
-			       shift(false) {Setup(in,out);} 
+  crfft3d(unsigned int nx, unsigned int ny, unsigned int nz, Complex *in=NULL)
+	  : fftw(nx*ny*(nz/2+1),1,nx*ny*nz), nx(nx), ny(ny), nz(nz)
+  {Setup(in);} 
   crfft3d(unsigned int nx, unsigned int ny, unsigned int nz, Complex *in,
 	  double *out) : fftw(nx*ny*(realsize(nz,in,out)),1,nx*ny*nz),
-			 nx(nx), ny(ny), nz(nz),
-			 shift(false) {Setup(in,out);} 
+			 nx(nx), ny(ny), nz(nz) {Setup(in,out);} 
 #ifdef __Array_h__
-  crfft3d(const array3<Complex>& in, const array3<Complex>& out=NULL3) :
+  crfft3d(const array3<Complex>& in) :
     fftw(in.Size(),1,in.Nx()*in.Ny()*2*(in.Nz()-1)),
-    nx(in.Nx()), ny(in.Ny()), nz(2*(in.Nz()-1)), shift(false) {Setup(in,out);} 
+    nx(in.Nx()), ny(in.Ny()), nz(2*(in.Nz()-1)) {Setup(in);} 
   
   crfft3d(const array3<Complex>& in, const array3<double>& out) :
-    fftw(in.Size(),1,in.Nx()*in.Ny()*2*(in.Nz()-1)),
-    nx(in.Nx()), ny(in.Ny()), nz(2*(in.Nz()-1)), shift(false) {Setup(in,out);} 
+    fftw(out.Size()/2,1,out.Size()),
+    nx(out.Nx()), ny(out.Ny()), nz(out.Nz()) {Setup(in,out);} 
 #endif  
   
   fftw_plan Plan(Complex *in, Complex *out) {
@@ -901,24 +870,6 @@ public:
 			      effort);
   }
   
-  void fft(Complex *in, Complex *out=NULL) {
-    fftw::fft(in,out);
-  }
-    
-  void fft(Complex *in, bool shift0, Complex *out=NULL) {
-    shift=shift0;
-    fftw::fft(in,out);
-  }
-    
-  void fftNormalized(Complex *in, Complex *out=NULL) {
-    fftw::fftNormalized(in,out);
-  }
-    
-  void fftNormalized(Complex *in, bool shift0, Complex *out=NULL) {
-    shift=shift0;
-    fftw::fftNormalized(in,out);
-  }
-    
   void Execute(Complex *in, Complex *out) {
     fftw_execute_dft_c2r(plan,(fftw_complex *) in,(double *) out);
     if(shift) Shift(out,nx,ny,nz);

@@ -6,7 +6,8 @@
 using std::cout;
 using Array::array2;
 
-int main() {
+int main()
+{
   unsigned int nx=4, ny=5;
   size_t align=sizeof(Complex);
   
@@ -21,9 +22,10 @@ int main() {
 	
   cout << f << endl;
   
-  cout << endl;
-  
   Forward2.fft(f);
+  
+  cout << f << endl;
+  
   Backward2.fftNormalized(f);
   
   cout << f << endl;
