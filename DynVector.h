@@ -11,7 +11,7 @@ class DynVector
 
 public:
 	void Allocate(int s) {v=new T[sz=s];}
-	void DeAllocate() {if(v) {delete [] v; v=NULL; sz=0;}}
+	void DeAllocate() {delete [] v; sz=0;}
 	
 	DynVector() {v=NULL; sz=0;}
 	DynVector(int s) {Allocate(s);}

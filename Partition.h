@@ -516,7 +516,7 @@ INLINE void Partition<T,D>::Initialize() {
 	triadLimits[Nmode-1].stop=triad.Base()+Ntriad;
 
 	delete [] ntriad;
-	weight.DeAllocate();
+	weight.Resize(0);
 
 	cout << Ntriad << " WAVENUMBER TRIADS ALLOCATED." << endl;
 	if(verbose > 2) ListTriads(cout);
