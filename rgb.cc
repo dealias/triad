@@ -14,6 +14,65 @@ static char *rgbdir;
 static strstream rgbdirbuf;
 static int xsize,ysize;
 
+template<class T>
+void openfield(T& fin, char *fieldname, int& nx, int& ny, int& nz)
+{
+	fin.open(fieldname);
+	if(!fin) msg(ERROR,"Cannot open input file %s",fieldname);
+	if(implicit) {
+		fin >> nx >> ny >> nz;
+		if(fin.eof()) msg(ERROR,"End of file during processing");
+	}
+}
+
+inline float get_value(ifstream& fin)
+{
+	unsigned char c;
+	fin.get(c);
+	return (float) c;
+}
+
+inline float get_value(ixstream& fin)
+{
+	float v;
+	fin >> v;
+	return v;
+}
+
+template<class T>
+int readframe(T& fin, int nx, int ny, int nz, float **value,
+			  float& vmin, float& vmax)
+{
+	vmin=FLT_MAX, vmax=-FLT_MAX;
+	int nxy=nx*ny;
+	for(int k=0; k < nz; k++) {
+		float *valuek=value[k];
+		for(int i=0; i < nxy; i++) {
+			float v=get_value(fin);
+			if(fin.eof()) {
+				if(implicit || i > 0) 
+					msg(WARNING,"End of file during processing");
+				return EOF;
+			}
+			if(v < vmin) vmin=v;
+			if(v > vmax) vmax=v;
+			valuek[i]=v;
+		}
+	}
+	if(zero && vmin < 0 && vmax > 0) {
+		vmax=max(-vmin,vmax);
+		vmin=-vmax;
+	}
+	if(implicit) {
+		int nx0,ny0,nz0;
+		fin >> nx0 >> ny0 >> nz0;
+		if(fin.eof()) return 1;
+		if(nx0 != nx || ny0 != ny || nz0 != nz)
+			msg(ERROR,"Inconsistent image size");
+	}
+	return 0;
+}
+
 void cleanup(char *fieldname, char *type);
 void montage(int nfiles, char *const argf[], int n, char *const format,
 			 char *const type);
@@ -25,17 +84,20 @@ void animate(int argc, char *const argf[], int n, char *const type,
 			 int xsize, int ysize);
 void manimate(int argc, char *const argf[], int n, char *const type,
 			  int xsize, int ysize);
-
+	
 int verbose=0;
 int floating_scale=0;
 int byte=0;
+int implicit=1;
+int zero=0;
 
 extern "C" int getopt(int argc, char *const argv[], const char *optstring);
 
 void usage(char *program)
 {
 	cerr << "Usage: " << program
-		 << " [-bfghlmvz -x <mag> -H <hmag> -V <vmag>] file1 file2 ..."
+		 << " [-bfghlmvz] [-x mag] [-H hmag] [-V vmag]" << endl
+		 << "           [-X xsize -Y ysize [-Z zsize]] file1 [file2 ...]"
 		 << endl << endl;
 }
 
@@ -44,12 +106,10 @@ int main(int argc, char *const argv[])
 	int nx=1,ny=1,nz=1;
 	int nset=0, mx=1, my=1;
 	int c;
-	int implicit=1;
 	int gray=0;
 	int label=0;
 	int make_mpeg=0;
 	int syntax=0;
-	int zero=0;
 	extern int optind;
 	extern char *optarg;
 	
@@ -72,21 +132,22 @@ int main(int argc, char *const argv[])
 		case 'h':
 			usage(argv[0]);
 			cerr << "Options: " << endl;
-			cerr << "-b\t\t unsigned byte (as opposed to float) input" << endl;
+			cerr << "-b\t\t single-byte (unsigned char instead of float) input"
+				 << endl;
 			cerr << "-f\t\t use a floating scale for each frame" << endl;
 			cerr << "-g\t\t produce grey-scale output" << endl;
 			cerr << "-h\t\t help" << endl;
 			cerr << "-l\t\t label frames with file names and values" << endl;
-			cerr << "-m\t\t generate .mpg mpeg file" << endl;
+			cerr << "-m\t\t generate mpeg (.mpg) file" << endl;
 			cerr << "-v\t\t verbose output" << endl;
 			cerr << "-z\t\t make color palette symmetric about zero" <<
 				" (if possible)" << endl;
 			cerr << "-x <mag>\t overall magnification factor" << endl;
 			cerr << "-H <hmag>\t horizontal magnification factor" << endl;
 			cerr << "-V <vmag>\t vertical magnification factor" << endl;
-			cerr << "-X <xsize>\t use explicit horizontal size" << endl;
-			cerr << "-Y <ysize>\t use explicit vertical size" << endl;
-			cerr << "-Z <zsize>\t use explicit number of cross-sections/frame"
+			cerr << "-X <xsize>\t explicit horizontal size" << endl;
+			cerr << "-Y <ysize>\t explicit vertical size" << endl;
+			cerr << "-Z <zsize>\t explicit number of cross-sections/frame"
 				 << endl;
 			exit(0);
 		case 'l':
@@ -138,8 +199,10 @@ int main(int argc, char *const argv[])
 	if(nfiles > 1) label=1;
 	char *const *argf=argv+optind;
 		
-	vminf=new float[nfiles];
-	vmaxf=new float[nfiles];
+	if(!floating_scale) {
+		vminf=new float[nfiles];
+		vmaxf=new float[nfiles];
+	}
 	
 	rgbdir=getenv("RGB_DIR");
 	if(!rgbdir) {
@@ -148,89 +211,60 @@ int main(int argc, char *const argv[])
 	}
 	
 	char *const format=gray ? "gray" : "rgb";
+	int PaletteMax=gray ? 255 : ColorPaletteMax;
+		
 	
 	for(int f=0; f < nfiles; f++) {
 		char *fieldname=argf[f];
-		ixstream fin(fieldname);
-		if(!fin) msg(ERROR,"Cannot open input file %s",fieldname);
-		if(implicit) fin >> nx >> ny >> nz;
-		if(fin.eof()) msg(ERROR,"End of file during processing");
-	
-		int nxy=nx*ny;
-		DynVector<float *> value;
-		DynVector<float> vminn,vmaxn;
-		float gmin=FLT_MAX, gmax=-FLT_MAX; // Global min and max
-		int n=0, l=0;
-		while(1) {
-			float vmin=FLT_MAX, vmax=-FLT_MAX;
-			for(int k=0; k < nz; k++,l++) {
-				float *valuel;
-				value[l]=valuel=new float[nxy];
-				for(int i=0; i < nxy; i++) {
-					float v;
-					if(byte) {
-						unsigned char b;
-						fin >> b;
-						v=(float) b;
-					} else fin >> v;
-					if(fin.eof()) {
-						if(implicit || i > 0) 
-							msg(WARNING,"End of file during processing");
-						break;
-					}
-					if(v < vmin) vmin=v;
-					if(v > vmax) vmax=v;
-					valuel[i]=v;
-				}
-				if(fin.eof()) break;
-			}
-			if(zero && vmin < 0 && vmax > 0) {
-				vmax=max(-vmin,vmax);
-				vmin=-vmax;
-			}
-			vminn[n]=vmin;
-			vmaxn[n]=vmax;
-			n++;
+		ifstream fin;
+		ixstream xin;
 		
-			if(vmin < gmin) gmin=vmin;
-			if(vmax > gmax) gmax=vmax;
-			if(implicit) {
-				int nx0,ny0,nz0;
-				fin >> nx0 >> ny0 >> nz0;
-				if(fin.eof()) break;
-				if(nx0 != nx || ny0 != ny || nz0 != nz)
-					msg(ERROR,"Inconsistent image size");
-			}
-		}
+		if(byte) openfield(fin,fieldname,nx,ny,nz);
+		else openfield(xin,fieldname,nx,ny,nz);
 	
-		if(zero && gmin < 0 && gmax > 0) {
-			gmax=max(-gmin,gmax);
-			gmin=-gmax;
-		}
-			
-		vminf[f]=gmin;
-		vmaxf[f]=gmax;
-		nset=n;
-		xsize=mx*nx;
 		int mpal=max(5,my);
 		int msep=max(2,my);
+		xsize=mx*nx;
 		ysize=my*ny*nz+msep*nz+mpal;
+		
+		float **value=new float* [nz];
+		float gmin=FLT_MAX, gmax=-FLT_MAX; // Global min and max
+		for(int k=0; k < nz; k++) value[k]=new float[nx*ny];
 		
 		cleanup(fieldname,gray ? "*.gray" : "*.rgb");
 		cleanup(fieldname,".*.*");
 		
-		int PaletteMax=gray ? 255 : ColorPaletteMax;
-		l=0;
-		double vmin=gmin;
-		double vmax=gmax;
-		double step=(vmax == vmin) ? 0.0 : PaletteMax/(vmax-vmin);
-		
-		for(n=0; n < nset; n++) {
-			if(floating_scale) {
-				vmin=vminn[n];
-				vmax=vmaxn[n];
-				step=(vmax == vmin) ? 0.0 : PaletteMax/(vmax-vmin);
+		if(!floating_scale)	{
+			int rc;
+			do {
+				float vmin,vmax;
+				rc=byte ? readframe(fin,nx,ny,nz,value,vmin,vmax) :
+					readframe(xin,nx,ny,nz,value,vmin,vmax);
+				if(rc == EOF) break;
+				if(vmin < gmin) gmin=vmin;
+				if(vmax > gmax) gmax=vmax;
+			} while (rc == 0);
+			
+			if(zero && gmin < 0 && gmax > 0) {
+				gmax=max(-gmin,gmax);
+				gmin=-gmax;
 			}
+			vminf[f]=gmin;
+			vmaxf[f]=gmax;
+		}
+		
+		if(byte) {fin.close(); openfield(fin,fieldname,nx,ny,nz);}
+		else {xin.close(); openfield(xin,fieldname,nx,ny,nz);}
+		
+		int rc, n=0;
+		do {
+			float vmin,vmax;
+			rc=byte ? readframe(fin,nx,ny,nz,value,vmin,vmax) :
+				readframe(xin,nx,ny,nz,value,vmin,vmax);
+			if(rc == EOF) break;
+			
+			if(!floating_scale) {vmin=gmin;	vmax=gmax;}
+			double step=(vmax == vmin) ? 0.0 : PaletteMax/(vmax-vmin);
 			
 			strstream buf;
 			buf << rgbdir << "/" << fieldname << setfill('0') << setw(4)
@@ -239,12 +273,12 @@ int main(int argc, char *const argv[])
 			ofstream fout(oname);
 			if(!fout) msg(ERROR,"Cannot open output file %s",oname);
 			
-			for(int k=0; k < nz; k++,l++) {
+			for(int k=0; k < nz; k++) {
 				for(int j=0; j < ny; j++)  {
 					for(int j2=0; j2 < my; j2++) {
 						for(int i=0; i < nx; i++)  {
 							int index=(step == 0.0) ? PaletteMax/2 : 
-								(int) ((vmax-value[l][i+nx*j])*step+0.5);
+								(int) ((vmax-value[k][i+nx*j])*step+0.5);
 							if(gray) {
 								for(int i2=0; i2 < mx; i2++)
 									fout << (unsigned char) index;
@@ -274,8 +308,10 @@ int main(int argc, char *const argv[])
 			
 			fout.close();
 			if(!fout) msg(ERROR,"Cannot write to output file %s",oname);
-		}
-	}	
+			n++;
+		} while (rc == 0);
+		nset=nset ? min(nset,n) : n;
+	}
 	
 	if(!label) animate(nfiles,argf,nset-1,format,xsize,ysize);
 	else {
