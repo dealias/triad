@@ -301,9 +301,9 @@ int main(int argc, char *const argv[])
 				if(n < begin) continue;
 				if(--s) continue;
 				s=skip;
-				set++;
 				if(vmin < gmin) gmin=vmin;
 				if(vmax > gmax) gmax=vmax;
+				set++;
 			} while (n++ < end && rc == 0);
 			nset=nset ? min(nset,set) : set;
 			
@@ -330,7 +330,6 @@ int main(int argc, char *const argv[])
 			if(n < begin) continue;
 			if(--s) continue;
 			s=skip;
-			set++;
 			
 			if(!floating_scale) {vmin=gmin;	vmax=gmax;}
 			double step=(vmax == vmin) ? 0.0 : PaletteMax/(vmax-vmin);
@@ -383,6 +382,7 @@ int main(int argc, char *const argv[])
 				cleanup();
 				msg(ERROR,"Cannot write to output file %s",oname);
 			}
+			set++;
 		} while (n++ < end && rc == 0);
 		nset=nset ? min(nset,set) : set;
 	}
