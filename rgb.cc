@@ -168,7 +168,7 @@ void manimate(int argc, char *const argf[], int n, char *const type,
 			  int xsize, int ysize);
 	
 extern "C" int getopt(int argc, char *const argv[], const char *optstring);
-#ifndef sun
+#ifdef _linux_
 extern "C" void putenv(const char *);
 #endif
 
