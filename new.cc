@@ -41,6 +41,7 @@ void operator delete(void *ptr)
 }
 
 // provide a C++ interface to vector-resize via realloc 
+// Warning: this does not initialize virtual member functions.
 void *operator new(size_t size, void *ptr, int new_len)
 {
 	size_t new_size=new_len*size;

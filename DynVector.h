@@ -18,15 +18,26 @@ public:
 	~DynVector() {Deallocate();}
 
 	int Size() const {return sz;}
+	
+	void Resize(int i) {
+		if (i == 0) free(v);
+		else if(i > sz) {
+			T *v0=v;
+			v=new T[i];
+			for(int j=0; j < sz; j++) v[j]=v0[j];
+			delete [] v0;
+		}
+		sz=i;
+	}
+	
 	T& operator [] (int i) {
-		if (i >= sz) v=new(v,sz=max(i+1,2*sz)) (T);
+		if (i >= sz) Resize(max(i+1,2*sz));
 		return v[i];
 	}
+	
 	T *operator + (int i) {return v+i;}
 	T *operator () () const {return v;}
 	operator T* () const {return v;}
-	
-	void Resize(int i) {v=new(v,sz=i) (T);}
 	
 	void Expand(int i) {if (i > sz) Resize(i);}
 
