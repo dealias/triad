@@ -62,3 +62,19 @@ void fft(Complex *data, unsigned int log2n, int isign, int)
 {
 	mfft(data,log2n,isign,1,1,1,1);
 }
+
+#if 0
+void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
+			  int isign)
+{
+	
+	unsigned int nx=1 << log2nx;
+	unsigned int ny=1 << log2ny;
+	const unsigned int nyp=ny/2+1;
+	isign = -isign;
+
+	dcft(zero,data,nyp,data,nyp+2,ny,nx,isign,scale,
+		 aux1,naux1,aux2,naux2,aux3,naux3);
+}
+#endif
+

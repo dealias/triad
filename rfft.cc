@@ -267,7 +267,7 @@ void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 			  int isign)
 {
-	unsigned int i,j;
+	unsigned int i;
 	unsigned int nx=1 << log2nx;
 	unsigned int ny=1 << log2ny;
 	const unsigned int nyp=ny/2+1;
@@ -278,24 +278,23 @@ void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 #pragma ivdep
 	for(i=1; i < nx2; i++) data[i]=conj(data[nx-i]);
 	
-	for(j=0; j < nyp; j++) {
-		Complex *p=data+nx*j;
+	Complex *pstop=data+nx*nyp;
+	int pinc=2*nx;
+	for(Complex *p=data; p < pstop; p += pinc) {
 #pragma ivdep
 		for(i=1; i < nx; i += 2) p[i]=-p[i];
 	}
 
 	mfft(data,log2nx,isign,nyp,1,nx);
 	
-	for(j=0; j < nyp; j++) {
-		Complex *p=data+nx*j;
+	for(Complex *p=data; p < pstop; p += pinc) {
 #pragma ivdep
 		for(i=1; i < nx; i += 2) p[i]=-p[i];
 	}
 	
-	for(j=1; j < nyp; j += 2) {
-		Complex *p=data+nx*j;
+	for(Complex *p=data+nx; p < pstop; p += pinc) {
 #pragma ivdep
-		for(i=0; i < nx; i++) p[i]=-p[i];
+		for(i=0; i < nx; i += 2) p[i]=-p[i];
 	}
 
 	mcrfft(data,log2ny,isign,nx);
@@ -314,29 +313,28 @@ void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 void rcfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 			  int isign)
 {
-	unsigned int i,j;
+	unsigned int i;
 	unsigned int nx=1 << log2nx;
 	unsigned int ny=1 << log2ny;
 	const unsigned int nyp=ny/2+1;
 
 	mrcfft(data,log2ny,isign,nx);
 	
-	for(j=1; j < nyp; j += 2) {
-		Complex *p=data+nx*j;
+	Complex *pstop=data+nx*nyp;
+	int pinc=2*nx;
+	for(Complex *p=data+nx; p < pstop; p += pinc) {
 #pragma ivdep
-		for(i=0; i < nx; i++) p[i]=-p[i];
+		for(i=0; i < nx; i += 2) p[i]=-p[i];
 	}
 	
-	for(j=0; j < nyp; j++) {
-		Complex *p=data+nx*j;
+	for(Complex *p=data; p < pstop; p += pinc) {
 #pragma ivdep
 		for(i=1; i < nx; i += 2) p[i]=-p[i];
 	}
 	
 	mfft(data,log2nx,isign,nyp,1,nx);
 	
-	for(j=0; j < nyp; j++) {
-		Complex *p=data+nx*j;
+	for(Complex *p=data; p < pstop; p += pinc) {
 #pragma ivdep
 		for(i=1; i < nx; i += 2) p[i]=-p[i];
 	}
