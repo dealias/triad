@@ -20,7 +20,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 #define __ARRAYL_H_VERSION__ 1.20
 
-// Lower triangular Array class 
+// Lower triangular Array class
 
 // Defining NDEBUG improves optimization.
 
