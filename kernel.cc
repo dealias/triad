@@ -458,6 +458,5 @@ const char *VocabularyBase::FileName(const char* delimiter, const char *suffix)
 void check_compatibility(const bool debug)
 {
   const char *incompatible="Compiled with incompatible debugging modes";
-  if(DEBUG && !debug) msg(ERROR,incompatible);
-  if(!DEBUG && debug) msg(ERROR,incompatible);
+  if(debug != DEBUG) msg(ERROR,incompatible);
 }  
