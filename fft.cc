@@ -227,6 +227,180 @@ void fft_brinv(Complex *data, unsigned int log2n)
 	}
 }
 
+// Return the Fourier transform of nk Complex vector's.
+// Before calling, data must be allocated as Complex[nk*n].
+// On entry: data[k+nk*j] contains the n Complex values for each k=0,...,nk.
+//           log2n contains the base-2 logarithm of n.
+//           isign is +1 for a forward transform, -1 for an inverse transform.
+// On exit:  data contains the n Complex Fourier values for each k=0,...nk.
+// Note: When computing an inverse transform, the result must be divided by n.
+
+void fft(Complex *data, unsigned int log2n, int isign, unsigned int nk)
+{
+	unsigned int i,j,k,n,m,istep;
+	static unsigned int tempsize=0;
+	static Complex *temp;
+
+	n=1 << log2n;
+
+	if(nk > tempsize) {
+		tempsize=nk;
+		temp=new(temp,tempsize) Complex;
+	}
+	
+	j=0;
+	for(i=0; i < n-1; i++) {
+		if (j > i) {
+			Complex *p=data+i*nk, *q=data+j*nk;
+#pragma ivdep			
+			for(k=0; k < nk; k++) {
+				temp[k].re=q[k].re; q[k].re=p[k].re; p[k].re=temp[k].re;
+				temp[k].im=p[k].im; p[k].im=q[k].im; q[k].im=temp[k].im;
+			}
+		}
+		
+		m=n >> 1;
+		while (j >= m) {
+			j -= m;
+			m >>= 1;
+		}
+		j += m;
+	}
+	
+	if(log2n > TableSize) fft_init(log2n);
+	
+	Complex *pstop=data+n*nk, *wp=wpTable+1;
+	
+	if(n > 1) {
+		for(Complex *p=data; p < pstop; p += 2*nk) {
+			Complex *q=p+nk;
+#pragma ivdep			
+			for(k=0; k < nk; k++) {
+				temp[k].re=p[k].re-q[k].re;
+				temp[k].im=p[k].im-q[k].im;
+				p[k].re += q[k].re;
+				p[k].im += q[k].im;
+				q[k].re=temp[k].re;
+				q[k].im=temp[k].im;
+			}
+		}
+	}
+	
+	unsigned int mmax=2; 
+ 	while (mmax < n) {
+		istep=mmax << 1;
+		int istepnk=istep*nk;
+		int mmaxnk=mmax*nk;
+		Complex *p;
+		for(p=data; p < pstop; p += istepnk) {
+			Complex *q=p+mmaxnk;
+#pragma ivdep			
+			for(k=0; k < nk; k++) {
+				temp[k].re=p[k].re-q[k].re;
+				temp[k].im=p[k].im-q[k].im;
+				p[k].re += q[k].re;
+				p[k].im += q[k].im;
+				q[k].re=temp[k].re;
+				q[k].im=temp[k].im;
+			}
+		}
+		Real wpre=wp->re, wpim=wp->im*isign;
+		wp++;
+		Real c=1.0+wpre, s=wpim;
+		for(m=1; m < mmax-1; m++) {
+			for(p=data+m*nk; p < pstop; p += istepnk) {
+				Complex *q=p+mmaxnk;
+#pragma ivdep			
+				for(k=0; k < nk; k++) {
+					temp[k].re=c*q[k].re-s*q[k].im;
+					temp[k].im=c*q[k].im+s*q[k].re;
+					q[k].re=p[k].re-temp[k].re;
+					q[k].im=p[k].im-temp[k].im;
+					p[k].re += temp[k].re;
+					p[k].im += temp[k].im;
+				}
+			}
+			Real wtemp=c;
+			c += c*wpre-s*wpim;
+			s += s*wpre+wtemp*wpim;
+		}
+		for(p=data+mmaxnk-nk; p < pstop; p += istepnk) {
+			Complex *q=p+mmaxnk;
+#pragma ivdep			
+			for(k=0; k < nk; k++) {
+				temp[k].re=c*q[k].re-s*q[k].im;
+				temp[k].im=c*q[k].im+s*q[k].re;
+				q[k].re=p[k].re-temp[k].re;
+				q[k].im=p[k].im-temp[k].im;
+				p[k].re += temp[k].re;
+				p[k].im += temp[k].im;
+			}
+		}
+		mmax=istep;
+	}
+}
+
+// Return the Fourier transform of a Complex vector of length n=power of 4.
+// Before calling, data must be allocated as Complex[n].
+// On entry: data contains the n Complex values.
+//           log4n contains the base-4 logarithm of n.
+//           isign is +1 for a forward transform, -1 for an inverse transform.
+// On exit:  data contains the n Complex Fourier values.
+// Note: When computing an inverse transform, the result must be divided by n.
+
+void fft4(Complex *data, unsigned int log4n, int isign)
+{
+	unsigned int m,k,j;
+	static unsigned int phasesize=0, lastsize=0;
+	static int lastsign=0;
+	static Complex *phase, *kphase;
+
+	m=1 << log4n;
+	
+	if(m > phasesize) {
+		phasesize=m;
+		phase=new(phase,phasesize) Complex;
+		kphase=new(kphase,phasesize) Complex;
+	}
+	
+	fft(data,log4n,isign,m);
+	
+	for(k=0; k < m; k++) {
+#pragma ivdep			
+        for(j=0; j < k; j++) {
+			Complex temp=data[j+m*k];
+			data[j+m*k]=data[k+m*j];
+			data[k+m*j]=temp;
+		}
+	}
+	
+	if(m != lastsize) {
+		lastsize=m;
+		Complex factor=exp(twopi*I*isign/(m*m));
+		phase[0]=1.0;
+		for(j=1; j < m; j++) phase[j]=phase[j-1]*factor;
+		lastsign=isign;
+	}
+	if(isign != lastsign) {
+		lastsign=isign;
+#pragma ivdep			
+		for(j=0; j < m; j++) phase[j].im *= -1.0;
+	}
+	
+	for(j=0; j < m; j++) kphase[j]=1.0;
+	for(k=0; k < m-1; k++) {
+#pragma ivdep			
+		for(j=0; j < m; j++) {
+			data[k+m*j] *= kphase[j];
+			kphase[j] *= phase[j];
+		}
+	}
+#pragma ivdep			
+	for(j=0; j < m; j++) data[m-1+m*j] *= kphase[j];
+	
+	fft(data,log4n,isign,m);
+}
+
 // Return the Fourier transform of a Complex vector.
 // Before calling, data must be allocated as Complex[n].
 // On entry: data contains the n Complex values.
@@ -238,6 +412,12 @@ void fft_brinv(Complex *data, unsigned int log2n)
 void fft(Complex *data, unsigned int log2n, int isign)
 {
 	unsigned int m,j,istep,i,n;
+
+	unsigned int log4n=log2n/2;
+	if(2*log4n == log2n) {
+		fft4(data,log4n,isign); // Special case for powers of 4.
+		return;
+	}
 
 	n=1 << log2n;
 
@@ -328,8 +508,8 @@ void rfft_br(Complex *data, unsigned int log2n)
 	unsigned int i;
 	
 	if(log2n > TableSize) fft_init(log2n+1);
-	fft_br(data,log2n);
-//	fft(data,log2n,1);
+//	fft_br(data,log2n);
+	fft(data,log2n,1);
 	
 	unsigned int n2=1 << log2n;
 	unsigned int n4=n2 >> 1;
@@ -374,7 +554,7 @@ void rfft_brinv(Complex *data, unsigned int log2n)
 		data[n2-i]=conj(A+B);
 	}
 	
-	fft_brinv(data,log2n);
-//	fft(data,log2n,-1);
+//	fft_brinv(data,log2n);
+	fft(data,log2n,-1);
 }
 
