@@ -141,7 +141,6 @@ void adjust_parameters(double& dt, double& dtmax, double& tmax, int& itmax)
 int main(int argc, char *argv[])
 {
 	int i;
-	setup_fpu();
 	cout.precision(REAL_DIG);
 	
 	cout << newl << PROGRAM << " version " << VERSION << 

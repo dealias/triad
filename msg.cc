@@ -26,6 +26,13 @@ int beep_enabled=1; // If nonzero, enable terminal beeping during errors.
 #include <unistd.h>
 #endif
 
+#if __i386__
+#include <fpu_control.h>
+// Setup FPU for exceptions on overflow, zero divide and NaN.
+fpu_control_t __fpu_control=
+_FPU_EXTENDED | _FPU_RC_NEAREST | _FPU_MASK_DM | _FPU_MASK_UM | _FPU_MASK_PM;
+#endif
+
 void msg(int fatal, char *file, int line, char *format,...)
 {
 	int tty_override=0;
