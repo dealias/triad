@@ -40,7 +40,7 @@ protected:
 public:
 	void Allocate(int n) {
 		IntegratorBase::Allocate(n);
-		y=y1=new Var [n]; source0=new Var [n](0); new_y0=1;
+		y=y1=new Var [n]; source0=new(0) Var [n]; new_y0=1;
 	}
 	char *Name() {return "Predictor-Corrector";}
 	Solve_RC Solve(double, double);
@@ -103,7 +103,7 @@ protected:
 	double halfdt,sixthdt;
 public:
 	void Allocate(int n) {
-		PC::Allocate(n); source1=new Var [n](0); source2=new Var [n](0);
+		PC::Allocate(n); source1=new(0) Var [n]; source2=new(0) Var [n];
 	}
 	char *Name() {return "Fourth-Order Runge-Kutta";}
 	void TimestepDependence(double);
@@ -134,8 +134,8 @@ protected:
 	double pgrow, pshrink;
 public:
 	void Allocate(int n) {
-		RK4::Allocate(n); y2=y4=y; y3=new Var [n];
-		source3=source1; source1=NULL; source4=new Var [n](0);
+		RK4::Allocate(n); y2=y4=y; y3=new(0) Var [n];
+		source3=source1; source1=NULL; source4=new(0) Var [n];
 		pgrow=0.5*0.2; pshrink=0.5*0.25;
 	}
 	char *Name() {return "Fifth-Order Runge-Kutta";}
