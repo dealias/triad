@@ -5,7 +5,7 @@
 #include "Complex.h"
 
 #ifndef COMPLEX
-#define COMPLEX 1
+#define COMPLEX 0
 #endif
 
 #if(COMPLEX)

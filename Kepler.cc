@@ -1,4 +1,5 @@
-#define COMPLEX 0
+// Note: COMPLEX must be set to 0 in types.h
+
 #include "kernel.h"
 #include "Param.h"
 #include "Integrator.h"
@@ -92,7 +93,7 @@ void KeplerSource(Var *source, Var *y, double)
 	source[Th]=L/(m*y[R]*y[R]);
 }
 
-inline int C_PC::Corrector(Var *y0, double dt, double&, int, int) 
+int C_PC::Corrector(Var *y0, double dt, double&, int, int) 
 {
 	Real DE,arg,lambda,f,diff,lastdiff,th;
 

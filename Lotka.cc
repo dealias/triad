@@ -1,4 +1,5 @@
-#define COMPLEX 0
+// Note: COMPLEX must be set to 0 in types.h
+
 #include "kernel.h"
 #include "Param.h"
 #include "Integrator.h"
@@ -89,7 +90,7 @@ void LotkaSource(Var *source, Var *y, double)
 	source[Y]=y[Y]*(1.0-y[X]);
 }
 
-inline int C_PC::Corrector(Var *y0, double dt, double&, int, int)
+int C_PC::Corrector(Var *y0, double dt, double&, int, int)
 {
 	Real DE,f,diff,lastdiff,old;
 	Real xi[2];
