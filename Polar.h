@@ -18,6 +18,9 @@ public:
 	Real K2() const {return r*r;}
 	Real K() const {return r;}
 	Real Th() const {return th;}
+	
+	Real Coord1() const {return r;}
+	Real Coord2() const {return th;}
 };
 
 inline int operator == (const Polar& x, const Polar& y)

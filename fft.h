@@ -4,6 +4,7 @@
 #define FFTW_1_0_COMPATIBILITY 0
 #define FFTW_NOPROTO
 #include "fftw.h"
+#include "rfftw.h"
 #include "fstream.h"
 
 extern "C" fftw_plan fftw_create_plan(int n, int dir, int flags);
@@ -32,6 +33,9 @@ void rcfft(Complex *data, unsigned int log2n, int isign, Real scale=1.0,
 void crfft(Complex *data, unsigned int log2n, int isign, Real scale=1.0,
 		   int bitreverse=0);
 
+void signscalefft(Complex *data, unsigned int n, int isign, unsigned int nk,
+				  unsigned int inc1, unsigned int inc2, Real scale);
+	
 void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		  unsigned int inc1=0, unsigned int inc2=1, Real scale=1.0,
 		  int bitreverse=0);
