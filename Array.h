@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.0
+#define __ARRAY_H_VERSION__ 1.01
 
 // Setting ARRAY_CHECK to 1 enables optional argument checking.
 
@@ -63,7 +63,7 @@ public:
 	Array1() : nx(0), allocate(0) {}
 	Array1(int nx0) {Allocate(nx0);}
 	Array1(int nx0, T *v0) {Dimension(nx0,v0);}
-	Array1(const Array1<T>& A) : v(A.v), nx(A.nx), allocate(0) {}
+	Array1(const Array1<T>& A) : v(A.v), nx(A.Size()), allocate(0) {}
 	virtual ~Array1() {if(allocate) Deallocate();}
 	
 	void Freeze() {allocate=0;}
@@ -447,8 +447,18 @@ istream& operator >> (istream& s, const Array4<T>& A)
 
 #if ARRAY_CHECK
 #define Array1(T) Array1<T>
+#define Array1a(T) Array1<T>
+#define Array1b(T) Array1<T>
+#define Array1c(T) Array1<T>
+#define Array1d(T) Array1<T>
+#define Array1e(T) Array1<T>
 #else
 #define Array1(T) typedef T* Tstar; Tstar
+#define Array1a(T) typedef T* Tstara; Tstara
+#define Array1b(T) typedef T* Tstarb; Tstarb
+#define Array1c(T) typedef T* Tstarc; Tstarc
+#define Array1d(T) typedef T* Tstard; Tstard
+#define Array1e(T) typedef T* Tstare; Tstare
 #endif
 
 #define Array2(T) Array2<T>

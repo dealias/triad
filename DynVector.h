@@ -18,7 +18,7 @@ public:
 	~DynVector() {Deallocate();}
 
 	int Size() const {return sz;}
-	T *Base() const {return v;}
+	T *operator () () const {return v;}
 	T& operator [] (int i) {
 		if (i >= sz) v=new(v,sz=max(i+1,2*sz)) (T);
 		return v[i];

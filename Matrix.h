@@ -10,7 +10,7 @@ inline void SetIdentity(Array2<T>& A)
 {
 	A=0.0;
 	int ny1=A.Ny()+1, size=A.Size();
-	T *a=A.Base();
+	Array1(double) a=A;
 	for(int i=0; i < size; i += ny1) a[i]=1.0;
 }
 
@@ -27,7 +27,7 @@ inline void Trans(Array2<T>& A, const Array2<T>& B)
 {
 	assert(&A != &B);
 	for(int i=0; i < B.Nx(); i++) {
-		T *Bi=B[i];
+		Array1(T) Bi=B[i];
 		for(int j=0; j < B.Ny(); j++) {
 			A(j,i)=Bi[j];
 		}
@@ -39,7 +39,7 @@ inline void Conjugate(Array2<T>& A, const Array2<T>& B)
 {
 	assert(&A != &B);
 	for(int i=0; i < B.Nx(); i++) {
-		T *Bi=B[i];
+		Array1(T) Bi=B[i];
 		for(int j=0; j < B.Ny(); j++) {
 			A(j,i)=conj(Bi[j]);
 		}
@@ -64,15 +64,16 @@ inline void Mult(Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
 	static DynVector<T> Stack(n);
 	
 	if(n > Stack.Size()) Stack.Resize(n);
-	CT.Dimension(C.Ny(),C.Nx(),Stack.Base());
+	CT.Dimension(C.Ny(),C.Nx(),Stack());
 	
 	Trans(CT,C);
 	
 	if(&A != &B) {
 		for(int i=0; i < B.Nx(); i++) {
-			T *Ai=A[i], *Bi=B[i];
+			Array1(T) Ai=A[i], Bi=B[i];
 			for(int k=0; k < C.Ny(); k++) {
-				T sum=0.0; T *CTk=CT[k];
+				T sum=0.0;
+				Array1(T) CTk=CT[k];
 				for(int j=0; j < B.Ny(); j++) {
 					sum += Bi[j]*CTk[j];
 				}
@@ -83,9 +84,10 @@ inline void Mult(Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
 		T work[C.Ny()];
 		
 		for(int i=0; i < A.Nx(); i++) {
-			T *Ai=A[i];
+			Array1(T) Ai=A[i];
 			for(int k=0; k < C.Ny(); k++) {
-				T sum=0.0; T *CTk=CT[k];
+				T sum=0.0;
+				Array1(T) CTk=CT[k];
 				for(int j=0; j < A.Ny(); j++) {
 					sum += Ai[j]*CTk[j];
 				}
@@ -107,15 +109,16 @@ inline void MultAdd(Array2<T>& A, const Array2<T>& B, const Array2<T>& C,
 	static DynVector<T> Stack(n);
 	
 	if(n > Stack.Size()) Stack.Resize(n);
-	CT.Dimension(C.Ny(),C.Nx(),Stack.Base());
+	CT.Dimension(C.Ny(),C.Nx(),Stack());
 	
 	Trans(CT,C);
 	
 	if(&A != &B) {
 		for(int i=0; i < B.Nx(); i++) {
-			T *Ai=A[i], *Bi=B[i], *Di=D[i];
+			Array1(T) Ai=A[i], Bi=B[i], Di=D[i];
 			for(int k=0; k < C.Ny(); k++) {
-				T sum=0.0; T *CTk=CT[k];
+				T sum=0.0;
+				Array1(T) CTk=CT[k];
 				for(int j=0; j < B.Ny(); j++) {
 					sum += Bi[j]*CTk[j];
 				}
@@ -126,15 +129,16 @@ inline void MultAdd(Array2<T>& A, const Array2<T>& B, const Array2<T>& C,
 		T work[C.Ny()];
 		
 		for(int i=0; i < A.Nx(); i++) {
-			T *Ai=A[i];
+			Array1(T) Ai=A[i];
 			for(int k=0; k < C.Ny(); k++) {
-				T sum=0.0; T *CTk=CT[k];
+				T sum=0.0;
+				Array1(T) CTk=CT[k];
 				for(int j=0; j < A.Ny(); j++) {
 					sum += Ai[j]*CTk[j];
 				}
 				work[k]=sum;
 			}
-			T *Di=D[i];
+			Array1a(T) Di=D[i]; // Work around GCC-2.8.1 typedef bug
 			for(int k=0; k < C.Ny(); k++) Ai[k]=work[k]+Di[k];
 		}
 	}		
@@ -152,7 +156,7 @@ template<class T>
 inline void Mult(Array2<T>& A, const Array2<T>& B, T C)
 {
 	int size=A.Size(); 
-	T *a=A.Base(), *b=B.Base();
+	Array1(double) a=A, b=B;
 	for(int i=0; i < size; i++) a[i]=b[i]*C;
 }
 
@@ -176,8 +180,8 @@ template<class T>
 inline void Divide(Array2<T>& A, const Array2<T>& B, T C)
 {
 	int size=A.Size(); 
-	T *a=A.Base(), *b=B.Base();
 	T Cinv=1.0/C;
+	Array1(double) a=A, b=B;
 	for(int i=0; i < size; i++) a[i]=b[i]*Cinv;
 }
 
@@ -216,7 +220,7 @@ template<class T>
 inline void Add(Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
 {
 	for(int i=0; i < B.Nx(); i++) {
-		T *Ai=A[i], *Bi=B[i], *Ci=C[i];
+		Array1(T) Ai=A[i], Bi=B[i], Ci=C[i];
 		for(int j=0; j < B.Ny(); j++) {
 			Ai[j]=Bi[j]+Ci[j];
 		}
@@ -238,7 +242,7 @@ template<class T>
 inline void Unary(Array2<T>& A, const Array2<T>& B)
 {
 	int size=A.Size(); 
-	T *a=A.Base(), *b=B.Base();
+	Array1(double) a=A, b=B;
 	for(int i=0; i < size; i++) a[i]=-b[i];
 }
 
@@ -284,7 +288,7 @@ template<class T>
 inline void Sub(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
 {
 	for(int i=0; i < B.Nx(); i++) {
-		T *Ai=A[i], *Bi=B[i], *Ci=C[i];
+		Array1(T) Ai=A[i], Bi=B[i], Ci=C[i];
 		for(int j=0; j < B.Ny(); j++) {
 			Ai[j]=Bi[j]-Ci[j];
 		}
