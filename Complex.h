@@ -41,8 +41,8 @@ protected:
 public:
 
 	Complex() {}
-	Complex(Real r, Real i=0) :re(r), im(i) {}
-	Complex(const Complex& y) :re(y.re), im(y.im) {}
+	Complex(Real r, Real i=0) : re(r), im(i) {}
+	Complex(const Complex& y) : re(y.re), im(y.im) {}
 	
 	~Complex() {}
 
