@@ -127,6 +127,11 @@ void cputime(double *cpu);
 
 char *output_filename(char *basename, char *suffix);
 
+inline Real divide0(Real x, Real y)
+{
+	return (y ? x/y : 0.0);
+}
+
 #if !_AIX
 inline Real abs(Real x)
 {
