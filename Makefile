@@ -10,7 +10,7 @@ include config/$(HOSTTYPE)
 UTILS = utils.o strcasecmp.o new.o $(POLL) $(ARCH)
 CORE = kernel.o Approx.o Integrator.o Param.o $(UTILS)
 POLAR = Polar.o PolarAverage.o simpfast.o
-TRIAD = $(CORE) NWave.o Geometry.o Cartesian.o $(POLAR)
+TRIAD = $(CORE) NWave.o Geometry.o Cartesian.o convolve.o $(POLAR)
 
 
 .SUFFIXES: .cc
@@ -40,7 +40,7 @@ clean:
 depend:
 	$(MAKEDEPEND) $(MDOPT) -I /usr/local/include \
 	kernel.cc Approx.cc Integrator.cc Param.cc ThreeWave.cc \
-	Navier.cc NWave.cc Geometry.cc Cartesian.cc \
+	Navier.cc NWave.cc Geometry.cc Cartesian.cc convolve.cc \
 	Polar.cc PolarAverage.cc simpfast.cc \
 	Kepler.cc Lotka.cc utils.cc strcasecmp.cc new.cc poll.cc \
 	idle.cc unix.cc
@@ -184,7 +184,7 @@ NWave.o: /usr/include/nan.h /usr/local/lib/gcc-include/float.h
 NWave.o: /usr/include/values.h /usr/local/include/i386/__math.h arch/i386.h
 NWave.o: /usr/local/include/i386/extensions.h new.h precision.h Complex.h
 NWave.o: pow.h types.h DynVector.h Table.h Param.h Integrator.h Approx.h
-NWave.o: Geometry.h Partition.h Basis.h
+NWave.o: Geometry.h Partition.h Basis.h Cartesian.h
 Geometry.o: NWave.h kernel.h /usr/lib/g++-include/iostream.h
 Geometry.o: /usr/lib/g++-include/streambuf.h /usr/lib/g++-include/libio.h
 Geometry.o: /usr/lib/g++-include/_G_config.h /usr/lib/g++-include/fstream.h
@@ -226,6 +226,23 @@ Cartesian.o: /usr/local/include/i386/__math.h arch/i386.h
 Cartesian.o: /usr/local/include/i386/extensions.h new.h precision.h Complex.h
 Cartesian.o: pow.h types.h DynVector.h Table.h Param.h Integrator.h Approx.h
 Cartesian.o: Geometry.h Basis.h Cartesian.h
+convolve.o: utils.h /usr/lib/g++-include/std/stddef.h
+convolve.o: /usr/lib/g++-include/_G_config.h
+convolve.o: /usr/lib/g++-include/std/cstddef.h
+convolve.o: /usr/local/lib/gcc-include/stdarg.h /usr/include/stdlib.h
+convolve.o: /usr/include/features.h /usr/include/sys/cdefs.h
+convolve.o: /usr/include/errno.h /usr/include/linux/errno.h
+convolve.o: /usr/include/alloca.h /usr/lib/g++-include/fstream.h
+convolve.o: /usr/lib/g++-include/iostream.h /usr/lib/g++-include/streambuf.h
+convolve.o: /usr/lib/g++-include/libio.h /usr/include/math.h
+convolve.o: /usr/include/huge_val.h /usr/include/endian.h
+convolve.o: /usr/include/bytesex.h /usr/include/linux/version.h
+convolve.o: /usr/include/asm/byteorder.h /usr/include/nan.h
+convolve.o: /usr/local/lib/gcc-include/float.h /usr/include/values.h
+convolve.o: /usr/local/include/i386/__math.h arch/i386.h
+convolve.o: /usr/local/include/i386/extensions.h new.h precision.h Complex.h
+convolve.o: pow.h /usr/local/lib/gcc-include/limits.h
+convolve.o: /usr/local/lib/gcc-include/syslimits.h
 Polar.o: kernel.h /usr/lib/g++-include/iostream.h
 Polar.o: /usr/lib/g++-include/streambuf.h /usr/lib/g++-include/libio.h
 Polar.o: /usr/lib/g++-include/_G_config.h /usr/lib/g++-include/fstream.h

@@ -25,9 +25,8 @@ public:
 		r=y.r; th=y.th; return *this; 
 	} 
 	
-	Real mag2() {return r*r;}
-	
 	Real K() const {return r;}
+	Real K2() {return r*r;}
 	Real Th() {return th;}
 	Real Kx() {return r*cos(th);}
 	Real Ky() {return r*sin(th);}
@@ -110,5 +109,8 @@ inline Mc Partition<Polar>::Ckpq(Polar&, Polar& P, Polar& Q)
 {
 	return (Q.r-P.r)*(Q.r+P.r);
 }
+
+// Factor which converts |y|^2 to energy in this normalization:
+inline Real Partition<Polar>::Normalization(int) {return 1.0;}
 
 #endif

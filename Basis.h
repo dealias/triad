@@ -28,7 +28,10 @@ class Basis : public GeometryBase {
 	T high; // upper limits of grid
 public:
 	char *Name();
-	char *Approximation() {return "NONE";}
+	int ValidApproximation(char *s) {
+		return (strcmp(s,"NONE")==0 || strcmp(s,"PS")==0);
+	}
+
 	void MakeBins();
 	void List(ostream &);
 	void ListTriads();
@@ -39,9 +42,13 @@ public:
 	Real Area(int) {return 1.0;}
 	
 	Real K(int k) {return mode[k].K();}
+	Real K2(int k) {return mode[k].K2();}
 	Real Th(int k) {return mode[k].Th();}
 	Real Kx(int k) {return mode[k].Kx();}
 	Real Ky(int k) {return mode[k].Ky();}
+	
+// Factor which converts |y|^2 to energy in various normalizations:
+	Real Normalization(int);
 	
 	Nu Linearity(int);
 	Mc Mkpq(T& k, T& p, T& q);
@@ -87,14 +94,16 @@ void Basis<T>::ComputeTriads()
 	T mq;
 	
 	kinv2=new Real[Nmode];
+	for(k=0; k < Nmode; k++) kinv2[k]=1.0/mode[k].K2();
+
+	if(pseudospectral) return;
+	
 	chainp.Resize(8*Nmode);
 	chainn.Resize(4*Nmode);
 	
 	Ntriad=Nchainp=Nchainn=0;
 	ck=cp=cq=q=0;
 	
-	for(k=0; k < Nmode; k++) kinv2[k]=1.0/mode[k].mag2();
-
 	for(k=0; k < Nmode; k++) {
 		newchain=1;
 		for(p=0; p < n; p++) {
@@ -112,7 +121,7 @@ void Basis<T>::ComputeTriads()
 				if(newchain || mode[q] != mq) {
 					for(q=0; q < n && mode[q] != mq; q++);
 					if(q == n) msg(ERROR, "Invalid beat mode computed");
-					if(lastp >= 0) StoreChain(ck,cp,mode[lastp+1].Column(),
+					if(lastp >= 0) StoreChain(ck,cp,mode[lastp].Column()+1,
 											  psibuffer+cq,sign);
 					ck=k; cp=p; cq=q;
 					sign=0; newchain=0;
@@ -123,7 +132,7 @@ void Basis<T>::ComputeTriads()
 			else newchain=1;
 		}
 	}
-	if(lastp >= 0) StoreChain(ck,cp,lastp+1,psibuffer+cq,sign);
+	if(lastp >= 0) StoreChain(ck,cp,mode[lastp].Column()+1,psibuffer+cq,sign);
 
 	chainp.Resize(Nchainp);
 	chainpBase=chainp.Base();

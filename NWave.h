@@ -18,15 +18,15 @@ const int Nmoment=7;
 
 Source_t PrimitiveNonlinearitySR;
 Source_t PrimitiveNonlinearity;
+Source_t PrimitiveNonlinearityFFT;
 Source_t StandardLinearity;
 Source_t ExponentialLinearity;
 void ConservativeExponentialLinearity(Real *source, Real *psi, double t);
 void ConservativeExponentialLinearity(Complex *source, Complex *psi, double t);
 Source_t ConstantForcing;
 
-extern Real *K,*Area,*y2;
 extern Real continuum_factor;
-void compute_invariants(Real *y2, int Npsi, Real& E, Real& Z, Real& P);
+void compute_invariants(Var *y, int Npsi, Real& E, Real& Z, Real& P);
 void display_invariants(Real E, Real Z, Real P);
 
 class NWave : public ProblemBase {

@@ -5,7 +5,10 @@
 #include "utils.h"
 
 extern int reality; // Reality condition flag 
-extern Var *psibuffer,*psibufferR,*psibufferStop;
+extern Var *psibuffer,*psibuffer0,*psibufferR,*psibufferStop;
+extern Var *convolution,*convolution0;
+extern int pseudospectral;
+extern unsigned int log2n; // Number of FFT levels
 
 class GeometryBase {
 protected:	
@@ -17,7 +20,7 @@ public:
 	int IndependentNumber() {return nindependent;}
 	
 	virtual char *Name()=0;
-	virtual char *Approximation()=0;
+	virtual int ValidApproximation(char *)=0;
 	virtual void MakeBins()=0;
 	virtual void List(ostream &)=0;
 	virtual void ListTriads()=0;
@@ -27,16 +30,30 @@ public:
 	
 	virtual Real Area(int)=0;
 	virtual Real K(int)=0;
+	virtual Real K2(int)=0;
 	virtual Real Th(int)=0;
 	virtual Real Kx(int)=0;
 	virtual Real Ky(int)=0;
 	
+	virtual Real Normalization(int)=0;
+	
 	int Create() {
 		MakeBins();
-		psibuffer=new Var[n];
-		psibufferR=(reality ? psibuffer+Nmode : psibuffer);
-		psibufferStop=psibuffer+n;
 
+		if(pseudospectral) {
+			for(log2n=0; Nmode+1 > (1 << log2n)/3; log2n++);
+			int n2=1 << (log2n-1);
+			cout << n2 << " FFT COMPONENTS ALLOCATED." << endl;
+			convolution0=new Var[n2];
+			convolution=convolution0+1;
+			psibuffer0=new Var[n2];
+			psibuffer=psibuffer0+1;
+		} else {
+			psibuffer=new Var[n];
+			psibufferR=(reality ? psibuffer+Nmode : psibuffer);
+			psibufferStop=psibuffer+n;
+		}
+		
 		if(verbose > 2) {
 			cout.precision(3);
 			List(cout);

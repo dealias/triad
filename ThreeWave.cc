@@ -12,7 +12,6 @@ Mc Mkpq[]={1.0,1.0,-2.0};
 static Nu nu0[]={0.0,0.0,0.0};
 static Var IC[]={sqrt(1.5),0.0,sqrt(1.5)};
 Real Area0[]={1.0,1.0,1.0};
-Real *K,*Area=Area0,*y2;
 Real continuum_factor;
 Real tauforce=0.0;
 
@@ -62,7 +61,6 @@ void NWave::InitialConditions()
 	psibufferStop=psibuffer+Npsi;
 	ny=(average ? Nmoment+1 : 1)*Npsi;
 	y=new Var[ny];
-	y2=new Real[Npsi];
 	K=new Real [Npsi];
 	
 	K[0]=sqrt(3.0);

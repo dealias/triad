@@ -5,9 +5,12 @@
 char *NWave::Name() {return "N-Wave";}
 char *NWave::Abbrev() {return "nw";}
 
-char *approximation="SR";
+//char *approximation="SR";
+//char *geometry="Polar";
+
+char *approximation="None";
+char *geometry="Cartesian";
 char *integrator="PC";
-char *geometry="Polar";
 
 Real alpha=1.0;
 Real beta=1.0;
@@ -80,6 +83,7 @@ NWave::NWave()
 										  GeometryKeyCompare);
 	APPROXIMATION(SR);
 	APPROXIMATION(None);
+	APPROXIMATION(PS);
 	
 	INTEGRATOR(C_Euler);
 	INTEGRATOR(C_PC);
@@ -111,6 +115,17 @@ void None::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
 	*NonlinearSrc=PrimitiveNonlinearity;
 	*ConstantSrc=ConstantForcing;
 	continuum_factor=1.0;
+}
+
+void PS::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
+						Source_t **ConstantSrc)
+{
+	if(!reality) msg(ERROR,"Pseudospectral approximation needs reality=1");
+	*LinearSrc=StandardLinearity;
+	*NonlinearSrc=PrimitiveNonlinearityFFT;
+	*ConstantSrc=ConstantForcing;
+	continuum_factor=1.0;
+	pseudospectral=1;
 }
 
 NWave NWaveProblem;
@@ -163,9 +178,7 @@ static Real equilibrium(int i)
 }
 
 static ofstream fparam,fevt,fekvt,favgy[Nmoment],fprolog;
-Real *K,*Th,*Area,*y2;
 Real continuum_factor;
-static Real *equil;
 static Complex *nuC;
 
 void NWave::InitialConditions()
@@ -173,7 +186,7 @@ void NWave::InitialConditions()
 	int i,n;
 	
 	Geometry=GeometryProblem->NewGeometry(geometry);
-	if(strcmp(Geometry->Approximation(),Approximation->Abbrev()) != 0)
+	if(!Geometry->ValidApproximation(Approximation->Abbrev()))
 		msg(ERROR,"Geometry \"%s\" is incompatible with Approximation \"%s\"",
 			Geometry->Name(),Approximation->Name());
 	nyconserve=Npsi=Geometry->Create();
@@ -181,23 +194,13 @@ void NWave::InitialConditions()
 	NpsiR=Ntotal-Npsi;
 	ny=(average ? Nmoment+1 : 1)*Npsi;
 	y=new Var[ny];
-	y2=new Real[Npsi];
-	equil=new Real[Npsi];
 	nu=new Nu[Npsi];
 	nuC=new Complex[Npsi];
 	forcing=new Real[Npsi];
 	
-	K=new Real[Npsi];
-	Th=new Real[Npsi];
-	Area=new Real[Npsi];
-	
 	for(i=0; i < Npsi; i++) {
 		nuC[i]=nu[i]=Geometry->Linearity(i);
-		equil[i]=equilibrium(i);
-		y[i]=sqrt(2.0*equil[i]);
-		K[i]=Geometry->K(i);
-		Th[i]=Geometry->Th(i);
-		Area[i]=Geometry->Area(i);
+		y[i]=sqrt(2.0*equilibrium(i)/Geometry->Normalization(i));
 		forcing[i]=forcek(i);
 	}
 	
@@ -230,6 +233,11 @@ void NWave::InitialConditions()
 	
 }
 
+static Real K(int i) {return Geometry->K(i);}
+static Real Th(int i) {return Geometry->Th(i);}
+static Real Area(int i) {return Geometry->Area(i);}
+static Real Normalization(int i) {return Geometry->Normalization(i);}
+
 void NWave::Initialize()
 {
 	int i;
@@ -238,7 +246,8 @@ void NWave::Initialize()
 	out_curve(fprolog,Th,"Th",Npsi);
 	out_curve(fprolog,Area,"Area",Npsi);
 	out_curve(fprolog,nuC,"nu",Npsi);
-	out_curve(fprolog,equil,"equil",Npsi);
+	out_curve(fprolog,equilibrium,"equil",Npsi);
+	out_curve(fprolog,Normalization,"normalization",Npsi);
 
 	fevt << "#   t\t\t E\t\t Z\t\t P" << endl;
 
@@ -246,16 +255,14 @@ void NWave::Initialize()
 	if(average) for(i=Npsi; i < ny; i++) y[i]=0.0;
 	
 	delete [] nuC;
-	delete [] equil;
 }
 
 void NWave::Output(int)
 {
 	Real E,Z,P;
-	int i,n;
+	int n;
 	
-	for(i=0; i < Npsi; i++) y2[i] = abs2(y[i]);
-	compute_invariants(y2,Npsi,E,Z,P);
+	compute_invariants(y,Npsi,E,Z,P);
 	
 	fevt << t << "\t" << E << "\t" << Z << "\t" << P << endl << flush;
 	

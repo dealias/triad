@@ -29,11 +29,11 @@ void Basis<Cartesian>::MakeBins()
 	Nmode=(reality ? n/2 : n);
 	nindependent=(reality || n % 2) ? Nmode : n/2;
 	
-	for(j=high.Row(); j >= 0; j--) // Evolved modes
+	for(j=0; j <= high.Row(); j++) // Evolved modes
 		for(i=((j == 0) ? 1 : low.Column()); i <= high.Column(); i++)
 			*(p++)=Cartesian(i,j);
 	
-	for(j=low.Row(); j <= 0; j++) // Reflected modes
+	for(j=0; j >= low.Row(); j--) // Reflected modes
 		for(i=((j == 0) ? -1 : high.Column()); i >= low.Column(); i--)
 			*(p++)=Cartesian(i,j);
 	

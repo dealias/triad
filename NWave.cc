@@ -8,8 +8,12 @@ int Ntotal;
 // (0 => evolve all modes, 1 => evolve only half of the modes).
 int reality=1; // Reality condition flag 
 
-Var *psibuffer,*psibufferStop,*pqbuffer;
-Var **pqIndex,*psibufferR;
+Var *psibuffer,*psibuffer0,*psibufferR,*psibufferStop,*pqbuffer;
+Var *convolution,*convolution0;
+int pseudospectral=0;
+unsigned int log2n; // Number of FFT levels
+
+Var **pqIndex;
 int *qStart;
 
 int Ntriad;
@@ -92,6 +96,7 @@ void PrimitiveNonlinearitySR(Var *source, Var *psi, double)
 
 void PrimitiveNonlinearity(Var *source, Var *psi, double)
 {
+	Cartesian mk,mp;
 	extern Cartesian *CartesianMode;
 
 	set(psibuffer,psi,Npsi);
@@ -104,30 +109,73 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 		
 	for(int i=0; i < Nchainp; i++) {
 		Chain *c=chainpBase+i;
-		Cartesian mk=CartesianMode[c->k], mp=CartesianMode[c->p];
+		mk=CartesianMode[c->k]; mp=CartesianMode[c->p];
 		Real kx=mk.Kx(), ky=mk.Ky(), py=mp.Ky();
 		Real kxpy=kx*py, py2=py*py;
 		Var sum=0.0, *psip=psibuffer+c->p, *psiq=c->psiq;
 		int stop=c->stop;
 		for(int px=mp.Column(); px < stop; px++,psiq++)
-			sum += (ky*px-kxpy)*(px*px+py2)*psip[px]*(*psiq);
+			sum += (ky*px-kxpy)*(px*px+py2)*conj(psip[px]*(*psiq));
 		source[c->k] += sum;
 	}
 	
 	for(int i=0; i < Nchainn; i++) {
 		Chain *c=chainnBase+i;
-		Cartesian mk=CartesianMode[c->k], mp=CartesianMode[c->p];
+		mk=CartesianMode[c->k]; mp=CartesianMode[c->p];
 		Real kx=mk.Kx(), ky=mk.Ky(), py=mp.Ky();
 		Real kxpy=kx*py, py2=py*py;
 		Var sum=0.0, *psip=psibuffer+c->p, *psiq=c->psiq;
 		int stop=c->stop;
 		for(int px=mp.Column(); px < stop; px++,psiq--)
-			sum += (ky*px-kxpy)*(px*px+py2)*psip[px]*(*psiq);
+			sum += (ky*px-kxpy)*(px*px+py2)*conj(psip[px]*(*psiq));
 		source[c->k] += sum;
 	}
 	
 	for(int i=0; i < Npsi; i++) source[i] *= kinv2[i];
 
+	// Compute moments
+	if(average && Nmoment > 0) {
+		Var *k, *q=source+Npsi, *kstop=psibuffer+Npsi;
+#pragma ivdep
+		for(k=psibuffer; k < kstop; k++, q++) *q=product(*k,*k);   // psi^2
+		for(int n=1; n < Nmoment; n++) { // psi^n
+#pragma ivdep
+			for(k=psibuffer; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);
+		}
+	}
+}
+
+	
+void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
+			  int log2n);
+void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
+			   int log2n);
+	
+void PrimitiveNonlinearityFFT(Var *source, Var *psi, double)
+{
+	extern Cartesian *CartesianMode;
+	int i;
+
+	*psibuffer0=0.0;
+	*convolution0=0.0;
+	set(psibuffer,psi,Npsi);
+	set(convolution,psi,Npsi);
+	for(i=0; i < Npsi; i++)
+		convolution[i] *= CartesianMode[i].K2()*CartesianMode[i].Ky();
+	convolve(convolution0,convolution0,psibuffer0,Npsi+1,log2n);
+	set(source,convolution,Npsi);
+							
+	*convolution0=0.0;
+	set(convolution,psi,Npsi);
+	for(i=0; i < Npsi; i++)
+		convolution[i] *= CartesianMode[i].K2()*CartesianMode[i].Kx();
+	// Reuse FFT of psibuffer0.
+	convolve0(convolution0,convolution0,psibuffer0,Npsi+1,log2n);
+		
+	for(i=0; i < Npsi; i++)
+		source[i] = kinv2[i]*(CartesianMode[i].Kx()*source[i]-
+							  CartesianMode[i].Ky()*convolution[i]);
+		
 	// Compute moments
 	if(average && Nmoment > 0) {
 		Var *k, *q=source+Npsi, *kstop=psibuffer+Npsi;
@@ -598,13 +646,13 @@ int C_RK5::Corrector(Var *y0, double, double& errmax, int start, int stop)
 	return 1;
 }
 
-void compute_invariants(Real *y2, int Npsi, Real& E, Real& Z, Real& P)
+void compute_invariants(Var *y, int Npsi, Real& E, Real& Z, Real& P)
 {
 	Real Ek,Zk,Pk,k2;
 	E=Z=P=0.0;
 	for(int i=0; i < Npsi; i++) {
-		k2=K[i]*K[i];
-		Ek=y2[i]*Area[i];
+		k2=Geometry->K2(i);
+		Ek=Geometry->Normalization(i)*abs2(y[i])*Geometry->Area(i);
 		Zk=k2*Ek;
 		Pk=k2*Zk;
 		E += Ek;
@@ -634,15 +682,17 @@ void NWave::FinalOutput()
 	for(i=0; i < Npsi; i++) cout << "psi[" << i << "] = " << y[i] << endl;
 	cout << endl;
 	
-	for(i=0; i < Npsi; i++) y2[i] = abs2(y[i]);
-	compute_invariants(y2,Npsi,E,Z,P);
+	compute_invariants(y,Npsi,E,Z,P);
 	display_invariants(E,Z,P);
 	
 	if(average && t) {
 		cout << endl << "AVERAGED VALUES:" << endl << endl;
+// We overwrite part of y here, since it is no longer needed.
+		Var *y2=y+Npsi;
 		for(i=0; i < Npsi; i++) {
-			y2[i] = (real(y[Npsi+i])+imag(y[Npsi+i]))/t;
-			cout << "|psi|^2 [" << i << "] = " << y2[i] << endl;
+			Real y2avg = (real(y2[i])+imag(y2[i]))/t;
+			y2[i] = sqrt(y2avg);
+			cout << "|psi|^2 [" << i << "] = " << y2avg << endl;
 		}
 		cout << endl;
 		compute_invariants(y2,Npsi,E,Z,P);

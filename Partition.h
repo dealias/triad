@@ -39,6 +39,7 @@ public:
 	T Delta() {return (max-min);}
 	Real Area();
 	Real K() {return cen.K();}
+	Real K2() {return cen.K2();}
 	Real Th() {return cen.Th();}
 	Real Kx() {return cen.Kx();}
 	Real Ky() {return cen.Ky();}
@@ -124,7 +125,7 @@ class Partition : public GeometryBase {
 	Bin<T> *bin; // pointer to table of bins
 public:
 	char *Name();
-	char *Approximation() {return "SR";}
+	int ValidApproximation(char *s) {return strcmp(s,"SR")==0;}
 	char *WeightFileName(char *suffix);
 	void MakeBins();
 	void List(ostream &os);
@@ -137,9 +138,13 @@ public:
 	
 	Real Area(int k) {return bin[k].Area();}
 	Real K(int k) {return bin[k].K();}
+	Real K2(int k) {return bin[k].K2();}
 	Real Th(int k) {return bin[k].Th();}
 	Real Kx(int k) {return bin[k].Kx();}
 	Real Ky(int k) {return bin[k].Ky();}
+	
+// Factor which converts |y|^2 to energy in various normalizations:
+	Real Normalization(int);
 	
 	Nu Linearity(int i);
 	inline Mc Ckpq(T&, T&, T&);

@@ -260,6 +260,7 @@ inline istream& operator >> (istream& s, Complex& y)
 #endif
 
 void out_curve(ostream& os, Real (*f)(int), char *text, int n);
+void out_curve(ostream& os, Complex (*f)(int), char *text, int n);
 void out_curve(ostream& os, int *f, char *text, int n);
 void out_curve(ostream& os, Real *f, char *text, int n);
 void out_curve(ostream& os, Complex *f, char *text, int n);

@@ -189,6 +189,8 @@ int main(int argc, char *argv[])
 		fin.close();
 	}
 
+	Approximation->SetSrcRoutines(&LinearSrc,&NonlinearSrc,&ConstantSrc);
+	
 	t=0.0;
 	Problem->InitialConditions();
 	y=Problem->Vector();
@@ -199,7 +201,6 @@ int main(int argc, char *argv[])
 	
 	adjust_parameters(dt,dtmax,tmax,itmax);
 	
-	Approximation->SetSrcRoutines(&LinearSrc,&NonlinearSrc,&ConstantSrc);
 	Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,
 						 dtmax,itmax,microsteps,Problem->Nconserve(),verbose);
 	

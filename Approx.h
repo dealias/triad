@@ -18,5 +18,12 @@ public:
 						Source_t **ConstantSrc);
 };
 
+class PS : public ApproximationBase {
+public:
+	char *Name() {return "Pseudospectral";}
+	void SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
+						Source_t **ConstantSrc);
+};
+
 #endif
 

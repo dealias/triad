@@ -268,6 +268,16 @@ void out_curve(ostream& os, Real (*f)(int), char *text, int n)
 	os << (*f)(n-1) << endl;
 }
 
+void out_curve(ostream& os, Complex (*f)(int), char *text, int n)
+{
+	os << "# " << text << endl;
+	for(int i=0; i < n-1;) {
+		os << (*f)(i);
+		if(++i % nperline) os << "\t"; else os << " \\" << endl;
+	}
+	os << (*f)(n-1) << endl;
+}
+
 void out_curve(ostream& os, int *f, char *text, int n)
 {
 	os << "# " << text << endl;

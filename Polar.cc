@@ -184,4 +184,3 @@ Mc Jkpq(double k, double, double, double, double b, double g,
 {
 	return (hi-lo)*sin(g-b)/k;
 }
-
