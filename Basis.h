@@ -57,11 +57,11 @@ INLINE void Basis<T>::Initialize()
 	kfactor=new Real[Nmode];
 	
 	if(strcmp(Problem->Abbrev(),"PS") == 0) {
+		cout << endl << "ALLOCATING FFT BUFFERS (" << Nxb << "X" << Nyp << ")."
+			 << endl;
 		psix=new Var[nfft];
 		psiy=new Var[nfft];
 		vort=new Var[nfft];
-		cout << endl << "ALLOCATING FFT BUFFERS (" << Nxb << "X" << Nyp << ")."
-			 << endl;
 		Real scale=Nxb*Nyb;
 		for(int k=0; k < Nmode; k++) kfactor[k]=-1.0/(scale*mode[k].K2());
 	} else {

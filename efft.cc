@@ -1,4 +1,5 @@
-#include "utils.h"
+#include "options.h"
+#include "fft.h"
 
 extern "C" void dcft(const int& init,
 					 Complex *x, const int& inc1x, const int& inc2x,
@@ -13,31 +14,41 @@ static double scale=1.0;
 void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		  unsigned int inc1, unsigned int inc2, int)
 {
-	static int naux,nlast=0, nklast=0, inc1last=0, inc2last=0;	
-	static double *aux1[2],*aux2[2];
+	int i,naux;
+	static int TableSize=0;
+	static int *nTable,nkTable,*nauxTable;
+	static double **aux1[2],**aux2[2];
 	unsigned int n=1 << log2n;
 	isign = -isign;
 	
-	if(n != nlast || nk != nklast || inc1 != inc1last || inc2 != inc2last) {
-		nlast=n;
-		nklast=nk;
-		inc1last=inc1;
-		inc2last=inc2;
+	for(j=0; j < TableSize; j++) 
+		if(n == nTable[j] && nk == nkTable[j]) break;
+    if(j == TableSize) {
+		TableSize++;
+		nTable=new(nTable,TableSize);
+		nkTable=new(nkTable,TableSize);
+		aux1=new(aux1,TableSize);
+		aux2=new(aux2,TableSize);
+		
 		if(n <= 2048) naux=20000;
 		else naux=20000+2.28*n;
-		if(inc2 == 1 || n >= 252) naux += (2*n+256)*((nk > 64) ? nk : 64);
+		naux += (2*n+256)*((nk > 64) ? nk : 64);
+		nTable[i]=n;
+		nkTable[i]=nk;
+		nauxTable[j]=naux;
 	
 		for(int isign=-1; isign <= 1; isign += 2) {
 			int i=(isign == -1);
-			aux1[i]=new(aux1[i],naux) Real;
-			aux2[i]=new(aux2[i],naux) Real;
+			aux1[j][i]=new(aux1[j][i],naux) Real;
+			aux2[j][i]=new(aux2[j][i],naux) Real;
 			dcft(one,data,inc1,inc2,data,inc1,inc2,n,nk,isign,scale,
-				 aux1[i],naux,aux2[i],naux);
+				 aux1[j][i],naux,aux2[j][i],naux);
 		}
 	}
 	int i=(isign == -1);
+	naux=nauxTable[j];
 	dcft(zero,data,inc1,inc2,data,inc1,inc2,n,nk,isign,scale,
-		 aux1[i],naux,aux2[i],naux);
+		 aux1[j][i],naux,aux2[j][i],naux);
 }
 
 void fft(Complex *data, unsigned int log2n, int isign, int)
