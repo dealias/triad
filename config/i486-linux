@@ -1,4 +1,5 @@
-C++ = g++ -Wall -ansi
+#C++ = g++ -Wall -ansi
+C++ = g++ -Vegcs-2.90.27 -Wall -ansi
 LIB = $(LFLAGS) -lrfftw -lfftw -lm
 MAKEDEPEND = $(C++) -M -DDEPEND
 FFT = wfft

@@ -28,8 +28,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #define check(i,n,dim,m) Check(i,n,dim,m)
 #endif
 
-#include "iostream.h"
-#include "strstream.h"
+#include <iostream.h>
+#include <strstream.h>
 
 #if __AIX
 #define CONST const
@@ -81,7 +81,7 @@ public:
 	void Purge() const {((Array1<T> *) this)->Purge();}
 #endif
 	
-	void Check(int i, int n, int dim, int m) const {
+	virtual void Check(int& i, int n, int dim, int m) const {
 		if(i < 0 || i >= n) {
 			strstream buf;
 			buf << "Array" << dim << " index ";
