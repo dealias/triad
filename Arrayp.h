@@ -18,15 +18,13 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Arrayp_h__
 #define __Arrayp_h__ 1
 
-#define __ARRAYP_H_VERSION__ 1.05
+#define __ARRAYP_H_VERSION__ 1.06
 
 // Defining NDEBUG improves optimization.
 
 #include <iostream.h>
 #include <strstream.h>
 #include "Array.h"
-
-#define check(i,n,dim,m) Check(i,n,dim,m)
 
 class ArrayMod {
 public:	
@@ -46,9 +44,8 @@ public:
 	Array1p(unsigned int nx0) {Allocate(nx0);}
 	Array1p(unsigned int nx0, T *v0) {Dimension(nx0,v0);}
 	Array1p(const Array1p<T>& A) {v=A.v; nx=A.nx; state=A.test(temporary);}
-	void Check(int& i, int n, unsigned int dim, unsigned int m) const {
-		Mod(i,n);
-	}
+	T& operator [] (int ix) const {Mod(ix,nx); return v[ix];}
+	T& operator () (int ix) const {Mod(ix,nx); return v[ix];}
 };
 
 template<class T>
@@ -58,11 +55,17 @@ public:
 	Array2p(unsigned int nx0, unsigned int ny0) {Allocate(nx0,ny0);}
 	Array2p(unsigned int nx0, unsigned int ny0, T *v0) {Dimension(nx0,ny0,v0);}
 	Array1p<T> operator [] (int ix) const {
-		check(ix,nx,2,1);
+		Mod(ix,nx);
 		return Array1p<T>(ny,v+ix*ny);
 	}
-	void Check(int& i, int n, unsigned int dim, unsigned int m) const {
-		Mod(i,n);
+	T& operator () (int ix, int iy) const {
+		Mod(ix,nx);
+		Mod(iy,ny);
+		return v[ix*ny+iy];
+	}
+	T& operator () (int i) const {
+		Mod(i,Size());
+		return v[i];
 	}
 };
 
@@ -73,11 +76,18 @@ public:
 	Array3p(unsigned int nx0, unsigned int ny0, unsigned int nz0) {Allocate(nx0,ny0,nz0);}
 	Array3p(unsigned int nx0, unsigned int ny0, unsigned int nz0, T *v0) {Dimension(nx0,ny0,nz0,v0);}
 	Array2p<T> operator [] (int ix) const {
-		check(ix,nx,3,1);
+		Mod(ix,nx);
 		return Array2p<T>(ny,nz,v+ix*nyz);
 	}
-	void Check(int& i, int n, unsigned int dim, unsigned int m) const {
-		Mod(i,n);
+	T& operator () (int ix, int iy, int iz) const {
+		Mod(ix,nx);
+		Mod(iy,ny);
+		Mod(iz,nz);
+		return v[ix*nyz+iy*nz+iz];
+	}
+	T& operator () (int i) const {
+		Mod(i,Size());
+		return v[i];
 	}
 };
 
@@ -90,11 +100,19 @@ public:
 		Dimension(nx0,ny0,nz0,nw0,v0);
 	}
 	Array3p<T> operator [] (int ix) const {
-		check(ix,nx,3,1);
+		Mod(ix,nx);
 		return Array3p<T>(ny,nz,nw,v+ix*nyzw);
 	}
-	void Check(int& i, int n, unsigned int dim, unsigned int m) const {
-		Mod(i,n);
+	T& operator () (int ix, int iy, int iz, int iw) const {
+		Mod(ix,nx);
+		Mod(iy,ny);
+		Mod(iz,nz);
+		Mod(iw,nw);
+		return v[ix*nyzw+iy*nzw+iz*nw+iw];
+	}
+	T& operator () (int i) const {
+		Mod(i,Size());
+		return v[i];
 	}
 };
 
@@ -103,9 +121,6 @@ public:
 #else
 #define Array1p(T) Array1p<T>
 #endif
-
-#undef check
-#undef CONST
 
 #endif
 
