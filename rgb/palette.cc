@@ -11,8 +11,8 @@ extern int verbose;
 extern int two;
 extern int gradient;
 extern int damp;
-extern int r1,g1,b1;
-extern int r2,g2,b2;
+extern double r1,g1,b1;
+extern double r2,g2,b2;
 
 static int k,incr;
 

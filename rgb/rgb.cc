@@ -51,8 +51,8 @@ int verbose=0;
 int two=0;
 int gradient=0;
 int damp=0;
-double r1=0,g1=0,b1=0;
-double r2=1,g2=0,b2=0;
+double r1=0.0,g1=0.0,b1=0.0;
+double r2=1.0,g2=0.0,b2=0.0;
 
 static int floating_scale=0;
 static int floating_section=0;
@@ -544,12 +544,12 @@ int main(int argc, char *const argv[])
 			break;
 		case CONST:
 			palette=GENERAL;
-			if(sscanf(optarg,"%g,%g,%g",&r1,&g1,&b1) != 3)
+			if(sscanf(optarg,"%le,%le,%le",&r1,&g1,&b1) != 3)
 				msg(ERROR,"Invalid color constant: %s",optarg);
 			break;
 		case RATE:
 			palette=GENERAL;
-			if(sscanf(optarg,"%g,%g,%g",&r2,&g2,&b2) != 3)
+			if(sscanf(optarg,"%le,%le,%le",&r2,&g2,&b2) != 3)
 				msg(ERROR,"Invalid color rate: %s",optarg);
 			break;
 		case CROP:
