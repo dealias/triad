@@ -49,16 +49,17 @@ public:
   CubicSpline(unsigned int n,
 	      const typename array1<X>::opt x,
 	      const typename array1<Y>::opt y) {
+    if(n < 2) return;
     if(n > size) {
       Reallocate(y2,n);
-      Reallocate(work,n-3);
+      if(n > 3) Reallocate(work,n-3);
       size=n;
     }
     y2[0]=y2[n-1]=0.0;
     
-    X lastdx=x[1]-x[0];
-    Y lastdy=y[1]-y[0];
     if(n > 2) {
+      X lastdx=x[1]-x[0];
+      Y lastdy=y[1]-y[0];
       X dx=x[2]-x[1];
       Y dy=y[2]-y[1];
       X temp=3.0/(dx+lastdx);
@@ -90,6 +91,7 @@ public:
   Y Interpolate(unsigned int n,
 		const typename array1<X>::opt x,
 		const typename array1<Y>::opt y, X x0, unsigned int i) {
+    if(n < 2) ArrayExit("Cubic spline requires at least 2 points");
     if(x0 == x[n-1]) return y[n-1];
     if(i >= n) {
       X dx=x[1]-x[0];
