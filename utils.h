@@ -167,7 +167,7 @@ inline Real divide0(Real x, Real y)
 	return (y ? x/y : 0.0);
 }
 
-inline Real max(Real x)
+inline Real dominant(Real x)
 {
 	return x;
 }

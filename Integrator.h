@@ -15,7 +15,7 @@ inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0,
 {
 	Real error;
 	if(pred != initial) {
-		error=max(abs2(corr-pred)/max(abs2(norm0),abs2(initial)));
+		error=dominant(abs2(corr-pred)/max(abs2(norm0),abs2(initial)));
 	    if(error > errmax) errmax=error;
 	}
 }
