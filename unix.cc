@@ -46,12 +46,18 @@ void cputime(double *cpu)
 // Don't notify user about runs shorter than this many seconds.
 static const double longrun=500.0;
 
+#if _CRAY
+static char command[]="mailx";
+#else
+static char command[]="mail";
+#endif
+
 void mailuser(char *text)
 {
 	if(time(NULL)-init_time < longrun) return;
 	char *user=getpwuid(getuid())->pw_name;
 	char *buf=new char[50+strlen(run),strlen(text)+strlen(user)];
-	sprintf(buf,"mail -s 'Run %s %s.' %s < /dev/null > /dev/null",
+	sprintf(buf,"%s -s 'Run %s %s.' %s < /dev/null > /dev/null",command,
 			run,text,user);
 	system(buf);
 }
