@@ -48,21 +48,17 @@ class PeriodicBC : public BC {
   int Resolution(int radix, int lvl) const {return pow(radix,lvl+1);}
 };
 
-class ExtendedPeriodicBC : public BC {
- public:	
-  ExtendedPeriodicBC() {internal=1; external=3; ioff=-1;}
-  int Resolution(int radix, int lvl) const {return pow(radix,lvl);}
-};
-
 class DirichletBC2 : public BC {
  public:	
   DirichletBC2() {internal=2; external=2; ioff=-1;}
   int Resolution(int radix, int lvl) const {return pow(radix,lvl+1)-1;}
 };
 
-class ExtendedDirichletBC2 : public BC { // Need to update this! JCB
+class ExtendedDirichletBC2 : public BC {
  public:	
-  ExtendedDirichletBC2() {internal=2; external=4; ioff=-1; offset=-1;}
+  ExtendedDirichletBC2() {
+    internal=2; external=4; ioff=-1; active=2; offset=-1;
+  }
   int Resolution(int radix, int lvl) const {return pow(radix,lvl)-1;}
 };
 
@@ -76,12 +72,6 @@ class PeriodicBC2 : public BC {
  public:	
   PeriodicBC2() {internal=1; external=3; ioff=-1;}
   int Resolution(int radix, int lvl) const {return pow(radix,lvl+1);}
-};
-
-class ExtendedPeriodicBC2 : public BC {
- public:	
-  ExtendedPeriodicBC2() {internal=1; external=5; ioff=-2;}
-  int Resolution(int radix, int lvl) const {return pow(radix,lvl);}
 };
 
 const DirichletBC Dirichlet[1];
@@ -98,9 +88,6 @@ const PeriodicBC2 Periodic2[1];
 
 const PeriodicBC MixedB[1];
 const PeriodicBC2 MixedB2[1];
-
-const ExtendedPeriodicBC ExtendedMixedB[1];
-const ExtendedPeriodicBC2 ExtendedMixedB2[1];
 
 class Limits {
  public:
