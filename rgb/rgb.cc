@@ -137,8 +137,16 @@ public:
 	Ivec(Real i0, Real j0, Real k0) : i(i0), j(j0), k(k0) {}
 };
 
+class UV {
+public:
+	int u;
+	int v;
+	UV() {}
+	UV(int u0, int v0) : u(u0), v(v0) {}
+};
+
 enum Transforms {IDENTITY,CIRCLE,TORUS};
-typedef void Transform(Array2<Ivec>);
+typedef void Transform(Array2<Ivec> &);
 Transform Circle,Torus;
 Transform *transform[]={NULL,Circle,Torus};
 unsigned int Ntransform=sizeof(transform)/sizeof(Transform *);
@@ -1159,7 +1167,7 @@ int system (char *command) {
 	} while(1);
 }
 
-void Circle(Array2<Ivec> Index)
+void Circle(Array2<Ivec>& Index)
 {
 	for(int u=0; u < Nx; u++)  {
 		for(int v=0; v < Ny; v++)  {
@@ -1181,7 +1189,31 @@ void Circle(Array2<Ivec> Index)
 	}
 }
 
-void Torus(Array2<Ivec> Index)
+	
+Real deltax,deltaz;
+Real yfactor;
+Real xoffset,yoffset;
+Real cutoff;
+Real Axx,Axy,Axz;
+Real Ayx,Ayy,Ayz;
+Real Azx,Azy,Azz;
+Real twopibyny,twopibynz;
+Array2<Real> maxz;
+Array3<int> active;
+Array2<Ivec> index;
+
+int Project(double xi, double xj, double xk);
+void Refine(double x1, double y1, double z1, double x2, double y2, double z2);
+	
+inline int visible(int i, int j, int k)
+{
+	return (active(i,j,k) || active(i,j,k+1) || 
+			active(i,j+1,k) || active(i,j+1,k+1) ||
+			active(i+1,j,k) || active(i+1,j,k+1) || 
+			active(i+1,j+1,k) || active(i+1,j+1,k+1));
+}
+
+void Torus(Array2<Ivec>& Index)
 {
 	for(int u=0; u < Nx; u++)  {
 		for(int v=0; v < Ny; v++)  {
@@ -1189,17 +1221,14 @@ void Torus(Array2<Ivec> Index)
 		}
 	}
 	
-	const Real xfinestep=1.0/(2.0*Nxfine+1.0);
-	const Real yfinestep=1.0/(2.0*Nyfine+1.0);
-	const Real zfinestep=1.0/(2.0*Nzfine+1.0);
+	index.Dimension(Nx,Ny);
+	index.Set(Index());
 	
-	Real twopibyny=twopi/ny;
-	Real twopibynz=twopi/nz;
+	twopibyny=twopi/ny;
+	twopibynz=twopi/nz;
 	
-	Array2<Real> maxz(Nx,Ny);
-	for(int u=0; u < Nx; u++)
-		for(int v=0; v < Ny; v++)
-			maxz(u,v)=-REAL_MAX;
+	maxz.Allocate(Nx,Ny);
+	maxz=-REAL_MAX;
 									
 	Real cosPhi,sinPhi;
 	Real cosTheta,sinTheta;
@@ -1208,68 +1237,125 @@ void Torus(Array2<Ivec> Index)
 	
 	// Rotate about z axis by -Phi, then about new x axis by -Theta.
 	
-	Real Axx=cosPhi;          Real Axy=-sinPhi;         Real Axz=0.0;
-	Real Ayx=cosTheta*sinPhi; Real Ayy=cosTheta*cosPhi; Real Ayz=-sinTheta;
-	Real Azx=sinTheta*sinPhi; Real Azy=sinTheta*cosPhi; Real Azz=cosPhi;
+	Axx=cosPhi;          Axy=-sinPhi;         Axz=0.0;
+	Ayx=cosTheta*sinPhi; Ayy=cosTheta*cosPhi; Ayz=-sinTheta;
+	Azx=sinTheta*sinPhi; Azy=sinTheta*cosPhi; Azz=cosPhi;
 	
-	Real cutoff=1.75*pi;
+	cutoff=1.75*pi;
 	
-	Real xoffset=0.5+Rp*1.2;
-	Real yoffset=0.5+Rp*1.5;
+	xoffset=0.5+Rp*1.2;
+	yoffset=0.5+Rp*1.5;
 	
-	Real deltax=(xmax-xmin)/nx;
-	Real deltaz=(zmax-zmin)/nz;
+	deltax=(xmax-xmin)/nx;
+	deltaz=(zmax-zmin)/nz;
 	
-	Real yfactor=twopi/(ymax-ymin);
+	yfactor=twopi/(ymax-ymin);
 	
-	for(int j=0; j < ny; j++)  {
-		for(int j2=-Nyfine; j2 <= Nyfine; j2++)  {
-			Real xj=j+j2*yfinestep;
-			Real theta0=xj*twopibyny;
-			Real sintheta,costheta;
-			if(!alpha) sincos(theta0,&sintheta,&costheta);
-			for(int k=0; k < nz; k++)  {
-				for(int k2=-Nzfine;	k2 <= Nzfine; k2++)  {
-					Real xk=k+k2*zfinestep;
-					Real factor=(zmin+xk*deltaz)*alpha*yfactor;
-					Real factormin=factor*xmin;
-					Real factordelta=factor*deltax;
-					Real phi=xk*twopibynz;
-					if(phi >= 0 && phi <= cutoff) {
-						Real sinphi,cosphi;
-						sincos(phi,&sinphi,&cosphi);
-						for(int i=0; i < nx; i++)  {
-							for(int i2=(i == 0 ? 0 : -Nxfine);
-								i2 <= (i == nx-1 ? 0 : Nxfine); i2++)  {
-								Real xi=i+i2*xfinestep;
-								if(alpha) {
-									Real theta=theta0+factormin+xi*factordelta;
-									sincos(theta,&sintheta,&costheta);
-								}
-								Real r=a0+xi;
-								Real rperp=R0+r*costheta;
-								Real x=rperp*cosphi;
-								Real y=rperp*sinphi;
-								Real z=r*sintheta;
-							
-								Real xp=Axx*x+Axy*y+Axz*z;
-								Real yp=Ayx*x+Ayy*y+Ayz*z;
-								Real zp=Azx*x+Azy*y+Azz*z;
-							
-								Real projection=Pz/(Pz-zp);
-								int u=(int)(xp*projection+xoffset);
-								int v=Ny-((int)(yp*projection+yoffset));
-								if(u >= 0 && u < Nx && v >=0 && v < Ny
-								   && zp > maxz(u,v)) {
-									maxz(u,v)=zp;
-									Index(u,v)=Ivec(xi,xj,xk);
-								}	
-							}
-						}
-					}
-				}
+	for(int k=0; k < nz; k++)  {
+		for(int j=0; j < ny; j++)  {
+			for(int i=0; i < nx; i++)  {
+				Project(i,j,k);
+			}	
+		}
+	}
+		
+	active.Allocate(nx,ny,nz);
+	active=0;
+					
+	for(int u=0; u < Nx; u++) {
+		for(int v=0; v < Ny; v++) {
+			Ivec x=Index(u,v);
+			if(x.i != Undefined) {
+				int i0=(int) (x.i+0.5);
+				int j0=(int) (x.j+0.5);
+				int k0=(int) (x.k+0.5);
+				active(i0,j0,k0)=1;
+			}
+		}
+	}
+		
+	// Loop over boxes
+	for(int k=0; k < nz-1; k++)  {
+		for(int j=0; j < ny-1; j++)  {
+			for(int i=0; i < nx-1; i++)  {
+				if(visible(i,j,k)) Refine(i,j,k,i+1,j+1,k+1);
 			}
 		}
 	}
 	return;
+}
+
+void Refine(double x1, double y1, double z1, double x2, double y2, double z2)
+{
+	Real xp=0.5*(x1+x2);
+	Real yp=0.5*(y1+y2);
+	Real zp=0.5*(z1+z2);
+	int a1,a2,a3,a4,a5,a6,a7,a8,a9,a11,a12,a13,a14,a15,a16,a17,a18,a19;
+	
+	a1=Project(xp,y1,z1);
+	a2=Project(x1,yp,z1);
+	a3=Project(xp,yp,z1);
+	a4=Project(x2,yp,z1);
+	a5=Project(xp,y2,z1);
+	
+	a6=Project(x1,y1,zp);
+	a7=Project(xp,y1,zp);
+	a8=Project(x2,y1,zp);
+	a9=Project(x1,yp,zp);
+	a11=Project(x2,yp,zp);
+	a12=Project(x1,y2,zp);
+	a13=Project(xp,y2,zp);
+	a14=Project(x2,y2,zp);
+	
+	a15=Project(xp,y1,z2);
+	a16=Project(x1,yp,z2);
+	a17=Project(xp,yp,z2);
+	a18=Project(x2,yp,z2);
+	a19=Project(xp,y2,z2);
+	
+#if 0	
+	if(a1 || a2 || a3 || a6 || a7 || a9) Refine(x1,y1,z1,xp,yp,zp);
+	if(a1 || a3 || a4 || a7 || a8 || a11) Refine(xp,y1,z1,x2,yp,zp);
+	if(a2 || a3 || a5 || a9 || a12 || a13) Refine(x1,yp,z1,xp,y2,zp);
+	if(a3 || a4 || a5 || a11 || a13 || a14) Refine(xp,yp,z1,x2,y2,zp);
+#endif	
+
+//	if(a6 || a7 || a9 || a15 || a16 || a17) Refine(x1,y1,zp,xp,yp,z2);
+	if(a7 || a8 || a11 || a15 || a17 || a18) Refine(xp,y1,zp,x2,yp,z2);
+	if(a9 || a12 || a13 || a16 || a17 || a19) Refine(x1,yp,zp,xp,y2,z2);
+	if(a11 || a13 || a14 || a17 || a18 || a19) Refine(xp,yp,zp,x2,y2,z2);
+}
+
+
+int Project(double xi, double xj, double xk)
+{
+	Real phi=xk*twopibynz;
+	if(phi >= 0 && phi <= cutoff) {
+		Real sinphi,cosphi;
+		sincos(phi,&sinphi,&cosphi);
+		Real theta=xj*twopibyny;
+		if(alpha) theta += (zmin+xk*deltaz)*alpha*yfactor*(xmin+xi*deltax);
+		Real sintheta,costheta;
+		sincos(theta,&sintheta,&costheta);
+		Real r=a0+xi;
+		Real rperp=R0+r*costheta;
+		Real x=rperp*cosphi;
+		Real y=rperp*sinphi;
+		Real z=r*sintheta;
+							
+		Real xp=Axx*x+Axy*y+Axz*z;
+		Real yp=Ayx*x+Ayy*y+Ayz*z;
+		Real zp=Azx*x+Azy*y+Azz*z;
+							
+		Real projection=Pz/(Pz-zp);
+		int u=(int)(xp*projection+xoffset);
+		int v=Ny-((int)(yp*projection+yoffset));
+		if(u >= 0 && u < Nx && v >=0 && v < Ny
+		   && zp > maxz(u,v)) {
+			maxz(u,v)=zp;
+			index(u,v)=Ivec(xi,xj,xk);
+			return 1;
+		}	
+	}
+	return 0;
 }

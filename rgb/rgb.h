@@ -14,3 +14,4 @@ typedef unsigned char u_char;
 extern Array1<u_char> Red;
 extern Array1<u_char> Blue;
 extern Array1<u_char> Green;
+
