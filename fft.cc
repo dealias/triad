@@ -460,7 +460,7 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 			*q=temp;
 		}
 	}
-	
+
 	if(isign == 1) for(j=0; j < m; j++) {
 		Complex *p=data+m*j;
 		Complex *phasej=phase+m*j;
