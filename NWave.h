@@ -38,7 +38,7 @@ public:
 	
 	void LinearSrc(Var *src, Var *y, double t);
 	
-	Source_t StandardLinearity;
+	static Source_t StandardLinearity;
 	static Source_t ExponentialLinearity;
 	static void ConservativeExponentialLinearity(Real *, Real *, double );
 	static void ConservativeExponentialLinearity(Complex *, Complex *, double);
