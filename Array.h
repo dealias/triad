@@ -21,7 +21,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #define __ARRAY_H_VERSION__ 1.16J
 
 // Defining NDEBUG improves optimization but disables argument checking.
-// Defining __NOARRAY2OPT inhibits special Array2[][] optimization.
+// Defining __NOARRAY2OPT inhibits special optimization of Array2[].
 
 #ifdef NDEBUG
 #define __check(i,n,dim,m)
@@ -672,7 +672,8 @@ class Array2 : public array2<T> {
   int ox,oy;
  public:
   void Offsets() {
-    vtemp=v-ox*ny;
+    int offset=ox*ny;
+    vtemp=v-offset;
     voff=vtemp-oy;
   }
   void Dimension(unsigned int nx0, unsigned int ny0, int ox0=0, int oy0=0) {
@@ -703,12 +704,13 @@ class Array2 : public array2<T> {
 
 #ifndef __NOARRAY2OPT
   T *operator [] (int ix) const {
-    return vtemp+ix*ny-oy;
+    return voff+ix*ny;
   }
 #else
   Array1<T> operator [] (int ix) const {
     __check(ix,nx,ox,2,1);
-    return Array1<T>(ny,vtemp+ix*ny,oy);
+    int offset=ix*ny;
+    return Array1<T>(ny,vtemp+offset,oy);
   }
 #endif
   
@@ -767,8 +769,10 @@ class Array3 : public array3<T> {
   int ox,oy,oz;
  public:
   void Offsets() {
-    vtemp=v-ox*nyz;
-    voff=vtemp-oy*nz-oz;
+    int xoffset=ox*nyz;
+    vtemp=v-xoffset;
+    int yoffset=oy*nz;
+    voff=vtemp-yoffset-oz;
   }
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 int ox0=0, int oy0=0, int oz0=0) {
@@ -802,7 +806,8 @@ class Array3 : public array3<T> {
 	
   Array2<T> operator [] (int ix) const {
     __check(ix,nx,ox,3,1);
-    return Array2<T>(ny,nz,vtemp+ix*nyz,oy,oz);
+    int offset=ix*nyz;
+    return Array2<T>(ny,nz,vtemp+offset,oy,oz);
   }
   T& operator () (int ix, int iy, int iz) const {
     __check(ix,nx,ox,3,1);
@@ -838,8 +843,11 @@ class Array4 : public array4<T> {
   int ox,oy,oz,ow;
  public:
   void Offsets() {
-    vtemp=v-ox*nyzw;
-    voff=vtemp-oy*nzw-oz*nw-ow;
+    int xoffset=ox*nyzw;
+    vtemp=v-xoffset;
+    int yoffset=oy*nzw;
+    int zoffset=oz*nw;
+    voff=vtemp-yoffset-zoffset-ow;
   }
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 unsigned int nw0, 
@@ -878,7 +886,8 @@ class Array4 : public array4<T> {
 
   Array3<T> operator [] (int ix) const {
     __check(ix,nx,ox,3,1);
-    return Array3<T>(ny,nz,nw,vtemp+ix*nyzw,oy,oz,ow);
+    int offset=ix*nyzw;
+    return Array3<T>(ny,nz,nw,vtemp+offset,oy,oz,ow);
   }
   T& operator () (int ix, int iy, int iz, int iw) const {
     __check(ix,nx,ox,4,1);
