@@ -458,7 +458,6 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 			Complex *c=phase+mj;
 			Complex *q=data+j;
 			p[j] *= c[j];
-#pragma ivdep			
 			for(k=0; k < j; k++, q += m) {
 				Complex temp = p[k];
 				p[k] = (*q)*c[k];
@@ -472,7 +471,6 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 			Complex *c=phase+mj;
 			Complex *q=data+j;
 			p[j] *= conj(c[j]);
-#pragma ivdep			
 			for(k=0; k < j; k++, q += m) {
 				Complex temp = p[k];
 				p[k] = (*q)*conj(c[k]);
