@@ -10,11 +10,29 @@
 #include <time.h>
 #include <string.h>
 
+#if _CRAY
+#include <sys/mtimes.h>
+static struct mtms buf;
+static int parallel=-1;
+#endif
+
 extern char* run;
 static const double init_time=time(NULL);
 
 void cputime(double *cpu)
 {
+#if _CRAY
+	if(parallel == -1) {
+		parallel=strcmp(getenv("NCPUS"),"1");
+		if(parallel) mtimes(&buf);
+	}
+	if(parallel) {
+		cpu[0] = buf.mtms_mutime ? ((double) buf.mtms_mutime[0])/CLK_TCK : 0.0;
+		cpu[1] = 0.0;
+		cpu[2] = 0.0;
+		return;
+	}
+#endif		
 	struct tms buf;
 	times(&buf);
 	cpu[0] = ((double) buf.tms_utime)/CLK_TCK;
