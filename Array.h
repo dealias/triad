@@ -18,18 +18,19 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.07	
+#define __ARRAY_H_VERSION__ 1.07J	
 
 // Defining NDEBUG improves optimization but disables argument checking.
 
 #ifdef NDEBUG
-#define check(i,n,dim,m)
+#define check(i,n,o,dim,m)
 #else
-#define check(i,n,dim,m) Check(i,n,dim,m)
+#define check(i,n,o,dim,m) Check(i,n,o,dim,m)
 #endif
 
 #include <iostream.h>
 #include <strstream.h>
+#include <stdlib.h>
 
 #if __AIX
 #define CONST const
@@ -47,8 +48,10 @@ inline ostream& _newl(ostream& s) {s << '\n'; return s;}
 template<class T>
 class Array1 {
 protected:
-	T *v;
+	T *v; // Pointer to first element of contiguous memory block
+	T *voff; // Offset pointer to memory block
 	unsigned int nx;
+	int ox;
 	mutable int state;
 public:
     enum alloc_state {unallocated=0, allocated=1, temporary=2};
@@ -63,15 +66,36 @@ public:
 	int test(int flag) const {return state & flag;}
 	void clear(int flag) CONST {state &= ~flag;}
 	void set(int flag) CONST {state |= flag;}
-	void Allocate(unsigned int nx0) {Dimension(nx0); v=new T[Size()]; set(allocated);}
+	void Offsets() {
+		voff=v-ox;
+	}
+	void Dimension(unsigned int nx0, int ox0=0) {
+		nx=nx0;
+		ox=ox0;
+	}
+	void Dimension(unsigned int nx0, T *v0, int ox0=0) {
+		Dimension(nx0,ox0);
+		v=v0;
+		Offsets();
+		clear(allocated);
+	}
+	void Allocate(unsigned int nx0, int ox0=0) {
+		Dimension(nx0,ox0);
+		v=new T[Size()];
+		Offsets();
+		set(allocated);
+	}
 	void Deallocate() CONST {delete [] v; clear(allocated);}
-	void Dimension(unsigned int nx0) {nx=nx0;}
-	void Dimension(unsigned int nx0, T *v0) {Dimension(nx0); v=v0; clear(allocated);}
 
-	Array1() : nx(0), state(unallocated) {}
-	Array1(unsigned int nx0) : state(unallocated) {Allocate(nx0);}
-	Array1(unsigned int nx0, T *v0) : state(unallocated) {Dimension(nx0,v0);}
-	Array1(const Array1<T>& A) : v(A.v), nx(A.nx), state(A.test(temporary)) {}
+	Array1() : nx(0), ox(0), state(unallocated) {}
+	Array1(unsigned int nx0, int ox0=0) : state(unallocated) {
+		Allocate(nx0,ox0);
+	}
+	Array1(unsigned int nx0, T *v0, int ox0=0) : state(unallocated) {
+		Dimension(nx0,v0,ox0);
+	}
+	Array1(const Array1<T>& A) : v(A.v), nx(A.nx), ox(A.ox),
+		state(A.test(temporary)) {}
 	virtual ~Array1() {if(test(allocated)) Deallocate();}
 	
 	void Freeze() {state=unallocated;}
@@ -81,14 +105,15 @@ public:
 	void Purge() const {((Array1<T> *) this)->Purge();}
 #endif
 	
-	virtual void Check(int& i, int n, unsigned int dim, unsigned int m) const {
-		if(i < 0 || i >= n) {
+	virtual void Check(int& i, int n, int o, 
+					   unsigned int dim, unsigned int m) const {
+		if(i < o || i >= n+o) {
 			strstream buf;
 			buf << "Array" << dim << " index ";
 			if(m) buf << m << " ";
 			buf << "is out of bounds (" << i;
-			if(i < 0) buf << " < " << 0;
-			else buf << " > " << n-1;
+			if(i < o) buf << " < " << o;
+			else buf << " > " << n+o-1;
 			buf << ")" << ends;
 			__ARRAY_EXIT(buf.str());
 		}
@@ -96,12 +121,12 @@ public:
 	
 	unsigned int Nx() const {return nx;}
 	unsigned int N1() const {return nx;}
-	T& operator [] (int ix) const {check(ix,nx,1,1); return v[ix];}
-	T& operator () (int ix) const {check(ix,nx,1,1); return v[ix];}
-	T* operator () () const {return v;}
-	operator T* () const {return v;}
+	T& operator [] (int ix) const {check(ix,nx,ox,1,1); return voff[ix];}
+	T& operator () (int i) const {check(i,nx,0,1,1); return v[i];}
+	T* operator () () const {return voff;}
+	operator T* () const {return voff;}
 	
-	Array1<T> operator + (int i) const {return Array1<T>(nx-i,v+i);}
+	Array1<T> operator + (int i) const {return Array1<T>(nx-i,v+i,ox+i);}
 	
 	void Load(T a) const {
 		unsigned int size=Size0();
@@ -109,7 +134,7 @@ public:
 	}
 	void Load(const T *a) const {memcpy(v,a,sizeof(T)*Size0());}
 	void Store(T *a) const {memcpy(a,v,sizeof(T)*Size0());}
-	void Set(T *a) {v=a; clear(allocated);}
+	void Set(T *a) {v=a; Offsets(); clear(allocated);}
 	istream& Input (istream &s) const {
 		unsigned int size=Size0();
 		for(unsigned int i=0; i < size; i++) s >> v[i];
@@ -180,40 +205,56 @@ template<class T>
 class Array2 : public Array1<T> {
 protected:
 	unsigned int ny;
+	int oy;
+	T *vtemp;
 public:
 	unsigned int Size() const {return nx*ny;}
-	void Dimension(unsigned int nx0, unsigned int ny0) {nx=nx0; ny=ny0;}
-	void Dimension(unsigned int nx0, unsigned int ny0, T *v0) {
-		Dimension(nx0,ny0);
+	void Offsets() {
+		vtemp=v-ox*ny;
+		voff=vtemp-oy;
+	}
+	void Dimension(unsigned int nx0, unsigned int ny0, int ox0=0, int oy0=0) {
+		nx=nx0; ny=ny0;
+		ox=ox0; oy=oy0;
+	}
+	void Dimension(unsigned int nx0, unsigned int ny0, T *v0, int ox0=0,
+				   int oy0=0) {
+		Dimension(nx0,ny0,ox0,oy0);
 		v=v0;
+		Offsets();
 		clear(allocated);
 	}
-	void Allocate(unsigned int nx0, unsigned int ny0) {
-		Dimension(nx0,ny0);
+	void Allocate(unsigned int nx0, unsigned int ny0, int ox0=0, int oy0=0) {
+		Dimension(nx0,ny0,ox0,oy0);
 		v=new T[Size()];
+		Offsets();
 		set(allocated);
 	}
-	
-	Array2() {}
-	Array2(unsigned int nx0, unsigned int ny0) {Allocate(nx0,ny0);}
-	Array2(unsigned int nx0, unsigned int ny0, T *v0) {Dimension(nx0,ny0,v0);}
+
+	Array2() : ny(0), oy(0) {}
+	Array2(unsigned int nx0, unsigned int ny0, int ox0=0, int oy0=0) {
+		Allocate(nx0,ny0,ox0,oy0);
+	}
+	Array2(unsigned int nx0, unsigned int ny0, T *v0, int ox0=0, int oy0=0) {
+		Dimension(nx0,ny0,v0,ox0,oy0);
+	}
 	
 	unsigned int Ny() const {return ny;}
 	unsigned int N2() const {return ny;}
 	Array1<T> operator [] (int ix) const {
-		check(ix,nx,2,1);
-		return Array1<T>(ny,v+ix*ny);
+		check(ix,nx,ox,2,1);
+		return Array1<T>(ny,vtemp+ix*ny,oy);
 	}
 	T& operator () (int ix, int iy) const {
-		check(ix,nx,2,1);
-		check(iy,ny,2,2);
-		return v[ix*ny+iy];
+		check(ix,nx,ox,2,1);
+		check(iy,ny,oy,2,2);
+		return voff[ix*ny+iy];
 	}
 	T& operator () (int i) const {
-		check(i,Size(),2,0);
+		check(i,Size(),0,2,0);
 		return v[i];
 	}
-	T* operator () () const {return v;}
+	T* operator () () const {return voff;}
 	
 	Array2<T>& operator = (T a) {Load(a); return *this;}
 	Array2<T>& operator = (T *a) {Load(a); return *this;}
@@ -222,13 +263,16 @@ public:
 		A.Purge();
 		return *this;
 	}
+	void Set(T *a) {v=a; Offsets(); clear(allocated);}
 	
 	Array2<T>& operator += (const Array2<T>& A) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] += A(i);
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] += A(i);
 		return *this;
 	}
 	Array2<T>& operator -= (const Array2<T>& A) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] -= A(i);
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] -= A(i);
 		return *this;
 	}
 	Array2<T>& operator *= (const Array2<T>& A);
@@ -244,7 +288,8 @@ public:
 		return *this;
 	}
 	Array2<T>& operator *= (T a) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] *= a;
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] *= a;
 		return *this;
 	}
 };
@@ -274,43 +319,61 @@ class Array3 : public Array2<T> {
 protected:
 	unsigned int nyz;
 	unsigned int nz;
+	int oz;
 public:
 	unsigned int Size() const {return nx*nyz;}
-	void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0) {
-		Dimension(nx0,ny0,nz0);
-		v=new T[Size()];
-		set(allocated);
+	void Offsets() {
+		vtemp=v-ox*nyz;
+		voff=vtemp-oy*nz-oz;
 	}
-	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0) {
-		nx=nx0; ny=ny0; nz=nz0; nyz=ny*nz;
+	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+				   int ox0=0, int oy0=0, int oz0=0) {
+		nx=nx0; ny=ny0; nz=nz0;
+		ox=ox0; oy=oy0; oz=oz0;
+		nyz=ny*nz;
 	}
-	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0, T *v0) {
-		Dimension(nx0,ny0,nz0);
+	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+				   T *v0, int ox0=0, int oy0=0, int oz0=0) {
+		Dimension(nx0,ny0,nz0,ox0,oy0,oz0);
 		v=v0;
+		Offsets();
 		clear(allocated);
 	}
+	void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+				  int ox0=0, int oy0=0, int oz0=0) {
+		Dimension(nx0,ny0,nz0,ox0,oy0,oz0);
+		v=new T[Size()];
+		Offsets();
+		set(allocated);
+	}
 	
-	Array3() {}
-	Array3(unsigned int nx0, unsigned int ny0, unsigned int nz0) {Allocate(nx0,ny0,nz0);}
-	Array3(unsigned int nx0, unsigned int ny0, unsigned int nz0, T *v0) {Dimension(nx0,ny0,nz0,v0);}
+	Array3() : nz(0), oz(0) {}
+	Array3(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+		   int ox0=0, int oy0=0, int oz0=0) {
+		Allocate(nx0,ny0,nz0,ox0,oy0,oz0);
+	}
+	Array3(unsigned int nx0, unsigned int ny0, unsigned int nz0, T *v0,
+		   int ox0=0, int oy0=0, int oz0=0) {
+		Dimension(nx0,ny0,nz0,v0,ox0,oy0,oz0);
+	}
 	
 	unsigned int Nz() const {return nz;}
 	unsigned int N3() const {return nz;}
 	Array2<T> operator [] (int ix) const {
-		check(ix,nx,3,1);
-		return Array2<T>(ny,nz,v+ix*nyz);
+		check(ix,nx,ox,3,1);
+		return Array2<T>(ny,nz,vtemp+ix*nyz,oy,oz);
 	}
 	T& operator () (int ix, int iy, int iz) const {
-		check(ix,nx,3,1);
-		check(iy,ny,3,2);
-		check(iz,nz,3,3);
-		return v[ix*nyz+iy*nz+iz];
+		check(ix,nx,ox,3,1);
+		check(iy,ny,oy,3,2);
+		check(iz,nz,oz,3,3);
+		return voff[ix*nyz+iy*nz+iz];
 	}
 	T& operator () (int i) const {
-		check(i,Size(),3,0);
+		check(i,Size(),0,3,0);
 		return v[i];
 	}
-	T* operator () () const {return v;}
+	T* operator () () const {return voff;}
 	
 	Array3<T>& operator = (T a) {Load(a); return *this;}
 	Array3<T>& operator = (T *a) {Load(a); return *this;}
@@ -319,13 +382,16 @@ public:
 		A.Purge(); 
 		return *this;
 	}
+	void Set(T *a) {v=a; Offsets(); clear(allocated);}
 	
 	Array3<T>& operator += (Array3<T>& A) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] += A(i);
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] += A(i);
 		return *this;
 	}
 	Array3<T>& operator -= (Array3<T>& A) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] -= A(i);
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] -= A(i);
 		return *this;
 	}
 	
@@ -370,46 +436,67 @@ protected:
 	unsigned int nyzw;
 	unsigned int nzw;
 	unsigned int nw;
+	int ow;
 public:
 	unsigned int Size() const {return nx*nyzw;}
-	void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0, unsigned int nw0) {
-		Dimension(nx0,ny0,nz0,nw0);
-		v=new T[Size()];
-		set(allocated);
+	void Offsets() {
+		vtemp=v-ox*nyzw;
+		voff=vtemp-oy*nzw-oz*nw-ow;
 	}
-	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0, unsigned int nw0) {
-		nx=nx0; ny=ny0; nz=nz0; nw=nw0; nzw=nz*nw; nyzw=ny*nzw;
+	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+				   unsigned int nw0, 
+				   int ox0=0, int oy0=0, int oz0=0, int ow0=0) {
+		nx=nx0; ny=ny0; nz=nz0; nw=nw0;
+		ox=ox0; oy=oy0; oz=oz0; ow=ow0;
+		nzw=nz*nw; nyzw=ny*nzw;
 	}
-	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0, unsigned int w0, T *v0) {
-		Dimension(nx0,ny0,nz0,w0);
+	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+				   unsigned int w0, T *v0,
+				   int ox0=0, int oy0=0, int oz0=0, int ow0=0) {
+		Dimension(nx0,ny0,nz0,w0,ox0,oy0,oz0,ow0);
 		v=v0;
+		Offsets();
 		clear(allocated);
 	}
+	void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+				  unsigned int nw0,
+				  int ox0=0, int oy0=0, int oz0=0, int ow0=0) {
+		Dimension(nx0,ny0,nz0,nw0,ox0,oy0,oz0,ow0);
+		v=new T[Size()];
+		Offsets();
+		set(allocated);
+	}
 	
-	Array4() {}
-	Array4(unsigned int nx0, unsigned int ny0, unsigned int nz0, unsigned int nw0) {Allocate(nx0,ny0,nz0,nw0);}
-	Array4(unsigned int nx0, unsigned int ny0, unsigned int nz0, unsigned int nw0, T *v0) {
-		Dimension(nx0,ny0,nz0,nw0,v0);
+	Array4() : nw(0), ow(0) {}
+	Array4(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+		   unsigned int nw0,
+		   int ox0=0, int oy0=0, int oz0=0, int ow0=0) {
+		Allocate(nx0,ny0,nz0,nw0,ox0,oy0,oz0,ow0);
+	}
+	Array4(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+		   unsigned int nw0, T *v0,
+		   int ox0=0, int oy0=0, int oz0=0, int ow0=0) {
+		Dimension(nx0,ny0,nz0,nw0,v0,ox0,oy0,oz0,ow0);
 	}
 
 	unsigned int Nw() const {return nw;}
 	unsigned int N4() const {return nw;}
 	Array3<T> operator [] (int ix) const {
-		check(ix,nx,3,1);
-		return Array3<T>(ny,nz,nw,v+ix*nyzw);
+		check(ix,nx,ox,3,1);
+		return Array3<T>(ny,nz,nw,vtemp+ix*nyzw,oy,oz,ow);
 	}
 	T& operator () (int ix, int iy, int iz, int iw) const {
-		check(ix,nx,4,1);
-		check(iy,ny,4,2);
-		check(iz,nz,4,3);
-		check(iw,nw,4,4);
-		return v[ix*nyzw+iy*nzw+iz*nw+iw];
+		check(ix,nx,ox,4,1);
+		check(iy,ny,oy,4,2);
+		check(iz,nz,oz,4,3);
+		check(iw,nw,ow,4,4);
+		return voff[ix*nyzw+iy*nzw+iz*nw+iw];
 	}
 	T& operator () (int i) const {
-		check(i,Size(),4,0);
+		check(i,Size(),0,4,0);
 		return v[i];
 	}
-	T* operator () () const {return v;}
+	T* operator () () const {return voff;}
 	
 	Array4<T>& operator = (T a) {Load(a); return *this;}
 	Array4<T>& operator = (T *a) {Load(a); return *this;}
@@ -419,12 +506,16 @@ public:
 		return *this;
 	}
 	
+	void Set(T *a) {v=a; Offsets(); clear(allocated);}
+	
 	Array4<T>& operator += (Array4<T>& A) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] += A(i);
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] += A(i);
 		return *this;
 	}
 	Array4<T>& operator -= (Array4<T>& A) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] -= A(i);
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] -= A(i);
 		return *this;
 	}
 	
