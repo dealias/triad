@@ -1397,7 +1397,7 @@ int System(char *command)
     } else {
       if(WIFEXITED(status)) {
 	status=WEXITSTATUS(status);
-	if(status == 0) return;
+	if(status == 0) return 0;
 	msg(WARNING,"%s\nReceived signal %d",command,status);
       } else msg(WARNING,"Process %d exited abnormally", pid);
       if(cleaning) return status;
