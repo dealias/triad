@@ -6,7 +6,7 @@ MAKEDEPEND = cpp -M
 MDOPTS = -I /opt/ctl/CC/CC/include/
 
 FFT = tfft
-POLL = tremain
+POLL = poll
 
 
 
