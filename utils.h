@@ -230,9 +230,9 @@ inline void out_curve(ostream& os, T f, char *text)
 	out_curve(os,&f,text,1,default_nperline);
 }
 
-inline void out_real(ostream& os, Complex *f, char *format, int n,
+void out_real(ostream& os, Complex *f, char *format, int n,
 					 int nperline=default_nperline);
-inline void out_real(ostream& os, Real *f, char *format, int n,
+void out_real(ostream& os, Real *f, char *format, int n,
 					 int nperline=default_nperline);
 
 inline double drand()
