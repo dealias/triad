@@ -75,6 +75,7 @@ int byte=0;
 int display=0;
 int implicit=1;
 int symmetric=0;
+int rescale=0;
 int invert=0;
 int reverse=0;
 int crop=0;
@@ -84,9 +85,9 @@ static int istart,istop;
 static int jstart,jstop;
 static int kmin,kmax;
 
-static int xbegin=0, xend=INT_MAX-1;
-static int ybegin=0, yend=INT_MAX-1;
-static int lower=0, upper=INT_MAX-1;
+static int xstart=0, xstop=INT_MAX;
+static int ystart=0, ystop=INT_MAX;
+static int lower=0, upper=INT_MAX;
 
 char *extract=NULL;
 
@@ -227,8 +228,8 @@ int readframe(ixstream& xin, int nx, int ny, int nz, Array3<float> value,
 					sumv += valuekj[i0];
 					valuekj[i0++]=sumv;
 					if((j-start+incr) % sy == 0
-					   && i >= xbegin && i <= xend 
-					   && j >= ybegin && j <= yend 
+					   && i >= xstart && i < xstop
+					   && j >= ystart && j < ystop 
 					   && k >= lower && k <= upper) {
 						if(sumv < vmin) vmin=sumv;
 						if(sumv > vmax) vmax=sumv;
@@ -329,6 +330,10 @@ void options()
 	cerr << "-extract format\t extract individual images as tiff, gif, etc." 
 		 << endl;
 	cerr << "-crop geometry\t crop to specified geometry" << endl;
+	cerr << "-rescale\t rescale palette to cropped region" << endl; 
+	cerr << "-xrange x1,x2\t limit x-range to [x1,x2]" << endl; 
+	cerr << "-yrange y1,y2\t limit y-range to [y1,y2]" << endl; 
+	cerr << "-zrange z1,z2\t limit z-range to [z1,z1]" << endl; 
 	cerr << "-reverse\t reverse palette direction" << endl;
 	cerr << "-ncolors n\t maximum number of colors to generate (default 65536)"
 		 << endl; 
@@ -417,6 +422,7 @@ int main(int argc, char *const argv[])
                {"torus", 0, &trans, TORUS},
                {"reverse", 0, &reverse, 1},
                {"symmetric", 0, &symmetric, 1},
+               {"rescale", 0, &rescale, 1},
                {"double", 0, &two, 1},
                {"gradient", 0, &gradient, 1},
                {"damp", 0, &damp, 1},
@@ -574,12 +580,14 @@ int main(int argc, char *const argv[])
 			jstop += jstart;
 			break;
 		case XRANGE:
-			if(sscanf(optarg,"%d,%d",&xbegin,&xend) != 2)
+			if(sscanf(optarg,"%d,%d",&xstart,&xstop) != 2)
 				msg(ERROR,"Invalid X range: %s",optarg);
+			xstop++;
 			break;
 		case YRANGE:
-			if(sscanf(optarg,"%d,%d",&ybegin,&yend) != 2)
+			if(sscanf(optarg,"%d,%d",&ystart,&ystop) != 2)
 				msg(ERROR,"Invalid Y range: %s",optarg);
+			ystop++;
 			break;
 		case ZRANGE:
 			if(sscanf(optarg,"%d,%d",&lower,&upper) != 2)
@@ -765,13 +773,20 @@ int main(int argc, char *const argv[])
 			if(jstop > Ny) jstop=Ny;
 		}
 		
-		if(istart < xbegin) istart=xbegin;
-		if(istop > xend+1) istop=xend+1;
+		if(istart < xstart) istart=xstart;
+		if(istop > xstop) istop=xstop;
 		
-		if(jstart < ybegin) jstart=ybegin;
-		if(jstop > yend+1) jstop=yend+1;
+		if(jstart < ystart) jstart=ystart;
+		if(jstop > ystop) jstop=ystop;
 						
-		if(istop <= istart || jstop <= jstart) msg(ERROR,"Null image");
+		if(rescale) {
+			xstart=istart;
+			xstop=istop;
+			ystart=jstart;
+			ystop=jstop;
+		}
+		
+		if(istop <= istart || jstop <= jstart) msg(ERROR,"Image out of range");
 			
 		xsize=mx*(istop-istart);
 		ysize=my*(jstop-jstart)*nz0+msep*nz0+mpal;
@@ -1002,7 +1017,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 	
 	buf << convertprog << " -size " << xsize << "x" << ysize
 		<< " -geometry " << xsize << "x" << ysize;
-	if(make_mpeg) buf << " -crop x2800+0+0";
+	if(make_mpeg) buf << " -crop x2800+0+0"; // Workaround internal mpeg limit
 	buf << option.str() << " -interlace none ";
 	if(pointsize) buf << "-pointsize " << pointsize << " ";
 	for(int f=0; f < nfiles; f++) {
