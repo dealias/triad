@@ -111,7 +111,7 @@ Real ymax=1.0;
 Real zmin=0.0;
 Real zmax=1.0;
 
-int xslice=4;
+int xslice=8;
 int yslice=8;
 int zslice=8;
 
@@ -1308,48 +1308,35 @@ void Torus(Array2<Ivec>& Index)
 	Ayx=-cosTheta*sinPhi; Ayy=cosTheta*cosPhi; Ayz=sinTheta;
 	Azx=sinTheta*sinPhi; Azy=-sinTheta*cosPhi; Azz=cosTheta;
 	
-	int mini=1;
-	int minj=1;
-	int mink=1024;
-	
 	int maxk=cutoff ? min(nz,(int) ((cutoff/twopibynz)+1.5)) : nz;
 	
 	for(int i=0; i < nx; i += nx-1)  {
 		for(int j=-1; j < ny; j++)  {
 			for(int k=cutoff ? 0 : -1; k < maxk; k++) {
 				Project(i,j,k);
-				int define1,refine1;
+				int count1;
 				int num1=1;
 				Real denom1=0.5;
 				while(1) {
-					define1=0; refine1=0;
+					count1=0;
 					for(int kp=0; kp < num1; kp++) {
 						Real k2=k+denom1*(2*kp+1);
 						Real denom2=0.5;
-						int define2,refine2;
+						int count2;
 						int num2=1;
 						while(1) {
-							define2=0; refine2=0;
+							count2=0;
 							for(int jp=0; jp < num2; jp++) {
 								Real j2=j+denom2*(2*jp+1);
-								switch(Project(i,j2,k2)) {
-								case 1:
-									define2++;
-								case 2:
-									refine2++;
-									break;
-								}
+								count2 += Project(i,j2,k2);
 							}
-							if((!define2 && num2 >= minj) ||
-							   (!refine2 && num2 >= yslice)) break;
+							if(!count2 && num2 >= yslice) break;
 							num2 *= 2;
 							denom2 *= 0.5;
 						}
-						define1 += define2;
-						refine1 += refine2;
+						count1 += count2;
 					}
-					if((!define1 && num1 >= mink) ||
-					   (!refine1 && num1 >= zslice)) break;
+					if(!count1 && num1 >= zslice) break;
 					num1 *= 2;
 					denom1 *= 0.5;
 				}
@@ -1361,38 +1348,29 @@ void Torus(Array2<Ivec>& Index)
 		for(int i=0; i < nx; i++)  {
 			for(int j=-1; j < ny; j++)  {
 				Project(i,j,k);
-				int define1,refine1;
+				int count1;
 				int num1=1;
 				Real denom1=0.5;
 				while(1) {
-					define1=0; refine1=0;
+					count1=0;
 					for(int ip=0; ip < num1; ip++) {
 						Real i2=i+denom1*(2*ip+1);
 						Real denom2=0.5;
-						int define2,refine2;
+						int count2;
 						int num2=1;
 						while(1) {
-							define2=0; refine2=0;
+							count2=0;
 							for(int jp=0; jp < num2; jp++) {
 								Real j2=j+denom2*(2*jp+1);
-								switch(Project(i2,j2,k)) {
-								case 1:
-									define2++;
-								case 2:
-									refine2++;
-									break;
-								}
+								count2 += Project(i2,j2,k);
 							}
-							if((!define2 && num2 >= mini) ||
-							   (!refine2 && num2 >= xslice)) break;
+							if(!count2 && num2 >= xslice) break;
 							num2 *= 2;
 							denom2 *= 0.5;
 						}
-						define1 += define2;
-						refine1 += refine2;
+						count1 += count2;
 					}
-					if((!define1 && num1 >= minj) ||
-					   (!refine1 && num1 >= yslice)) break;
+					if(!count1 && num1 >= yslice) break;
 					num1 *= 2;
 					denom1 *= 0.5;
 				}
