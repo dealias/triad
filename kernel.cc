@@ -255,6 +255,7 @@ int main(int argc, char *argv[])
   if(restart || initialize) read_init();
   if(restart && dynamic < 0) dynamic=1;
   if(!restart) Problem->Initialize();
+  Problem->Setup();
 	
   Integrator->Allocate(ny);
 	

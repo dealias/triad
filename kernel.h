@@ -71,6 +71,7 @@ class ProblemBase {
   virtual void BackTransform(Var *, double, double, Var *) {}
   virtual void Stochastic(Var *, double, double) {}
   virtual void Initialize() {}
+  virtual void Setup() {}
   virtual void FinalOutput() {}
   virtual int Microprocess() {return 0;}
 	
