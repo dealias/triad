@@ -722,7 +722,9 @@ ostream& operator << (ostream& s, const array5<T>& A)
       for(unsigned int k=0; k < A.Nz(); k++) {
 	for(unsigned int l=0; l < A.N4(); l++) {
 	  for(unsigned int l=0; l < A.N5(); l++) {
-	  s << *(p++) << " ";
+	    s << *(p++) << " ";
+	  }
+	  s << _newl;
 	}
 	s << _newl;
       }
