@@ -49,7 +49,7 @@ int poll()
 		sleep(sleeptime);
 		newidle=idletime();
 	}
-	return 1;
+	return 0;
 }
 
 

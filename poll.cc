@@ -1,4 +1,4 @@
 int poll()
 {
-	return 1;
+	return 0;
 }

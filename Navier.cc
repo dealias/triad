@@ -8,7 +8,7 @@ char *NWave::Abbrev() {return "nw";}
 //char *approximation="SR";
 //char *geometry="Polar";
 
-char *approximation="None";
+char *approximation="PS";
 char *geometry="Cartesian";
 char *integrator="PC";
 
