@@ -20,16 +20,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 #define __ARRAY_H_VERSION__ 1.02
 
-// Setting ARRAY_CHECK to 1 enables optional argument checking.
+// Defining NDEBUG improves optimization but disables argument checking.
 
-#ifndef ARRAY_CHECK
-#define ARRAY_CHECK 0
-#endif
-
-#if ARRAY_CHECK
-#define check(i,n,dim,m) Check(i,n,dim,m)
-#else
+#ifdef NDEBUG
 #define check(i,n,dim,m)
+#else
+#define check(i,n,dim,m) Check(i,n,dim,m)
 #endif
 
 #include "iostream.h"
@@ -41,46 +37,41 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #define CONST
 #endif
 
-#ifndef __utils_h__
-const char newl='\n';
-template<class T> 
-inline void set(T *to, const T * from, int n)
-{
-	memcpy(to,from,sizeof(*from)*n);
-}
-#endif
+inline ostream& _newl(ostream& s) {s << '\n'; return s;}
 
 template<class T>
 class Array1 {
 protected:
 	T *v;
 	int nx;
-	mutable int allocate;
-	mutable int temporary;
+	mutable int state;
 public:
+    enum alloc_state {unallocated=0, allocated=1, temporary=2};
 	virtual int Size() const {return nx;}
 	int Size0() const {
-		if(!allocate && Size() == 0)
+		if(!test(allocated) && Size() == 0)
 			cout << "WARNING: Operation attempted on unallocated array." 
 				 << endl;
 		return Size();
 	}
 	
-	void Allocate(int nx0) {Dimension(nx0); v=new T[Size()]; allocate=1;}
-	void Deallocate() CONST {delete [] v; allocate=0;}
+	int test(int flag) const {return state & flag;}
+	void clear(int flag) CONST {state &= ~flag;}
+	void set(int flag) CONST {state |= flag;}
+	void Allocate(int nx0) {Dimension(nx0); v=new T[Size()]; set(allocated);}
+	void Deallocate() CONST {delete [] v; clear(allocated);}
 	void Dimension(int nx0) {nx=nx0;}
-	void Dimension(int nx0, T *v0) {Dimension(nx0); v=v0; allocate=0;}
+	void Dimension(int nx0, T *v0) {Dimension(nx0); v=v0; clear(allocated);}
+
+	Array1() : nx(0), state(unallocated) {}
+	Array1(int nx0) : state(unallocated) {Allocate(nx0);}
+	Array1(int nx0, T *v0) : state(unallocated) {Dimension(nx0,v0);}
+	Array1(const Array1<T>& A) : v(A.v), nx(A.nx), state(A.test(temporary)) {}
+	virtual ~Array1() {if(test(allocated)) Deallocate();}
 	
-	Array1() : nx(0), allocate(0), temporary(0) {}
-	Array1(int nx0) : temporary(0) {Allocate(nx0);}
-	Array1(int nx0, T *v0) : temporary(0) {Dimension(nx0,v0);}
-	Array1(const Array1<T>& A) : 
-		v(A.v), nx(A.nx), allocate(0), temporary(A.temporary){}
-	virtual ~Array1() {if(allocate) Deallocate();}
-	
-	void Freeze() {allocate=0;}
-	void Hold() {if(allocate) {temporary=1; allocate=0;}}
-	void Purge() CONST {if(temporary) {Deallocate(); temporary=0;}}
+	void Freeze() {state=unallocated;}
+	void Hold() {if(test(allocated)) {state=temporary;}}
+	void Purge() CONST {if(test(temporary)) {Deallocate(); state=unallocated;}}
 #ifdef mutable
 	void Purge() const {((Array1<T> *) this)->Purge();}
 #endif
@@ -108,9 +99,9 @@ public:
 		int size=Size0();
 		for(int i=0; i < size; i++) v[i]=a;
 	}
-	void Load(T *a) const {set(v,a,Size0());}
-	void Store(T *a) const {set(a,v,Size0());}
-	void Set(T *a) {v=a; allocate=0;}
+	void Load(T *a) const {memcpy(v,a,sizeof(T)*Size0());}
+	void Store(T *a) const {memcpy(a,v,sizeof(T)*Size0());}
+	void Set(T *a) {v=a; clear(allocated);}
 	istream& Input (istream &s) const {
 		int size=Size0();
 		for(int i=0; i < size; i++) s >> v[i];
@@ -183,12 +174,12 @@ public:
 	void Dimension(int nx0, int ny0, T *v0) {
 		Dimension(nx0,ny0);
 		v=v0;
-		allocate=0;
+		clear(allocated);
 	}
 	void Allocate(int nx0, int ny0) {
 		Dimension(nx0,ny0);
 		v=new T[Size()];
-		allocate=1;
+		set(allocated);
 	}
 	
 	Array2() {}
@@ -251,7 +242,7 @@ ostream& operator << (ostream& s, const Array2<T>& A)
 		for(int j=0; j < A.Ny(); j++) {
 			s << *(p++) << " ";
 		}
-		s << newl;
+		s << _newl;
 	}
 	s << flush;
 	return s;
@@ -273,7 +264,7 @@ public:
 	void Allocate(int nx0, int ny0, int nz0) {
 		Dimension(nx0,ny0,nz0);
 		v=new T[Size()];
-		allocate=1;
+		set(allocated);
 	}
 	void Dimension(int nx0, int ny0, int nz0) {
 		nx=nx0; ny=ny0; nz=nz0; nyz=ny*nz;
@@ -281,7 +272,7 @@ public:
 	void Dimension(int nx0, int ny0, int nz0, T *v0) {
 		Dimension(nx0,ny0,nz0);
 		v=v0;
-		allocate=0;
+		clear(allocated);
 	}
 	
 	Array3() {}
@@ -340,9 +331,9 @@ ostream& operator << (ostream& s, const Array3<T>& A)
 			for(int k=0; k < A.Nz(); k++) {
 				s << *(p++) << " ";
 			}
-			s << newl;
+			s << _newl;
 		}
-		s << newl;
+		s << _newl;
 	}
 	s << flush;
 	return s;
@@ -365,7 +356,7 @@ public:
 	void Allocate(int nx0, int ny0, int nz0, int nw0) {
 		Dimension(nx0,ny0,nz0,nw0);
 		v=new T[Size()];
-		allocate=1;
+		set(allocated);
 	}
 	void Dimension(int nx0, int ny0, int nz0, int nw0) {
 		nx=nx0; ny=ny0; nz=nz0; nw=nw0; nzw=nz*nw; nyzw=ny*nzw;
@@ -373,7 +364,7 @@ public:
 	void Dimension(int nx0, int ny0, int nz0, int w0, T *v0) {
 		Dimension(nx0,ny0,nz0,w0);
 		v=v0;
-		allocate=0;
+		clear(allocated);
 	}
 	
 	Array4() {}
@@ -436,11 +427,11 @@ ostream& operator << (ostream& s, const Array4<T>& A)
 				for(int l=0; l < A.Nw(); l++) {
 					s << *(p++) << " ";
 				}
-				s << newl;
+				s << _newl;
 			}
-			s << newl;
+			s << _newl;
 		}
-		s << newl;
+		s << _newl;
 	}	
 	s << flush;
 	return s;
@@ -452,10 +443,10 @@ istream& operator >> (istream& s, const Array4<T>& A)
 	return A.Input(s);
 }
 
-#if ARRAY_CHECK
-#define Array1(T) Array1<T>
-#else
+#ifdef NDEBUG
 #define Array1(T) T*
+#else
+#define Array1(T) Array1<T>
 #endif
 
 #undef check

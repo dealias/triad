@@ -5,10 +5,6 @@
 #include "Array.h"
 #include <assert.h>
 
-#if !ARRAY_CHECK
-#define NDEBUG 1
-#endif
-
 template<class T>
 inline void SetIdentity(Array2<T>& A)
 {
