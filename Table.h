@@ -51,6 +51,27 @@ class Table {
     EntryBase<B> *e;
     B *p;
     qsort(Base(),Size(),sizeof(*Base()),Compare);
+    
+    if(*key == 0) {
+      cout << newl << "Available " << name << " values: [" << endl;
+      List(cout);
+      cout << "]" << newl << newl << name << "=";
+      
+      const int blocksize=80;
+      char s[blocksize];
+      strstream buf;
+      while(1) {
+	cin.getline(s,blocksize);
+	buf << s;
+	if(cin.eof() || !cin.fail()) {errno=0; break;}
+	cin.clear();
+      }
+      if(buf.str()) {
+	buf.freeze();
+	key=buf.str();
+      }
+    }
+    
     e=*(EntryBase<B> **) bsearch2(key,Base(),Size(),sizeof(*Base()),
 				  KeyCompare,&match_type);
     check_match(match_type,name,key);
