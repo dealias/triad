@@ -151,12 +151,7 @@ public:
 	void GraphicsDump(ostream& os);
 	virtual char *Name()=0;
 	virtual char *Abbrev()=0;
-	virtual char *Directory() {
-		strstream buf;
-		buf << Abbrev() << dirsep << ends;
-		buf.rdbuf()->freeze();
-		return buf.str();
-	}
+	virtual char *Directory() {return "";}
 
 	ProblemBase *NewProblem(char *& key) {
 		ProblemBase *p=ProblemTable->Locate(key);

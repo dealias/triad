@@ -7,26 +7,11 @@ include $(TRI)/config/Common
 
 INCL = 
 
-NAVIER = Navier NWave Polar PolarAverage simpfast Cartesian rfft \
-		 $(FFT) $(CORE) $(UTILS)
-THREEWAVE = ThreeWave NWave $(CORE) $(UTILS)
-BURGER = Burger NWave Cartesian1 rfft $(FFT) $(CORE) $(UTILS)
-POLARAVG = PolarAverageTest PolarAverage simpfast
+RGB = rgb msg new
 
-DEPEND = $(NAVIER) $(THREEWAVE) $(BURGER) $(POLARAVG)
+DEPEND = $(RGB)
 
-nw: $(NAVIER:=.o)
-	$(C++) $(OPT) -o triad $(NAVIER:=.o) $(LIB) 
-
-burger: $(BURGER:=.o)
-	$(C++) $(OPT) -o triad $(BURGER:=.o) $(LIB) 
-
-w3:	$(THREEWAVE:=.o)
-	$(C++) $(OPT) -o triad $(THREEWAVE:=.o) $(LIB)
-
-polaraverage: $(POLARAVG:=.o) $(UTILS:=.o)
-	$(C++) $(OPT) -o triad $(POLARAVG=.o) $(UTILS:=.o) $(LIB)
+rgb: $(RGB:=.cc)
+	$(C++) $(OPT) -o $(HOME)/bin/rgb $(RGB:=.cc) $(LIB)
 
 include $(TRI)/config/Rules
-
-

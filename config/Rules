@@ -2,16 +2,13 @@
 	$(C++) $(OPT) $(INCL) -o $@ -c $<
 
 clean:
-	rm -rf *.o *.$(D) *mon.out $(ALL) Templates.DB/
+	rm -rf *.o *.$(D) *mon.out $(CLEAN)
 
 %.$(D): %.cc
 	$(MAKEDEPEND) $(INCL) $(MDOPTS) $< > $@
 
 all: $(DEPEND:=.o)
 	$(C++) $(OPT) -o triad $(DEPEND:=.o) $(LIB)
-
-rgb: $(RGB:=.cc)
-	$(C++) $(OPT) -o $(HOME)/bin/rgb $(RGB:=.cc) $(LIB)
 
 ifneq ($(wildcard $(TRI)/config/$(HOSTTYPE).rules),)
 include $(TRI)/config/$(HOSTTYPE).rules

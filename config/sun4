@@ -3,3 +3,4 @@ OPT = $(CFLAGS)
 MAKEDEPEND = $(C++) -xM -DDEPEND
 INCL = -I$(TRI)
 LIB = $(LFLAGS) -lm -lnsl
+CLEAN = Templates.DB/ 

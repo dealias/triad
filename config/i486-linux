@@ -1,4 +1,5 @@
-C++ = g++ -Wall -D__USE_ISOC9X
+C++ = g++ -Wall -ansi
 LIB = $(LFLAGS) -lfftw -lm
 MAKEDEPEND = $(C++) -M -DDEPEND
 FFT = wfft
+
