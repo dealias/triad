@@ -129,9 +129,9 @@ void PS::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
 
 NWave NWaveProblem;
 
-Real forcek(int i) 
+Real force_re(const Polar& v) 
 {
-	Real k=Geometry->K(i);
+	Real k=v.K();
 	if(abs(k-kforce) < 0.5*deltaf) return force;
 	else return 0.0;
 }
@@ -151,14 +151,14 @@ Real frequency(const Polar&)
 	return 0.0;
 }
 
-void ComputeLinearity(const Polar& v, Real& nu)
+Real linearity_re(const Polar& v)
 {
-	nu=-growth(v);
+	return -growth(v);
 }
 
-void ComputeLinearity(const Polar& v, Complex& nu)
+Real linearity_im(const Polar& v)
 {
-	nu=-growth(v)+I*frequency(v);
+	return frequency(v);
 }
 
 static Real equilibrium(int i)
@@ -194,7 +194,7 @@ void NWave::InitialConditions()
 		Real norm=1.0/sqrt(Geometry->Normalization(i));
 		nu[i]=Geometry->Linearity(i);
 		y[i]=sqrt(2.0*equilibrium(i))*norm;
-		forcing[i]=forcek(i)*norm;
+		forcing[i]=Geometry->Forcing(i)*norm;
 	}
 	
 	// Randomize the initial conditions.	
@@ -306,11 +306,22 @@ void NWave::Output(int)
 	ft << t << endl << flush;
 }
 
-Nu LinearityAt(int i)
+void LinearityAt(int i,Real& nu)
 {
-	Nu nu;
-	Real k=Geometry->K(i);
-	Real th=Geometry->Th(i);
-	ComputeLinearity(Polar(k,th),nu);
-	return nu;
+	Polar v=Polar(Geometry->K(i),Geometry->Th(i));
+	nu=linearity_re(v);
+	return;
+}
+
+void LinearityAt(int i, Complex& nu)
+{
+	Polar v=Polar(Geometry->K(i),Geometry->Th(i));
+	nu=linearity_re(v)+I*linearity_im(v);
+	return;
+}
+
+void ForcingAt(int i, Real &force)
+{
+	force=force_re(Polar(Geometry->K(i),Geometry->Th(i)));
+	return;
 }

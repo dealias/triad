@@ -27,6 +27,7 @@ public:
 	virtual void Initialize()=0;
 	
 	virtual Nu Linearity(int)=0;
+	virtual Real Forcing(int)=0;
 	
 	virtual Real Area(int)=0;
 	virtual Real K(int)=0;

@@ -226,7 +226,9 @@ public:
 // Factor which converts |y|^2 to energy in various normalizations:
 	Real Normalization(int);
 	
-	Nu Linearity(int i);
+	Nu Linearity(int);
+	Real Forcing(int);
+	
 	inline Mc Ckpq(T&, T&, T&);
 	
 	int pq(int p, int q) {return n*p-p*(p+1)/2+q;} // Index to element p <= q

@@ -36,6 +36,7 @@ public:
 	Real Normalization(int);
 	
 	Nu Linearity(int);
+	Real Forcing(int);
 };
 
 
@@ -62,12 +63,24 @@ void Basis<T>::Initialize()
 	for(int k=0; k < Nmode; k++) kinv2[k]=1.0/mode[k].K2();
 }
 
-Nu LinearityAt(int i);
+void LinearityAt(int i, Nu& nu);
 
 template <class T>
 Nu Basis<T>::Linearity(int i)
 {
-	return LinearityAt(i);
+	Nu nu;
+	LinearityAt(i,nu);
+	return nu;
+}
+
+void ForcingAt(int i, Real &force);
+
+template <class T>
+Real Basis<T>::Forcing(int i)
+{
+	Real force;
+	ForcingAt(i,force);
+	return force;
 }
 
 #endif

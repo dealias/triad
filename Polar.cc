@@ -45,7 +45,8 @@ void radial_grid(Bin<Polar,Cartesian> *grid, Real krmin, Real krmax, Real
 				 delta, int start, int stop)
 {
 	Real krbnd=krmin;
-	Real Kfactor=sqrt(0.5*(1.0+delta*delta));
+//	Real Kfactor=sqrt(0.5*(1.0+delta*delta));
+	Real Kfactor=sqrt(delta);
 	int j;
 	
 	for(j=start; j < stop; j++) {
@@ -132,7 +133,7 @@ void Bin<Polar,Cartesian>::MakeModes()
 	}
 	mode.Resize(nmode);
 	if(verbose > 3) for(int i=0; i < nmode; i++) {
-#if _CRAY	
+#if _CRAY
 		cout << mode[i].value << ": " << mode[i].weight << endl;
 #else
 		cout << mode[i] << endl;
@@ -143,73 +144,61 @@ void Bin<Polar,Cartesian>::MakeModes()
 static const Real linacc=0.01;
 static const Real dxmax=REAL_MAX;
 
-Real frequency(const Polar& v);
-Real growth(const Polar& v);
+Real linearity_re(const Polar& v);
+Real linearity_im(const Polar& v);
+Real force_re(const Polar& v);
 
 static Real k0;
 static Bin<Polar,Cartesian> b;
 
-static Real growthk(Real th)
+static Real linearity_re(Real th)
 {
-	return growth(Polar(k0,th));
+	return linearity_re(Polar(k0,th));
 }
 
-static Real frequencyk(Real th)
+static Real linearity_im(Real th)
 {
-	return frequency(Polar(k0,th));
+	return linearity_im(Polar(k0,th));
 }
 
-static Real ThAveragedGrowth(Real k) {
+static Real force_re(Real th)
+{
+	return force_re(Polar(k0,th));
+}
+
+static Real (*ThetaAverageFunction)(Real);
+static Real ThetaAverage(Real k) {
 	Real ans;
 	int iflag;
 	k0=k;
-	if(!simpfast(growthk,b.min.th,b.max.th,linacc,ans,pi,iflag))
+	if(!simpfast(ThetaAverageFunction,b.min.th,b.max.th,linacc,ans,pi,iflag))
 		msg(ERROR,"Simp returned code %d",iflag);
 	return k*ans;
 }
 
-static Real ThAveragedFrequency(Real k) {
-	Real ans;
-	int iflag;
-	k0=k;
-	if(!simpfast(frequencyk,b.min.th,b.max.th,linacc,ans,pi,iflag))
-		msg(ERROR,"Simp returned code %d",iflag);
-	return k*ans;
-}
-
-void BinAveragedLinearity(Real& nu)
+void BinAverage(Real& nu, Real (*fcn)(Real), Real (*)(Real)=NULL)
 {
-	Real ans;
 	if(discrete) {
-		ans=0.0;
+		nu=0.0;
 		Discrete<Cartesian> *mk=b.mode.Base(), *mkstop=mk+b.nmode; 
 		for(; mk < mkstop; mk++) {
-			ans += mk->weight*growth(Polar(mk->value.K(),mk->value.Th()));
+			k0=mk->value.K();
+			nu += mk->weight*(*fcn)(mk->value.Th());
 		}
 	} else {
 		int iflag;
-		if(!simpfast(ThAveragedGrowth,b.min.r,b.max.r,linacc,ans,dxmax,iflag))
+		ThetaAverageFunction=fcn;
+		if(!simpfast(ThetaAverage,b.min.r,b.max.r,linacc,nu,dxmax,iflag))
 			msg(ERROR,"Simp returned code %d",iflag);
 	}
-	nu=-ans;
 }
 
-void BinAveragedLinearity(Complex& nu)
+void BinAverage(Complex& nu, Real (*fcn_re)(Real), Real (*fcn_im)(Real))
 {
 	Real ans;
-	int iflag;
-	BinAveragedLinearity(ans);
+	BinAverage(ans,fcn_re);
 	nu=ans;
-	if(discrete) {
-		ans=0.0;
-		Discrete<Cartesian> *mk=b.mode.Base(), *mkstop=mk+b.nmode; 
-		for(; mk < mkstop; mk++) {
-			ans += mk->weight*frequency(Polar(mk->value.K(),mk->value.Th()));
-		}
-	} else {
-		if(!simpfast(ThAveragedFrequency,b.min.r,b.max.r,linacc,ans,dxmax,
-					 iflag)) msg(ERROR,"Simp returned code %d",iflag);
-	}
+	BinAverage(ans,fcn_im);
 	nu += I*ans;
 }
 
@@ -217,9 +206,18 @@ Nu Partition<Polar,Cartesian>::Linearity(int i)
 {
 	Nu nu;
 	b=bin[i];
-	BinAveragedLinearity(nu);
+	BinAverage(nu,linearity_re,linearity_im);
 	if(Area(i)) nu /= Area(i);
 	return nu;
+}
+
+Nu Partition<Polar,Cartesian>::Forcing(int i)
+{
+	Real force;
+	b=bin[i];
+	BinAverage(force,force_re);
+	if(Area(i)) force /= Area(i);
+	return force;
 }
 
 Mc Partition<Polar,Cartesian>::
