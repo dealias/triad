@@ -30,10 +30,9 @@ class Param : public ParamBase {
 	int dump;
 public:
 	Param(T *address, char *s, int n, T min0, T max0, int dump0) {
-		ParamBase *param;
 		int match_type;
 
-		param=Vocabulary->Locate(s,&match_type);
+		Vocabulary->Locate(s,&match_type);
 		if(match_type==2) {
 			cout << beep << "Duplicate vocabulary entry: " << s << endl;
 			return;
