@@ -80,8 +80,8 @@ public:
       
       dx=x[n-1]-x[n-2];
       dy=y[n-1]-y[n-2];
-      temp=3.0/((dx+lastdx)+0.5*lastdx*work[n-4]);
-      y2[n-2]=(dy/dx-lastdy/lastdx-sixth*lastdx*y2[n-3])*temp;
+      y2[n-2]=(dy/dx-lastdy/lastdx-sixth*lastdx*y2[n-3])*
+	(3.0/((dx+lastdx)+0.5*lastdx*work[n-4]));
 
       for(int i=(int)n-4; i >= 0; i--) y2[i+1] += work[i]*y2[i+2];
     }
