@@ -159,6 +159,7 @@ int main(int argc, char *argv[])
 	
 	// Do a preliminary parse of command line to obtain parameter file name.
 	for(i=1; i < argc; i++) Vocabulary->Assign(argv[i],0);
+	msg_override=override;
 	
 	// Allow time step to be overridden from command line (even on restarts).
 	if(dt) explicit_dt=1; 
@@ -197,7 +198,6 @@ int main(int argc, char *argv[])
 	}
 	
 	for(i=1; i < argc; i++) Vocabulary->Assign(argv[i]);
-	msg_override=override;
 	adjust_parameters(dt,dtmax,tmax,itmax);
 	cout << newl << "PARAMETERS:" << newl << newl;
 	Vocabulary->List(cout);
