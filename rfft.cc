@@ -70,7 +70,7 @@ void rfft_init(unsigned int log2n)
 
 void rcfft(Complex *data, unsigned int log2n, int isign, Real scale,
 		   int bitreverse) 
-{		 
+{
 	log2n--;
 	unsigned int n2=1 << log2n;
 	unsigned int n4=n2 >> 1;
@@ -84,18 +84,30 @@ void rcfft(Complex *data, unsigned int log2n, int isign, Real scale,
 	if(isign == 1) {
 #pragma ivdep	
 		for(unsigned int i=1; i < n4; i++) {
-			Complex u=data[i], v=conj(data[n2-i]);
-			Complex A=0.5*(u+v), B=WTable[i]*(u-v);
-			data[i]=A-B;
-			data[n2-i]=conj(A+B);
+			Real ure=data[i].re, uim=data[i].im;
+			Real vre=data[n2-i].re, vim=-data[n2-i].im; 
+			Real Are=0.5*(ure+vre), Aim=0.5*(uim+vim);
+			ure -= vre; uim -= vim;
+			vre=WTable[i].re*ure-WTable[i].im*uim;
+			vim=WTable[i].re*uim+WTable[i].im*ure;
+			data[i].re=Are-vre;
+			data[i].im=Aim-vim;
+			data[n2-i].re=Are+vre;
+			data[n2-i].im=-Aim-vim;
 		}
 	} else {
 #pragma ivdep	
 		for(unsigned int i=1; i < n4; i++) {
-			Complex u=data[i], v=conj(data[n2-i]);
-			Complex A=0.5*(u+v), B=WTable[i]*(u-v);
-			data[i]=conj(A-B);
-			data[n2-i]=A+B;
+			Real ure=data[i].re, uim=data[i].im;
+			Real vre=data[n2-i].re, vim=-data[n2-i].im; 
+			Real Are=0.5*(ure+vre), Aim=0.5*(uim+vim);
+			ure -= vre; uim -= vim;
+			vre=WTable[i].re*ure-WTable[i].im*uim;
+			vim=WTable[i].re*uim+WTable[i].im*ure;
+			data[i].re=Are-vre;
+			data[i].im=vim-Aim;
+			data[n2-i].re=Are+vre;
+			data[n2-i].im=Aim+vim;
 		}
 		data[n4].im=-data[n4].im;
 	}
@@ -129,21 +141,35 @@ void crfft(Complex *data, unsigned int log2n, int isign, Real scale,
 	if(isign == 1) {
 #pragma ivdep
 		for(unsigned int i=1; i < n4; i++) {
-			Complex u=conj(data[i]), v=data[n2-i];
-			Complex A=u+v, B=2.0*conj(WTable[i])*(u-v);
-			data[i]=A-B;
-			data[n2-i]=conj(A+B);
+			Real ure=data[i].re, uim=-data[i].im;
+			Real vre=data[n2-i].re, vim=data[n2-i].im; 
+			Real Are=ure+vre, Aim=uim+vim;
+			ure -= vre; uim -= vim;
+			vre=2.0*(WTable[i].re*ure+WTable[i].im*uim);
+			vim=2.0*(WTable[i].re*uim-WTable[i].im*ure);
+			data[i].re=Are-vre;
+			data[i].im=Aim-vim;
+			data[n2-i].re=Are+vre;
+			data[n2-i].im=-Aim-vim;
 		}
-		data[n4]=2.0*conj(data[n4]);
+		data[n4].re *= 2.0;
+		data[n4].im *= -2.0;
 	} else {
 #pragma ivdep
 		for(unsigned int i=1; i < n4; i++) {
-			Complex u=data[i], v=conj(data[n2-i]);
-			Complex A=u+v, B=2.0*conj(WTable[i])*(u-v);
-			data[i]=A-B;
-			data[n2-i]=conj(A+B);
+			Real ure=data[i].re, uim=data[i].im;
+			Real vre=data[n2-i].re, vim=-data[n2-i].im; 
+			Real Are=ure+vre, Aim=uim+vim;
+			ure -= vre; uim -= vim;
+			vre=2.0*(WTable[i].re*ure+WTable[i].im*uim);
+			vim=2.0*(WTable[i].re*uim-WTable[i].im*ure);
+			data[i].re=Are-vre;
+			data[i].im=Aim-vim;
+			data[n2-i].re=Are+vre;
+			data[n2-i].im=-Aim-vim;
 		}
-		data[n4] *= 2.0;
+		data[n4].re *= 2.0;
+		data[n4].im *= 2.0;
 	}
 	
 	fft(data,log2n,-1,scale,bitreverse);
@@ -270,8 +296,8 @@ void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 				Real vre=q[k].re, vim=q[k].im;
 				Real Are=ure+vre, Aim=uim+vim;
 				ure -= vre; uim -= vim;
-				vre=Wre*ure-Wim*uim;
-				vim=Wre*uim+Wim*ure;
+				vre=Wre*ure+Wim*uim;
+				vim=Wre*uim-Wim*ure;
 				p[k].re=Are-vre;
 				p[k].im=Aim-vim;
 				q[k].re=Are+vre;
@@ -291,8 +317,8 @@ void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 				Real vre=q[k].re, vim=-q[k].im;
 				Real Are=ure+vre, Aim=uim+vim;
 				ure -= vre; uim -= vim;
-				vre=Wre*ure-Wim*uim;
-				vim=Wre*uim+Wim*ure;
+				vre=Wre*ure+Wim*uim;
+				vim=Wre*uim-Wim*ure;
 				p[k].re=Are-vre;
 				p[k].im=Aim-vim;
 				q[k].re=Are+vre;
