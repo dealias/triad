@@ -1285,7 +1285,7 @@ int main(int argc, char *argv[])
 	if(make_mpeg) {
 	  if(xsize % 2) xsize++;
 	  if(ysize % 2) ysize++;
-	  mpeg(mfiles,nset,"mpg",xsize,ysize);
+	  mpeg(nset,"mpg",xsize,ysize);
 	}
 	else animate(outname,nset-1,"miff","%d",xsize,ysize);
       } else {
