@@ -1,4 +1,6 @@
-/* RGB:  A movie production utility
+/* RGB:  A movie production utility (requires MPEGv1.2.2J.tar.gz, which
+fixes a buffer overflow and other warning message in MPEGv1.2.2.tar.gz)
+
 Copyright (C) 2000-2004 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
@@ -292,8 +294,8 @@ void ramp(int index, Real x, u_char& r, u_char& g, u_char& b);
 void montage(unsigned int nfiles, char *argf[], int n, const char *format,
 	     const char *type);
 void identify(int argc, int n, const char *type, int& xsize, int& ysize);
-void mpeg(int argc, int n, const char *type, int xsize, int ysize);
-void animate(int argc, const char *filename, int n, const char *type,
+void mpeg(int n, const char *type, int xsize, int ysize);
+void animate(const char *filename, int n, const char *type,
 	     const char *pattern, int xsize, int ysize);
 	
 void usage(const char *program)
@@ -1285,10 +1287,10 @@ int main(int argc, char *argv[])
 	  if(ysize % 2) ysize++;
 	  mpeg(mfiles,nset,"mpg",xsize,ysize);
 	}
-	else animate(mfiles,outname,nset-1,"miff","%d",xsize,ysize);
+	else animate(outname,nset-1,"miff","%d",xsize,ysize);
       } else {
-	if(make_mpeg) mpeg(mfiles,nset,"mpg",xsize,ysize);
-	else animate(mfiles,files[0],nset-1,format,"%d",xsize,ysize); 
+	if(make_mpeg) mpeg(nset,"mpg",xsize,ysize);
+	else animate(files[0],nset-1,format,"%d",xsize,ysize); 
       }
     }
   }
@@ -1407,11 +1409,9 @@ void identify(int, int n, const char *type, int& xsize, int& ysize)
   fin >> ysize;
 }
 
-void mpeg(int, int n, const char *type, int xsize, int ysize)
+void mpeg(int n, const char *type, int xsize, int ysize)
 {
-#if 1  
   ostringstream buf;
-  
   buf << "mpeg -a 0 -b " << n-1 << " -h " << xsize << " -v " << ysize
       << " -PF " << rgbdir << outname << " -s " << outname
       << "." << type;
@@ -1419,81 +1419,9 @@ void mpeg(int, int n, const char *type, int xsize, int ysize)
   char *cmd=strdup(buf.str().c_str());
   if(verbose) cout << cmd << endl;
   System(cmd);
-#else
-  ostringstream paramname;
-  
-  paramname << rgbdir << outname << ".param";
-  ofstream fout(paramname.str().c_str());
-  
-  fout << "MPEG" << newl
-       << rgbdir << outname << "%d" << newl
-       << "-" << newl
-       << "-" << newl
-       << "-" << newl
-       << "/dev/null" << newl
-       << 0 << newl
-       << n << newl
-       << 0 << newl
-       << "00:00:00:00" << newl
-       << 12 << newl
-       << 3 << newl
-       << 1 << newl
-       << 0 << newl
-       << xsize << newl
-       << ysize << newl
-       << 8 << newl
-       << 3 << newl
-       << 1152000.0 << newl
-       << 20 << newl
-       << 0 << newl
-       << 0 << newl
-       << 4 << newl
-       << 8 << newl
-       << 1 << newl
-       << 1 << newl
-       << 1 << newl
-       << 5 << newl
-       << 5 << newl
-       << 5 << newl
-       << xsize << newl
-       << ysize << newl
-       << 0 << newl
-       << 0 << newl
-       << "1 1 1" << newl
-       << "0 0 0" << newl
-       << "0 0 0" << newl
-       << "0 0 0" << newl
-       << "0 0 0" << newl
-       << 0 << newl
-       << 1 << newl
-       << 0 << newl
-       << 0 << newl
-       << 0 << newl
-       << 0 << newl
-       << 0 << newl
-       << 0 << newl
-       << 0 << newl
-       << 0 << newl
-       << 0 << newl
-       << "2 2 11 11" << newl
-       << "1 1 3 3" << newl
-       << "1 1 7 7" << newl
-       << "1 1 7 7" << newl
-       << "1 1 3 3" << endl;
-
-  fout.close();
-  ostringstream buf;
-  buf << "mpeg2encode " << paramname.str() << " " << outname << "."
-      << type;
-  
-  if(!verbose) buf << " >& /dev/null";
-  char *cmd=strdup(buf.str().c_str());
-  if(verbose) cout << cmd << endl;
-  System(cmd);
-#endif  
 }
 
-void animate(int, const char *filename, int n, const char *type, 
+void animate(const char *filename, int n, const char *type, 
 	     const char *pattern, int xsize, int ysize)
 {
   ostringstream buf;
