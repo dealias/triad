@@ -153,7 +153,7 @@ void NWave::InitialConditions()
 	
 	Geometry=NWave_Vocabulary.NewGeometry(geometry);
 	if(!Geometry->Valid(Problem->Abbrev()))
-		msg(ERROR,"Geometry \"%s\" is incompatible with Problem \"%s\"",
+		msg(ERROR,"Geometry \"%s\" is incompatible with Method \"%s\"",
 			Geometry->Name(),Problem->Abbrev());
 	Npsi=Geometry->Create();
 	ny=Npsi*(1+Nmoment);
