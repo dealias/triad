@@ -779,7 +779,7 @@ int main(int argc, char *const argv[])
 			}
 			
 			int Nxmx=Nx*mx;
-			double step=PaletteRange/Nxmx;
+			double step=((double) PaletteRange)/Nxmx;
 			for(int j2=0; j2 < mpal; j2++) { // Output palette
 				for(int i=0; i < Nxmx; i++)  {
 					int index;
