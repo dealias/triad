@@ -94,7 +94,7 @@ public:
 	Array1(unsigned int nx0, T *v0, int ox0=0) : state(unallocated) {
 		Dimension(nx0,v0,ox0);
 	}
-	Array1(const Array1<T>& A) : v(A.v), nx(A.nx), ox(A.ox),
+	Array1(const Array1<T>& A) : v(A.v), voff(A.voff), nx(A.nx), ox(A.ox),
 		state(A.test(temporary)) {}
 	virtual ~Array1() {if(test(allocated)) Deallocate();}
 	
