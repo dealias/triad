@@ -10,11 +10,10 @@ char *Basis<Cartesian1>::Name() {return "Cartesian1";}
 int Nx=17; // Number of modes in x-direction
 int *ModeBin;
 
-int Nx0,NPad,xoffset;
+int Nx0,Nxb,Nxp,NPad;
 int Nevolved;
 unsigned int log2Nxb;
 int nfft; // Total number of FFT elements;
-int Nxb;
 Cartesian1 *Cartesian1Mode;
 
 Real krmin=1.0;
@@ -60,9 +59,9 @@ void set_fft_parameters()
 	int nminx=(3*Nx-1)/2;
 	for(log2Nxb=0; nminx > (1 << log2Nxb); log2Nxb++);
 	Nxb=1 << log2Nxb;
-	xoffset=Nxb/2;
-	nfft=Nxb;
+	Nxp=Nxb/2+1;
 	Nx0=(Nx-1)/2;
-	NPad=Nxb-Nx;
+	nfft=Nxp;
+	NPad=Nxp-Nx0-1;
 }
 

@@ -68,7 +68,7 @@ void set_fft_parameters()
 	for(log2Nyb=0; nminy > (1 << log2Nyb); log2Nyb++);
 	Nxb=1 << log2Nxb;
 	Nyb=1 << log2Nyb;
-	Nyp=(Nyb/2+1);
+	Nyp=Nyb/2+1;
 	xoffset=Nxb/2;
 	Nxb1=Nxb;
 	

@@ -7,7 +7,7 @@
 extern int Nx;
 extern int *ModeBin;
 
-extern int Nx0,NPad,xoffset;
+extern int Nx0,Nxb,Nxp,NPad;
 extern int Nevolved;
 extern unsigned int log2Nxb; // Order of FFT in each direction
 extern double scale;
