@@ -29,9 +29,9 @@ inline int isgn(Real x)
 	return ((x) == 0.0 ? 0 : ((x) > 0.0 ? 1 : -1));
 }
 
-extern double pi=PI;
-extern double twopi=2.0*pi;
-extern double twopi2=twopi*twopi;
+extern const double pi;
+extern const double twopi;
+extern const double twopi2;
 
 extern char beep;
 

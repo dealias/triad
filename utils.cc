@@ -8,9 +8,9 @@
 
 char* run=NULL;
 
-double pi=PI;
-double twopi=2.0*pi;
-double twopi2=twopi*twopi;
+const double pi=PI;
+const double twopi=2.0*pi;
+const double twopi2=twopi*twopi;
 
 char beep='\a';
 
