@@ -512,9 +512,9 @@ int C_RK2::Corrector(double dt, double& errmax, int start, int stop)
 {
 	int j;
 	for(j=start; j < stop; j++)
-		if(!Correct(y0[j],y1[j],y[j],Source0[j],Source[j],dt)) return 0;
+		if(!Correct(y0[j],y1[j],y[j],source0[j],source[j],dt)) return 0;
 	if(dynamic) for(j=start; j < stop; j++)
-		calc_error(y0[j],y[j],y0[j]+dt*Source0[j],y[j],errmax);
+		calc_error(y0[j],y[j],y0[j]+dt*source0[j],y[j],errmax);
 	return 1;
 }
 
