@@ -46,16 +46,16 @@ class Complex
   Real real() const {return re;}
   Real imag() const {return im;}
 
-  Complex& operator = (const Complex& y);
+  const Complex& operator = (const Complex& y);
 	
-  Complex& operator += (const Complex& y);
-  Complex& operator += (Real y);
-  Complex& operator -= (const Complex& y);
-  Complex& operator -= (Real y);
-  Complex& operator *= (const Complex& y);
-  Complex& operator *= (Real y);
-  Complex& operator /= (const Complex& y); 
-  Complex& operator /= (Real y); 
+  const Complex& operator += (const Complex& y);
+  const Complex& operator += (Real y);
+  const Complex& operator -= (const Complex& y);
+  const Complex& operator -= (Real y);
+  const Complex& operator *= (const Complex& y);
+  const Complex& operator *= (Real y);
+  const Complex& operator /= (const Complex& y); 
+  const Complex& operator /= (Real y); 
 	
   void error(char* msg) const;
 };
@@ -109,32 +109,32 @@ inline Complex polar(Real r, Real t = 0.0);
 
 // inline members
 
-inline Complex& Complex::operator = (const Complex& y) 
+inline const Complex& Complex::operator = (const Complex& y) 
 { 
   re = y.re; im = y.im; return *this; 
 } 
 
-inline Complex& Complex::operator += (const Complex& y)
+inline const Complex& Complex::operator += (const Complex& y)
 { 
   re += y.re;  im += y.im; return *this; 
 }
 
-inline Complex& Complex::operator += (Real y)
+inline const Complex& Complex::operator += (Real y)
 { 
   re += y; return *this; 
 }
 
-inline Complex& Complex::operator -= (const Complex& y)
+inline const Complex& Complex::operator -= (const Complex& y)
 { 
   re -= y.re;  im -= y.im; return *this; 
 }
 
-inline Complex& Complex::operator -= (Real y)
+inline const Complex& Complex::operator -= (Real y)
 { 
   re -= y; return *this; 
 }
 
-inline Complex& Complex::operator *= (const Complex& y)
+inline const Complex& Complex::operator *= (const Complex& y)
 {  
   Real r = re * y.re - im * y.im;
   im = re * y.im + im * y.re; 
@@ -142,12 +142,12 @@ inline Complex& Complex::operator *= (const Complex& y)
   return *this; 
 }
 
-inline Complex& Complex::operator *= (Real y)
+inline const Complex& Complex::operator *= (Real y)
 {  
   re *= y; im *= y; return *this; 
 }
 
-inline Complex& Complex::operator /= (const Complex& y)
+inline const Complex& Complex::operator /= (const Complex& y)
 {
   register double t1,t2,t3;
   t2=1.0/(y.re*y.re+y.im*y.im);
@@ -157,7 +157,7 @@ inline Complex& Complex::operator /= (const Complex& y)
   return *this;
 }
 
-inline Complex& Complex::operator /= (Real y)
+inline const Complex& Complex::operator /= (Real y)
 {
   re /= y;
   im /= y;
@@ -166,22 +166,22 @@ inline Complex& Complex::operator /= (Real y)
 
 //	functions
 
-inline int	operator == (const Complex& x, const Complex& y)
+inline int operator == (const Complex& x, const Complex& y)
 {
   return x.re == y.re && x.im == y.im;
 }
 
-inline int	operator == (const Complex& x, Real y)
+inline int operator == (const Complex& x, Real y)
 {
   return x.im == 0.0 && x.re == y;
 }
 
-inline int	operator != (const Complex& x, const Complex& y)
+inline int operator != (const Complex& x, const Complex& y)
 {
   return x.re != y.re || x.im != y.im;
 }
 
-inline int	operator != (const Complex& x, Real y)
+inline int operator != (const Complex& x, Real y)
 {
   return x.im != 0.0 || x.re != y;
 }
