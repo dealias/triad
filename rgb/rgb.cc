@@ -18,7 +18,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.23";
+const char VERSION[]="1.24";
 
 #include "xstream.h"
 #include <iostream>
@@ -294,7 +294,7 @@ void ramp(int index, Real x, u_char& r, u_char& g, u_char& b);
 void montage(unsigned int nfiles, char *argf[], int n, const char *format,
 	     const char *type);
 void identify(int argc, int n, const char *type, int& xsize, int& ysize);
-void mpeg(int n, const char *type, int xsize, int ysize);
+void mpeg(int n, const char *inname, const char *type, int xsize, int ysize);
 void animate(const char *filename, int n, const char *type,
 	     const char *pattern, int xsize, int ysize);
 	
@@ -1290,11 +1290,11 @@ int main(int argc, char *argv[])
 	if(make_mpeg) {
 	  if(xsize % 2) xsize++;
 	  if(ysize % 2) ysize++;
-	  mpeg(nset,"mpg",xsize,ysize);
+	  mpeg(nset,outname,"mpg",xsize,ysize);
 	}
 	else animate(outname,nset-1,"miff","%d",xsize,ysize);
       } else {
-	if(make_mpeg) mpeg(nset,"mpg",xsize,ysize);
+	if(make_mpeg) mpeg(nset,files[0],"mpg",xsize,ysize);
 	else animate(files[0],nset-1,format,"%d",xsize,ysize); 
       }
     }
@@ -1414,11 +1414,11 @@ void identify(int, int n, const char *type, int& xsize, int& ysize)
   fin >> ysize;
 }
 
-void mpeg(int n, const char *type, int xsize, int ysize)
+void mpeg(int n, const char *inname, const char *type, int xsize, int ysize)
 {
   ostringstream buf;
   buf << "mpeg -a 0 -b " << n-1 << " -h " << xsize << " -v " << ysize
-      << " -PF " << rgbdir << outname << " -s " << outname
+      << " -PF " << rgbdir << inname << " -s " << outname
       << "." << type;
   if(!verbose) buf << " > /dev/null";
   char *cmd=strdup(buf.str().c_str());
