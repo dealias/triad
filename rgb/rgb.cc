@@ -1390,7 +1390,8 @@ int System(char *command) {
 	
   for(;;) {
     if (waitpid(pid, &status, 0) == -1) {
-      if (errno != EINTR) return -1;
+      if (errno == ECHILD) return 0;
+      if (errno != EINTR) msg(ERROR,"Process %d failed", pid);
     } else {
       if(WIFEXITED(status)) status=WEXITSTATUS(status);
       else return -1;

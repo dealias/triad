@@ -490,7 +490,7 @@ public:
       stride(stride), dist(Dist(nx,stride,dist)) {Setup(out);} 
   
   mrcfft1d(unsigned int nx, unsigned int m=1, unsigned int stride=1,
-	   unsigned int dist=0, double *in, Complex *out=NULL) 
+	   unsigned int dist=0, double *in=NULL, Complex *out=NULL) 
     : fftw(nx/2*stride+(m-1)*Dist(nx,stride,dist)+1,-1,nx), nx(nx), m(m),
       stride(stride), dist(Dist(nx,stride,dist)) {Setup(in,out);} 
   
@@ -546,7 +546,7 @@ public:
       nx(nx), m(m), stride(stride), dist(Dist(nx,stride,dist)) {Setup(in);}
   
   mcrfft1d(unsigned int nx, unsigned int m=1, unsigned int stride=1,
-	   unsigned int dist=0, Complex *in, double *out) 
+	   unsigned int dist=0, Complex *in=NULL, double *out=NULL) 
     : fftw((realsize(nx,in,out)-1)*stride+(m-1)*Dist(nx,stride,dist)+1,1,nx),
       nx(nx), m(m), stride(stride), dist(Dist(nx,stride,dist)) {Setup(in,out);}
   
