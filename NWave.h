@@ -159,16 +159,16 @@ public:
 	void Allocate(int n) {RK5::Allocate(n); y2=new Var[n]; y4=new Var[n];}
 	char *Name() {return "Conservative Fifth-Order Runge-Kutta";}
 	int Corrector(Var *, double, double&, int, int);
-	void Correct(const Real y0, Real& y2, Real &y3,
-				 const Real y4, Real& y,
-				 const Real source0, const Real source2, 
-				 const Real source3, const Real source4,
-				 const Real source, const double dt, int& invertible);
-	void Correct(const Complex y0, Complex& y2, Complex &y3,
-				 const Complex y4, Complex& y,
-				 const Complex source0, const Complex source2, 
-				 const Complex source3, const Complex source4,
-				 const Complex source, const double dt, int& invertible);
+	inline void Correct(const Real y0, Real& y2, Real &y3,
+						const Real y4, Real& y,
+						const Real source0, const Real source2, 
+						const Real source3, const Real source4,
+						const Real source, const double dt, int& invertible);
+	inline void Correct(const Complex y0, Complex& y2, Complex &y3,
+						const Complex y4, Complex& y,
+						const Complex source0, const Complex source2, 
+						const Complex source3, const Complex source4,
+						const Complex source, const double dt,int& invertible);
 };
 
 #endif

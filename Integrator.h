@@ -118,19 +118,19 @@ public:
 						  int start, int stop) {
 		return RK5::Corrector(y0,dt,errmax,start,stop);
 	}
-	virtual void Correct(const Real y0, Real& y,
+	inline void Correct(const Real y0, Real& y,
 						 const Real source0, const Real source2, 
 						 const Real source3, const Real source4,
 						 const Real source, const double dt);
-	virtual void Correct(const Complex y0, Complex& y,
+	inline void Correct(const Complex y0, Complex& y,
 						 const Complex source0, const Complex source2, 
 						 const Complex source3, const Complex source4,
 						 const Complex source, const double dt);
-	virtual void CalcError(const Real y0, Real& y,
+	inline void CalcError(const Real y0, Real& y,
 						   const Real source0, const Real source2, 
 						   const Real source3, const Real source4,
 						   const Real source, const double dt);
-	virtual void CalcError(const Complex y0, Complex& y,
+	inline void CalcError(const Complex y0, Complex& y,
 						   const Complex source0, const Complex source2, 
 						   const Complex source3, const Complex source4,
 						   const Complex source, const double dt);
