@@ -303,9 +303,9 @@ void options()
 		 << endl; 
 	cerr << endl;
 	cerr << "Available color palettes:" << endl;
-	cerr << "-bwrainbow\t black+rainbow+white [default for identity transform]"
+	cerr << "-bwrainbow\t black+rainbow+white [default]"
 		 << endl;
-	cerr << "-rainbow\t rainbow [default for all other transforms]" << endl;
+	cerr << "-rainbow\t rainbow" << endl;
 	cerr << "-brainbow\t black+rainbow" << endl;
 	cerr << "-wrainbow\t rainbow+white" << endl;
 	cerr << "-wheel\t\t full color wheel" << endl;

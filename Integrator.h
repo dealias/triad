@@ -35,6 +35,7 @@ class PC : public IntegratorBase {
 protected:
 	int new_y0;
 	Var *y,*y1,*source0;
+	double halfdt;
 	int order;
 	double pgrow, pshrink;
 public:
@@ -46,6 +47,10 @@ public:
 	}
 	char *Name() {return "Predictor-Corrector";}
 	Solve_RC Solve(double, double);
+	
+	void TimestepDependence(double dt) {
+		halfdt=0.5*dt;
+	}
 	virtual void ExtrapolateTimestep () {
 		if(errmax < tolmin2) {
 			if(errmax) growfactor=pow(tolmin2/errmax,pgrow);
@@ -67,13 +72,13 @@ public:
 
 class LeapFrog : public PC {
 	Var *yp,*yp0;
-	double halfdt,oldhalfdt,lasthalfdt;
+	double oldhalfdt,lasthalfdt;
 public:
 	void Allocate(int n) {
 		PC::Allocate(n); 
 		yp=new Var[n]; yp0=new Var[n]; lasthalfdt=0.0;
 	}
-	void TimestepDependence(double) {
+	void TimestepDependence(double dt) {
 		if(lasthalfdt == 0.0) for(int j=0; j < ny; j++) yp[j] = y0[j];
 		halfdt=0.5*dt;
 	}
@@ -90,10 +95,11 @@ public:
 
 class RK2 : public PC {
 protected:	
-	double halfdt;
 public:
 	char *Name() {return "Second-Order Runge-Kutta";}
-	void TimestepDependence(double);
+	void TimestepDependence(double dt) {
+		halfdt=0.5*dt;
+	}
 	void Predictor(double, double, int, int);
 	int Corrector(double, int, int, int);
 	void StandardPredictor(double t, double dt, int start, int stop) {
@@ -107,7 +113,7 @@ public:
 class RK4 : public PC {
 protected:
 	Var *source1,*source2;
-	double halfdt,sixthdt;
+	double sixthdt;
 public:
 	RK4() {order=4;}
 	void Allocate(int n) {

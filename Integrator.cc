@@ -136,10 +136,7 @@ Solve_RC PC::Solve(double t, double dt)
 	Problem->Transform(y0,t,dt,yi);
 	
 	Predictor(t,dt,0,ny);
-	if(!Corrector(dt,dynamic,0,ny)) {
-		if(hybrid) StandardCorrector(dt,dynamic,0,ny);
-		else return NONINVERTIBLE;
-	}
+	if(!Corrector(dt,dynamic,0,ny)) return NONINVERTIBLE;
 	
 	Solve_RC flag=(dynamic ? CheckError() : SUCCESSFUL);
 	new_y0=(flag != UNSUCCESSFUL);
@@ -161,7 +158,6 @@ void PC::Predictor(double t, double dt, int start, int stop)
 int PC::Corrector(double dt, int dynamic, int start, int stop)
 {
 	int j;
-	const double halfdt=0.5*dt;
 	if(dynamic) {
 		for(j=start; j < stop; j++) {
 			y[j]=y0[j]+halfdt*(source0[j]+source[j]);
@@ -201,11 +197,6 @@ int LeapFrog::Corrector(double dt, int dynamic, int start, int stop)
 	} else for(j=start; j < stop; j++) y[j]=y0[j]+dt*source[j];
 
 	return 1;
-}
-
-void RK2::TimestepDependence(double dt)
-{
-	halfdt=0.5*dt;
 }
 
 void RK2::Predictor(double t, double, int start, int stop)
