@@ -1,7 +1,6 @@
 #ifndef __Tridiagonal_h__
 #define __Tridiagonal_h__ 1
 
-#include <new>
 #include "Array.h"
 
 namespace Array {
@@ -30,7 +29,7 @@ inline void CheckReallocate(T& A, S& B, U& C,
 // [          ...         ]
 // [              cn an bn]
 //
-// work is an optional work array of size n+1, which may be set to a or b.
+// work is an optional work array of size n+1, which may be set to a, b, or c.
 //
 // Note: u and f need not be distinct.
 
@@ -43,16 +42,16 @@ inline void tridiagonal(unsigned int n,
 			const typename array1<C>::opt& b,
 			const typename array1<C>::opt& work)
 {
-  if(n < 1) msg(ERROR,"Invalid matrix size (%d)",n);
+  if(n < 1) ArrayExit("Invalid matrix size");
 	
   C temp=1.0/a[1];
-  work[1]=-b[1]*temp;
   u[1]=(f[1]-c[1]*u[0])*temp;
+  work[1]=-b[1]*temp;
 	
   for(unsigned int i=2; i <= n; i++) {
     C temp=1.0/(a[i]+c[i]*work[i-1]);
-    work[i]=-b[i]*temp;
     u[i]=(f[i]-c[i]*u[i-1])*temp;
+    work[i]=-b[i]*temp;
   }
 
   for(unsigned int i=n; i >= 1; i--) u[i] += work[i]*u[i+1];
@@ -85,8 +84,8 @@ inline void tridiagonal(unsigned int n,
 // inc1 is the stride between the elements of each vector,
 // inc2 is the stride between the first elements of the vectors,
 //
-// work is an optional work array of size n*inc1+m*inc2,
-// which may be set to a or b.
+// work is an optional work array of size n*inc1+m*inc2, which may be set
+// to a or b.
 //
 // Note: u and f need not be distinct.
 
@@ -110,14 +109,14 @@ inline void mtridiagonal(unsigned int n,
   }
 #endif	
 	
-  if(n < 1) msg(ERROR,"Invalid matrix size (%d)",n);
+  if(n < 1) ArrayExit("Invalid matrix size");
 
   typename array1<C>::opt ai=a+inc1, bi=b+inc1, ci=c+inc1, worki=work+inc1;
   typename array1<T>::opt fi=f+inc1, ui=u+inc1;
   for(unsigned int j=0; j < jstop; j += inc2) {
     C temp=1.0/ai[j];
-    worki[j]=-bi[j]*temp;
     ui[j]=(fi[j]-ci[j]*u[j])*temp;
+    worki[j]=-bi[j]*temp;
   }
 	
   for(unsigned int i=2; i <= n; i++) {
@@ -127,8 +126,8 @@ inline void mtridiagonal(unsigned int n,
     worki += inc1; ui += inc1; fi += inc1;
     for(unsigned int j=0; j < jstop; j += inc2) {
       C temp=1.0/(ai[j]+ci[j]*workim1[j]);
-      worki[j]=-bi[j]*temp;
       ui[j]=(fi[j]-ci[j]*uim1[j])*temp;
+      worki[j]=-bi[j]*temp;
     }
   }
 
@@ -164,7 +163,7 @@ inline void mtridiagonal(unsigned int n,
 // [         ...       ]
 // [ bn          cn an ]
 //
-// gamma and delta are optional work areas of size n-1, which may be set to 
+// gamma and delta are optional work arrays of size n-1, which may be set to 
 // b and c, respectively.
 //
 // On exit: u[0]=u[n], u[n+1]=u[1].
@@ -181,7 +180,7 @@ inline void tridiagonalp(unsigned int n,
 			 const typename array1<C>::opt& gamma,
 			 const typename array1<C>::opt& delta)
 {
-  if(n < 1) msg(ERROR,"Invalid matrix size (%d)",n);
+  if(n < 1) ArrayExit("Invalid matrix size");
   if(n == 1) {u[2]=u[1]=u[0]=f[1]/a[1]; return;}
   if(n == 2) {
     C factor=1.0/(a[1]*a[2]-c[1]*b[2]);
@@ -228,7 +227,7 @@ inline void tridiagonalp(unsigned int n,
 			 const typename array1<C>::opt& a,
 			 const typename array1<C>::opt& b)
 {
-  if(n < 1) msg(ERROR,"Invalid matrix size (%d)",n);
+  if(n < 1) ArrayExit("Invalid matrix size");
   static typename array1<C>::opt gamma,delta;
   static unsigned int size=0;
   CheckReallocate(gamma,delta,n-1,size);
@@ -249,7 +248,7 @@ inline void tridiagonalp(unsigned int n,
 // For n > 2 this matrix is singular; the solution can only be determined
 // to within an arbitrary constant.
 //
-// gamma is an optional work area of size n-1, which may be set to b.
+// gamma is an optional work array of size n-1, which may be set to b.
 //
 // On exit: u[0]=u[n], u[n+1]=u[1].
 //
@@ -264,7 +263,7 @@ inline void tridiagonalP(unsigned int n,
 			 const typename array1<C>::opt& b,
 			 const typename array1<C>::opt& gamma)
 {
-  if(n < 1) msg(ERROR,"Invalid matrix size (%d)",n);
+  if(n < 1) ArrayExit("Invalid matrix size");
   if(n == 1) {u[2]=u[1]=u[0]=f[1]/a[1]; return;}
   if(n == 2) {
     C factor=1.0/(a[1]*a[2]-c[1]*b[2]);
@@ -305,7 +304,7 @@ inline void tridiagonalP(unsigned int n,
 			 const typename array1<C>::opt& a,
 			 const typename array1<C>::opt& b)
 {
-  if(n < 1) msg(ERROR,"Invalid matrix size (%d)",n);
+  if(n < 1) ArrayExit("Invalid matrix size");
   static typename array1<C>::opt gamma;
   static unsigned int size=0;
   CheckReallocate(gamma,n-1,size);
@@ -325,7 +324,7 @@ inline void tridiagonalP(unsigned int n,
 // inc2 is the stride between the first elements of the vectors,
 //
 // Fn is an optional work array of size m.
-// alpha and beta are optional work array of size m.
+// alpha and beta are optional work arrays of size m.
 // gamma and delta are optional work arrays of size (n-2)*inc1+m*inc2,
 // which may be set to b and c, respectively.
 //
@@ -361,7 +360,7 @@ inline void mtridiagonalp(unsigned int n,
   }
 #endif	
 	
-  if(n < 1) msg(ERROR,"Invalid matrix size (%d)",n);
+  if(n < 1) ArrayExit("Invalid matrix size");
 
   if(n == 1) {
     typename array1<C>::opt a1=a+inc1;
@@ -446,7 +445,7 @@ inline void mtridiagonalp(unsigned int n,
 			  const typename array1<C>::opt& b,
 			  unsigned int m, unsigned int inc1, unsigned int inc2)
 {
-  if(n < 1) msg(ERROR,"Invalid matrix size (%d)",n);
+  if(n < 1) ArrayExit("Invalid matrix size");
   static typename array1<T>::opt Fn;
   static typename array1<C>::opt alpha,beta;
   static unsigned int msize=0;
@@ -470,6 +469,8 @@ inline void mtridiagonalp(unsigned int n,
 // [         b a b  ]
 // [           b a b]
 //
+// work is an optional work array of size n+1.
+//
 // Note: u and f need not be distinct.
 
 template<class T, class C>
@@ -479,7 +480,7 @@ inline void Poisson1(unsigned int n,
 		     const C& b, const C& a,
 		     const typename array1<C>::opt& work)
 {
-  if(n < 1) msg(ERROR,"Invalid matrix size (%d)",n);
+  if(n < 1) ArrayExit("Invalid matrix size");
 	
   C temp=b/a;
   work[1]=-temp;
@@ -530,7 +531,7 @@ inline void Poisson1p(unsigned int n,
 		      const typename array1<C>::opt& gamma,
 		      const typename array1<C>::opt& delta)
 {
-  if(n < 1) msg(ERROR,"Invalid matrix size (%d)",n);
+  if(n < 1) ArrayExit("Invalid matrix size");
   if(n == 1) {u[2]=u[1]=u[0]=f[1]/a; return;}
   if(n == 2) {
     C factor=1.0/(a*a-b*b);
@@ -577,7 +578,7 @@ inline void Poisson1p(unsigned int n,
 		      const typename array1<T>::opt& f,
 		      const C& b, const C& a)
 {
-  if(n < 1) msg(ERROR,"Invalid matrix size (%d)",n);
+  if(n < 1) ArrayExit("Invalid matrix size");
   static typename array1<C>::opt gamma,delta;
   static unsigned int size=0;
   CheckReallocate(gamma,delta,n-1,size);
@@ -608,7 +609,7 @@ inline void Poisson1P(unsigned int n,
 		      const typename array1<T>::opt& f,
 		      C b, const typename array1<C>::opt& gamma)
 {
-  if(n < 1) msg(ERROR,"Invalid matrix size (%d)",n);
+  if(n < 1) ArrayExit("Invalid matrix size");
   if(n == 1) {u[2]=u[1]=u[0]=-f[1]/(2.0*b); return;}
   if(n == 2) {
     C factor=-1.0/(3.0*b);
@@ -647,7 +648,7 @@ inline void Poisson1P(unsigned int n,
 		      const typename array1<T>::opt& u,
 		      const typename array1<T>::opt& f, const C& b)
 {
-  if(n < 1) msg(ERROR,"Invalid matrix size (%d)",n);
+  if(n < 1) ArrayExit("Invalid matrix size");
   static typename array1<C>::opt gamma;
   static unsigned int size=0;
   CheckReallocate(gamma,n-1,size);
@@ -663,7 +664,7 @@ inline void Poisson1P(unsigned int n,
 // [            cm am ]
 //
 // where m=n-1. Note: u and f need not be distinct.
-// work is an optional work area of size n-1, which may be set to a or b.
+// work is an optional work array of size n-1, which may be set to a or b.
 
 template<class T, class C>
 inline void Tridiagonal(unsigned int n, 
@@ -674,8 +675,7 @@ inline void Tridiagonal(unsigned int n,
 			const typename array1<C>::opt& b,
 			const typename array1<C>::opt& work)
 {
-  if(n < 1) exit(-1);
-//  if(n < 1) msg(ERROR,"Invalid matrix size (%d)",n);
+  if(n < 1) ArrayExit("Invalid matrix size");
     
   C temp=1.0/a[0];
   u[0]=f[0]*temp;
@@ -686,8 +686,8 @@ inline void Tridiagonal(unsigned int n,
 	
   for(unsigned int i=1; i < n-1; i++) {
     C temp=1.0/(a[i]+c[i]*work[i-1]);
-    work[i]=-b[i]*temp;
     u[i]=(f[i]-c[i]*u[i-1])*temp;
+    work[i]=-b[i]*temp;
   }
   
   temp=1.0/(a[n-1]+c[n-1]*work[n-2]);
@@ -704,90 +704,13 @@ inline void Tridiagonal(unsigned int n,
 			const typename array1<C>::opt& a,
 			const typename array1<C>::opt& b)
 {
-  if(n < 1) exit(-1);
+  if(n < 1) ArrayExit("Invalid matrix size");
   static typename array1<C>::opt work;
   static unsigned int worksize=0;
   CheckReallocate(work,n-1,worksize);
   Tridiagonal<T,C>(n,u,f,c,a,b,work);
 }
 
-// Do a binary search of an ordered array to find an interval containing key.
-// Return the index corresponding to the left-hand endpoint of the matching
-// interval, or -1 if key is less than the first element.
-template<class X>
-unsigned int bintsearch(X key, unsigned int n, const typename array1<X>::opt x)
-{
-  if(key < x[0]) return -1;
-  if(key >= x[n-1]) return n-1;
-  
-  unsigned int l=0;
-  unsigned int u=n-1;
-	
-  while (l < u) {
-    unsigned int i=(l + u)/2;
-    if(x[i] <= key && key < x[i+1]) return i;
-    if(key < x[i]) u=i;
-    else l=i + 1;
-  }
-//  msg(ERROR,"Statement not reachable");
-  exit(1);
 }
 
-template<class Y, class X>
-class CubicSpline {
-protected:
-  static typename array1<X>::opt a,b,c;
-  static typename array1<Y>::opt y2,f;
-  static unsigned int size;
-public:
-  CubicSpline() {size=0;}
-  CubicSpline(unsigned int n, const typename array1<X>::opt x,
-	      const typename array1<Y>::opt y) {
-    if(n > size) {
-      Reallocate(y2,n);
-      Reallocate(a,n);
-      Reallocate(b,n);
-      Reallocate(c,n);
-      Reallocate(f,n);
-      size=n;
-    }
-    for(unsigned int i=1; i < n-1; i++) {
-      c[i]=(x[i]-x[i-1])/6.0;
-      a[i]=(x[i+1]-x[i-1])/3.0;
-      b[i]=(x[i+1]-x[i])/6.0;
-      f[i]=(y[i+1]-y[i])/(x[i+1]-x[i])-(y[i]-y[i-1])/(x[i]-x[i-1]);
-    }
-      
-    y2[0]=y2[n-1]=0.0;
-    if(n > 2) Tridiagonal<Y,X>(n-2,y2+1,f+1,c+1,a+1,b+1);
-    cout << y2 << endl;
-    return;
-  }
-  
-  Y Interpolate(unsigned int n, const typename array1<X>::opt x,
-	      const typename array1<Y>::opt y, X x0) {
-    return bintsearch(x0,n,x);
-  }
-};
-
-template<class Y, class X>
-unsigned int CubicSpline<Y,X>::size=0;
-
-template<class Y, class X>
-typename array1<X>::opt CubicSpline<Y,X>::a;
-
-template<class Y, class X>
-typename array1<X>::opt CubicSpline<Y,X>::b;
-
-template<class Y, class X>
-typename array1<X>::opt CubicSpline<Y,X>::c;
-
-template<class Y, class X>
-typename array1<Y>::opt CubicSpline<Y,X>::y2;
-
-template<class Y, class X>
-typename array1<Y>::opt CubicSpline<Y,X>::f;
-
-
-}
 #endif
