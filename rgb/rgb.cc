@@ -62,7 +62,7 @@ static int remote=0;
 static int label=0;
 static int pointsize=0;
 static int grey=0;
-static char *convertprog;
+static const char *convertprog;
 static strstream option;
 static int Nx,Ny;
 static Real Pz;
@@ -120,7 +120,7 @@ int background=Undefined;
 int labelcnt=0;
 DynVector<char *> Label;
 
-char *outname=NULL;
+const char *outname=NULL;
 
 void MakePalette(int palette);
 void cleanup();
@@ -150,7 +150,7 @@ Transform *transform[]={NULL,Circle,Torus};
 unsigned int Ntransform=sizeof(transform)/sizeof(Transform *);
 
 template<class T>
-void openfield(T& fin, char *fieldname, int& nx, int& ny, int& nz)
+void openfield(T& fin, const char *fieldname, int& nx, int& ny, int& nz)
 {
 	fin.open(fieldname);
 	if(!fin) {cleanup(); msg(ERROR,"Cannot open input file %s",fieldname);}
@@ -272,18 +272,18 @@ int readframe(ixstream& xin, int nx, int ny, int nz, Array3<float> value,
 	return 0;
 }
 
-void montage(int nfiles, char *const argf[], int n, char *const format,
-			 char *const type);
-void identify(int argc, int n, char *const type, int& xsize, int& ysize);
-void mpeg(int argc, int n, char *const type, int xsize, int ysize);
-void animate(int argc, char *const filename, int n, char *const type,
+void montage(int nfiles, char *argf[], int n, const char *format,
+			 const char *type);
+void identify(int argc, int n, const char *type, int& xsize, int& ysize);
+void mpeg(int argc, int n, const char *type, int xsize, int ysize);
+void animate(int argc, const char *filename, int n, const char *type,
 			 const char *pattern, int xsize, int ysize);
 	
 #ifdef __i386__
 extern "C" void putenv(const char *);
 #endif
 
-void usage(char *program)
+void usage(const char *program)
 {
 	cerr << PROGRAM << " version " << VERSION
 		 << " [(C) John C. Bowman <bowman@math.ualberta.ca> 1999]" << endl
@@ -390,7 +390,7 @@ void options()
 		 << "]" << endl;
 }
 
-int main(int argc, char *const argv[])
+int main(int argc, char *argv[])
 {
 	int nset=0, mx=1, my=1;
 	int n, end=INT_MAX;
@@ -679,7 +679,7 @@ int main(int argc, char *const argv[])
 	option << ends;
 	convertprog=(nfiles > 1 || label) ? "montage" : "convert";
 	
-	char *const *argf=argv+optind;
+	char **argf=argv+optind;
 	if(outname == NULL) outname=argf[0];
 		
 	if(!floating_scale) {
@@ -703,7 +703,7 @@ int main(int argc, char *const argv[])
 	
 	if(!grey) MakePalette(palette);
 	
-	char *const format=grey ? "gray" : "rgb";
+	const char *format=grey ? "gray" : "rgb";
 	int PaletteMin=grey ? 0 : FirstColor;
 	int PaletteRange=grey ? 255 : NColors-1;
 	if(background == Undefined) background=grey ? 255 : BLACK;
@@ -718,7 +718,7 @@ int main(int argc, char *const argv[])
 	}
 	
 	for(int f=0; f < nfiles; f++) {
-		char *fieldname=argf[f];
+		const char *fieldname=argf[f];
 		ixstream xin;
 		
 		openfield(xin,fieldname,nx,ny,nz);
@@ -1021,8 +1021,8 @@ char *separator="_______________________________________________";
 char *separator="                                               ";
 #endif
 
-void montage(int nfiles, char *const argf[], int n, char *const format,
-			 char *const type)
+void montage(int nfiles, char *argf[], int n, const char *format,
+			 const char *type)
 {
 	strstream buf;
 	int frame;
@@ -1033,8 +1033,8 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 	buf << option.str() << " -interlace none ";
 	if(pointsize) buf << "-pointsize " << pointsize << " ";
 	for(int f=0; f < nfiles; f++) {
-		char *fieldname=argf[f];
-		char *text=(f < labelcnt ? Label[f] : fieldname);
+		const char *fieldname=argf[f];
+		const char *text=(f < labelcnt ? Label[f] : fieldname);
 		if(label) {
 			buf << " -label \"";
 			if(!(floating_scale || byte)) 
@@ -1062,7 +1062,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 		strstream buf;
 		buf << "rm ";
 		for(int f=0; f < nfiles; f++) {
-			char *fieldname=argf[f];
+			const char *fieldname=argf[f];
 			buf << rgbdir << fieldname << setfill('0') << setw(NDIGITS)
 				<< n << "." << format << " ";
 		}
@@ -1074,7 +1074,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 	}
 }
 
-void identify(int, int n, char *const type, int& xsize, int& ysize)
+void identify(int, int n, const char *type, int& xsize, int& ysize)
 {
 	strstream buf;
 	char *iname=".identify";
@@ -1096,7 +1096,7 @@ void identify(int, int n, char *const type, int& xsize, int& ysize)
 	fin >> ysize;
 }
 
-void mpeg(int, int n, char *const type, int xsize, int ysize)
+void mpeg(int, int n, const char *type, int xsize, int ysize)
 {
 	strstream buf;
 	buf << "mpeg -a 0 -b " << n << " -h " << xsize << " -v " << ysize
@@ -1109,7 +1109,7 @@ void mpeg(int, int n, char *const type, int xsize, int ysize)
 	system(cmd);
 }
 
-void animate(int, char *const filename, int n, char *const type, 
+void animate(int, const char *filename, int n, const char *type, 
 			 const char *pattern, int xsize, int ysize)
 {
 	strstream buf;
