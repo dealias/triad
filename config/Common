@@ -7,6 +7,10 @@ vpath %.cc $(TRI)
 
 include $(TRI)/config/$(HOSTTYPE)
 
+ifdef Cpp
+C++ = $(Cpp)
+endif
+
 UTILS = utils msg strcasecmp new $(ARCH) $(POLL)
 CORE = kernel Integrator Param
 

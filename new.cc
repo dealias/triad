@@ -19,7 +19,12 @@ void my_new_handler()
 
 void (*old_new_handler)()=set_new_handler(&my_new_handler);
 
-void *operator new(size_t size)
+// For Compaq C++ compiler:
+#ifndef _RWSTD_THROW_SPEC_NULL
+#define _RWSTD_THROW_SPEC_NULL
+#endif
+
+void *operator new(size_t size, const std::nothrow_t&) _RWSTD_THROW_SPEC_NULL
 {
 	void *mem=malloc(size);
 	if(size && !mem) (my_new_handler)();
@@ -35,7 +40,7 @@ void *operator new(size_t size, int len)
 	return mem;
 }
 
-void operator delete(void *ptr)
+void operator delete(void *ptr) _RWSTD_THROW_SPEC_NULL
 {
 	free(ptr);
 }
