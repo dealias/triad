@@ -1,4 +1,4 @@
-C++ = CC -D_POSIX_SOURCE -xtarget=native
+C++ = CC -D_POSIX_SOURCE -xtarget=native -compat=4
 OPT = $(CFLAGS)
 MAKEDEPEND = $(C++) -xM -DDEPEND
 LIB = $(LFLAGS) -lm -lnsl
