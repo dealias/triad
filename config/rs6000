@@ -1,4 +1,4 @@
-C++ = xlC -+ -D_ANSI_C_SOURCE
+C++ = xlC -+ -D_ANSI_C_SOURCE -U_ALL_SOURCE
 OPT = $(CFLAGS)
 #LIB = $(LFLAGS) -lesslp2 -lm
 LIB = $(LFLAGS) -lm
