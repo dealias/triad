@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.04
+#define __ARRAY_H_VERSION__ 1.05
 
 // Defining NDEBUG improves optimization but disables argument checking.
 
@@ -101,7 +101,7 @@ public:
 	T* operator () () const {return v;}
 	operator T* () const {return v;}
 	
-	Array1<T> operator + (int i) const {return Array1<T>(nx,v+i);}
+	Array1<T> operator + (int i) const {return Array1<T>(nx-i,v+i);}
 	
 	void Load(T a) const {
 		int size=Size0();
