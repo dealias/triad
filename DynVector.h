@@ -20,12 +20,14 @@ public:
 	int Size() const {return sz;}
 	
 	void Resize(int i) {
-		if (i == 0) free(v);
+ 		if (i == 0 && sz > 0) delete [] v;
 		else if(i > sz) {
 			T *v0=v;
 			v=new T[i];
-			for(int j=0; j < sz; j++) v[j]=v0[j];
-			delete [] v0;
+			if (sz) {
+				for(int j=0; j < sz; j++) v[j]=v0[j];
+				delete [] v0;
+			}
 		}
 		sz=i;
 	}
