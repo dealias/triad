@@ -2,7 +2,7 @@
 #include "kernel.h"
 #include "Param.h"
 
-int NParam=0;
+unsigned int NParam=0;
 int param_warn=1;
 
 static int ParamCompare(const void *a, const void *b);
