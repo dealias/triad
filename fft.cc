@@ -1,5 +1,5 @@
 #include "options.h"
-#incluce "fft.h"
+#include "fft.h"
 
 static Complex *wpTable;
 static unsigned int wpTableSize=0;

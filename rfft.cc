@@ -1,5 +1,5 @@
 #include "options.h"
-#incluce "fft.h"
+#include "fft.h"
 
 static Complex *WTable;
 static unsigned int WTableSize=0;
