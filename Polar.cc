@@ -1,6 +1,6 @@
 #include "options.h"
 #include "kernel.h"
-#include "Polar.h"
+#include "PolarBin.h"
 #include "Linearity.h"
 
 #include <iomanip.h>
