@@ -1,53 +1,37 @@
 #include "utils.h"
 
-extern "C" void drcft(const int& init, Complex *x, const int& inc2x,
-				  Complex *y, const int& inc2y, const int& n,
-				  const int& m, const int& isign, const double& scale,
-				  double *aux1, const int& naux1,
-				  double *aux2, const int& naux2); 
+extern "C" void dcft(const int& init,
+					 Complex *x, const int& inc1x, const int& inc2x,
+					 Complex *y, const int& inc1y, const int& inc2y,
+					 const int& n, const int& m, const int& isign,
+					 const double& scale, double *aux1, const int& naux1,
+					 double *aux2, const int& naux2); 
 
-extern "C" void dcrft(const int& init, Complex *x, const int& inc2x,
-				  Complex *y, const int& inc2y, const int& n,
-				  const int& m, const int& isign, const double& scale,
-				  double *aux1, const int& naux1,
-				  double *aux2, const int& naux2);  
-
-static int mone=-1, zero=0, one=1;
+static int zero=0, one=1;
 static double scale=1.0;
 
-void init_aux(int n, double *& aux1, int& naux1, double *& aux2, int& naux2)
-{
-	if(n <= 4096) {naux1=22000; naux2=20000;}
-	else {naux1=20000+1.64*n; naux2=20000+1.14*n;}
-	
-	aux1=new(aux1,naux1) Real;
-	aux2=new(aux2,naux2) Real;
-}
-	 
-
-void rfft(Complex *data, unsigned int log2n, int) {
-	static int naux1,naux2,nlast=0;	
+void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
+		  unsigned int inc1, unsigned int inc2, int) {
+	static int naux1,naux2,nlast=0, nklast=0, inc1last=0, inc2last=0;	
 	static double *aux1,*aux2;
 	unsigned int n=1 << log2n;
+	isign = -isign;
 	
-	if(n != nlast) {
+	if(n != nlast || nk != nklast || inc1 != inc1last || inc2 != inc2last) {
 		nlast=n;
-		init_aux(n,aux1,naux1,aux2,naux2);
-		drcft(one,data,zero,data,zero,n,one,mone,scale,aux1,naux1,aux2,naux2);
-	}
-	drcft(zero,data,zero,data,zero,n,one,mone,scale,aux1,naux1,aux2,naux2);
-}
-
-void rfft_inv(Complex *data, unsigned int log2n, int) {
-	static int naux1,naux2,nlast=0;	
-	static double *aux1,*aux2;
-	unsigned int n=1 << log2n;
+		nklast=nk;
+		inc1last=inc1;
+		inc2last=inc2;
+		if(n <= 2048) naux=20000;
+		else naux=20000+2.28*n;
+		if(inc2 == 1 || n >= 252) naux += (2*n+256)*min(64,nk);
 	
-	if(n != nlast) {
-		nlast=n;
-		init_aux(n,aux1,naux1,aux2,naux2);
-		dcrft(one,data,zero,data,zero,n,one,one,scale,aux1,naux1,aux2,naux2);
+		aux1=new(aux1,naux1) Real;
+		aux2=new(aux2,naux2) Real;
+		dcft(one,data,inc1,inc2,data,inc1,inc2,n,nk,isign,scale,
+			 aux1,naux1,aux2,naux2);
 	}
-	dcrft(zero,data,zero,data,zero,n,one,one,scale,aux1,naux1,aux2,naux2);
+	dcft(zero,data,inc1,inc2,data,inc1,inc2,n,nk,isign,scale,
+		 aux1,naux1,aux2,naux2);
 }
 

@@ -73,7 +73,7 @@ void rcfft(Complex *data, unsigned int log2n, int isign, int bitreverse)
 			data[i]=conj(A-B);
 			data[n2-i]=A+B;
 		}
-		data[n4].im *= -1.0;
+		data[n4].im=-data[n4].im;
 	}
 }
 
@@ -181,7 +181,7 @@ void mrcfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		}
 		Complex *p=data+n4*inc1;
 #pragma ivdep	
-		for(unsigned int k=0; k < kstop; k += inc2) p[k].im *= -1.0;
+		for(unsigned int k=0; k < kstop; k += inc2) p[k].im=-p[k].im;
 	}
 }
 
@@ -281,7 +281,7 @@ void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	for(j=0; j < nyp; j++) {
 		Complex *p=data+nx*j;
 #pragma ivdep
-		for(i=1; i < nx; i += 2) p[i] *= -1.0;
+		for(i=1; i < nx; i += 2) p[i]=-p[i];
 	}
 
 	mfft(data,log2nx,isign,nyp,1,nx);
@@ -289,13 +289,13 @@ void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	for(j=0; j < nyp; j++) {
 		Complex *p=data+nx*j;
 #pragma ivdep
-		for(i=1; i < nx; i += 2) p[i] *= -1.0;
+		for(i=1; i < nx; i += 2) p[i]=-p[i];
 	}
 	
 	for(j=1; j < nyp; j += 2) {
 		Complex *p=data+nx*j;
 #pragma ivdep
-		for(i=0; i < nx; i++) p[i] *= -1.0;
+		for(i=0; i < nx; i++) p[i]=-p[i];
 	}
 
 	mcrfft(data,log2ny,isign,nx);
@@ -324,13 +324,13 @@ void rcfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	for(j=1; j < nyp; j += 2) {
 		Complex *p=data+nx*j;
 #pragma ivdep
-		for(i=0; i < nx; i++) p[i] *= -1.0;
+		for(i=0; i < nx; i++) p[i]=-p[i];
 	}
 	
 	for(j=0; j < nyp; j++) {
 		Complex *p=data+nx*j;
 #pragma ivdep
-		for(i=1; i < nx; i += 2) p[i] *= -1.0;
+		for(i=1; i < nx; i += 2) p[i]=-p[i];
 	}
 	
 	mfft(data,log2nx,isign,nyp,1,nx);
@@ -338,7 +338,7 @@ void rcfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	for(j=0; j < nyp; j++) {
 		Complex *p=data+nx*j;
 #pragma ivdep
-		for(i=1; i < nx; i += 2) p[i] *= -1.0;
+		for(i=1; i < nx; i += 2) p[i]=-p[i];
 	}
 }
 
@@ -372,7 +372,7 @@ void crfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	for(i=1; i < nx; i += 2) {
 		Complex *p=data+i*nyp;
 #pragma ivdep
-		for(j=0; j < nyp; j++) p[j] *= -1.0;
+		for(j=0; j < nyp; j++) p[j]=-p[j];
 	}
 
 	mfft(data,log2nx,isign,nyp);
@@ -380,13 +380,13 @@ void crfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	for(i=1; i < nx; i += 2) {
 		Complex *p=data+i*nyp;
 #pragma ivdep
-		for(j=0; j < nyp; j++) p[j] *= -1.0;
+		for(j=0; j < nyp; j++) p[j]=-p[j];
 	}
 	
 	for(i=0; i < nx; i++) {
 		Complex *p=data+i*nyp;
 #pragma ivdep
-		for(j=1; j < nyp; j += 2) p[j] *= -1.0;
+		for(j=1; j < nyp; j += 2) p[j]=-p[j];
 	}
 	
 	mcrfft(data,log2ny,isign,nx,1,nyp);
@@ -415,13 +415,13 @@ void rcfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	for(i=0; i < nx; i++) {
 		Complex *p=data+i*nyp;
 #pragma ivdep
-		for(j=1; j < nyp; j += 2) p[j] *= -1.0;
+		for(j=1; j < nyp; j += 2) p[j]=-p[j];
 	}
 	
 	for(i=1; i < nx; i += 2) {
 		Complex *p=data+i*nyp;
 #pragma ivdep
-		for(j=0; j < nyp; j++) p[j] *= -1.0;
+		for(j=0; j < nyp; j++) p[j]=-p[j];
 	}
 	
 	mfft(data,log2nx,isign,nyp);
@@ -429,7 +429,7 @@ void rcfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	for(i=1; i < nx; i += 2) {
 		Complex *p=data+i*nyp;
 #pragma ivdep
-		for(j=0; j < nyp; j++) p[j] *= -1.0;
+		for(j=0; j < nyp; j++) p[j]=-p[j];
 	}
 }
 
