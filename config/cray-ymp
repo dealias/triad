@@ -1,10 +1,11 @@
 C++ = $(HOME)/bin/CC -D_POSIX_SOURCE -D_CFRONT
 OPT = $(CFLAGS)
-LIB = $(LFLAGS) -lsci -lm
+LIB = $(LFLAGS) -lm
 MAKEDEPEND = /lib/cpp -M -DDEPEND
 MDOPTS = -I $(HOME)/include/CC
 
 FFT = cfft
+LIBFFT = -lsci
 POLL = tremain
 
 

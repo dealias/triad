@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.16";
+const char VERSION[]="1.17";
 
 #include "xstream.h"
 #include <iostream>
@@ -130,7 +130,7 @@ const char *outname=NULL;
 
 void MakePalette(int palette);
 void cleanup();
-int system (char *command);
+int System(const char *command);
 
 class Ivec {
 public:
@@ -740,7 +740,7 @@ int main(int argc, char *argv[])
   buf << "mkdirhier " << dirbuf.str();
   const char *cmd=buf.str().c_str();
   if(verbose) cout << cmd << endl;
-  system(cmd);
+  System(cmd);
   rgbdir=rgbdirbuf.str().c_str();
 	
   if(palette == -1) palette=vector ? RAINBOW : BWRAINBOW; //Default palette
@@ -1187,7 +1187,7 @@ int main(int argc, char *argv[])
 	buf << "xv " << outname << begin << ".tiff";
 	cmd=buf.str().c_str();
 	if(verbose) cout << cmd << endl;
-	system(cmd);
+	System(cmd);
       } else {
 	for(n=0; n < nset; n++)
 	  montage(mfiles,files,n,format,extract);
@@ -1219,7 +1219,7 @@ void cleanup()
     buf << "rm -r " << rgbdir << " >& /dev/null";
     const char *cmd=buf.str().c_str();
     if(verbose) cout << cmd << endl;
-    system(cmd);
+    System(cmd);
   }
 }
 
@@ -1279,7 +1279,7 @@ void montage(unsigned int nfiles, char *argf[], int n, const char *format,
   if(!verbose) buf << ">& /dev/null";
   const char *cmd=buf.str().c_str();
   if(verbose) cout << cmd << endl;
-  system(cmd);
+  System(cmd);
 	
   if(n > 0 && !preserve) {
     ostringstream buf;
@@ -1292,7 +1292,7 @@ void montage(unsigned int nfiles, char *argf[], int n, const char *format,
     if(!verbose) buf << " >& /dev/null";
     cmd=buf.str().c_str();
     if(verbose) cout << cmd << endl;
-    system(cmd);
+    System(cmd);
   }
 }
 
@@ -1306,7 +1306,7 @@ void identify(int, int n, const char *type, int& xsize, int& ysize)
       << " > " << iname;
   const char *cmd=buf.str().c_str();
   if(verbose) cout << cmd << endl;
-  system(cmd);
+  System(cmd);
   ifstream fin(iname);
   if(!fin) {cleanup(); msg(ERROR,"Cannot open identify file %s",iname);}
   char c=0;
@@ -1335,7 +1335,7 @@ void mpeg(int, int n, const char *type, int xsize, int ysize)
   if(!verbose) buf << " > /dev/null";
   const char *cmd=buf.str().c_str();
   if(verbose) cout << cmd << endl;
-  system(cmd);
+  System(cmd);
 }
 
 void animate(int, const char *filename, int n, const char *type, 
@@ -1347,12 +1347,12 @@ void animate(int, const char *filename, int n, const char *type,
       << "." << type;
   const char *cmd=buf.str().c_str();
   if(verbose) cout << cmd << endl;
-  system(cmd);
+  System(cmd);
 }
 
 extern char **environ;
 
-int system (char *command) {
+int System(const char *command) {
   int pid, status;
   static int cleaning=0;
 
@@ -1363,7 +1363,7 @@ int system (char *command) {
     char *argv[4];
     argv[0] = "sh";
     argv[1] = "-c";
-    argv[2] = command;
+    argv[2] = strdup(command);
     argv[3] = 0;
     execve("/bin/sh",argv,environ);
     exit(127);
@@ -1380,7 +1380,6 @@ int system (char *command) {
 	cleaning=1; cleanup();
 	msg(ERROR,"%s\nReceived signal %d",command,status);
       }
-      return 0;
     }
   } while(1);
 }

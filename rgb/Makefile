@@ -11,3 +11,4 @@ rgb: $(RGB:=.o)
 	$(C++) $(OPT) -o rgb $(RGB:=.o) $(LIB)
 
 include $(TRI)/config/Rules
+

@@ -2,7 +2,7 @@
 	$(C++) $(OPT) $(INCL) -o $@ -c $<
 
 triad: $(TRIAD:=.o)
-	$(C++) $(OPT) -o triad $(TRIAD:=.o) $(LIB)
+	$(C++) $(OPT) -o triad $(TRIAD:=.o) $(LIB) $(LIBFFT)
 
 clean:
 	rm -rf *.o *.$(D) *mon.out $(CLEAN)

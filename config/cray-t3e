@@ -1,9 +1,10 @@
 C++ = CC -D_POSIX_SOURCE
 OPT = $(CFLAGS)
-LIB = $(LFLAGS) -lsci -lm
+LIB = $(LFLAGS) -lm
 MAKEDEPEND = $(C++) -M -DDEPEND
 
 FFT = tfft
+LIBFFT = -lsci
 POLL = poll
 
 

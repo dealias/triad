@@ -1,6 +1,9 @@
 C++ = CC -64 -D_POSIX_SOURCE
 INCL = -I . -I $(TRI)
 OPT = $(CFLAGS)
-LIB = $(LFLAGS) -lrfftw -lfftw -lm
+LIB = $(LFLAGS) -lm
 MAKEDEPEND = $(C++) -M -DDEPEND
+
 FFT = wfft
+LIBFFT = -lrfftw -lfftw 
+
