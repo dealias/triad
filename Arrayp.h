@@ -30,8 +30,8 @@ class ArrayMod {
  public:	
   inline void Mod(int& i, unsigned int n) const {
     if(i >= 0 && i < n) return;
-    int val = i % n;
-    if(i < 0) val += n;
+    i %= n;
+    if(i < 0) i += n;
   }
 };
 
