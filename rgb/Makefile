@@ -4,7 +4,7 @@ POLL = poll
 
 include $(TRI)/config/Common
 
-TRIAD = rgb msg new getopt
+TRIAD = rgb palette msg new getopt
 DEPEND = $(TRIAD)
 
 rgb:	triad

@@ -1,5 +1,5 @@
 /* RGB:  A movie production utility
-Copyright (C) 1998 John C. Bowman (bowman@math.ualberta.ca)
+Copyright (C) 1999 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -40,7 +40,6 @@ char yuvinterlace[]="";
 
 #include "getopt.h"
 #include "DynVector.h"
-#include "Array.h"
 #include "rgb.h"
 
 #ifndef PI
@@ -58,7 +57,7 @@ static char *rgbdir;
 static strstream rgbdirbuf;
 static int xsize,ysize;
 
-static int verbose=0;
+int verbose=0;
 static int floating_scale=0;
 static int floating_section=0;
 static int preserve=0;
@@ -82,10 +81,14 @@ int implicit=1;
 int symmetric=0;
 int invert=0;
 
+Array1(u_char) Red;
+Array1(u_char) Blue;
+Array1(u_char) Green;
+
 char *extract=NULL;
 
 enum Parameters {RFACTOR=256,THETA,PHI,YXASPECT,ZXASPECT,POINTSIZE,AVGX,AVGY,\
-				 EXTRACT,XMIN,XMAX,YMIN,YMAX,ZMIN,ZMAX,ALPHA,
+				 EXTRACT,NCOLORS,XMIN,XMAX,YMIN,YMAX,ZMIN,ZMAX,ALPHA,
 				 NXFINE,NYFINE,NZFINE};
 
 Real Rfactor=2.0;
@@ -108,6 +111,7 @@ int Nzfine=10;
 
 const int Undefined=-2;
 
+void MakePalette(int palette);
 void cleanup();
 int system (char *command);
 
@@ -304,11 +308,14 @@ void options()
 	cerr << "-nobar\t\t inhibit palette bar" << endl;
 	cerr << "-extract format\t extract individual images as tiff, gif, etc." 
 		 << endl;
+	cerr << "-ncolors n\t maximum number of colors to generate (default 256)"
+		 << endl; 
 	cerr << endl;
 	cerr << "Available color palettes:" << endl;
 	cerr << "-rainbow\t rainbow [default]" << endl;
+	cerr << "-brainbow\t black+rainbow" << endl;
+	cerr << "-bwrainbow\t black+rainbow+white" << endl;
 	cerr << "-wheel\t\t full color wheel" << endl;
-	cerr << "-idl39\t\t IDL palette 39" << endl;
 	cerr << "-rgreyb\t\t red-grey-blue" << endl;
 	cerr << endl;
 	cerr << "Available transforms:" << endl;
@@ -335,7 +342,6 @@ int main(int argc, char *const argv[])
 	int n,begin=0, skip=1, end=INT_MAX;
 	int lower=0, upper=INT_MAX;
 	int make_mpeg=0;
-	u_char *red,*green,*blue;
 	int trans=0;
 	int palette=0;
 	int nobar=0;
@@ -349,8 +355,10 @@ int main(int argc, char *const argv[])
              {
                {"verbose", 0, 0, 'v'},
                {"rainbow", 0, &palette, RAINBOW},
+               {"brainbow", 0, &palette, BRAINBOW},
+               {"wrainbow", 0, &palette, WRAINBOW},
+               {"bwrainbow", 0, &palette, BWRAINBOW},
                {"wheel", 0, &palette, WHEEL},
-               {"idl39", 0, &palette, IDL39},
                {"rgreyb", 0, &palette, RGreyB},
                {"identity", 0, &trans, IDENTITY},
                {"circle", 0, &trans, CIRCLE},
@@ -358,6 +366,7 @@ int main(int argc, char *const argv[])
                {"symmetric", 0, &symmetric, 1},
                {"nobar", 0, &nobar, 1},
                {"extract", 1, 0, EXTRACT},
+               {"ncolors", 1, 0, NCOLORS},
                {"shear", 1, 0, ALPHA},
                {"xmin", 1, 0, XMIN},
                {"xmax", 1, 0, XMAX},
@@ -470,6 +479,9 @@ int main(int argc, char *const argv[])
 		case EXTRACT:
 			extract=strdup(optarg);
 			break;
+		case NCOLORS:
+			NColors=atoi(optarg);
+			break;
 		case ALPHA:
 			alpha=atof(optarg);
 			break;
@@ -562,14 +574,12 @@ int main(int argc, char *const argv[])
 	system(cmd);
 	rgbdir=rgbdirbuf.str();
 	
-	char *const format=grey ? "gray" : "rgb";
-	int PaletteMin=grey ? 0 : ColorPaletteMin[palette];
-	int PaletteRange=grey ? 255 : (ColorPaletteMax[palette]-PaletteMin);
-	int background=PaletteMin+PaletteRange; 
+	if(!grey) MakePalette(palette);
 	
-	red=Red[palette];
-	green=Green[palette];
-	blue=Blue[palette];
+	char *const format=grey ? "gray" : "rgb";
+	int PaletteMin=grey ? 0 : FirstColor;
+	int PaletteRange=grey ? 255 : NColors-1;
+	int background=grey ? 255 : BLACK;
 	
 	for(int f=0; f < nfiles; f++) {
 		char *fieldname=argf[f];
@@ -701,7 +711,7 @@ int main(int argc, char *const argv[])
 							if (step == 0.0 ||
 								x.i == Undefined || 
 								x.j == Undefined ||
-								x.k == Undefined) index=-1;
+								x.k == Undefined) index=background;
 							else {
 								Real val;
 								int ci=(int) floor(x.i);
@@ -750,8 +760,8 @@ int main(int argc, char *const argv[])
 								for(int i2=0; i2 < mx; i2++)
 									fout << (unsigned char) index;
 							} else {
-								unsigned char r=red[index+1],
-									g=green[index+1], b=blue[index+1];
+								unsigned char r=Red[index],
+									g=Green[index], b=Blue[index];
 								for(int i2=0; i2 < mx; i2++)
 									fout << r << g << b;
 							}
@@ -772,7 +782,7 @@ int main(int argc, char *const argv[])
 					int index;
 					index=PaletteMin+(int) (PaletteRange*i*step+0.5);
 					if(grey) fout << (unsigned char) index;
-					else fout << red[index] << green[index] << blue[index];
+					else fout << Red[index] << Green[index] << Blue[index];
 				}
 			}
 			

@@ -28,6 +28,8 @@ size_t memory();
 #include "Complex.h"
 #include "pow.h"
 
+#define __ARRAY_EXIT(x) msg(ERROR,x)
+	
 extern const double pi;
 extern const double twopi;
 extern const double twopi2;
@@ -351,13 +353,13 @@ inline double drand()
 	return ((double) rand())/RAND_MAX;
 }
 
-void crand_gauss(Real& w);
-void crand_gauss(Complex& w);
+void crand_gauss(Real *w);
+void crand_gauss(Complex *w);
 
 inline double drand_gauss()
 {
 	double w;
-	crand_gauss(w);
+	crand_gauss(&w);
 	return w;
 }
 
