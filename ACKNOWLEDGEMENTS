@@ -1,0 +1,18 @@
+                              T R I A D 
+
+The author, John C. Bowman, expresses his gratitude to two people for very
+significant contributions to this project.  The philosophy of a generic
+integration package for initial value problems that underlies TRIAD (and in
+fact much of its overall "look and feel") was greatly influenced by the
+ideas of John A. Krommes, who conceived of, and developed in conjunction
+with the author, the turbulence code DIA in the 1980's and early 1990's.
+In fact, TRIAD grew out of the desire to implement an object-oriented version
+of a portion of the DIA code.  The author also gratefully acknowledges
+B. A. Shadwick for his fundamental role in 1994 in the initial design of
+the key kernel, parameter, and integration classes of TRIAD.
+
+
+
+
+
+

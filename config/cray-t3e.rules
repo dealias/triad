@@ -1,0 +1,5 @@
+Navier.o: Navier.cc
+	$(C++) $(OPT) -O2 $(INCL) -o $@ -c $<
+Integrator.o: Integrator.cc
+	$(C++) $(OPT) -hpipeline0 $(INCL) -o $@ -c $<
+
