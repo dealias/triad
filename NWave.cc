@@ -1,6 +1,7 @@
 #include "options.h"
 #include "NWave.h"
 #include "Cartesian.h"
+#include "fft.h"
 
 int Npsi;
 int NpsiR;
@@ -9,8 +10,8 @@ int Ntotal;
 // (0 => evolve all modes, 1 => evolve only half of the modes).
 int reality=1; // Reality condition flag 
 
-Var *psibuffer,*psibuffer0,*psibufferR,*psibufferStop,*pqbuffer,*psitemp;
-Var *convolution,*convolution0;
+Var *psibuffer,*psibufferR,*psibufferStop,*pqbuffer;
+Var *psix,*psiy,*vort;
 
 Var **pqIndex;
 int *qStart;
@@ -19,7 +20,7 @@ int Ntriad;
 DynVector<Triad> triad;
 TriadLimits *triadLimits;
 
-Real *kinv2;
+Real *kfactor;
 
 Nu *nu,*nu_inv;
 Real *nuR_inv,*nuI;
@@ -113,8 +114,6 @@ void SR::NonLinearSrc(Var *source, Var *psi, double)
 	ConstantForcing(source,t);
 }
 
-Cartesian *CartesianMode;
-
 void Convolution::NonLinearSrc(Var *source, Var *psi, double)
 {
 	int i;
@@ -142,7 +141,8 @@ void Convolution::NonLinearSrc(Var *source, Var *psi, double)
 		}
 	}
 
-	for(i=0; i < Npsi; i++) source[i] *= kinv2[i];
+#pragma ivdep	
+	for(i=0; i < Npsi; i++) source[i] *= kfactor[i];
 	if(Nmoment) ComputeMoments(source,psi);
 	ConstantForcing(source,t);
 }
@@ -152,38 +152,53 @@ void PS::NonLinearSrc(Var *source, Var *psi, double)
 {
 #if COMPLEX
 	int i;
-	extern Cartesian *CartesianMode;
-	
-	*psibuffer0=0.0;
-	CartesianPad(psibuffer,psi);
 	
 #pragma ivdep	
 	for(i=0; i < Npsi; i++) {
-		source[i]=psi[i]*I*CartesianMode[i].K2();
-		psitemp[i]=source[i]*CartesianMode[i].Y();
+		Real kx=CartesianMode[i].X();
+		source[i].re=-psi[i].im*kx;
+		source[i].im=psi[i].re*kx;
 	}
-	*convolution0=0.0;
-	CartesianPad(convolution,psitemp);
-	
-	convolve(convolution0,convolution0,psibuffer0,Npsibuffer+1,log2n);
-	CartesianUnPad(psitemp,convolution);
-	
+	CartesianPad(psix,source);
+	crfft2dT(psix,log2Nxb,log2Nyb,1);
+
 #pragma ivdep	
-	for(i=0; i < Npsi; i++) source[i] *= CartesianMode[i].X();
-	*convolution0=0.0;
-	CartesianPad(convolution,source);
-	
-	// Reuse FFT of psibuffer0.
-	convolve0(convolution0,convolution0,psibuffer0,Npsibuffer+1,log2n);
-	CartesianUnPad(psibuffer,convolution);
-	
+	for(i=0; i < Npsi; i++)	source[i] *= CartesianMode[i].K2();
+
+	CartesianPad(vort,source);
+	crfft2dT(vort,log2Nxb,log2Nyb,1);
+
 #pragma ivdep	
 	for(i=0; i < Npsi; i++) {
-		source[i].re = -kinv2[i]*(CartesianMode[i].Y()*psibuffer[i].im-
-								  CartesianMode[i].X()*psitemp[i].im);
-		source[i].im = kinv2[i]*(CartesianMode[i].Y()*psibuffer[i].re-
-								 CartesianMode[i].X()*psitemp[i].re);
+		Real ky=CartesianMode[i].Y();
+		source[i].re=-psi[i].im*ky;
+		source[i].im=psi[i].re*ky;
 	}
+	CartesianPad(psiy,source);
+	crfft2dT(psiy,log2Nxb,log2Nyb,1);
+
+#pragma ivdep	
+	for(i=0; i < nfft; i++) {
+		psiy[i].re *= vort[i].re;
+		psiy[i].im *= vort[i].im;
+	}
+
+#pragma ivdep	
+	for(i=0; i < Npsi; i++)	source[i] *= CartesianMode[i].K2();
+	CartesianPad(vort,source);
+	crfft2dT(vort,log2Nxb,log2Nyb,1);
+
+#pragma ivdep	
+	for(i=0; i < nfft; i++) {
+		psiy[i].re -= psix[i].re*vort[i].re;
+		psiy[i].im -= psix[i].im*vort[i].im;
+	}
+
+	rcfft2dT(psiy,log2Nxb,log2Nyb,1);
+	CartesianUnPad(source,psiy);
+	
+#pragma ivdep	
+	for(i=0; i < Npsi; i++) source[i] *= kfactor[i];
 	if(Nmoment) ComputeMoments(source,psi);
 	ConstantForcing(source,t);
 #else	

@@ -43,7 +43,7 @@ public:
 	}
 	void close() {
 		if(buf) {
-#if !_CRAY			
+#if !(_CRAY || NO_XDR_DESTROY)
 			xdr_destroy(&xdrs);
 #endif			
 			fclose(buf);

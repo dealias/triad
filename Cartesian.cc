@@ -10,11 +10,11 @@ char *Basis<Cartesian>::Name() {return "Cartesian";}
 int Nx=17; // Number of modes in x-direction
 int Ny=17; // Number of modes in y-direction
 
-int NRows,NPad;
-int *RowBoundary;
-Var *ZeroBuffer; 
-unsigned int log2n; // Number of FFT levels
-int Npsibuffer;
+int Nx0,NRows,NPad,NPadTop,xoffset;
+unsigned int log2Nxb,log2Nyb;
+int nfft; // Total number of FFT elements;
+int Nxb,Nyb,Nyp;
+Cartesian *CartesianMode;
 
 void Basis<Cartesian>::MakeBins()
 {
@@ -35,21 +35,24 @@ void Basis<Cartesian>::MakeBins()
 	nindependent=(reality || n % 2) ? Nmode : n/2;
 	
 	NRows=high.Row()+1;
-	RowBoundary=new int[NRows+1];
 	
 	for(j=0; j <= high.Row(); j++) { // Evolved modes
-		RowBoundary[j]=p-mode;
 		for(i=((j == 0) ? 1 : low.Column()); i <= high.Column(); i++)
 			*(p++)=Cartesian(i,j);
 		}
 	
-	RowBoundary[NRows]=p-mode;
-	NPad=RowBoundary[1]-RowBoundary[0];
-	ZeroBuffer=new Var[NPad];
-	for(i=0; i < NPad; i++) ZeroBuffer[i]=0.0;
-	Npsibuffer=Nmode+NRows*NPad;
-	int ntotal=(3*Nx-1)*(3*Ny-1)/4;
-	for(log2n=0; ntotal > (1 << log2n); log2n++);
+	int nminx=(3*Nx-1)/2;
+	int nminy=(3*Ny-1)/2;
+	for(log2Nxb=0; nminx > (1 << log2Nxb); log2Nxb++);
+	for(log2Nyb=0; nminy > (1 << log2Nyb); log2Nyb++);
+	Nxb=1 << log2Nxb;
+	Nyb=1 << log2Nyb;
+	Nyp=(Nyb/2+1);
+	nfft=Nxb*Nyp;
+	xoffset=Nxb/2;
+	Nx0=(Nx+1)/2-1;
+	NPad=Nxb-Nx;
+	NPadTop=(Nyp-(Ny+1)/2)*Nxb+Nxb-((Nx+1)/2+xoffset);
 	
 	for(j=0; j >= low.Row(); j--) // Reflected modes
 		for(i=((j == 0) ? -1 : high.Column()); i >= low.Column(); i--)
@@ -70,9 +73,8 @@ void CartesianPad(Var * restrict to_, Var * from)
 #pragma ivdep		
         for(; to < tostop; to++) *to=*(from++);
         tostop += NPad;
-        Var *zero=ZeroBuffer;
 #pragma ivdep		
-        for(; to < tostop; to++) *to=*(zero++);
+        for(; to < tostop; to++) *to=0.0;
     }
 }
 

@@ -247,20 +247,22 @@ void NWave::Initialize()
 	// Initialize time integrals to zero.
 	for(i=Npsi; i < ny; i++) y[i]=0.0;
 	
-	Real k0=FLT_MAX;
-	for(i=0; i < Npsi; i++) k0=min(k0,Geometry->K(i));
+	if(strcmp(method,"SR") == 0) {
+		Real k0=FLT_MAX;
+		for(i=0; i < Npsi; i++) k0=min(k0,Geometry->K(i));
 	
-	xcoeff=new Complex [ngrid*Npsi];
-	ycoeff=new Complex [ngrid*Npsi];
-	Real L=twopi/k0;
-	for(int m=0; m < Npsi; m++) {
-		Real kx=Geometry->X(m);
-		Real ky=Geometry->Y(m);
-		for(i=0; i < ngrid; i++) {
-			Complex *p=xcoeff+i*Npsi, *q=ycoeff+i*Npsi;
-			Real x=(2*i-ngrid)*L/ngrid;
-			p[m]=expi(kx*x);
-			q[m]=expi(ky*x);
+		xcoeff=new Complex [ngrid*Npsi];
+		ycoeff=new Complex [ngrid*Npsi];
+		Real L=twopi/k0;
+		for(int m=0; m < Npsi; m++) {
+			Real kx=Geometry->X(m);
+			Real ky=Geometry->Y(m);
+			for(i=0; i < ngrid; i++) {
+				Complex *p=xcoeff+i*Npsi, *q=ycoeff+i*Npsi;
+				Real x=(2*i-ngrid)*L/ngrid;
+				p[m]=expi(kx*x);
+				q[m]=expi(ky*x);
+			}
 		}
 	}
 }
@@ -306,7 +308,7 @@ void NWave::Output(int)
 		favgy.close();
 	}
 	
-	if(strcmp(method,"SR")) {
+	if(strcmp(method,"SR") == 0) {
 		fpsi << ngrid << ngrid << 1;
 		for(int j=0; j < ngrid; j++) {
 			Complex *q=ycoeff+j*Npsi;
@@ -320,7 +322,9 @@ void NWave::Output(int)
 				fpsi << (float) sum;
 			}
 		}
-	} else {
+	} 
+#if 0	
+	else {
 		int i,j;
 		unsigned int log2nx, log2ny;
 		for(log2nx=0; Nxb=(1 << log2nx) < Nx; log2nx++);
@@ -359,6 +363,7 @@ void NWave::Output(int)
 		}
 	}
 	fpsi.flush();
+#endif
 	
 	tcount++;
 	ft << t << endl;

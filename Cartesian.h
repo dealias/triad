@@ -6,6 +6,11 @@
 extern int Nx;
 extern int Ny;
 
+extern int xoffset;
+extern int Nx0,NRows,NPad,NPadTop;
+extern unsigned int log2Nxb,log2Nyb; // Order of FFT in each direction
+extern double scale;
+
 class Cartesian {
 public:	
 	int x,y;	// wavenumber components
@@ -73,8 +78,6 @@ inline ostream& operator << (ostream& os, const Cartesian& b) {
 }
 	
 extern Cartesian *CartesianMode;
-extern unsigned int log2n; // Number of FFT levels
-extern int Npsibuffer;
 
 inline int Basis<Cartesian>::InGrid(Cartesian& m)
 {
@@ -83,31 +86,34 @@ inline int Basis<Cartesian>::InGrid(Cartesian& m)
 		(low.Row() <= m.Row() && m.Row() <= high.Row());
 }
 
-extern int NRows,NPad;
-extern int *RowBoundary;
-extern Var *ZeroBuffer; 
-
 #if _CRAY
 void CartesianPad(Var *to, Var *from);
 void CartesianUnPad(Var *to, Var *from);
 #else
 inline void CartesianPad(Var *to, const Var *from)
 {
-	for(int i=0; i < NRows; i++) {
-		int ncol=RowBoundary[i+1]-RowBoundary[i];
-		set(to,from,ncol);
-		to += ncol; from += ncol;
-		set(to,ZeroBuffer,NPad);
-		to += NPad;
+	to += xoffset;
+	*(to++)=0.0;
+	set(to,from,Nx0);
+	to += Nx0; from += Nx0;
+	for(int j=0; j < NRows-1; j++) {
+		Var *tostop=to+NPad;
+		for(; to < tostop; to++) *to=0.0;
+		set(to,from,Nx);
+		to += Nx; from += Nx;
 	}
+	Var *tostop=to+NPadTop;
+	for(; to < tostop; to++) *to=0.0;
 }
 
 inline void CartesianUnPad(Var *to, const Var *from)
 {
-	for(int i=0; i < NRows; i++) {
-		int ncol=RowBoundary[i+1]-RowBoundary[i];
-		set(to,from,ncol);
-		to += ncol; from += ncol+NPad;
+	from += xoffset+1;
+	set(to,from,Nx0);
+	to += Nx0; from += Nx0+NPad;
+	for(int j=1; j < NRows; j++) {
+		set(to,from,Nx);
+		to += Nx; from += Nx+NPad;
 	}
 }
 #endif

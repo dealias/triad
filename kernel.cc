@@ -306,6 +306,7 @@ void dump(int it, int final, double tmax)
 	}
 	
 	int iter=final_iteration+iteration;
+
 	oxstream frestart(rtemp);
 	if(frestart) {
 		int i;

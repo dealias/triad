@@ -6,9 +6,11 @@
 
 #define BASIS(key) {new Entry<Basis<key>,GeometryBase> (#key,GeometryTable);}
 
-extern Var *convolution,*convolution0,*psibuffer0,*psitemp;
+extern int nfft;
+extern int Nxb,Nyb,Nyp;
 
-extern Real *kinv2;
+extern Var *psix,*psiy,*vort;
+extern Real *kfactor;
 
 template<class T>
 class Basis : public GeometryBase {
@@ -52,16 +54,21 @@ INLINE void Basis<T>::List(ostream &os)
 template<class T>
 INLINE void Basis<T>::Initialize()
 {
-	int n2=1 << (log2n-1);
-	cout << n2 << " FFT COMPONENTS ALLOCATED." << endl;
-	convolution0=new Var[n2+1];
-	convolution=convolution0+1;
-	psibuffer0=new Var[n2+1];
-	psibuffer=psibuffer0+1;
-	psitemp=new Var[Nmode];
-			
-	kinv2=new Real[Nmode];
-	for(int k=0; k < Nmode; k++) kinv2[k]=1.0/mode[k].K2();
+	kfactor=new Real[Nmode];
+	
+	if(strcmp(Problem->Abbrev(),"PS") == 0) {
+		psix=new Var[nfft];
+		psiy=new Var[nfft];
+		vort=new Var[nfft];
+		cout << endl << "ALLOCATING FFT BUFFERS (" << Nxb << "X" << Nyp << ")."
+			 << endl;
+		Real scale=Nxb*Nyb;
+		for(int k=0; k < Nmode; k++) kfactor[k]=-1.0/(scale*mode[k].K2());
+	} else {
+		psibuffer=new Var[n];
+		psibufferR=(reality ? psibuffer+Nmode : psibuffer);
+		for(int k=0; k < Nmode; k++) kfactor[k]=1.0/mode[k].K2();
+	}
 }
 
 void LinearityAt(int i, Nu& nu);

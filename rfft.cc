@@ -149,16 +149,17 @@ void mrcfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	mfft(data,log2n,1,nk,inc1,inc2,bitreverse);
 	
 	Complex *q=data+n2*inc1;
+#pragma ivdep	
 	for(unsigned int k=0; k < kstop; k += inc2) {
 		q[k]=data[k].re-data[k].im;
 		data[k]=data[k].re+data[k].im;
 	}
 	
 	if(isign == 1) {
-#pragma ivdep	
 		for(unsigned int i=1; i < n4; i++) {
 			Complex *p=data+i*inc1, *q=data+(n2-i)*inc1;
 			Complex W=WTable[i];
+#pragma ivdep	
 			for(unsigned int k=0; k < kstop; k += inc2) {
 				Complex u=p[k], v=conj(q[k]);
 				Complex A=0.5*(u+v), B=W*(u-v);
@@ -167,10 +168,10 @@ void mrcfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 			}
 		}
 	} else {
-#pragma ivdep	
 		for(unsigned int i=1; i < n4; i++) {
 			Complex *p=data+i*inc1, *q=data+(n2-i)*inc1;
 			Complex W=WTable[i];
+#pragma ivdep	
 			for(unsigned int k=0; k < kstop; k += inc2) {
 				Complex u=p[k], v=conj(q[k]);
 				Complex A=0.5*(u+v), B=W*(u-v);
@@ -179,6 +180,7 @@ void mrcfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 			}
 		}
 		Complex *p=data+n4*inc1;
+#pragma ivdep	
 		for(unsigned int k=0; k < kstop; k += inc2) p[k].im *= -1.0;
 	}
 }
@@ -209,16 +211,17 @@ void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	if(WTableSize != n4) rfft_init(log2n);
 	
 	Complex *q=data+n2*inc1;
+#pragma ivdep	
 	for(unsigned int k=0; k < kstop; k += inc2) {
 		data[k].im=data[k].re-q[k].re;
 		data[k].re += q[k].re;
 	}
 	
 	if(isign == 1) {
-#pragma ivdep
 		for(unsigned int i=1; i < n4; i++) {
 			Complex *p=data+i*inc1, *q=data+(n2-i)*inc1;
 			Complex W=conj(WTable[i]);
+#pragma ivdep
 			for(unsigned int k=0; k < kstop; k += inc2) {
 				Complex u=conj(p[k]), v=q[k];
 				Complex A=u+v, B=2.0*W*(u-v);
@@ -227,12 +230,13 @@ void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 			}
 		}
 		Complex *p=data+n4*inc1;
+#pragma ivdep	
 		for(unsigned int k=0; k < kstop; k += inc2) p[k]=2.0*conj(p[k]);
 	} else {
-#pragma ivdep
 		for(unsigned int i=1; i < n4; i++) {
 			Complex *p=data+i*inc1, *q=data+(n2-i)*inc1;
 			Complex W=conj(WTable[i]);
+#pragma ivdep
 			for(unsigned int k=0; k < kstop; k += inc2) {
 				Complex u=p[k], v=conj(q[k]);
 				Complex A=u+v, B=2.0*W*(u-v);
@@ -241,6 +245,7 @@ void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 			}
 		}
 		Complex *p=data+n4*inc1;
+#pragma ivdep
 		for(unsigned int k=0; k < kstop; k += inc2) p[k] *= 2.0;
 	}
 	
@@ -250,8 +255,8 @@ void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 // Return the two-dimensional real inverse Fourier transform of the
 // nx*(ny/2+1) spectral values taken from the frequency half-plane.
 // Before calling, data must be allocated as Complex[nx*(ny/2+1)].
-// On entry: data[i+nx*j] contains the nx Complex values for
-// each j=0,...,ny/2. 
+// On entry: data[i+nx*j] contains nx/2+1 Complex values for j=0
+// and nx values for j=1,...,ny/2.
 //           log2nx contains the base-2 logarithm of nx.
 //           log2ny contains the base-2 logarithm of ny.
 //           isign is +1 for a forward transform, -1 for an inverse transform.
@@ -266,9 +271,16 @@ void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	unsigned int nx=1 << log2nx;
 	unsigned int ny=1 << log2ny;
 	const unsigned int nyp=ny/2+1;
+	const unsigned int nx2=nx/2;
 
+	// Enforce reality condition
+	data[0]=0.0;
+#pragma ivdep
+	for(i=1; i < nx2; i++) data[i]=conj(data[nx-i]);
+	
 	for(j=0; j < nyp; j++) {
 		Complex *p=data+nx*j;
+#pragma ivdep
 		for(i=1; i < nx; i += 2) p[i] *= -1.0;
 	}
 
@@ -276,11 +288,13 @@ void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	
 	for(j=0; j < nyp; j++) {
 		Complex *p=data+nx*j;
+#pragma ivdep
 		for(i=1; i < nx; i += 2) p[i] *= -1.0;
 	}
 	
 	for(j=1; j < nyp; j += 2) {
 		Complex *p=data+nx*j;
+#pragma ivdep
 		for(i=0; i < nx; i++) p[i] *= -1.0;
 	}
 
@@ -309,11 +323,13 @@ void rcfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	
 	for(j=1; j < nyp; j += 2) {
 		Complex *p=data+nx*j;
+#pragma ivdep
 		for(i=0; i < nx; i++) p[i] *= -1.0;
 	}
 	
 	for(j=0; j < nyp; j++) {
 		Complex *p=data+nx*j;
+#pragma ivdep
 		for(i=1; i < nx; i += 2) p[i] *= -1.0;
 	}
 	
@@ -321,12 +337,14 @@ void rcfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	
 	for(j=0; j < nyp; j++) {
 		Complex *p=data+nx*j;
+#pragma ivdep
 		for(i=1; i < nx; i += 2) p[i] *= -1.0;
 	}
 }
 
 // Return the two-dimensional real inverse Fourier transform of the
-// nx*(ny/2+1) spectral values taken from the positive frequency half-plane.
+// nx*(ny/2+1) spectral values taken from the non-negative frequency
+// half-plane. 
 // Before calling, data must be allocated as Complex[nx*(ny/2+1)].
 // On entry: data[(ny/2+1)*i+j] contains the ny/2+1 Complex values for
 // each i=0,...,nx-1. 
@@ -344,9 +362,16 @@ void crfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	unsigned int nx=1 << log2nx;
 	unsigned int ny=1 << log2ny;
 	const unsigned int nyp=ny/2+1;
+	const unsigned int nx2=nx/2;
 
+	// Enforce reality condition
+	data[0]=0.0;
+#pragma ivdep
+	for(i=1; i < nx2; i++) data[nyp*i]=conj(data[nyp*(nx-i)]);
+	
 	for(i=1; i < nx; i += 2) {
 		Complex *p=data+i*nyp;
+#pragma ivdep
 		for(j=0; j < nyp; j++) p[j] *= -1.0;
 	}
 
@@ -354,11 +379,13 @@ void crfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	
 	for(i=1; i < nx; i += 2) {
 		Complex *p=data+i*nyp;
+#pragma ivdep
 		for(j=0; j < nyp; j++) p[j] *= -1.0;
 	}
 	
 	for(i=0; i < nx; i++) {
 		Complex *p=data+i*nyp;
+#pragma ivdep
 		for(j=1; j < nyp; j += 2) p[j] *= -1.0;
 	}
 	
@@ -384,14 +411,16 @@ void rcfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	const unsigned int nyp=ny/2+1;
 
 	mrcfft(data,log2ny,isign,nx,1,nyp);
-	
+
 	for(i=0; i < nx; i++) {
 		Complex *p=data+i*nyp;
+#pragma ivdep
 		for(j=1; j < nyp; j += 2) p[j] *= -1.0;
 	}
 	
 	for(i=1; i < nx; i += 2) {
 		Complex *p=data+i*nyp;
+#pragma ivdep
 		for(j=0; j < nyp; j++) p[j] *= -1.0;
 	}
 	
@@ -399,6 +428,7 @@ void rcfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	
 	for(i=1; i < nx; i += 2) {
 		Complex *p=data+i*nyp;
+#pragma ivdep
 		for(j=0; j < nyp; j++) p[j] *= -1.0;
 	}
 }
