@@ -71,6 +71,8 @@ class PC : public IntegratorBase {
   int new_y0;
   Var *y,*y1,*source0;
   double halfdt;
+  int order;
+  double pgrow, pshrink;
  public:
   PC() {order=2;}
   void Allocate(int n) {
@@ -83,6 +85,14 @@ class PC : public IntegratorBase {
 	
   void TimestepDependence(double dt) {
     halfdt=0.5*dt;
+  }
+  virtual void ExtrapolateTimestep () {
+    if(errmax < tolmin2) {
+      if(errmax) growfactor=pow(tolmin2/errmax,pgrow);
+    } else if(tolmin2) shrinkfactor=growfactor=pow(tolmin2/errmax,pshrink);
+    growfactor=min(growfactor,stepfactor);
+    shrinkfactor=max(shrinkfactor,stepinverse);
+    if(errmax <= tolmax2) errmax=0.0; // Force a time step adjustment.
   }
   virtual void Predictor(double, double, unsigned int, unsigned int);
   virtual int Corrector(double, int, unsigned int, unsigned int);
