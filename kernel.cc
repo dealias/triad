@@ -372,15 +372,16 @@ void set_timer()
   cputime(cpu0);
   if(!restart) {
     for(int i=0; i < ncputime; i++) cpu_restart[i]=0.0;
-    fstats        << setw(w) << "it"
+    fstats << setw(w) << "it"
 	   << " " << setw(w) << "iteration"
 	   << " " << setw(e) << "t"
 	   << " " << setw(e) << "dt"
 	   << " " << setw(w) << "invert_cnt"
-	   << " " << setw(w) << "CPU"
-	   << " " << setw(w) << "CHILD"
-	   << " " << setw(w) << "SYS" 
-	   << " " << setw(w) << "memory" << endl;
+	   << " " << setw(e) << "CPU"
+	   << " " << setw(e) << "CHILD"
+	   << " " << setw(e) << "SYS" 
+	   << " " << setw(w) << "memory"
+	   << " " << setw(e) << "cpu" << endl;
   }
 }
 
@@ -388,13 +389,15 @@ void statistics(double t, double dt, int it)
 {
   int i;
   if(restart && it == 0) return;
+  double lastcputime=0.0;
+  
 	
   static int last_iter=0;
   int iter=final_iteration+iteration;
 
   cputime(cpu);
   for(i=0; i < ncputime; i++) cpu[i] -= cpu0[i];
-	
+  
   oxstream frestart(rtemp);
   if(frestart) {
     int i;
@@ -437,7 +440,9 @@ void statistics(double t, double dt, int it)
   for(i=0; i < ncputime; i++) {
     fstats << setw(e) << cpu_restart[i]+cpu[i] << " ";
   }
-  fstats << setw(w) << memory() << endl;
+  fstats << setw(w) << memory() << " "
+	 << setw(e) << cpu[0]-lastcputime << endl;
+  lastcputime=cpu[0];
   
   if(!fstats) msg(WARNING,"Cannot write to statistics file");
   unlock();
