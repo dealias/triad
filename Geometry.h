@@ -4,11 +4,8 @@
 #include "kernel.h"
 #include "utils.h"
 
+extern Var *psibuffer,*psibufferR,*psibufferStop;
 extern int reality; // Reality condition flag 
-extern Var *psibuffer,*psibuffer0,*psibufferR,*psibufferStop,*psitemp;
-extern Var *convolution,*convolution0;
-extern int pseudospectral;
-extern unsigned int log2n; // Number of FFT levels
 
 class GeometryBase {
 protected:	

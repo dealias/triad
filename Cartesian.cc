@@ -12,6 +12,8 @@ int Ny=17; // Number of modes in y-direction
 int NRows,NPad;
 int *RowBoundary;
 Var *ZeroBuffer; 
+unsigned int log2n; // Number of FFT levels
+int Npsibuffer;
 
 void Basis<Cartesian>::MakeBins()
 {
@@ -44,6 +46,10 @@ void Basis<Cartesian>::MakeBins()
 	ZeroBuffer=new Var[NPad];
 	for(i=0; i < NPad; i++) ZeroBuffer[i]=0.0;
 	
+	Npsibuffer=Nmode+NRows*NPad;
+	int nfft;
+	for(nfft=1, log2n=0; 3*(Npsibuffer+1) >= nfft+2; nfft *= 2, log2n++);
+	
 	for(j=0; j >= low.Row(); j--) // Reflected modes
 		for(i=((j == 0) ? -1 : high.Column()); i >= low.Column(); i--)
 			*(p++)=Cartesian(i,j);
@@ -55,7 +61,7 @@ void Basis<Cartesian>::MakeBins()
 }
 
 #if _CRAY
-int CartesianPad(Var * restrict to_, Var * from)
+void CartesianPad(Var * restrict to_, Var * from)
 {
 	Var * to=to_;
     for(int i=0; i < NRows; i++) {
@@ -67,7 +73,6 @@ int CartesianPad(Var * restrict to_, Var * from)
 #pragma ivdep		
         for(; to < tostop; to++) *to=*(zero++);
     }
-    return to-psibuffer;
 }
 
 void CartesianUnPad(Var * restrict to_, Var * from)

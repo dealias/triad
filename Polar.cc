@@ -167,6 +167,7 @@ static Real force_re(Real th)
 }
 
 static Real (*ThetaAverageFunction)(Real);
+
 static Real ThetaAverage(Real k) {
 	Real ans;
 	int iflag;
@@ -207,7 +208,8 @@ Nu Partition<Polar,Cartesian>::Linearity(int i)
 	Nu nu;
 	b=bin[i];
 	BinAverage(nu,linearity_re,linearity_im);
-	if(Area(i)) nu /= Area(i);
+	Real area=Area(i);
+	if(area) nu /= area;
 	return nu;
 }
 
@@ -216,7 +218,8 @@ Nu Partition<Polar,Cartesian>::Forcing(int i)
 	Real force;
 	b=bin[i];
 	BinAverage(force,force_re);
-	if(Area(i)) force /= Area(i);
+	Real area=Area(i);
+	if(area) force /= area;
 	return force;
 }
 

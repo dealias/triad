@@ -73,6 +73,8 @@ inline ostream& operator << (ostream& os, const Cartesian& b) {
 }
 	
 extern Cartesian *CartesianMode;
+extern unsigned int log2n; // Number of FFT levels
+extern int Npsibuffer;
 
 inline int Basis<Cartesian>::InGrid(Cartesian& m)
 {
@@ -89,7 +91,7 @@ extern Var *ZeroBuffer;
 int CartesianPad(Var *to, Var *from);
 void CartesianUnPad(Var *to, Var *from);
 #else
-inline int CartesianPad(Var *to, const Var *from)
+inline void CartesianPad(Var *to, const Var *from)
 {
 	for(int i=0; i < NRows; i++) {
 		int ncol=RowBoundary[i+1]-RowBoundary[i];
@@ -98,7 +100,6 @@ inline int CartesianPad(Var *to, const Var *from)
 		set(to,ZeroBuffer,NPad);
 		to += NPad;
 	}
-	return to-psibuffer;
 }
 
 inline void CartesianUnPad(Var *to, const Var *from)

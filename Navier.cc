@@ -124,7 +124,6 @@ void PS::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
 	*NonlinearSrc=PrimitiveNonlinearityFFT;
 	*ConstantSrc=ConstantForcing;
 	continuum_factor=1.0;
-	pseudospectral=1;
 }
 
 NWave NWaveProblem;
@@ -136,7 +135,7 @@ Real force_re(const Polar& v)
 	else return 0.0;
 }
 
-Real growth(const Polar& v) 
+inline Real growth(const Polar& v) 
 {
 	Real k=v.K();
 	Real gamma=0.0;
@@ -146,7 +145,7 @@ Real growth(const Polar& v)
 	return gamma;
 }
 
-Real frequency(const Polar&)
+inline Real frequency(const Polar&)
 {
 	return 0.0;
 }

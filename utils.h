@@ -31,6 +31,9 @@ extern const double twopi2;
 
 extern char beep;
 
+// Make endl not flush by default.
+#define endl '\n'
+
 inline int isgn(const Real x)
 {
 	return ((x) == 0.0 ? 0 : ((x) > 0.0 ? 1 : -1));

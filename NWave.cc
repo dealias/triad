@@ -10,8 +10,6 @@ int reality=1; // Reality condition flag
 
 Var *psibuffer,*psibuffer0,*psibufferR,*psibufferStop,*pqbuffer,*psitemp;
 Var *convolution,*convolution0;
-int pseudospectral=0;
-unsigned int log2n; // Number of FFT levels
 
 Var **pqIndex;
 int *qStart;
@@ -141,7 +139,7 @@ void PrimitiveNonlinearityFFT(Complex *source, Complex *psi, double)
 	extern Cartesian *CartesianMode;
 	
 	*psibuffer0=0.0;
-	int Npsibuffer=CartesianPad(psibuffer,psi);
+	CartesianPad(psibuffer,psi);
 	
 #pragma ivdep	
 	for(i=0; i < Npsi; i++) {

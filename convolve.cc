@@ -52,7 +52,8 @@ void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
 	unsigned int n=1 << log2n;
 	unsigned int i;
 
-	if(m > n/3) msg(ERROR, "Insufficient room for dealiasing");
+// #define msg(a,b) cout << b << endl
+	if(3*m >= n+2) msg(ERROR, "Insufficient room for dealiasing");
 	
 #pragma ivdep	
 	for(i=m; i < n/2+1; i++) G[i]=0.0;

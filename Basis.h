@@ -6,6 +6,8 @@
 
 #define BASIS(key) {new Entry<Basis<key>,GeometryBase> (#key,GeometryTable);}
 
+extern Var *convolution,*convolution0,*psibuffer0,*psitemp;
+
 extern Real *kinv2;
 
 template<class T>
@@ -50,8 +52,7 @@ void Basis<T>::List(ostream &os)
 template<class T>
 void Basis<T>::Initialize()
 {
-	int n2=1;
-	for(log2n=1; Nmode+1 > 4*n2/9; log2n++, n2 *= 2);
+	int n2=1 << (log2n-1);
 	cout << n2 << " FFT COMPONENTS ALLOCATED." << endl;
 	convolution0=new Var[n2+1];
 	convolution=convolution0+1;
