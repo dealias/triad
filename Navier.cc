@@ -256,6 +256,7 @@ void NWave::Initialize()
 	out_curve(fprolog,forcing,"f",Npsi);
 	out_function(fprolog,equilibrium,"equil",Npsi);
 	out_function(fprolog,Normalization,"normalization",Npsi);
+	fprolog.flush();
 
 	fevt << "#   t\t\t E\t\t Z\t\t P" << endl;
 
