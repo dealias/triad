@@ -562,7 +562,7 @@ int main(int argc, char *const argv[])
 	char *const format=grey ? "gray" : "rgb";
 	int PaletteMin=grey ? 0 : ColorPaletteMin[palette];
 	int PaletteRange=grey ? 255 : (ColorPaletteMax[palette]-PaletteMin);
-	int background=PaletteMin+PaletteRange/2; 
+	int background=PaletteMin+PaletteRange; 
 	
 	red=Red[palette];
 	green=Green[palette];
