@@ -341,7 +341,7 @@ void options()
 	cerr << "-reverse\t reverse palette direction" << endl;
 	cerr << "-ncolors n\t maximum number of colors to generate (default 65536)"
 		 << endl; 
-	cerr << "-view\t view single frame with xv" << endl;
+	cerr << "-view\t\t view single frame with xv" << endl;
 	cerr << "-background n\t background color" << endl; 
 	cerr << "-gradient\t apply intensity gradient to spectral palettes" 
 		 << endl; 
