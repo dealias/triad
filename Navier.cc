@@ -3,8 +3,10 @@
 #include "Polar.h"
 #include "Cartesian.h"
 
-#include <sys/mode.h>
 #include <sys/stat.h>
+#if _AIX
+extern int mkdir(const char *, mode_t); 
+#endif
 
 char *NWaveVocabulary::Name() {return "N-Wave";}
 char *NWaveVocabulary::Abbrev() {return "nw";}
