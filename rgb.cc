@@ -76,6 +76,7 @@ int main(int argc, char *const argv[])
 	
 	int nfiles=argc-optind;
 	if(nfiles < 1) msg(ERROR,"File name required");
+	if(nfiles > 1) label=1;
 	char *const *argf=argv+optind;
 		
 	vmin=new double[nfiles];
