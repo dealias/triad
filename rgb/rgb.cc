@@ -806,7 +806,6 @@ int main(int argc, char *const argv[])
 	if((remote || !label) && make_mpeg) putenv("DISPLAY=");
 
 	if(nset) {
-				
 		if(extract) {
 			for(n=0; n < nset; n++)
 				montage(nfiles,argf,n,format,extract);
@@ -850,6 +849,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 			 char *const type)
 {
 	strstream buf;
+	int frame;
 	
 	buf << convertprog << " -size " << xsize << "x" << ysize
 		<< " -geometry " << xsize << "x" << ysize
@@ -868,8 +868,12 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 			<< setfill('0') << setw(NDIGITS) << n << "." << format << " ";
 	}
 	buf << "-interlace partition " << type << ":";
-	if(!extract) buf << rgbdir;
-	buf << argf[0] << n << "." << type;
+	if(extract) frame=begin+n*skip;
+	else {					
+		frame=n;
+		buf << rgbdir;
+	}
+	buf << argf[0] << frame << "." << type;
 	if(!verbose) buf << ">& /dev/null";
 	buf << ends;
 	char *cmd=buf.str();
