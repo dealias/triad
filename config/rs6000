@@ -1,0 +1,5 @@
+G++ = xlC -+
+POLL = idle.o
+OPT = $(CFLAGS)
+MDOPT = -I /usr/lpp/xlC/include -I /
+

@@ -1,0 +1,2 @@
+LIB = $(LFLAGS) -lm
+MDOPT = -D__i386__ -I /usr/lib/g++-include
