@@ -207,7 +207,7 @@ void ConstantForcing(Var *source, Var *, double t)
 	for(int k=0; k < Npsi; k++) source[k] += forcing[k]*randomfactor;
 }
 
-Solve_RC C_Euler::Solve(Real *y0, double t, double dt)
+Solve_RC C_Euler::Solve(double t, double dt)
 {
 	int j,iter,cont,jfix=-1;
 	Real *rsource=(Real *) source, *ry=(Real *) y;
@@ -258,7 +258,7 @@ Solve_RC C_Euler::Solve(Real *y0, double t, double dt)
 	return SUCCESSFUL;
 }
 
-Solve_RC C_Euler::Solve(Complex *, double, double)
+Solve_RC C_Euler::Solve(double, double)
 {
 	msg(ERROR,"Complex C_Euler has not been implemented");
 	return UNSUCCESSFUL;
