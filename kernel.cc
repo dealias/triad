@@ -346,11 +346,11 @@ void dump(int it, int final, double tmax)
 				if(tmpdir) rcheck << tmpdir << dirsep
 								  << Vocabulary->Directory() << run; 
 				rcheck << rname << "." << iter-microsteps << ends;
-				if(!rename(rname,rcheck.str()))
+				if(rename(rname,rcheck.str()))
 					msg(WARNING,"Cannot rename %s to checkpoint file %s",rname,
 						rcheck.str());
 			}
-			if(!rename(rtemp,rname))
+			if(rename(rtemp,rname))
 				msg(WARNING,"Cannot rename restart file %s",rtemp);
 		}
 		else {
