@@ -36,7 +36,7 @@ template<class T, class D>
 INLINE int InInterval(const D& m, const T& a, const T& b);
 
 template<class T, class D>
-class Bin {
+class Bin : public Mode {
 public:
 	T min,max,cen;
 	int nmode;
@@ -46,11 +46,11 @@ public:
 	T Delta() {return max-min;}
 	Real Area();
 	
-	Real K() {return cen.K();}
-	Real K2() {return cen.K2();}
-	Real Th() {return cen.Th();}
-	Real X() {return cen.X();}
-	Real Y() {return cen.Y();}
+	Real X() const {return cen.X();}
+	Real Y() const {return cen.Y();}
+	Real K2() const {return cen.K2();}
+	Real K() const {return cen.K();}
+	Real Th() const {return cen.Th();}
 	
 	int InBin(const D& m) {return InInterval(m,min,max);}
 	void Count(const D& m) {if(InBin(m)) mode[nmode++]=m;}
@@ -231,12 +231,8 @@ public:
 	INLINE void Initialize();
 	INLINE void ListTriads(ostream &os);
 	
+	Mode& ModeOf(int k) {return bin[k];}
 	Real Area(int k) {return bin[k].Area();}
-	Real K(int k) {return bin[k].K();}
-	Real K2(int k) {return bin[k].K2();}
-	Real Th(int k) {return bin[k].Th();}
-	Real X(int k) {return bin[k].X();}
-	Real Y(int k) {return bin[k].Y();}
 	
 // Factor which converts |y|^2 to energy in various normalizations:
 	Real Normalization(int);

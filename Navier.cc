@@ -55,20 +55,20 @@ Real mode_density;
 
 class Diamagnetic : public LinearityBase {
 public:
-	Real Frequency(const Polar& v) {return vd*v.Y()/Denominator(v.K2());}
+	Real Frequency(const Mode& v) {return vd*v.Y()/Denominator(v);}
 };
 
 class BandLimited : public Diamagnetic {
 public:
 	char *Name() {return "Band-Limited";}
 	
-	Real Growth(const Polar& v) {
+	Real Growth(const Mode& v) {
 		Real k=v.K();
 		Real gamma=0.0;
 		if(k <= kL) gamma -= pow(k,pL)*nuL*pow(k,pL);
 		if(abs(k-kforce) < 0.5*deltaf) gamma += gammaf/deltaf;
 		if(k > kH) gamma -= pow(k,pH)*nuH*pow(k,pH);
-		return gamma/Denominator(v.K2());
+		return gamma/Denominator(v);
 	}
 };
 
@@ -76,9 +76,9 @@ class Waltz : public Diamagnetic {
 public:
 	char *Name() {return "Waltz";}
 	
-	Real Denominator(Real k2) {return 1.0+k2;}
+	Real Denominator(const Mode &v) {return 1.0+v.K2();}
 	
-	Real Growth(const Polar& v) {
+	Real Growth(const Mode& v) {
 		Real tempx=abs(v.X())/0.5-1.0;
 		Real tempy=abs(v.Y())/0.5-1.0;
 		return 0.06*(1.0-0.5*(tempx*tempx+tempy*tempy))-0.05;
@@ -88,13 +88,13 @@ public:
 class ConstantFrequency : public BandLimited {
 public:
 	char *Name() {return "ConstantFrequency";}
-	Real Frequency(const Polar&) {return vd;}
+	Real Frequency(const Mode&) {return vd;}
 };
 
 class FrequencyK : public BandLimited {
 public:
 	char *Name() {return "FrequencyK";}
-	Real Frequency(const Polar& v) {return vd*v.K();}
+	Real Frequency(const Mode& v) {return vd*v.K();}
 };
 
 NWaveVocabulary::NWaveVocabulary()
@@ -177,7 +177,7 @@ NWaveVocabulary::NWaveVocabulary()
 
 NWaveVocabulary NWave_Vocabulary;
 
-Real force_re(const Polar& v) 
+Real force_re(const Mode& v) 
 {
 	Real k=v.K();
 	if(abs(k-kforce) < 0.5*deltaf) return force;
@@ -284,8 +284,8 @@ void NWave::InitialConditions()
 			psix=new Var[nfft];
 			norm_factor=new Real[Npsi];
 			for(int m=0; m < Npsi; m++) {
-				norm_factor[m]=sqrt(Geometry->Normalization(m)/
-									Linearity->Denominator(Geometry->K2(m)));
+				norm_factor[m]=sqrt(Geometry->Normalization(m)/Linearity->
+									Denominator(Geometry->ModeOf(m)));
 			}
 		} else {
 			int m;
@@ -307,7 +307,7 @@ void NWave::InitialConditions()
 				Real Dkinv=1.0/Geometry->Area(m);
 				Real kx=Geometry->X(m);
 				Real norm=sqrt(Geometry->Normalization(m)/
-							   Linearity->Denominator(Geometry->K2(m)));
+							   Linearity->Denominator(Geometry->ModeOf(m)));
 
 				for(i=0; i < ngridx; i++) {
 					Complex *p=xcoeff+i*Npsi;
@@ -479,6 +479,6 @@ void NWave::Output(int)
 
 void ForcingAt(int i, Real &force)
 {
-	force=force_re(Polar(Geometry->K(i),Geometry->Th(i)));
+	force=force_re(Geometry->ModeOf(i));
 	return;
 }

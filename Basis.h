@@ -29,13 +29,9 @@ public:
 	INLINE void Initialize();
 	
 	int InGrid(T &);
-	Real Area(int) {return 1.0;}
 	
-	Real K(int k) {return mode[k].K();}
-	Real K2(int k) {return mode[k].K2();}
-	Real Th(int k) {return mode[k].Th();}
-	Real X(int k) {return mode[k].X();}
-	Real Y(int k) {return mode[k].Y();}
+	Mode& ModeOf(int k) {return mode[k];}
+	Real Area(int) {return 1.0;}
 	
 // Factor which converts |y|^2 to energy:
 	Real Normalization(int);

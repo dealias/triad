@@ -1,6 +1,8 @@
 #ifndef __Geometry_h__
 #define __Geometry_h__ 1
 
+#include "Mode.h"
+
 #if _CFRONT
 #include "options.h" // Work around CRAY template instantiation problem
 #endif
@@ -36,12 +38,14 @@ public:
 	virtual Nu Linear(int)=0;
 	virtual Real Forcing(int)=0;
 	
+	virtual Mode& ModeOf(int)=0;
 	virtual Real Area(int)=0;
-	virtual Real K(int)=0;
-	virtual Real K2(int)=0;
-	virtual Real Th(int)=0;
-	virtual Real X(int)=0;
-	virtual Real Y(int)=0;
+	
+	Real X(int i) {return ModeOf(i).X();}
+	Real Y(int i) {return ModeOf(i).Y();}
+	Real K2(int i) {return ModeOf(i).K2();}
+	Real K(int i) {return ModeOf(i).K();}
+	Real Th(int i) {return ModeOf(i).Th();}
 	
 	virtual Real Normalization(int)=0;
 	

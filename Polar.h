@@ -1,7 +1,9 @@
 #ifndef __Polar_h__
 #define __Polar_h__ 1
 
-class Polar {
+#include "Mode.h"
+
+class Polar : public Mode {
 public:	
 	Real r,th;	// wavenumber components
 	
@@ -11,11 +13,11 @@ public:
 		r=y.r; th=y.th; return *this; 
 	} 
 	
-	Real K() const {return r;}
-	Real K2() const {return r*r;}
-	Real Th() const {return th;}
 	Real X() const {return r*cos(th);}
 	Real Y() const {return r*sin(th);}
+	Real K2() const {return r*r;}
+	Real K() const {return r;}
+	Real Th() const {return th;}
 };
 
 inline int operator == (const Polar& x, const Polar& y)

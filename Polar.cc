@@ -143,7 +143,7 @@ void Bin<Polar,Cartesian>::MakeModes()
 static const Real linacc=1.0E-5;
 static const Real dxmax=REAL_MAX;
 
-Real force_re(const Polar& v);
+Real force_re(const Mode& v);
 
 static Real k0;
 static Bin<Polar,Cartesian> b;

@@ -1,6 +1,7 @@
 #ifndef __Cartesian_h__
 #define __Cartesian_h__ 1
 
+#include "Mode.h"
 #include "Basis.h"
 
 extern int Nx;
@@ -16,7 +17,7 @@ extern double scale;
 extern Real krmin;
 extern Real krmin2;
 
-class Cartesian {
+class Cartesian : public Mode {
 public:	
 	int x,y;	// wavenumber components
 	
@@ -146,7 +147,7 @@ inline void CartesianUnPad(Var *to, const Var *from)
 
 // Factor which converts |y|^2 to 2.0*energy in stream function normalization:
 inline Real Basis<Cartesian>::Normalization(int i) {
-	return Linearity->Denominator(Geometry->K2(i));
+	return Linearity->Denominator(ModeOf(i));
 }
 
 #endif
