@@ -159,6 +159,10 @@ int main(int argc, char *argv[])
 	cout << endl << "PARAMETERS:" << endl << endl;
 	Problem->List(cout);
 	
+	lname=Problem->FileName(dirsep,"LOCK");
+	rname=Problem->FileName(dirsep,"restart");
+	rtemp=Problem->FileName(dirsep,"restart=");
+	
 	if(!testing) {
 		lock();
 		fdump.open(pname);
@@ -170,9 +174,6 @@ int main(int argc, char *argv[])
 	Approximation=Problem->NewApproximation(approximation);
 	Integrator=Problem->NewIntegrator(integrator);
 	
-	rname=Problem->FileName(dirsep,"restart");
-	rtemp=Problem->FileName(dirsep,"restart=");
-	
 	if(!(restart || initialize)) {
 		fin.open(rname);
 		if(fin && !clobber) 
@@ -181,7 +182,6 @@ int main(int argc, char *argv[])
 		errno=0;
 	}
 	
-	lname=Problem->FileName(dirsep,"LOCK");
 	if(restart) {
 		ftest.open(lname);
 		if(ftest) {
