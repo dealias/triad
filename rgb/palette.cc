@@ -8,6 +8,9 @@ Array1<u_char> Blue;
 Array1<u_char> Green;
 
 extern int verbose;
+extern int two;
+extern int gradient;
+
 static int k,incr;
 
 int ColorByte(double r) {
@@ -15,9 +18,10 @@ int ColorByte(double r) {
 }
 
 void AddColor(double r, double g, double b) {
-	Red[k]=ColorByte(r);
-	Green[k]=ColorByte(g);
-	Blue[k]=ColorByte(b);
+	Real factor=gradient ? ((double) k)/NColors : 1.0;
+	Red[k]=ColorByte(r*factor);
+	Green[k]=ColorByte(g*factor);
+	Blue[k]=ColorByte(b*factor);
 	k += incr;
 }
 
@@ -48,12 +52,15 @@ void MakePalette(int palette)
 		divisor=3;
 		break;
 	case RGreyB:
+		two=0; // Can't double this palette
 		offset=1;
 		nintervals=2;
 		break;
 	default:
 		msg(ERROR,"Invalid palette: %d",palette);
 	}
+	
+	if(two) nintervals += 6;
 	
 	num=NColors-offset;
 	int n=(num/(nintervals*divisor))*divisor;
@@ -76,6 +83,7 @@ void MakePalette(int palette)
 
 	incr=-1;
 	k=allcolors-1;
+	if(two) gradient=1;
 
 	if(palette == WHEEL) {
 		for(i=0; i < n; i++) AddColor(1.0,0.0,(n-i)*ninv);
@@ -106,7 +114,7 @@ void MakePalette(int palette)
 	for(i=0; i < n; i++) AddColor(0.0,1.0,i*ninv);
 	for(i=0; i < n; i++) AddColor(0.0,(n-i)*ninv,1.0);
 
-	if(palette == BRAINBOW || palette == BWRAINBOW) {
+	if((palette == BRAINBOW || palette == BWRAINBOW) && !gradient) {
 		int n3=n/3;
 		int n23=2*n3;
 		for(i=0; i < n3; i++) AddColor(i*ninv,0.0,(n-i)*ninv);
@@ -114,7 +122,18 @@ void MakePalette(int palette)
 		for(i=0; i <= n3; i++) AddColor((n3-i)*ninv,0.0,(n3-i)*ninv);
 	}
 
-	if(palette == RAINBOW || palette == WRAINBOW || palette == WHEEL) {
+	if(palette == RAINBOW || palette == WRAINBOW || palette == WHEEL 
+	   || gradient) {
+		for(i=0; i <= n; i++) AddColor(i*ninv,0.0,1.0);
+	}
+	
+	if(two) {
+		for(i=0; i < n; i++) AddColor(1.0,0.0,(n-i)*ninv);
+		for(i=0; i < n; i++) AddColor(1.0,i*ninv,0.0);
+		for(i=0; i < n; i++) AddColor((n-i)*ninv,1.0,0.0);
+
+		for(i=0; i < n; i++) AddColor(0.0,1.0,i*ninv);
+		for(i=0; i < n; i++) AddColor(0.0,(n-i)*ninv,1.0);
 		for(i=0; i <= n; i++) AddColor(i*ninv,0.0,1.0);
 	}
 }

@@ -48,6 +48,8 @@ static strstream rgbdirbuf;
 static int xsize,ysize;
 
 int verbose=0;
+int two=0;
+int gradient=0;
 static int floating_scale=0;
 static int floating_section=0;
 static int preserve=0;
@@ -74,6 +76,9 @@ int invert=0;
 int reverse=0;
 int crop=0;
 int make_mpeg=0;
+int lower=0;
+int upper=INT_MAX;
+
 int istart,istop;
 int jstart,jstop;
 
@@ -214,8 +219,10 @@ int readframe(ixstream& xin, int nx, int ny, int nz, Array3<float> value,
 					sumv += valuekj[i0];
 					valuekj[i0++]=sumv;
 					if((j-start+incr) % sy == 0) {
-						if(sumv < vmin) vmin=sumv;
-						if(sumv > vmax) vmax=sumv;
+						if(k >= lower && k <= upper) {
+							if(sumv < vmin) vmin=sumv;
+							if(sumv > vmax) vmax=sumv;
+						}
 					}
 					sumv=0.0;
 				}
@@ -317,6 +324,9 @@ void options()
 	cerr << "-ncolors n\t maximum number of colors to generate (default 65536)"
 		 << endl; 
 	cerr << "-background n\t background color" << endl; 
+	cerr << "-double\t\t double spectral palette and apply intensity gradient" 
+		 << endl; 
+	cerr << "-gradient\t\t apply intensity gradient to palette" << endl; 
 	cerr << endl;
 	cerr << "Color Palettes:" << endl;
 	cerr << "-bwrainbow\t black+rainbow+white [default]"
@@ -349,7 +359,6 @@ int main(int argc, char *const argv[])
 {
 	int nset=0, mx=1, my=1;
 	int n, end=INT_MAX;
-	int lower=0, upper=INT_MAX;
 	int trans=0;
 	int palette=BWRAINBOW;
 	int nobar=0;
@@ -373,6 +382,8 @@ int main(int argc, char *const argv[])
                {"torus", 0, &trans, TORUS},
                {"reverse", 0, &reverse, 1},
                {"symmetric", 0, &symmetric, 1},
+               {"double", 0, &two, 1},
+               {"gradient", 0, &gradient, 1},
                {"nobar", 0, &nobar, 1},
                {"extract", 1, 0, EXTRACT},
                {"ncolors", 1, 0, NCOLORS},
