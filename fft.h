@@ -21,6 +21,8 @@ void rcfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 			 int isign);
 void crfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 			 int isign);
+void rcfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
+			 int isign);
 void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 			 int isign);
 
