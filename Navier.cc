@@ -201,7 +201,7 @@ void NWave::InitialConditions()
 	avgyim=new Avgylabel[Nmoment];
 	for(n=0; n < Nmoment; n++) {
 		sprintf(tempbuffer,"avgy%d",n);
-		mkdir(Vocabulary->FileName(dirsep,tempbuffer),0);
+		mkdir(Vocabulary->FileName(dirsep,tempbuffer),0xFFFF);
 		errno=0;
 		sprintf(avgyre[n],"y.re^%d",n);
 		sprintf(avgyim[n],"y.im^%d",n);
