@@ -129,19 +129,20 @@ public:
 	void MakeBins();
 	void List(ostream &os);
 	Mc ComputeBinAverage(Bin<T> *k, Bin<T> *p, Bin<T> *q);
-	inline Mc Ckpq(T&, T&, T&);
 	Mc FindWeight(int k, int p, int q);
 
 	void GenerateWeights();
 	void ComputeTriads();
 	void ListTriads();
-	Nu Linearity(int i);
 	
 	Real Area(int k) {return bin[k].Area();}
 	Real K(int k) {return bin[k].K();}
 	Real Th(int k) {return bin[k].Th();}
 	Real Kx(int k) {return bin[k].Kx();}
 	Real Ky(int k) {return bin[k].Ky();}
+	
+	Nu Linearity(int i);
+	inline Mc Ckpq(T&, T&, T&);
 	
 	int pq(int p, int q) {return n*p-p*(p+1)/2+q;} // Index to element p <= q
 	Index_t WeightIndex(int k, int p, int q) {

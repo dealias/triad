@@ -33,8 +33,8 @@ int pH=1;
 
 int randomIC=1;
 
-int Nx=8;
-int Ny=8;
+int Nx=17;
+int Ny=17;
 
 NWave::NWave()
 {

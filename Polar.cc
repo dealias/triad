@@ -88,7 +88,7 @@ void Partition<Polar>::MakeBins() // Radial: logarithmic, Angular: uniform
 	n=Nr*Nth;
 	p=bin=new Bin<Polar>[n];
 	Nmode=Nr*Nthpos;
-	nindependent=(reality || Nth % 2) ? Nmode : Nmode/2;
+	nindependent=(reality || Nth % 2) ? Nmode : n/2;
 	
 	for(j=0; j < Nth; j++) {
 		for(i=0; i < Nr; i++) {

@@ -1,4 +1,5 @@
 #include "NWave.h"
+#include "Cartesian.h"
 
 int Npsi;
 int NpsiR;
@@ -18,6 +19,7 @@ TriadLimits *triadLimits;
 int Nchainp,Nchainn;
 DynVector<Chain> chainp,chainn;
 Chain *chainpBase,*chainnBase;
+Real *kinv2;
 
 Nu *nu,*nu_inv;
 Real *nuR_inv,*nuI;
@@ -90,6 +92,8 @@ void PrimitiveNonlinearitySR(Var *source, Var *psi, double)
 
 void PrimitiveNonlinearity(Var *source, Var *psi, double)
 {
+	extern Cartesian *CartesianMode;
+
 	set(psibuffer,psi,Npsi);
 	
 	// Compute reflected psi's
@@ -100,21 +104,30 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 		
 	for(int i=0; i < Nchainp; i++) {
 		Chain *c=chainpBase+i;
-		Var *p=c->pstart, *pstop=c->pstop, *q=c->qstart;
-		Mc *m=c->Mkpq;
-		Var sum;
-		for(sum=0.0; p < pstop; m++,p++,q++) sum += (*m)*(*p)*(*q);
-		source[c->k] += sum;
-	}
-	for(int i=0; i < Nchainn; i++) {
-		Chain *c=chainnBase+i;
-		Var *p=c->pstart, *pstop=c->pstop, *q=c->qstart;
-		Mc *m=c->Mkpq;
-		Var sum;
-		for(sum=0.0; p < pstop; m++,p++,q--) sum += (*m)*(*p)*(*q);
+		Cartesian mk=CartesianMode[c->k], mp=CartesianMode[c->p];
+		Real kx=mk.Kx(), ky=mk.Ky(), py=mp.Ky();
+		Real kxpy=kx*py, py2=py*py;
+		Var sum=0.0, *psip=psibuffer+c->p, *psiq=c->psiq;
+		int stop=c->stop;
+		for(int px=mp.Column(); px < stop; px++,psiq++)
+			sum += (ky*px-kxpy)*(px*px+py2)*psip[px]*(*psiq);
 		source[c->k] += sum;
 	}
 	
+	for(int i=0; i < Nchainn; i++) {
+		Chain *c=chainnBase+i;
+		Cartesian mk=CartesianMode[c->k], mp=CartesianMode[c->p];
+		Real kx=mk.Kx(), ky=mk.Ky(), py=mp.Ky();
+		Real kxpy=kx*py, py2=py*py;
+		Var sum=0.0, *psip=psibuffer+c->p, *psiq=c->psiq;
+		int stop=c->stop;
+		for(int px=mp.Column(); px < stop; px++,psiq--)
+			sum += (ky*px-kxpy)*(px*px+py2)*psip[px]*(*psiq);
+		source[c->k] += sum;
+	}
+	
+	for(int i=0; i < Npsi; i++) source[i] *= kinv2[i];
+
 	// Compute moments
 	if(average && Nmoment > 0) {
 		Var *k, *q=source+Npsi, *kstop=psibuffer+Npsi;
