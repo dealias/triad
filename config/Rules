@@ -1,7 +1,9 @@
 .cc.o:
 	$(C++) $(OPT) $(INCL) -o $@ -c $<
 
-triad: 
+.PHONY: triad clean
+
+triad:
 	make -f $(TRI)/config/Depend compile NAME=triad
 
 clean:
