@@ -1,9 +1,12 @@
+#ifdef _ANSI_C_SOURCE
+#undef _ANSI_C_SOURCE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 
-#include "utils.h"
 extern double polltime;
 
 // return CPU idle time in seconds

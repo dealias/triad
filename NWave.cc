@@ -50,27 +50,33 @@ inline void PrimitiveNucleus(Complex *source, Real)
 void PrimitiveNonlinearity(Var *source, Var *psi, double)
 {
 	Var *k,*kstop,*q;
-	Pair *p,*pstop=pair+Npair;
+	Pair *p,*pstop;
 	
 	set(psibuffer,psi,Npsi);
 	
 	// Compute reflected psi's
 	if(reality) {
-		k=psibuffer; q=k+Npsi;
-		kstop=psibuffer+Npsi;
-		while(k < kstop) *(q++)=conj(*(k++));
+		kstop=q=psibuffer+Npsi;
+#if _CRAY		
+#pragma ivdep		
+#endif		
+		for(k=psibuffer; k < kstop; k++) *(q++)=conj(*k);
 	}
 	
+#if _CRAY		
+#pragma ivdep		
+#endif		
+	pstop=pair+Npair;
 	for(p=pair; p < pstop; p++) p->psipq=(*p->p)*(*p->q);
 	
 	PrimitiveNucleus(source, triadBase->Mkpq);
 	
 	// Compute moments
 	if(average && Nmoment > 0) {
+		kstop=k+Npsi;
 		q=source+Npsi;
-		k=psi; kstop=k+Npsi;
-		while(k < kstop) {
-			Var prod,psi=*(k++);
+		for(k=psi; k < kstop; k++) {
+			Var prod,psi=*k;
 			*(q++)=prod=product(psi,psi);		// psi^2
 			for(int n=1; n < Nmoment; n++)
 				*(q++)=prod=product(prod,psi);	// psi^n
