@@ -98,10 +98,10 @@ class Grid1 : public Grid<Array1<T>,T> {
 	
   void XDirichlet2(const Array1<T>& u, T b0, T b1) {
     if(homogeneous) return;
-    u[i1-2]=b0;
+    u[i1-2]=2.0*b0-u[i1];
     u[i1-1]=b0;
     u[i2+1]=b1;
-    u[i2+2]=b1;
+    u[i2+2]=2.0*b1-u[i2];
   }
 	
   void XDirichlet(const Array1<T>& u, const Array1<T>& b, int contract=0) {

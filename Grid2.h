@@ -162,13 +162,16 @@ class Grid2 : public Grid<Array2<T>,T> {
 	
   void XDirichlet2(const Array2<T>& u, T b0, T b1) {
     if(homogeneous) return;
-    Array1<T>::opt um1=u[i1-2], u0=u[i1-1], unx1=u[i2+1], unx2=u[i2+2];
+    Array1<T>::opt um1=u[i1-2], u0=u[i1-1], u1=u[i1];
+    Array1<T>::opt unx=u[i2], unx1=u[i2+1], unx2=u[i2+2];
     int nybco=nybc+oy;
+    T twob0=2.0*b0;
+    T twob1=2.0*b1;
     for(int j=oy; j < nybco; j++) {
-      um1[j]=b0;
+      um1[j]=twob0-u1[j];
       u0[j]=b0;
       unx1[j]=b1;
-      unx2[j]=b1;
+      unx2[j]=twob1-unx[j];
     }
   }
 	
@@ -315,12 +318,14 @@ class Grid2 : public Grid<Array2<T>,T> {
   void YDirichlet2(const Array2<T>& u, T b0, T b1) {
     if(homogeneous) return;
     int nxbco=nxbc+ox;
+    T twob0=2.0*b0;
+    T twob1=2.0*b1;
     for(int i=ox; i < nxbco; i++) {
       Array1<T>::opt ui=u[i];
-      ui[j1-2]=b0;
+      ui[j1-2]=twob0-ui[j1];
       ui[j1-1]=b0;
       ui[j2+1]=b1;
-      ui[j2+2]=b1;
+      ui[j2+2]=twob1-ui[j2];
     }
   }
 	
