@@ -23,8 +23,8 @@ public:
 	virtual int ValidApproximation(char *)=0;
 	virtual void MakeBins()=0;
 	virtual void List(ostream &)=0;
-	virtual void ListTriads()=0;
-	virtual void ComputeTriads()=0;
+	virtual void ListTriads() {}
+	virtual void Initialize()=0;
 	
 	virtual Nu Linearity(int)=0;
 	
@@ -40,29 +40,13 @@ public:
 	int Create() {
 		MakeBins();
 
-		if(pseudospectral) {
-			int n2=1;
-			for(log2n=1; Nmode+1 > 4*n2/9; log2n++, n2 *= 2);
-			cout << n2 << " FFT COMPONENTS ALLOCATED." << endl;
-			convolution0=new Var[n2+1];
-			convolution=convolution0+1;
-			psibuffer0=new Var[n2+1];
-			psibuffer=psibuffer0+1;
-			psitemp=new Var[Nmode];
-		} else {
-			psibuffer=new Var[n];
-			psibufferR=(reality ? psibuffer+Nmode : psibuffer);
-			psibufferStop=psibuffer+n;
-		}
-		
 		if(verbose > 2) {
 			cout.precision(3);
 			List(cout);
 			cout.precision(REAL_DIG);
 		}
 	
-		ComputeTriads();
-		if(verbose > 2) ListTriads();
+		Initialize();
 		return Nmode;
 	}
 };

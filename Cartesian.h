@@ -110,7 +110,6 @@ inline void CartesianUnPad(Var *to, const Var *from)
 #endif
 
 // For Navier-Stokes turbulence (stream function normalization):
-
 template<class T>
 inline Mc Mkpq(T& k, T& p, T&)
 {

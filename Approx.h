@@ -11,9 +11,9 @@ public:
 						Source_t **ConstantSrc);
 };
 
-class None : public ApproximationBase {
+class Convolution : public ApproximationBase {
 public:
-	char *Name() {return "None";}
+	char *Name() {return "Convolution";}
 	void SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
 						Source_t **ConstantSrc);
 };

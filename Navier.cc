@@ -79,7 +79,7 @@ NWave::NWave()
 	GeometryTable=new Table<GeometryBase>("Geometry",GeometryCompare,
 										  GeometryKeyCompare);
 	APPROXIMATION(SR);
-	APPROXIMATION(None);
+	APPROXIMATION(Convolution);
 	APPROXIMATION(PS);
 	
 	INTEGRATOR(C_Euler);
@@ -105,8 +105,8 @@ void SR::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
 	continuum_factor=1.0;
 }
 
-void None::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
-						  Source_t **ConstantSrc)
+void Convolution::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
+								 Source_t **ConstantSrc)
 {
 	*LinearSrc=StandardLinearity;
 	*NonlinearSrc=PrimitiveNonlinearity;

@@ -111,7 +111,13 @@ Real BinAverage(Bin<Polar,Cartesian> *k, Bin<Polar,Cartesian> *p,
 
 inline Mc Partition<Polar,Cartesian>::Ckpq(Polar&, Polar& P, Polar& Q)
 {
-	return (Q.r-P.r)*(Q.r+P.r);
+	return (Q.K()-P.K())*(Q.K()+P.K());
+}
+
+// For Navier-Stokes turbulence (velocity normalization):
+inline Mc Jkpq(Cartesian& k, Cartesian& p, Cartesian& q)
+{
+	return (k.Y()*p.X()-k.X()*p.Y())/sqrt(k.K2()*p.K2()*q.K2());
 }
 
 // Factor which converts |y|^2 to energy in this normalization:

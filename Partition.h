@@ -145,7 +145,7 @@ public:
 	Mc FindWeight(int k, int p, int q);
 
 	void GenerateWeights();
-	void ComputeTriads();
+	void Initialize();
 	void ListTriads();
 	
 	Real Area(int k) {return bin[k].Area();}
@@ -277,11 +277,15 @@ void save_weights(DynVector<Weight>& w, int n, char *filename);
 void save_formatted_weights(DynVector<Weight>& w, int n, char *filename);
 
 template<class T, class D>
-void Partition<T,D>::ComputeTriads() {
+void Partition<T,D>::Initialize() {
 	Mc nkpq;
 	Real norm;
 	int k,p,q;
 	
+	psibuffer=new Var[n];
+	psibufferR=(reality ? psibuffer+Nmode : psibuffer);
+	psibufferStop=psibuffer+n;
+		
 	char *filename=WeightFileName(""), *filenamef=WeightFileName("f");
 	
 	nmax=WeightIndex(Nmode,Nmode,n);
@@ -345,6 +349,7 @@ void Partition<T,D>::ComputeTriads() {
 	weight.~DynVector();
 
 	cout << Ntriad << " WAVENUMBER TRIADS ALLOCATED." << endl;
+	if(verbose > 2) ListTriads();
 }
 
 template<class T, class D>

@@ -6,19 +6,6 @@
 
 #define BASIS(key) {new Entry<Basis<key>,GeometryBase> (#key,GeometryTable);}
 
-class Chain {
-public:
-	int k,p; // mode indices
-	int end; // column index of final member of chain;
-	Var *psiq;
-	void Store(int k0, int p0, int end0, Var *q0) {
-		k=k0; p=p0; end=end0; psiq=q0;
-	}
-};
-
-extern int Nchainp,Nchainn,Ntriad;
-extern DynVector<Chain> chainp,chainn;
-extern Chain *chainpBase,*chainnBase;
 extern Real *kinv2;
 
 template<class T>
@@ -29,14 +16,12 @@ class Basis : public GeometryBase {
 public:
 	char *Name();
 	int ValidApproximation(char *s) {
-		return (strcmp(s,"NONE")==0 || strcmp(s,"PS")==0);
+		return (strcmp(s,"Convolution")==0 || strcmp(s,"PS")==0);
 	}
 
 	void MakeBins();
 	void List(ostream &);
-	void ListTriads();
-	void ListChains(Chain *chain, int Nchain, char *type);
-	void ComputeTriads();
+	void Initialize();
 	
 	int InGrid(T &);
 	Real Area(int) {return 1.0;}
@@ -53,21 +38,6 @@ public:
 	Nu Linearity(int);
 };
 
-template<class T>
-void Basis<T>::ListChains(Chain *chain, int Nchain, char *type) {
-	cout << endl << Nchain << " " << type << " Chains:" << endl;
-	Chain *c,*chainStop=chain+Nchain;
-	for(c=chain; c < chainStop; c++) {
-		cout << "k=" << mode[c->k] << " p=" << mode[c->p] << " end=" <<
-			c->end << " q=" << mode[c->psiq-psibuffer] << endl;
-	}
-}
-
-template<class T>
-void Basis<T>::ListTriads() {
-	ListChains(chainp.Base(),Nchainp,"Positive");
-	ListChains(chainn.Base(),Nchainn,"Negative");
-}
 
 template<class T>
 void Basis<T>::List(ostream &os)
@@ -76,77 +46,20 @@ void Basis<T>::List(ostream &os)
 	for(int i=0; i < n; i++) os << mode[i] << endl;
 	cout << endl;
 }
-
-inline void StoreChain(int k, int p, int stop, Var *q, int sign)
-{
-	if(sign > 0) chainp[Nchainp++].Store(k,p,stop,q);
-	else chainn[Nchainn++].Store(k,p,stop,q);
-}
-
-
 template<class T>
-void Basis<T>::ComputeTriads()
+void Basis<T>::Initialize()
 {
-	int k,p,q,sign=0,newchain;
-	int ck,cp,cq;
-	int lastp=-1;
-	Mc Mkpq(T& k, T& p, T& q);
-	
-	T mq;
-	
+	int n2=1;
+	for(log2n=1; Nmode+1 > 4*n2/9; log2n++, n2 *= 2);
+	cout << n2 << " FFT COMPONENTS ALLOCATED." << endl;
+	convolution0=new Var[n2+1];
+	convolution=convolution0+1;
+	psibuffer0=new Var[n2+1];
+	psibuffer=psibuffer0+1;
+	psitemp=new Var[Nmode];
+			
 	kinv2=new Real[Nmode];
-	for(k=0; k < Nmode; k++) kinv2[k]=1.0/mode[k].K2();
-
-	if(pseudospectral) return;
-	
-	chainp.Resize(8*Nmode);
-	chainn.Resize(4*Nmode);
-	
-	Ntriad=Nchainp=Nchainn=0;
-	ck=cp=cq=q=0;
-	
-	for(k=0; k < Nmode; k++) {
-		newchain=1;
-		for(int pdir=0; pdir < 2; pdir++) { // Only works with reality=1!
-			for(pdir ? p=n-1 : p=0;
-				pdir ? p >= Nmode : p < Nmode; pdir ? p-- : p++) {
-				mq = mode[k]-mode[p];
-				if(mode[p].Row() != mode[cp].Row() || mq.Row() != mode[cq].Row())
-					newchain=1;
-				if(InGrid(mq) && !(newchain && Mkpq(mode[k],mode[p],mq) == 0.0)) {
-					if(!newchain) {
-						if(sign == 0) {
-							if(q < n-1 && mode[q+1] == mq) sign=1;
-							else if(q > 0 && mode[q-1] == mq) sign=-1;
-						}
-						q += sign;
-					}
-					if(newchain || mode[q] != mq) {
-						for(q=0; q < n && mode[q] != mq; q++);
-						if(q == n) msg(ERROR, "Invalid beat mode computed");
-						if(lastp >= 0) StoreChain(ck,cp,mode[lastp].Column(),
-												  psibuffer+cq,sign);
-						ck=k; cp=p; cq=q;
-						sign=0; newchain=0;
-					}
-					Ntriad++;
-					lastp=p;
-				}
-				else newchain=1;
-			}
-		}
-	}
-	if(lastp >= 0) StoreChain(ck,cp,mode[lastp].Column(),psibuffer+cq,sign);
-
-	chainp.Resize(Nchainp);
-	chainpBase=chainp.Base();
-	
-	chainn.Resize(Nchainn);
-	chainnBase=chainn.Base();
-
-	cout << Nchainp << " INCREASING WAVENUMBER CHAINS ALLOCATED." << endl;
-	cout << Nchainn << " DECREASING WAVENUMBER CHAINS ALLOCATED." << endl;
-	cout << Ntriad << " WAVENUMBER TRIADS ALLOCATED." << endl;
+	for(int k=0; k < Nmode; k++) kinv2[k]=1.0/mode[k].K2();
 }
 
 Nu LinearityAt(int i);

@@ -129,7 +129,6 @@ void Bin<Polar,Cartesian>::MakeModes()
 		w++;
 	}
 	mode.Resize(nmode);
-	cout << mode << endl;
 }
 
 static const Real linacc=0.01;
@@ -171,11 +170,19 @@ static Real ThAveragedFrequency(Real k) {
 
 void BinAveragedLinearity(Real& nu)
 {
-	Real ans;
-	int iflag;
-	if(!simpfast(ThAveragedGrowth,b.min.r,b.max.r,linacc,
-				 ans,dxmax,iflag)) msg(ERROR,"Simp returned code %d",iflag);
-	nu=-ans;
+	if(discrete) {
+		nu=0.0;
+		Cartesian *mk=b.mode.Base(), *mkstop=mk+b.nmode; 
+		for(; mk < mkstop; mk++) {
+			nu += growth(Polar(mk->K(),mk->Th()));
+		}
+	} else {
+		Real ans;
+		int iflag;
+		if(!simpfast(ThAveragedGrowth,b.min.r,b.max.r,linacc,ans,dxmax,iflag))
+			msg(ERROR,"Simp returned code %d",iflag);
+		nu=-ans;
+	}
 }
 
 void BinAveragedLinearity(Complex& nu)
@@ -184,9 +191,17 @@ void BinAveragedLinearity(Complex& nu)
 	int iflag;
 	BinAveragedLinearity(ans);
 	nu=ans;
-	if(!simpfast(ThAveragedFrequency,b.min.r,b.max.r,linacc,
-				 ans,dxmax,iflag)) msg(ERROR,"Simp returned code %d",iflag);
-	nu+=I*ans;
+	if(discrete) {
+		ans=0.0;
+		Cartesian *mk=b.mode.Base(), *mkstop=mk+b.nmode; 
+		for(; mk < mkstop; mk++) {
+			ans += frequency(Polar(mk->K(),mk->Th()));
+		}
+	} else {
+		if(!simpfast(ThAveragedFrequency,b.min.r,b.max.r,linacc,ans,dxmax,
+					 iflag)) msg(ERROR,"Simp returned code %d",iflag);
+	}
+	nu += I*ans;
 }
 
 Nu Partition<Polar,Cartesian>::Linearity(int i)
@@ -194,7 +209,8 @@ Nu Partition<Polar,Cartesian>::Linearity(int i)
 	Nu nu;
 	b=bin[i];
 	BinAveragedLinearity(nu);
-	return nu/Area(i);
+	if(Area(i)) nu /= Area(i);
+	return nu;
 }
 
 Mc Partition<Polar,Cartesian>::
@@ -209,7 +225,7 @@ ComputeBinAverage(Bin<Polar,Cartesian> *k, Bin<Polar,Cartesian> *p,
 		for(; mk < mkstop; mk++) {
 			for(; mp < mpstop; mp++) {
 				Cartesian mq=-*mk-*mp;
-				if(q->InBin(mq)) sum += Mkpq(*mk,*mp,mq);
+				if(q->InBin(mq)) sum += Jkpq(*mk,*mp,mq);
 			}
 		}
 	} else {

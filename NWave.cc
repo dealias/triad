@@ -20,9 +20,6 @@ int Ntriad;
 DynVector<Triad> triad;
 TriadLimits *triadLimits;
 
-int Nchainp,Nchainn;
-DynVector<Chain> chainp,chainn;
-Chain *chainpBase,*chainnBase;
 Real *kinv2;
 
 Nu *nu,*nu_inv;
@@ -107,34 +104,6 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 	
 	for(i=0; i < Npsi; i++) source[i]=0.0;
 		
-#if 0	
-	Cartesian mk,mp;
-	
-	for(i=0; i < Nchainp; i++) {
-		Chain *c=chainpBase+i;
-		mk=CartesianMode[c->k]; mp=CartesianMode[c->p];
-		Real kx=mk.X(), ky=mk.Y(), py=mp.Y();
-		Real kxpy=kx*py, py2=py*py;
-		Var sum=0.0, *psip=psibuffer+c->p, *psiq=c->psiq;
-		int end=c->end;
-		for(int px=mp.Column(); px <= end; px++,psiq++)
-			sum += (kxpy-ky*px)*(px*px+py2)*psip[px]*(*psiq);
-		source[c->k] += sum;
-	}
-	
-	for(i=0; i < Nchainn; i++) {
-		Chain *c=chainnBase+i;
-		mk=CartesianMode[c->k]; mp=CartesianMode[c->p];
-		Real kx=mk.X(), ky=mk.Y(), py=mp.Y();
-		Real kxpy=kx*py, py2=py*py;
-		Var sum=0.0, *psip=psibuffer+c->p, *psiq=c->psiq;
-		int end=c->end;
-		for(int px=mp.Column(); px <= end; px++,psiq--)
-			sum += (kxpy-ky*px)*(px*px+py2)*psip[px]*(*psiq);
-		source[c->k] += sum;
-	}
-	
-#else
 	int q=0, nn=2*Npsi;
 	for(int k=0; k < Npsi; k++) {
 		Real kx=CartesianMode[k].X();
@@ -150,7 +119,6 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 				psibuffer[p]*psibuffer[q];
 		}
 	}
-#endif
 
 	for(i=0; i < Npsi; i++) source[i] *= kinv2[i];
 	

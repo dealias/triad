@@ -26,7 +26,7 @@ NWave::NWave()
 	VOCAB_ARRAY(IC);
 	VOCAB_ARRAY(nu0);
 	
-	APPROXIMATION(None);
+	APPROXIMATION(Convolution);
 	
 	INTEGRATOR(C_Euler);
 	INTEGRATOR(C_PC);
