@@ -48,6 +48,18 @@ void MakePalette(int palette)
 	int divisor=1;
 		
 	switch(palette) {
+    case RED:
+    case GREEN:
+    case BLUE:
+    case YELLOW:
+    case CYAN:
+    case MAGENTA:
+	case REDBLUE:
+	case REDGREEN:
+	case GREENBLUE:
+		offset=0;
+		nintervals=1;
+		break;
 	case RAINBOW:
 		offset=1;
 		nintervals=5;
@@ -67,7 +79,7 @@ void MakePalette(int palette)
 		nintervals=6;
 		divisor=3;
 		break;
-	case RGreyB:
+	case RGREYB:
 		two=0; // Can't double this palette
 		offset=1;
 		nintervals=2;
@@ -101,15 +113,53 @@ void MakePalette(int palette)
 	k=allcolors-1;
 	if(two) gradient=1;
 
-	if(palette == WHEEL) {
-		for(i=0; i < n; i++) AddColor(1.0,0.0,(n-i)*ninv);
-	}
-	
-	if(palette == RGreyB) {
+	switch(palette) {
+	case RGREYB:
 		ninv *= 0.5;
 		for(i=0; i < n; i++) AddColor((2*n-i)*ninv,i*ninv,i*ninv);
 		for(i=0; i <= n; i++) AddColor((n-i)*ninv,(n-i)*ninv,(n+i)*ninv);
 		return;
+		
+	case RED: 
+		for(i=0; i <= n; i++) AddColor((n-i)*ninv,0.0,0.0);
+		return;
+
+	case GREEN: 
+		for(i=0; i <= n; i++) AddColor(0.0,(n-i)*ninv,0.0);
+		return;
+		
+	case BLUE: 
+		for(i=0; i <= n; i++) AddColor(0.0,0.0,(n-i)*ninv);
+		return;
+		
+	case YELLOW: 
+		for(i=0; i <= n; i++) AddColor((n-i)*ninv,(n-i)*ninv,0.0);
+		return;
+
+	case CYAN: 
+		for(i=0; i <= n; i++) AddColor(0.0,(n-i)*ninv,(n-i)*ninv);
+		return;
+		
+	case MAGENTA: 
+		for(i=0; i <= n; i++) AddColor((n-i)*ninv,0.0,(n-i)*ninv);
+		return;
+		
+	case REDBLUE: 
+		for(i=0; i <= n; i++) AddColor((n-i)*ninv,0.0,i*ninv);
+		return;
+		
+	case REDGREEN: 
+		for(i=0; i <= n; i++) AddColor((n-i)*ninv,i*ninv,0.0);
+		return;
+		
+	case GREENBLUE: 
+		for(i=0; i <= n; i++) AddColor(0.0,(n-i)*ninv,i*ninv);
+		return;
+	}
+
+	
+	if(palette == WHEEL) {
+		for(i=0; i < n; i++) AddColor(1.0,0.0,(n-i)*ninv);
 	}
 	
 	if(palette == WRAINBOW || palette == BWRAINBOW) {

@@ -326,19 +326,29 @@ void options()
 	cerr << "-ncolors n\t maximum number of colors to generate (default 65536)"
 		 << endl; 
 	cerr << "-background n\t background color" << endl; 
-	cerr << "-gradient\t apply intensity gradient to palette" << endl; 
+	cerr << "-gradient\t apply intensity gradient to spectral palettes" 
+		 << endl; 
 	cerr << "-double\t\t double spectral palette and apply intensity gradient" 
 		 << endl; 
 	cerr << "-damp\t\t apply color intensity damping" << endl; 
 	cerr << endl;
 	cerr << "Color Palettes:" << endl;
-	cerr << "-bwrainbow\t black+rainbow+white [default]"
+	cerr << "-bwrainbow\t black+rainbow+white spectrum [default]"
 		 << endl;
-	cerr << "-rainbow\t rainbow" << endl;
-	cerr << "-brainbow\t black+rainbow" << endl;
-	cerr << "-wrainbow\t rainbow+white" << endl;
+	cerr << "-rainbow\t rainbow spectrum" << endl;
+	cerr << "-brainbow\t black+rainbow spectrum" << endl;
+	cerr << "-wrainbow\t rainbow+white spectrum" << endl;
 	cerr << "-wheel\t\t full color wheel" << endl;
 	cerr << "-rgreyb\t\t red-grey-blue" << endl;
+	cerr << "-red\t\t red scale" << endl;
+	cerr << "-green\t\t green scale" << endl;
+	cerr << "-blue\t\t blue scale" << endl;
+	cerr << "-yellow\t\t yellow scale" << endl;
+	cerr << "-cyan\t\t cyan scale" << endl;
+	cerr << "-magenta\t magenta scale" << endl;
+	cerr << "-redblue\t red-blue scale" << endl;
+	cerr << "-redgreen\t red-green scale" << endl;
+	cerr << "-greenblue\t green-blue scale" << endl;
 	cerr << endl;
 	cerr << "Transforms:" << endl;
 	cerr << "-identity\t no transformation [default]" << endl;
@@ -379,7 +389,16 @@ int main(int argc, char *const argv[])
                {"wrainbow", 0, &palette, WRAINBOW},
                {"bwrainbow", 0, &palette, BWRAINBOW},
                {"wheel", 0, &palette, WHEEL},
-               {"rgreyb", 0, &palette, RGreyB},
+               {"rgreyb", 0, &palette, RGREYB},
+               {"red", 0, &palette, RED},
+               {"green", 0, &palette, GREEN},
+               {"blue", 0, &palette, BLUE},
+               {"yellow", 0, &palette, YELLOW},
+               {"cyan", 0, &palette, CYAN},
+               {"magenta", 0, &palette, MAGENTA},
+               {"redblue", 0, &palette, REDBLUE},
+               {"redgreen", 0, &palette, REDGREEN},
+               {"greenblue", 0, &palette, GREENBLUE},
                {"identity", 0, &trans, IDENTITY},
                {"circle", 0, &trans, CIRCLE},
                {"torus", 0, &trans, TORUS},
@@ -746,6 +765,7 @@ int main(int argc, char *const argv[])
 		
 		if(begin < 0) begin += nset;
 		if(end < 0) end += nset;
+		if(display) end=begin;
 		
 		n=0;
 		int rc;
@@ -866,7 +886,8 @@ int main(int argc, char *const argv[])
 			set++;
 		} while (n++ < end && rc == 0);
 		nset=nset ? min(nset,set) : set;
-		if(nset == 1 && !extract) msg(ERROR, "More than one frame required");
+		if(nset == 1 && !extract && !display) 
+			msg(ERROR, "More than one frame required");
 		if(verbose && f==0 && floating_scale) {
 			cout << nset << " frame";
 			if(nset != 1) cout << "s";
