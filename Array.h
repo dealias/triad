@@ -59,8 +59,7 @@ public:
 	virtual unsigned int Size() const {return size;}
 	unsigned int CheckSize() const {
 		if(!test(allocated) && size == 0)
-			cout << "WARNING: Operation attempted on unallocated array." 
-				 << endl;
+			__ARRAY_EXIT("Operation attempted on unallocated array"); 
 		return size;
 	}
 	
@@ -242,7 +241,8 @@ protected:
 	unsigned int ny;
 public:
 	void Dimension(unsigned int nx0, unsigned int ny0) {
-		nx=nx0; ny=ny0; size=nx*ny;
+		nx=nx0; ny=ny0;
+		size=nx*ny;
 	}
 	void Dimension(unsigned int nx0, unsigned int ny0, T *v0) {
 		Dimension(nx0,ny0);
@@ -346,7 +346,8 @@ public:
 		checkActivate(3);
 	}
 	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0) {
-		nx=nx0; ny=ny0; nz=nz0; nyz=ny*nz; size=nx*nyz;
+		nx=nx0; ny=ny0; nz=nz0; nyz=ny*nz;
+		size=nx*nyz;
 	}
 	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0, T *v0) {
 		Dimension(nx0,ny0,nz0);
@@ -701,9 +702,9 @@ public:
 	}
 	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 				   int ox0=0, int oy0=0, int oz0=0) {
-		nx=nx0; ny=ny0; nz=nz0;
+		nx=nx0; ny=ny0; nz=nz0; nyz=ny*nz;
+		size=nx*nyz;
 		ox=ox0; oy=oy0; oz=oz0;
-		nyz=ny*nz;
 	}
 	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 				   T *v0, int ox0=0, int oy0=0, int oz0=0) {
@@ -773,9 +774,9 @@ public:
 	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 				   unsigned int nw0, 
 				   int ox0=0, int oy0=0, int oz0=0, int ow0=0) {
-		nx=nx0; ny=ny0; nz=nz0; nw=nw0;
+		nx=nx0; ny=ny0; nz=nz0; nw=nw0; nzw=nz*nw; nyzw=ny*nzw;
+		size=nx*nyzw;
 		ox=ox0; oy=oy0; oz=oz0; ow=ow0;
-		nzw=nz*nw; nyzw=ny*nzw;
 	}
 	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 				   unsigned int w0, T *v0,
