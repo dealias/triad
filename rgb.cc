@@ -549,7 +549,8 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 	strstream buf;
 	
 	buf << convertprog << " -size " << xsize << "x" << ysize
-		<< " -geometry " << xsize << "x" << ysize << " -interlace none ";
+		<< " -geometry " << xsize << "x" << ysize << 
+		<< option.str() << " -interlace none ";
 	if(pointsize) buf << "-pointsize " << pointsize << " ";
 	for(int f=0; f < nfiles; f++) {
 		char *fieldname=argf[f];
@@ -560,7 +561,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 					<< separator << setprecision(2) << vmaxf[f] << "\\n";
 			buf << fieldname << "\" ";
 		}
-		buf << option.str() << " " << format << ":" << rgbdir << fieldname
+		buf << format << ":" << rgbdir << fieldname
 			<< setfill('0') << setw(4) << n << "." << format << " ";
 	}
 	buf << yuvinterlace << type << ":" << rgbdir << argf[0] << n;
