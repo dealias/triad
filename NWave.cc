@@ -30,18 +30,17 @@ static Complex random_factor=0.0;
 void ComputeMoments(Var *source, Var *psi) {
 	Var *k, *q=source+Npsi, *kstop=psi+Npsi;
 #pragma ivdep
-	for(k=psi; k < kstop; k++, q++) *q=product(*(q-Npsi),*k); // S_k*psi_k
+	for(k=psi; k < kstop; k++, q++) {
+		(*q).re=realproduct(*(q-Npsi),*k); // S_k*psi_k
+		(*q).im=realproduct(random_factor,*k); // w_k*psi_k
+	}
 	if(Nmoment > 1) {
 #pragma ivdep
 		for(k=psi; k < kstop; k++, q++) *q=*k; // psi_k
-		for(int n=2; n < Nmoment-1; n++) { // psi_k^n
+		for(int n=2; n < Nmoment; n++) { // psi_k^n
 #pragma ivdep
 			for(k=psi; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);
 		}
-	}
-	if(Nmoment > 2) {
-#pragma ivdep 
-			for(k=psi; k < kstop; k++, q++) *q=random_factor*(*k); // psi_k w
 	}
 }
 
@@ -699,7 +698,7 @@ void NWave::FinalOutput()
 	compute_invariants(y,Npsi,E,Z,P);
 	display_invariants(E,Z,P);
 	
-	if(Nmoment > 3 && t) {
+	if(Nmoment > 2 && t) {
 		cout << newl << "AVERAGED VALUES:" << newl << endl;
 // We overwrite y+Npsi here, since it is no longer needed.
 		Var *y2=y+3*Npsi;

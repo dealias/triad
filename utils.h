@@ -144,6 +144,16 @@ inline Complex product(const Complex& x, const Complex& y)
 	return Complex(x.re*y.re,x.im*y.im);
 }
 
+inline Real realproduct(Real x, Real y)
+{
+	return x*y;
+}
+
+inline Real realproduct(const Complex& x, const Complex& y)
+{
+	return x.re*y.re+x.im*y.im;
+}
+
 inline void conjugate(Real& x, Real y)
 {
 	x=y;
