@@ -60,7 +60,9 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 			if(polltime) {
 				realtime=time(NULL);
 				if(realtime-lasttime > polltime) {
-					if (poll()) {tmax=tstop=t; final=0; exit_signal=CONTINUE;}
+					if (poll()) {
+						tmax=tstop=t; final=!sample; exit_signal=CONTINUE;
+					}
 					lasttime=realtime;
 				}
 			}

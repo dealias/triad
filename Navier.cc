@@ -188,7 +188,7 @@ void NWave::InitialConditions()
 		nu[i]=Geometry->Linearity(i);
 		y[i]=sqrt(2.0*equilibrium(i))*norm;
 		forcing[i]=Geometry->Forcing(i)*norm;
-		for(i=0; i < Npsi; i++) errmask[i]=(Geometry->K2(i) <= krmax*krmax);
+		errmask[i]=(Geometry->K2(i) <= krmax*krmax);
 	}
 	
 	// Randomize the initial conditions.	
