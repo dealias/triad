@@ -1123,7 +1123,7 @@ void Torus(Array2<Ivec> Index)
 					Real factordelta=factor*deltax;
 					Real phi=xk*twopibynz;
 					if(phi >= 0 && phi <= cutoff) {
-						Real cosphi,sinphi;
+						Real sinphi,cosphi;
 						sincos(phi,&sinphi,&cosphi);
 						for(int i=0; i < nx; i++)  {
 							for(int i2=(i == 0 ? 0 : -Nxfine);

@@ -44,7 +44,7 @@ void MakePalette(int palette)
 		break;
 	case BWRAINBOW:
 		offset=1;
-		nintervals=7;
+		nintervals=6;
 		divisor=3;
 		break;
 	case RGreyB:
@@ -77,6 +77,10 @@ void MakePalette(int palette)
 	incr=-1;
 	k=allcolors-1;
 
+	if(palette == WHEEL) {
+		for(i=0; i < n; i++) AddColor(1.0,0.0,(n-i)*ninv);
+	}
+	
 	if(palette == RGreyB) {
 		ninv *= 0.5;
 		for(i=0; i < n; i++) AddColor((2*n-i)*ninv,i*ninv,i*ninv);
@@ -89,8 +93,9 @@ void MakePalette(int palette)
 	}
 	
 	if(palette == BWRAINBOW) {
-		for(i=0; i < n; i++) AddColor(1.0,(n-i)*ninv,1.0);
-		for(i=0; i < n; i++) AddColor(1.0,0.0,(n-i)*ninv);
+		int n2=n/2;
+		for(i=0; i < n2; i++) AddColor(1.0,(n-2*i)*ninv,(n-i)*ninv);
+		for(i=0; i < n2; i++) AddColor(1.0,0.0,(n2-i)*ninv);
 	}
 	
 	for(i=0; i < n; i++) AddColor(1.0,i*ninv,0.0);
@@ -107,13 +112,8 @@ void MakePalette(int palette)
 		for(i=0; i <= n3; i++) AddColor((n3-i)*ninv,0.0,(n3-i)*ninv);
 	}
 
-	if(palette == RAINBOW || palette == WRAINBOW) {
+	if(palette == RAINBOW || palette == WRAINBOW || palette == WHEEL) {
 		for(i=0; i <= n; i++) AddColor(i*ninv,0.0,1.0);
-	}
-	
-	if(palette == WHEEL) {
-		for(i=0; i < n; i++) AddColor(i*ninv,0.0,1.0);
-		for(i=0; i < n; i++) AddColor(1.0,0.0,(n-i)*ninv);
 	}
 }
 
