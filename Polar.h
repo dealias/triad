@@ -57,7 +57,10 @@ inline Real InInterval(const Cartesian& x, const Polar& a, const Polar& b)
 	if(xK2 < a2 && a.K() > krmin) factor *= (xK2-a1)/(a2-a1);
 	else if(xK2 >= b1 && b.K() < krmax) factor *= (xK2-b1)/(b2-b1);
 	if(xTh < A2 && a.Th() > kthneg) factor *= (xTh-A1)/(A2-A1);
-	else if(xTh >= B1) factor *= (xTh-B1)/(B2-B1);
+	else if(xTh >= B1) {
+		if(b.Th() < kthmax) factor *= (xTh-B1)/(B2-B1);
+		else factor=0.0;
+	}
 	return factor;
 }
 
