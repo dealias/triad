@@ -124,6 +124,7 @@ enum Exit_code {FATAL=-1,CONTINUE,COMPLETE};
 extern Exit_code exit_signal;
 
 void mailuser(char *text);
+void remove_dir(char *text);
 
 const int ncputime=3;
 void cputime(double *cpu);

@@ -42,18 +42,30 @@ void cputime(double *cpu)
 static const double longrun=500.0;
 
 #if _CRAY
-static char command[]="mailx";
+static char mail_cmd[]="mailx";
 #else
-static char command[]="mail";
+static char mail_cmd[]="mail";
 #endif
 
+// Mail a message to the user.
 void mailuser(char *text)
 {
 	if(time(NULL)-init_time < longrun) return;
 	char *user=getpwuid(getuid())->pw_name;
-	char *buf=new char[50+strlen(run)+strlen(text)+strlen(user)];
-	sprintf(buf,"%s -s 'Run %s %s.' %s < /dev/null > /dev/null",command,
+	char *buf=new char[50+strlen(mail_cmd)+strlen(run)+strlen(text)+
+	strlen(user)];
+	sprintf(buf,"%s -s 'Run %s %s.' %s < /dev/null > /dev/null",mail_cmd,
 			run,text,user);
+	system(buf);
+}
+
+static char rmrf_cmd[]="rm -rf";
+
+// Recursively delete a directory and all of its contents.
+void remove_dir(char *text)
+{
+	char *buf=new char[25+strlen(rmrf_cmd)+strlen(text)];
+	sprintf(buf,"%s %s > /dev/null",rmrf_cmd,text);
 	system(buf);
 }
 

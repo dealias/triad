@@ -160,7 +160,6 @@ static oxstream fpsi;
 Real continuum_factor=1.0;
 typedef char Avgylabel[20];
 static Avgylabel *avgyre,*avgyim;
-static char tempbuffer[30];
 static int tcount=0;
 static Complex *xcoeff, *ycoeff;
 
@@ -219,11 +218,15 @@ void NWave::InitialConditions()
 		avgyre=new Avgylabel[Nmoment];
 		avgyim=new Avgylabel[Nmoment];
 	}
+	
+	if(!restart) remove_dir(Vocabulary->FileName(dirsep,"avgy*"));
 	for(n=0; n < Nmoment; n++) {
-		sprintf(tempbuffer,"avgy%d",n);
-
-		mkdir(Vocabulary->FileName(dirsep,tempbuffer),0xFFFF);
-		errno=0;
+		if(!restart) {
+			static char tempbuffer[30];
+			sprintf(tempbuffer,"avgy%d",n);
+			mkdir(Vocabulary->FileName(dirsep,tempbuffer),0xFFFF);
+			errno=0;
+		}
 		sprintf(avgyre[n],"y.re^%d",n);
 		sprintf(avgyim[n],"y.im^%d",n);
 	}
@@ -333,6 +336,7 @@ void NWave::Output(int)
 	
 	Var *yavg=y+Npsi;
 	for(n=0; n < Nmoment; n++) {
+		static char tempbuffer[30];
 		sprintf(tempbuffer,"avgy%d%st%d",n,dirsep,tcount);
 		open_output(favgy,dirsep,tempbuffer,0);
 		out_curve(favgy,t,"t");
