@@ -36,7 +36,7 @@ public:
 	void Output(int it);
 	void FinalOutput();
 	
-	void LinearSrc(Var *src, Var *y, double t) {Linearity(src,y,t);}
+	void LinearSrc(Var *src, Var *y, double t) {(*Linearity)(src,y,t);}
 	
 	static Source_t StandardLinearity;
 	static Source_t ExponentialLinearity;
