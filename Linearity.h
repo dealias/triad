@@ -13,8 +13,8 @@ public:
 	virtual Real Growth(const Polar&) {return 0.0;}
 	virtual Real Frequency(const Polar&) {return 0.0;}
 	
-	Real Re(const Polar& v) {return -Growth(v)/Denominator(v.K2());}
-	Real Im(const Polar& v) {return Frequency(v)/Denominator(v.K2());}
+	Real Re(const Polar& v) {return -Growth(v);}
+	Real Im(const Polar& v) {return Frequency(v);}
 	void Evaluate(const Polar& v, Real &nu) {nu=Re(v);}
 	void Evaluate(const Polar& v, Complex &nu) {nu=Complex(Re(v),Im(v));}
 };

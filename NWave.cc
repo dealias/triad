@@ -766,7 +766,7 @@ inline void C_RK5::Correct(const Complex Y0, Complex& Y2, Complex& Y3,
 {
 	Correct(Y0.re,Y2.re,Y3.re,Y4.re,Y.re,Source0.re,Source2.re,
 			Source3.re,Source4.re,Source.re,dt,invertible);
-#ifndef _CRAYMVP		
+#if !_CRAYMVP		
 	if(!invertible) return;
 #endif			
 	Correct(Y0.im,Y2.im,Y3.im,Y4.im,Y.im,Source0.im,Source2.im,
@@ -780,7 +780,7 @@ int C_RK5::Corrector(double, int dynamic, int start, int stop)
 	for(j=start; j < stop; j++) {
 		Correct(y0[j],y2[j],y3[j],y4[j],y[j],source0[j],source2[j],
 				source3[j],source4[j],source[j],dt,invertible);
-#ifndef _CRAYMVP		
+#if !_CRAYMVP		
 		if(!invertible) return 0;
 #endif			
 	}

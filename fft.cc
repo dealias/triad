@@ -225,9 +225,12 @@ void fft(Complex *data, unsigned int log2n, int isign, int bitreverse)
 	for(i=0; i < n-1; i++) {
 		if (j > i) {
 			Complex *p=data+i, *q=data+j;
-			Real temp;
-			temp=q->re; q->re=p->re; p->re=temp;
-			temp=p->im; p->im=q->im; q->im=temp;
+			Real tempre=p->re;
+			Real tempim=p->im; 
+			p->re=q->re;
+			p->im=q->im;
+			q->re=tempre;
+			q->im=tempim;
 		}
 		
 		m=n >> 1;
@@ -278,10 +281,12 @@ void fft(Complex *data, unsigned int log2n, int isign, int bitreverse)
 				Complex *q=p+mmax;
 				Real tempre=c*q->re-s*q->im;
 				Real tempim=c*q->im+s*q->re;
-				q->re=p->re-tempre;
-				q->im=p->im-tempim;
+				Real qre=p->re-tempre;
+				Real qim=p->im-tempim;
 				p->re += tempre;
 				p->im += tempim;
+				q->re=qre;
+				q->im=qim;
 			}
 			Real wtemp=c;
 			c += c*wpre-s*wpim;
@@ -292,10 +297,12 @@ void fft(Complex *data, unsigned int log2n, int isign, int bitreverse)
 			Complex *q=p+mmax;
 			Real tempre=c*q->re-s*q->im;
 			Real tempim=c*q->im+s*q->re;
-			q->re=p->re-tempre;
-			q->im=p->im-tempim;
+			Real qre=p->re-tempre;
+			Real qim=p->im-tempim;
 			p->re += tempre;
 			p->im += tempim;
+			q->re=qre;
+			q->im=qim;
 		}
 		mmax=istep;
 	}
@@ -308,34 +315,39 @@ void fft(Complex *data, unsigned int log2n, int isign, int bitreverse)
 //           isign is +1 for a forward transform, -1 for an inverse transform.
 //           inc1 is the stride between the elements of each Complex vector.
 //           inc2 is the stride between first elements of the vectors.
-// On exit:  data contains the n Complex Fourier values for each k=0,...nk-1.
+// On exit:  data contains the n Complex Fourier values for each k=0,...,nk-1.
 // Note: When computing an inverse transform, the result must be divided by n.
 
 void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		  unsigned int inc1, unsigned int inc2, int)
 {
 	unsigned int i,j,k,n,m,istep,kstop;
-	static unsigned int tempsize=0;
-	static Complex *temp;
 
+#if !_CRAYMVP	
+	if(inc1 == 1) {
+		Complex *pstop=data+nk*inc2;
+		for(Complex *p=data; p < pstop; p += inc2) fft(p,log2n,isign);
+		return;
+	}
+#endif	
+	
 	if(inc1 == 0) inc1=nk;
 	kstop=nk*inc2;
 	
 	n=1 << log2n;
 
-	if(kstop > tempsize) {
-		tempsize=kstop;
-		temp=new(temp,tempsize) Complex;
-	}
-	
 	j=0;
 	for(i=0; i < n-1; i++) {
 		if (j > i) {
 			Complex *p=data+i*inc1, *q=data+j*inc1;
 #pragma ivdep			
 			for(k=0; k < kstop; k += inc2) {
-				temp[k].re=q[k].re; q[k].re=p[k].re; p[k].re=temp[k].re;
-				temp[k].im=p[k].im; p[k].im=q[k].im; q[k].im=temp[k].im;
+				Real tempre=p[k].re;
+				Real tempim=p[k].im;
+				p[k].re=q[k].re;
+				p[k].im=q[k].im;
+				q[k].re=tempre;
+				q[k].im=tempim;
 			}
 		}
 		
@@ -357,12 +369,12 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 			Complex *q=p+inc1;
 #pragma ivdep			
 			for(k=0; k < kstop; k += inc2) {
-				temp[k].re=p[k].re-q[k].re;
-				temp[k].im=p[k].im-q[k].im;
+				Real tempre=p[k].re-q[k].re;
+				Real tempim=p[k].im-q[k].im;
 				p[k].re += q[k].re;
 				p[k].im += q[k].im;
-				q[k].re=temp[k].re;
-				q[k].im=temp[k].im;
+				q[k].re=tempre;
+				q[k].im=tempim;
 			}
 		}
 	}
@@ -377,12 +389,12 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 			Complex *q=p+mmaxnk;
 #pragma ivdep			
 			for(k=0; k < kstop; k += inc2) {
-				temp[k].re=p[k].re-q[k].re;
-				temp[k].im=p[k].im-q[k].im;
+				Real tempre=p[k].re-q[k].re;
+				Real tempim=p[k].im-q[k].im;
 				p[k].re += q[k].re;
 				p[k].im += q[k].im;
-				q[k].re=temp[k].re;
-				q[k].im=temp[k].im;
+				q[k].re=tempre;
+				q[k].im=tempim;
 			}
 		}
 		Real wpre=wp->re, wpim=wp->im*isign;
@@ -393,12 +405,14 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 				Complex *q=p+mmaxnk;
 #pragma ivdep			
 				for(k=0; k < kstop; k += inc2) {
-					temp[k].re=c*q[k].re-s*q[k].im;
-					temp[k].im=c*q[k].im+s*q[k].re;
-					q[k].re=p[k].re-temp[k].re;
-					q[k].im=p[k].im-temp[k].im;
-					p[k].re += temp[k].re;
-					p[k].im += temp[k].im;
+					Real tempre=c*q[k].re-s*q[k].im;
+					Real tempim=c*q[k].im+s*q[k].re;
+					Real qre=p[k].re-tempre;
+					Real qim=p[k].im-tempim;
+					p[k].re += tempre;
+					p[k].im += tempim;
+					q[k].re=qre;
+					q[k].im=qim;
 				}
 			}
 			Real wtemp=c;
@@ -409,12 +423,14 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 			Complex *q=p+mmaxnk;
 #pragma ivdep			
 			for(k=0; k < kstop; k += inc2) {
-				temp[k].re=c*q[k].re-s*q[k].im;
-				temp[k].im=c*q[k].im+s*q[k].re;
-				q[k].re=p[k].re-temp[k].re;
-				q[k].im=p[k].im-temp[k].im;
-				p[k].re += temp[k].re;
-				p[k].im += temp[k].im;
+				Real tempre=c*q[k].re-s*q[k].im;
+				Real tempim=c*q[k].im+s*q[k].re;
+				Real qre=p[k].re-tempre;
+				Real qim=p[k].im-tempim;
+				p[k].re += tempre;
+				p[k].im += tempim;
+				q[k].re=qre;
+				q[k].im=qim;
 			}
 		}
 		mmax=istep;

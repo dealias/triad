@@ -26,10 +26,10 @@ public:
 	NWaveVocabulary();
 	Table<GeometryBase> *GeometryTable;
 	Table<LinearityBase> *LinearityTable;
-	GeometryBase *NewGeometry(char *key) {
+	GeometryBase *NewGeometry(char *& key) {
 		return GeometryTable->Locate(key);
 	}
-	LinearityBase *NewLinearity(char *key) {
+	LinearityBase *NewLinearity(char *& key) {
 		return LinearityTable->Locate(key);
 	}
 };

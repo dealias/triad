@@ -363,39 +363,42 @@ inline Mc Partition<T,D>::FindWeight(int k, int p, int q) {
 template<class T, class D>
 INLINE int Partition<T,D>::get_weights()
 {
-	int complete;
+	int complete=0;
 	int i,N=0;
 	
 	char *filename=WeightFileName();
 	ixstream fin(filename);
 	if(fin) {
 		fin >> N;
-		if(fin.eof()) fin.close();
-		if(N == 0) testlock();
-	} else errno=0;
-	
-	complete=(N ? 1 : 0);
+		if(!fin.eof()) {
+			if(N) complete=1;
+			else testlock();
 		
-	if(fin) {
-		cout << newl << "READING WEIGHT FACTORS FROM " << filename << "."
-			 << endl;
-		if(discrete) for(i=0; i < n; i++) bin[i].ReadModes(fin);
-		if(fin.bad()) 
-			msg(ERROR,"Error reading from weight file %s",filename);
+			cout << newl << "READING WEIGHT FACTORS FROM " << filename << "."
+				 << endl;
 		
-		if(complete) {
-			weight.Resize(N);
-			for(i=0; i < N; i++) fin >> weight[i];
-			if(fin.bad()) 
-				msg(ERROR,"Error reading from weight file %s",filename);
-		} else {
-			Weight w;
-			while(fin >> w, !fin.eof()) weight[N++]=w;
-			if(N) cout << N << " WEIGHT FACTORS READ: ("
-					   << weight[N-1].Index() << ")/(" << WeightN << ")."
-					   << endl;
+			if(discrete) {
+				for(i=0; i < n; i++) bin[i].ReadModes(fin);
+				if(fin.bad())
+					msg(ERROR,"Error reading from weight file %s",filename);
+			}
+		
+			if(complete) {
+				weight.Resize(N);
+				for(i=0; i < N; i++) fin >> weight[i];
+				if(fin.bad()) 
+					msg(ERROR,"Error reading from weight file %s",filename);
+			} else {
+				Weight w;
+				while(fin >> w, !fin.eof()) weight[N++]=w;
+				if(N) cout << N << " WEIGHT FACTORS READ: ("
+						   << weight[N-1].Index() << ")/(" << WeightN << ")."
+						   << endl;
+			}
 		}
 	}
+	errno=0;
+
 	Nweight=N;
 	return complete;
 }

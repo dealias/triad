@@ -51,9 +51,11 @@ int movie=0;
 int truefield=0;
 int weiss=0;
 
+Real mode_density;
+
 class Diamagnetic : public LinearityBase {
 public:
-	Real Frequency(const Polar& v) {return vd*v.Y();}
+	Real Frequency(const Polar& v) {return vd*v.Y()/Denominator(v.K2());}
 };
 
 class BandLimited : public Diamagnetic {
@@ -66,7 +68,7 @@ public:
 		if(k <= kL) gamma -= pow(k,pL)*nuL*pow(k,pL);
 		if(abs(k-kforce) < 0.5*deltaf) gamma += gammaf/deltaf;
 		if(k > kH) gamma -= pow(k,pH)*nuH*pow(k,pH);
-		return gamma;
+		return gamma/Denominator(v.K2());
 	}
 };
 
@@ -81,6 +83,18 @@ public:
 		Real tempy=abs(v.Y())/0.5-1.0;
 		return 0.06*(1.0-0.5*(tempx*tempx+tempy*tempy))-0.05;
 	}
+};
+
+class ConstantFrequency : public BandLimited {
+public:
+	char *Name() {return "ConstantFrequency";}
+	Real Frequency(const Polar&) {return vd;}
+};
+
+class FrequencyK : public BandLimited {
+public:
+	char *Name() {return "FrequencyK";}
+	Real Frequency(const Polar& v) {return vd*v.K();}
 };
 
 NWaveVocabulary::NWaveVocabulary()
@@ -157,6 +171,8 @@ NWaveVocabulary::NWaveVocabulary()
 	
 	LINEARITY(BandLimited);
 	LINEARITY(Waltz);
+	LINEARITY(ConstantFrequency);
+	LINEARITY(FrequencyK);
 }
 
 NWaveVocabulary NWave_Vocabulary;
@@ -170,8 +186,7 @@ Real force_re(const Polar& v)
 
 static Real equilibrium(int i)
 {
-	Real k=Geometry->K(i);
-	return 0.5/(alpha+beta*k*k);
+	return 0.5*mode_density*mode_density/(alpha+beta*Geometry->K2(i));
 }
 
 static ifstream ftin;
@@ -189,6 +204,8 @@ void NWave::InitialConditions()
 	int i,n;
 	
 	krmin2=krmin*krmin;
+	mode_density=(strcmp(method,"SR") == 0 ? 1.0/krmin : 1.0);
+		
 	Geometry=NWave_Vocabulary.NewGeometry(geometry);
 	if(!Geometry->Valid(Problem->Abbrev()))
 		msg(ERROR,"Geometry \"%s\" is incompatible with method \"%s\"",

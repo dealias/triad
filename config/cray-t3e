@@ -5,8 +5,7 @@ LIB = $(LFLAGS) -lsci -lm
 MAKEDEPEND = cpp -M
 MDOPTS = -I /opt/ctl/CC/CC/include/
 
-ARCH = unix
-FFT = fft
+FFT = tfft
 POLL = tremain
 
 

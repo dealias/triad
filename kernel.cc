@@ -26,7 +26,7 @@ char *machine(), *date();
 size_t memory();
 
 const char PROGRAM[]="TRIAD";
-const char VERSION[]="1.0";
+const char VERSION[]="1.1";
 
 // Global variables
 double t;
@@ -164,14 +164,16 @@ int main(int argc, char *argv[])
 	fparam.open(pname);
 	
 	if(fparam) {
-		const int size=256;
-		char s[size],c;
-		char *text="Parameter file %s contains a line longer than %d bytes";
+		const int blocksize=80;
+		char s[blocksize];
+		strstream buf;
 		while(1) {
-			fparam.get(s,size,'\n'); if(fparam.eof()) break;
-			if(fparam.get(c) && c != '\n') msg(ERROR,text,pname,size);
-			Vocabulary->Parse(s);
+			fparam.get(s,blocksize,EOF);
+			if(fparam.eof()) break;
+			buf << s;
 		}
+		buf << ends;
+		Vocabulary->Parse(buf.str());
 		fparam.close();
 	} else {
 		if(!testing) msg(ERROR,"Parameter file %s could not be opened",pname); 
@@ -182,14 +184,6 @@ int main(int argc, char *argv[])
 	adjust_parameters(dt,dtmax,tmax,itmax);
 	cout << newl << "PARAMETERS:" << newl << newl;
 	Vocabulary->List(cout);
-	
-	if(!testing) {
-		fdump.open(ptemp);
-		Vocabulary->Dump(fdump);
-		fdump.close();
-		if(fdump) rename(ptemp,pname);
-		else msg(ERROR,"Cannot write to parameter file %s",ptemp);
-	}
 	
 	Problem=Vocabulary->NewProblem(method);
 	Integrator=Vocabulary->NewIntegrator(integrator);
@@ -220,6 +214,14 @@ int main(int argc, char *argv[])
 	if(restart || initialize) read_init();
 	if(restart && dynamic < 0) dynamic=1;
 	if(!restart) Problem->Initialize();
+	
+	if(!testing) {
+		fdump.open(ptemp);
+		Vocabulary->Dump(fdump);
+		fdump.close();
+		if(fdump) rename(ptemp,pname);
+		else msg(WARNING,"Cannot write to parameter file %s",ptemp);
+	}
 	
 	Integrator->Allocate(ny);
 	

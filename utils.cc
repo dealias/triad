@@ -175,13 +175,6 @@ char *date()
 int abort_flag=1; 	// If nonzero, abort program after a fatal error.
 int beep_enabled=1; // If nonzero, enable terminal beeping during errors.
 
-#ifdef __GNUC__ 	
-#define	vform(os,format,vargs) os.vform(format,vargs);
-#else
-#define vform(os,format,vargs) \
-{os.flush(); vprintf(format,vargs); fflush(stdout);}
-#endif			
-
 #if __unix
 #include <unistd.h>
 #endif
@@ -208,7 +201,8 @@ void msg(int fatal, char *file, int line, char *format,...)
 	else cout << "WARNING: ";
 	
 	va_start(vargs,format);
-	vform(cout,format,vargs);
+	vprintf(format,vargs);
+	fflush(stdout);
 	va_end(vargs);
 	
 	if(*file) cout << " (\"" << file << "\":" << line << ")" << ".";
@@ -225,8 +219,19 @@ void msg(int fatal, char *file, int line, char *format,...)
 	if(fatal && abort_flag) {
 		cout << endl;
 		strstream buf;
-		buf << "terminated with error from \"" << file << "\":" << line <<
-			"; " << format << ends;
+		buf << "terminated with error from \"" << file << "\":" << line << "."
+			<< newl;
+#ifdef __GNUC__ 	
+		strstream vbuf;
+		va_start(vargs,format);
+		vbuf.vform(format,vargs);
+		va_end(vargs);
+		vbuf << ends;
+		buf << vbuf.str();
+#else
+		buf << format;
+#endif		
+		buf << ends;
 		mailuser(buf.str());
 		exit(FATAL);
 	}

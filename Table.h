@@ -46,7 +46,7 @@ public:
 		for(int i=0; i < Size(); i++) os << Entry(i)->Key() << newl;
 		os << flush;
 	}
-	B *Locate (char *key) {
+	B *Locate (char *& key) {
 		int match_type;
 		EntryBase<B> *e;
 		B *p;
@@ -55,8 +55,10 @@ public:
 									  KeyCompare,&match_type);
 		check_match(match_type,name,key);
 		p=e->New();
-		if(*p->Name()) 
+		if(*p->Name()) {
+			key=e->Key();
 			cout << newl << upcase(name) << ": " << p->Name() << endl;
+		}
 		return p;
 	}
 	B *New() {return NULL;}

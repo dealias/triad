@@ -152,20 +152,20 @@ public:
 	virtual char *Directory() {
 		strstream buf;
 		buf << Abbrev() << dirsep << ends;
-		buf.rdbuf()->freeze();
+		buf.freeze();
 		return buf.str();
 	}
 
-	ProblemBase *NewProblem(char *key) {
+	ProblemBase *NewProblem(char *& key) {
 		ProblemBase *p=ProblemTable->Locate(key);
-		p->SetAbbrev(upcase(key));
+		p->SetAbbrev(key);
 		return p;
 	}
 	
-	IntegratorBase *NewIntegrator(char *key) {
-		char *abbrev=undashify(key);
-		IntegratorBase *p=IntegratorTable->Locate(abbrev);
-		p->SetAbbrev(abbrev);
+	IntegratorBase *NewIntegrator(char *& key) {
+		undashify(key,key);
+		IntegratorBase *p=IntegratorTable->Locate(key);
+		p->SetAbbrev(key);
 		return p;
 	}
 	
