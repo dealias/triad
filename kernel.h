@@ -51,6 +51,8 @@ public:
 
 enum Solve_RC {NONINVERTIBLE=-1,UNSUCCESSFUL,SUCCESSFUL,ADJUST};
 
+typedef void Source_t(Var *, Var *, double);
+
 class ProblemBase {
 protected:
 	Var *y;
@@ -79,8 +81,6 @@ public:
 Compare_t ProblemCompare;
 KeyCompare_t ProblemKeyCompare;
 extern ProblemBase *Problem;
-
-typedef void Source_t(Var *, Var *, double);
 
 class IntegratorBase {
 protected:
