@@ -816,17 +816,16 @@ int main(int argc, char *const argv[])
 	if((remote || !label) && make_mpeg) putenv("DISPLAY=");
 
 	if(nset) {
-		if(label || make_mpeg || extract) { 
-			if(make_mpeg) montage(nfiles,argf,0,format,"miff");
-			
 			for(n=0; n < nset; n++) 
 				montage(nfiles,argf,n,format,extract ? extract : 
 						(make_mpeg ? yuvformat : "miff"));
-			if(!extract) {
-				identify(nfiles,argf,0,"miff",xsize,ysize);
+		if(label || make_mpeg || extract) { 
+			if(make_mpeg) montage(nfiles,argf,0,format,"miff");
+			for(n=0; n < nset; n++) 
+				montage(nfiles,argf,n,format,make_mpeg ? yuvformat : "miff");
+				if(n == 0) identify(nfiles,argf,0,"miff",xsize,ysize);
 				if(make_mpeg) mpeg(nfiles,argf,nset-1,"mpg",xsize,ysize);
 				else animate(nfiles,argf,nset-1,"miff","%d",xsize,ysize);
-			}
 		} else {
 			strstream buf;
 			buf << "%0" << NDIGITS << "d" << ends;
