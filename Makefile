@@ -244,6 +244,21 @@ convolve.o: /usr/local/include/i386/__math.h arch/i386.h
 convolve.o: /usr/local/include/i386/extensions.h new.h precision.h Complex.h
 convolve.o: pow.h /usr/local/lib/gcc-include/limits.h
 convolve.o: /usr/local/lib/gcc-include/syslimits.h
+fft.o: utils.h /usr/lib/g++-include/std/stddef.h
+fft.o: /usr/lib/g++-include/_G_config.h /usr/lib/g++-include/std/cstddef.h
+fft.o: /usr/local/lib/gcc-include/stdarg.h /usr/include/stdlib.h
+fft.o: /usr/include/features.h /usr/include/sys/cdefs.h /usr/include/errno.h
+fft.o: /usr/include/linux/errno.h /usr/include/alloca.h
+fft.o: /usr/lib/g++-include/fstream.h /usr/lib/g++-include/iostream.h
+fft.o: /usr/lib/g++-include/streambuf.h /usr/lib/g++-include/libio.h
+fft.o: /usr/include/math.h /usr/include/huge_val.h /usr/include/endian.h
+fft.o: /usr/include/bytesex.h /usr/include/linux/version.h
+fft.o: /usr/include/asm/byteorder.h /usr/include/nan.h
+fft.o: /usr/local/lib/gcc-include/float.h /usr/include/values.h
+fft.o: /usr/local/include/i386/__math.h arch/i386.h
+fft.o: /usr/local/include/i386/extensions.h new.h precision.h Complex.h pow.h
+fft.o: /usr/local/lib/gcc-include/limits.h
+fft.o: /usr/local/lib/gcc-include/syslimits.h
 Polar.o: kernel.h /usr/lib/g++-include/iostream.h
 Polar.o: /usr/lib/g++-include/streambuf.h /usr/lib/g++-include/libio.h
 Polar.o: /usr/lib/g++-include/_G_config.h /usr/lib/g++-include/fstream.h
@@ -381,3 +396,18 @@ unix.o: /usr/lib/g++-include/libio.h /usr/include/pwd.h
 unix.o: /usr/include/sys/times.h /usr/include/time.h
 unix.o: /usr/include/linux/times.h /usr/lib/g++-include/string.h
 unix.o: /usr/lib/g++-include/cstring /usr/lib/g++-include/std/cstring.h
+cfft.o: utils.h /usr/lib/g++-include/std/stddef.h
+cfft.o: /usr/lib/g++-include/_G_config.h /usr/lib/g++-include/std/cstddef.h
+cfft.o: /usr/local/lib/gcc-include/stdarg.h /usr/include/stdlib.h
+cfft.o: /usr/include/features.h /usr/include/sys/cdefs.h /usr/include/errno.h
+cfft.o: /usr/include/linux/errno.h /usr/include/alloca.h
+cfft.o: /usr/lib/g++-include/fstream.h /usr/lib/g++-include/iostream.h
+cfft.o: /usr/lib/g++-include/streambuf.h /usr/lib/g++-include/libio.h
+cfft.o: /usr/include/math.h /usr/include/huge_val.h /usr/include/endian.h
+cfft.o: /usr/include/bytesex.h /usr/include/linux/version.h
+cfft.o: /usr/include/asm/byteorder.h /usr/include/nan.h
+cfft.o: /usr/local/lib/gcc-include/float.h /usr/include/values.h
+cfft.o: /usr/local/include/i386/__math.h arch/i386.h
+cfft.o: /usr/local/include/i386/extensions.h new.h precision.h Complex.h
+cfft.o: pow.h /usr/local/lib/gcc-include/limits.h
+cfft.o: /usr/local/lib/gcc-include/syslimits.h

@@ -28,17 +28,24 @@ inline Solve_RC IntegratorBase::CheckError(double errmax)
 	return SUCCESSFUL;
 }
 
+#if _CRAY
+inline void set(Var *to, Var *from, int n) {
+	Var *kstop=to+n;
+#pragma ivdep
+	for(Var *k=to; k < kstop; k++) *k=*(from++);
+}
+
+inline void set(Real *to, Real *from, int n) {
+	Real *kstop=to+n;
+#pragma ivdep
+	for(Real *k=to; k < kstop; k++) *k=*(from++);
+}
+#else
 template<class T> 
 inline void set(T *to, T *from, int n) {
-#if _CRAY	
-	T *kstop=to+n;
-#pragma ivdep
-	for(T *k=to; k < kstop; k++)
-	*k=*(from++);
-#else
 	memcpy(to,from,sizeof(*from)*n);
-#endif	
 }
+#endif	
 
 class Euler : public IntegratorBase {
 protected:	
