@@ -140,7 +140,7 @@ void MakePalette(int palette)
 		
 	case GENERAL:
 		reverse=!reverse;
-		for(i=0; i <= n; i++) AddColor(r1-r2*i*ninv,g1-g2*i*ninv,b1-b2*i*ninv);
+		for(i=0; i <= n; i++) AddColor(r1+r2*i*ninv,g1+g2*i*ninv,b1+b2*i*ninv);
 		return;
 		
 	case YELLOW: 
