@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997,1998 Massachusetts Institute of Technology
+ * Copyright (c) 1997-1999 Massachusetts Institute of Technology
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,7 +56,8 @@ extern void rfftw_executor_simple(int n, fftw_real *in,
 				  fftw_real *out,
 				  fftw_plan_node *p,
 				  int istride,
-				  int ostride);
+				  int ostride,
+				  fftw_recurse_kind recurse_kind);
 
 extern rfftwnd_plan rfftwnd_create_plan_specific(int rank, const int *n,
 						fftw_direction dir, int flags,

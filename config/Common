@@ -1,4 +1,5 @@
 D = d
+C++ = g++ -Wall -ansi
 LIB = $(LFLAGS) -lm
 OPT = -g $(CFLAGS)
 INCL = -I. -I$(TRI) -I-

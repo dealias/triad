@@ -1,7 +1,7 @@
 /* fftw/fftw.h.  Generated automatically by configure.  */
 /* -*- C -*- */
 /*
- * Copyright (c) 1997,1998 Massachusetts Institute of Technology
+ * Copyright (c) 1997-1999 Massachusetts Institute of Technology
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -136,7 +136,7 @@ typedef struct {
 
 /* On Win32, you need to do funny things to access global variables
    in shared libraries.  Thanks to Andrew Sterian for this hack. */
-#if defined(__WIN32__) || defined(WIN32) || defined(_WINDOWS)
+#ifdef HAVE_WIN32
 #  if defined(BUILD_FFTW_DLL)
 #    define DL_IMPORT(type) __declspec(dllexport) type
 #  elif defined(USE_FFTW_DLL)
@@ -259,6 +259,11 @@ typedef struct fftw_plan_node_struct {
      int refcnt;
 } fftw_plan_node;
 
+typedef enum {
+     FFTW_NORMAL_RECURSE = 0,
+     FFTW_VECTOR_RECURSE = 1
+} fftw_recurse_kind;
+
 struct fftw_plan_struct {
      int n;
      int refcnt;
@@ -269,9 +274,10 @@ struct fftw_plan_struct {
      struct fftw_plan_struct *next;
      fftw_plan_node *root;
      double cost;
+     fftw_recurse_kind recurse_kind;
+     int vector_size;
 };
 
-/* a plan is just an array of instructions */
 typedef struct fftw_plan_struct *fftw_plan;
 
 /* flags for the planner */
@@ -286,7 +292,11 @@ typedef struct fftw_plan_struct *fftw_plan;
 				  same plan can be used in parallel by
 				  multiple threads */
 
-#define FFTWND_FORCE_BUFFERED (256)	/* internal, undocumented flag */
+#define FFTWND_FORCE_BUFFERED (256)     /* internal flag, forces buffering
+                                           in fftwnd transforms */
+
+#define FFTW_NO_VECTOR_RECURSE (512)    /* internal flag, prevents use
+                                           of vector recursion */
 
 extern fftw_plan fftw_create_plan_specific(int n, fftw_direction dir,
 					   int flags,
