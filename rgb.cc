@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.0";
+const char VERSION[]="1.1";
 
 #define NEW_IMAGEMAGICK 1
 
@@ -52,12 +52,13 @@ static int floating_section=0;
 static int preserve=0;
 static int remote=0;
 static int pointsize=0;
+static int byte=0;
+static int implicit=1;
+static int zero=0;
+static int invert=0;
+static int gray=0;
 
-int byte=0;
-int implicit=1;
-int zero=0;
-int invert=0;
-int gray=0;
+static char *convertprog;
 
 void cleanup();
 int system (char *command);
@@ -331,7 +332,10 @@ int main(int argc, char *const argv[])
 		exit(1);
 	}
 	
-	if(nfiles > 1 && !pointsize) pointsize=12;
+	if(nfiles > 1 || pointsize) {
+		convertprog="montage";
+		if(!pointsize) pointsize=12;
+	} else convertprog="convert";
 	
 	char *const *argf=argv+optind;
 		
@@ -491,6 +495,10 @@ int main(int argc, char *const argv[])
 		nset=nset ? min(nset,set) : set;
 	}
 	
+	if(remote && make_mpeg) unsetenv("DISPLAY");
+
+	if(nset == 1) msg(ERROR, "More than one frame required");
+	
 	if(nset) {
 		if(pointsize || make_mpeg) { 
 			if(make_mpeg) montage(nfiles,argf,0,format,"miff");
@@ -528,8 +536,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 {
 	strstream buf;
 	
-	if(remote) unsetenv("DISPLAY");
-	buf << "montage -size " << xsize << "x" << ysize
+	buf << convertprog << " -size " << xsize << "x" << ysize
 		<< " -geometry " << xsize << "x" << ysize << " -interlace none";
 	if(pointsize) buf << " -pointsize " << pointsize;
 	for(int f=0; f < nfiles; f++) {
@@ -538,8 +545,8 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 		if(!(floating_scale || byte)) 
 			buf << setprecision(2) << vminf[f]
 				<< separator << setprecision(2) << vmaxf[f] << "\\n";
-		buf << fieldname << "\" " << rgbdir
-			<< fieldname << setfill('0') << setw(4) << n << "." << format;
+		buf << fieldname << "\" " << format << ":" << rgbdir << fieldname
+			<< setfill('0') << setw(4) << n << "." << format;
 	}
 	buf << " " << yuvinterlace << type << ":" << rgbdir << argf[0] << n;
 #if !NEW_IMAGEMAGIK	
@@ -636,7 +643,7 @@ int system (char *command) {
 			if (errno != EINTR) return -1;
 		} else {
 			if(status != 0) {
-				msg(ERROR,"%s\n\nreturned signal %d",command,status);
+				msg(ERROR,"%s\nSignal %d",command,status);
 			}
 			return status;
 		}

@@ -2,7 +2,7 @@
 	$(C++) $(OPT) $(INCL) -o $@ -c $<
 
 clean:
-	rm -f *.o *.$(D) *mon.out $(ALL)
+	rm -rf *.o *.$(D) *mon.out $(ALL) Templates.DB/
 
 %.$(D): %.cc
 	$(MAKEDEPEND) $(INCL) $(MDOPTS) $< > $@
