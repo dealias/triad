@@ -239,7 +239,6 @@ int main(int argc, char *argv[])
   save_parameters();
   t=0.0;
   Problem->InitialConditions();
-  save_parameters(); // Save once more in case parameters have changed
   
   open_output(gparam,dirsep,"param",0);
   Vocabulary->GraphicsDump(gparam);
@@ -250,8 +249,9 @@ int main(int argc, char *argv[])
   if(restart || initialize) read_init();
   if(restart && dynamic < 0) dynamic=1;
   if(!restart) Problem->Initialize();
+  save_parameters(); // Save once more in case parameters have changed
+  
   Problem->Setup();
-	
   Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,dtmin,dtmax,
 		       itmax,microsteps,verbose,dynamic);
 	
