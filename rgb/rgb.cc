@@ -727,7 +727,7 @@ int main(int argc, char *argv[])
   rgbdirbuf << dirbuf.str() << "/";
   ostringstream buf;
   buf << "mkdirhier " << dirbuf.str();
-  const char *cmd=buf.str().c_str();
+  const char *cmd=strdup(buf.str().c_str());
   if(verbose) cout << cmd << endl;
   system(cmd);
   rgbdir=strdup(rgbdirbuf.str().c_str());
@@ -903,56 +903,60 @@ int main(int argc, char *argv[])
 	  for(int j2=0; j2 < my; j2++) {
 	    for(int i=istart; i < istop; i++)  {
 	      Ivec x;
-	      if(trans) x=Index(i,j);
-	      else x=Ivec(i,j,k);
 	      int index;
+	      
+	      if(trans) {
+		x=Index(i,j);
 							
-	      if (step == 0.0 ||
-		  x.i == Undefined || 
-		  x.j == Undefined ||
-		  x.k == Undefined) index=background;
-	      else {
-		Real val;
-		int ci=(int) floor(x.i);
-		int cj=(int) floor(x.j);
-		int ck=(int) floor(x.k);
+		if (step == 0.0 ||
+		    x.i == Undefined || 
+		    x.j == Undefined ||
+		    x.k == Undefined) index=background;
+		else {
+		  Real val;
+		  int ci=(int) floor(x.i);
+		  int cj=(int) floor(x.j);
+		  int ck=(int) floor(x.k);
 								
-		if(ci < -1 || ci >= nx ||
-		   cj < -1 || cj >= ny ||
-		   ck < -1 || ck >= nz)
-		  msg(ERROR,"%s: %g,%g,%g (%d,%d,%d)",
-		      "Index out of range",
-		      x.i,x.j,x.k,nx,ny,nz);
+		  if(ci < -1 || ci >= nx ||
+		     cj < -1 || cj >= ny ||
+		     ck < -1 || ck >= nz)
+		    msg(ERROR,"%s: %g,%g,%g (%d,%d,%d)",
+			"Index out of range",
+			x.i,x.j,x.k,nx,ny,nz);
 								
-		int x1,x2,y1,y2,z1,z2;
+		  int x1,x2,y1,y2,z1,z2;
 								
-		if(ci == -1 || ci == nx-1) {x1=nx-1; x2=0;}
-		else {x1=ci; x2=ci+1;}
+		  if(ci == -1 || ci == nx-1) {x1=nx-1; x2=0;}
+		  else {x1=ci; x2=ci+1;}
 								
-		if(cj == -1 || cj == ny-1) {y1=ny-1; y2=0;}
-		else {y1=cj; y2=cj+1;}
+		  if(cj == -1 || cj == ny-1) {y1=ny-1; y2=0;}
+		  else {y1=cj; y2=cj+1;}
 								
-		if(ck == -1 || ck == nz-1) {z1=nz-1; z2=0;}
-		else {z1=ck; z2=ck+1;}
+		  if(ck == -1 || ck == nz-1) {z1=nz-1; z2=0;}
+		  else {z1=ck; z2=ck+1;}
 								
-		val=(ck+1-x.k)*((cj+1-x.j)*((ci+1-x.i)*
-					    value(z1,y1,x1)+
+		  val=(ck+1-x.k)*((cj+1-x.j)*((ci+1-x.i)*
+					      value(z1,y1,x1)+
+					      (x.i-ci)*
+					      value(z1,y1,x2))+
+				  (x.j-cj)*((ci+1-x.i)*
+					    value(z1,y2,x1)+
 					    (x.i-ci)*
-					    value(z1,y1,x2))+
-				(x.j-cj)*((ci+1-x.i)*
-					  value(z1,y2,x1)+
+					    value(z1,y2,x2)))+
+		    (x.k-ck)*((cj+1-x.j)*((ci+1-x.i)*
+					  value(z2,y1,x1)+
 					  (x.i-ci)*
-					  value(z1,y2,x2)))+
-		  (x.k-ck)*((cj+1-x.j)*((ci+1-x.i)*
-					value(z2,y1,x1)+
+					  value(z2,y1,x2))+
+			      (x.j-cj)*((ci+1-x.i)*
+					value(z2,y2,x1)+
 					(x.i-ci)*
-					value(z2,y1,x2))+
-			    (x.j-cj)*((ci+1-x.i)*
-				      value(z2,y2,x1)+
-				      (x.i-ci)*
-				      value(z2,y2,x2)));
+					value(z2,y2,x2)));
 
-		index=((int)((val-vmin)*step+0.5))*sign+offset;
+		  index=((int)((val-vmin)*step+0.5))*sign+offset;
+		}
+	      } else {
+		index=((int)((value(k,j,i)-vmin)*step+0.5))*sign+offset;
 	      }
 							
 	      if(grey) {
@@ -1012,7 +1016,7 @@ int main(int argc, char *argv[])
 	montage(nfiles,argf,0,format,"tiff");
 	ostringstream buf;
 	buf << "xv " << outname << begin << ".tiff";
-	cmd=buf.str().c_str();
+	cmd=strdup(buf.str().c_str());
 	if(verbose) cout << cmd << endl;
 	system(cmd);
       } else {
@@ -1030,7 +1034,8 @@ int main(int argc, char *argv[])
       } else {
 	ostringstream buf;
 	buf << "%0" << NDIGITS << "d";
-	animate(nfiles,argf[0],nset-1,format,buf.str().c_str(),xsize,ysize);
+	animate(nfiles,argf[0],nset-1,format,strdup(buf.str().c_str()),
+		xsize,ysize); 
       }
     }
   }
@@ -1043,7 +1048,7 @@ void cleanup()
   if(!preserve) {
     ostringstream buf;
     buf << "rm -r " << rgbdir << " >& /dev/null";
-    const char *cmd=buf.str().c_str();
+    const char *cmd=strdup(buf.str().c_str());
     if(verbose) cout << cmd << endl;
     system(cmd);
   }
@@ -1087,7 +1092,7 @@ void montage(unsigned int nfiles, char *argf[], int n, const char *format,
   }
   buf << outname << frame << "." << type;
   if(!verbose) buf << ">& /dev/null";
-  const char *cmd=buf.str().c_str();
+  const char *cmd=strdup(buf.str().c_str());
   if(verbose) cout << cmd << endl;
   system(cmd);
 	
@@ -1100,7 +1105,7 @@ void montage(unsigned int nfiles, char *argf[], int n, const char *format,
 	  << n << "." << format << " ";
     }
     if(!verbose) buf << " >& /dev/null";
-    cmd=buf.str().c_str();
+    cmd=strdup(buf.str().c_str());
     if(verbose) cout << cmd << endl;
     system(cmd);
   }
@@ -1114,7 +1119,7 @@ void identify(int, int n, const char *type, int& xsize, int& ysize)
   ostringstream buf;
   buf << "identify " << rgbdir << outname << n << "." << type
       << " > " << iname;
-  const char *cmd=buf.str().c_str();
+  const char *cmd=strdup(buf.str().c_str());
   if(verbose) cout << cmd << endl;
   system(cmd);
   ifstream fin(iname);
@@ -1143,7 +1148,7 @@ void mpeg(int, int n, const char *type, int xsize, int ysize)
       << " -PF " << rgbdir << outname << " -s " << outname
       << "." << type;
   if(!verbose) buf << " > /dev/null";
-  const char *cmd=buf.str().c_str();
+  const char *cmd=strdup(buf.str().c_str());
   if(verbose) cout << cmd << endl;
   system(cmd);
 }
@@ -1155,7 +1160,7 @@ void animate(int, const char *filename, int n, const char *type,
   buf << "animate -scenes 0-" << n << " -size " << xsize << "x" << ysize
       << " -depth 8 " << type << ":" << rgbdir << filename << pattern
       << "." << type;
-  const char *cmd=buf.str().c_str();
+  const char *cmd=strdup(buf.str().c_str());
   if(verbose) cout << cmd << endl;
   system(cmd);
 }
