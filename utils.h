@@ -99,10 +99,12 @@ void cputime(double *cpu);
 
 char *output_filename(char *basename, char *suffix);
 
+#if !_AIX
 inline Real abs(const Real x)
 {
 	return fabs(x);
 }
+#endif
 
 inline Real abs2(const Real x)
 {
