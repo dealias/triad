@@ -15,11 +15,11 @@ POLARAVG = PolarAverageTest PolarAverage simpfast
 
 TRIAD = $(NAVIER) $(THREEWAVE) $(BURGER) $(POLARAVG)
 
-burger: $(BURGER:=.o)
-	$(C++) $(OPT) -o triad $(BURGER:=.o) $(LIB) 
-
 nw: $(NAVIER:=.o)
 	$(C++) $(OPT) -o triad $(NAVIER:=.o) $(LIB) 
+
+burger: $(BURGER:=.o)
+	$(C++) $(OPT) -o triad $(BURGER:=.o) $(LIB) 
 
 w3:	$(THREEWAVE:=.o)
 	$(C++) $(OPT) -o triad $(THREEWAVE:=.o) $(LIB)
