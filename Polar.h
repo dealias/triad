@@ -118,4 +118,11 @@ POLAR_FCN Jkpq;
 Real BinAverage(Bin<Polar> *k, Bin<Polar> *p, Bin<Polar> *q,
 				POLAR_FCN *f0, Real acc0);
 
+// For Navier-Stokes turbulence (velocity normalization):
+
+inline Mc Partition<Polar>::Ckpq(Polar, Polar P, Polar Q)
+{
+	return (Q.r-P.r)*(Q.r+P.r);
+}
+
 #endif

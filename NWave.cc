@@ -24,10 +24,11 @@ inline void PrimitiveNucleus(Real *source, Real)
 {
 	Real *k,*kstop=source+Npsi;
 	Real sum;
-	Triad *t=triadBase;
+	Triad *t=triadBase,*tstop,**triadstop=triadStop;
+
 	for(k=source; k < kstop; k++) {
-		for(sum=0.0; t->pq; t++) sum += t->Mkpq*(*(Real *) t->pq);
-		t++;
+		tstop=*(triadstop++);
+		for(sum=0.0; t < tstop; t++) sum += t->Mkpq*(*(Real *) t->pq);
 		*k=sum;
 	}
 }
@@ -37,6 +38,7 @@ inline void PrimitiveNucleus(Complex *source, Real)
 	Complex *k,*kstop=source+Npsi;
 	Real sumre,sumim;
 	Triad *t=triadBase,*tstop,**triadstop=triadStop;
+	
 	for(k=source; k < kstop; k++) {
 		tstop=*(triadstop++);
 		for(sumre=sumim=0.0; t < tstop; t++) {

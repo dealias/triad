@@ -3,6 +3,7 @@
 
 #include <errno.h>
 
+#include "kernel.h"
 #include "utils.h"
 #include "Pair.h"
 #include "Bin.h"

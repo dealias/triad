@@ -185,7 +185,3 @@ Mc Jkpq(double k, double, double, double, double b, double g,
 	return (hi-lo)*sin(g-b)/k;
 }
 
-Mc Partition<Polar>::Ckpq(Polar, Polar P, Polar Q)
-{
-	return (Q.r-P.r)*(Q.r+P.r);
-}
