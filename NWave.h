@@ -101,8 +101,8 @@ public:
 	int Corrector(double, double&, int start, int stop);
 	void Source(Var *src, Var *var, double t) {
 		if(NonlinearSrc) (*NonlinearSrc)(src,var,t);
-		ExponentialLinearity(src,var,t);
 		if(ConstantSrc) (*ConstantSrc) (src,y,t);
+		ExponentialLinearity(src,var,t);
 	}
 };
 
@@ -118,8 +118,8 @@ public:
 	int Corrector(double, double&, int, int);
 	void Source(Var *src, Var *var, double t) {
 		if(NonlinearSrc) (*NonlinearSrc)(src,var,t);
-		ConservativeExponentialLinearity(src,var,t);
 		if(ConstantSrc) (*ConstantSrc) (src,y,t);
+		ConservativeExponentialLinearity(src,var,t);
 	}
 };
 
