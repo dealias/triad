@@ -79,7 +79,8 @@ int implicit=1;
 int symmetric=0;
 int invert=0;
 
-enum Parameters {RFACTOR=256,THETA,PHI,YXASPECT,ZXASPECT,POINTSIZE,AVGX,AVGY};
+enum Parameters {RFACTOR=256,THETA,PHI,YXASPECT,ZXASPECT,POINTSIZE,AVGX,AVGY,\
+				 NXFINE,NYFINE,NZFINE};
 
 Real Rfactor=2.0;
 Real Theta=0.9;
@@ -87,9 +88,9 @@ Real Phi=0.9;
 Real yxaspect=1.0;
 Real zxaspect=1.0;
 
-const int Nxfine=4;
-const int Nyfine=5;
-const int Nzfine=10;
+int Nxfine=4;
+int Nyfine=5;
+int Nzfine=10;
 
 const int Undefined=-2;
 
