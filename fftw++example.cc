@@ -1,11 +1,6 @@
 #include "fftw++.h"
 
-// link with -lfftw3
-
-bool fftw::Wise=false;
-const char *fftw::WisdomName="wisdom.txt";
-ifstream fftw::ifWisdom;
-ofstream fftw::ofWisdom;
+// Compile with g++ fftw++example.cc fftw++.cc -lfftw3
 
 using namespace std;
 

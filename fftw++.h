@@ -23,10 +23,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #include <fstream>
 #include <iostream>
 #include <fftw3.h>
+
+#ifndef __Complex_h__
 #include <complex>
-
-
-#ifndef COMPLEX
 typedef std::complex<double> Complex;
 #endif
 
@@ -34,6 +33,19 @@ using std::ifstream;
 using std::ofstream;
 using std::cerr;
 using std::endl;
+
+#ifdef __Array_h__
+using Array::array1;
+using Array::Array1;
+using Array::array2;
+using Array::Array2;
+using Array::array3;
+using Array::Array3;
+
+static Array1<Complex> NULL1;  
+static Array2<Complex> NULL2;  
+static Array3<Complex> NULL3;  
+#endif
 
 inline void fftw_export_wisdom(void (*emitter)(char c, ofstream& s),
 			       ofstream& s)
@@ -51,9 +63,9 @@ inline int GetWisdom(ifstream& s) {return s.get();}
 
 inline Complex *fftnew(size_t size)
 {
-  Complex *mem=(Complex *) fftw_malloc(size*sizeof(Complex));  
+  void *mem=fftw_malloc(size*sizeof(Complex));  
   if(size && !mem) cerr << endl << "Memory limits exceeded" << endl;
-  return mem;
+  return (Complex *) mem;
 }
 
 inline void fftdelete(Complex *ptr)
@@ -68,10 +80,11 @@ protected:
   unsigned int size;
   int sign;
   double norm;
+
   bool inplace;
-  static const unsigned int effort=FFTW_PATIENT;
   fftw_plan plan;
   
+  static unsigned int effort;
   static bool Wise;
   static const char *WisdomName;
   static ifstream ifWisdom;
@@ -114,21 +127,35 @@ protected:
       }
     }
   }
-  
+
 public:
-  fftw(unsigned int size, int sign, unsigned int n=0) : size(size), sign(sign),
-				      norm(1.0/(n ? n : size)) {}
+  fftw(unsigned int size, int sign, unsigned int n=0) : 
+    size(size), sign(sign), norm(1.0/(n ? n : size)) {}
   
-  virtual void Plan(Complex *in, Complex *out)=0;
+  virtual ~fftw() {}
+  
+  virtual fftw_plan Plan(Complex *in, Complex *out)=0;
+  
+  inline void CheckAlign(Complex *p, const char *s) {
+    if((size_t) p % sizeof(Complex) == 0) return;
+    cerr << "ERROR: " << s << " array is not " << sizeof(Complex) 
+	 << "-byte aligned" << endl;
+    exit(1);
+  }
   
   void Setup(Complex *in, Complex *out) {
     if(!Wise) LoadWisdom();
     bool alloc=!in;
     if(alloc) in=fftnew(size);
-    if(!out) out=in;
+    CheckAlign(in,"constructor input");
+    if(out) CheckAlign(out,"constructor output");
+    else out=in;
     inplace=(out==in);
-    
-    Plan(in,out);
+    plan=Plan(in,out);
+    if(!plan) {
+      cerr << "Unable to construct FFTW plan" << endl;
+      exit(1);
+    }
     
     if(alloc) fftdelete(in);
     SaveWisdom();
@@ -152,7 +179,9 @@ public:
   }
     
   void Setout(Complex *in, Complex *&out) {
-    if(!out) out=in;
+    CheckAlign(in,"input");
+    if(out) CheckAlign(out,"output");
+    else out=in;
     if(inplace ^ (out == in)) {
       cerr << "ERROR: fft constructor and call must be either both in place or out of place" << endl; 
       exit(1);
@@ -217,8 +246,16 @@ public:
   fft1d(unsigned int nx, int sign, Complex *in=NULL, Complex *out=NULL) 
     : fftw(nx,sign), nx(nx) {Setup(in,out);} 
   
-  void Plan(Complex *in, Complex *out) {
-    plan=fftw_plan_dft_1d(nx,(fftw_complex *) in, (fftw_complex *) out,
+#ifdef __Array_h__
+  fft1d(int sign, array1<Complex>& in, array1<Complex>& out=NULL1) 
+    : fftw(in.Nx(),sign), nx(in.Nx()) {Setup(in,out);} 
+  
+  fft1d(int sign, Array1<Complex>& in, Array1<Complex>& out=NULL1) 
+    : fftw(in.Nx(),sign), nx(in.Nx()) {Setup(in,out);} 
+#endif  
+  
+  fftw_plan Plan(Complex *in, Complex *out) {
+    return fftw_plan_dft_1d(nx,(fftw_complex *) in, (fftw_complex *) out,
 		       sign,effort);
   }
 };
@@ -255,9 +292,9 @@ public:
       nx(nx), m(m), stride(stride), dist(Dist(nx,stride,dist))
   {Setup(in,out);} 
   
-  void Plan(Complex *in, Complex *out) {
+  fftw_plan Plan(Complex *in, Complex *out) {
     int n[1]={nx};
-    plan=fftw_plan_many_dft(1,n,m,
+    return fftw_plan_many_dft(1,n,m,
 			    (fftw_complex *) in,NULL,stride,dist,
 			    (fftw_complex *) out,NULL,stride,dist,
 			    sign,effort);
@@ -293,8 +330,16 @@ public:
   rcfft1d(unsigned int nx, Complex *in=NULL, Complex *out=NULL) 
     : fftw(nx/2+1,-1,nx), nx(nx) {Setup(in,out);} 
   
-  void Plan(Complex *in, Complex *out) {
-    plan=fftw_plan_dft_r2c_1d(nx,(double *) in, (fftw_complex *) out, effort);
+#ifdef __Array_h__
+  rcfft1d(array1<Complex>& in, array1<Complex>& out=NULL1)
+    : fftw(in.Nx(),-1,2*(in.Nx()-1)), nx(2*(in.Nx()-1)) {Setup(in,out);} 
+  
+  rcfft1d(Array1<Complex>& in, Array1<Complex>& out=NULL1)
+    : fftw(in.Nx(),-1,2*(in.Nx()-1)), nx(2*(in.Nx()-1)) {Setup(in,out);} 
+#endif  
+  
+  fftw_plan Plan(Complex *in, Complex *out) {
+    return fftw_plan_dft_r2c_1d(nx,(double *) in, (fftw_complex *) out, effort);
   }
   
   void Execute(Complex *in, Complex *out) {
@@ -329,8 +374,16 @@ public:
   crfft1d(unsigned int nx, Complex *in=NULL, Complex *out=NULL) 
     : fftw(realsize(nx,in,out),1,nx), nx(nx) {Setup(in,out);} 
   
-  void Plan(Complex *in, Complex *out) {
-    plan=fftw_plan_dft_c2r_1d(nx,(fftw_complex *) in, (double *) out, effort);
+#ifdef __Array_h__
+  crfft1d(array1<Complex>& in, array1<Complex>& out=NULL1) 
+    : fftw(in.Nx(),1,2*(in.Nx()-1)), nx(2*(in.Nx()-1)) {Setup(in,out);} 
+  
+  crfft1d(Array1<Complex>& in, Array1<Complex>& out=NULL1) 
+    : fftw(in.Nx(),1,2*(in.Nx()-1)), nx(2*(in.Nx()-1)) {Setup(in,out);} 
+#endif  
+  
+  fftw_plan Plan(Complex *in, Complex *out) {
+    return fftw_plan_dft_c2r_1d(nx,(fftw_complex *) in, (double *) out,effort);
   }
   
   void Execute(Complex *in, Complex *out) {
@@ -371,9 +424,9 @@ public:
     : fftw(nx/2*stride+(m-1)*Dist(nx,stride,dist)+1,-1,nx), nx(nx), m(m),
       stride(stride), dist(Dist(nx,stride,dist)) {Setup(in,out);} 
   
-  void Plan(Complex *in, Complex *out) {
+  fftw_plan Plan(Complex *in, Complex *out) {
     const int n[1]={nx};
-    plan=fftw_plan_many_dft_r2c(1,n,m,
+    return fftw_plan_many_dft_r2c(1,n,m,
 				(double *) in,NULL,stride,2*dist,
 				(fftw_complex *) out,NULL,stride,dist,
 				effort);
@@ -422,9 +475,9 @@ public:
     : fftw((realsize(nx,in,out)-1)*stride+(m-1)*Dist(nx,stride,dist)+1,1,nx),
       nx(nx), m(m), stride(stride), dist(Dist(nx,stride,dist)) {Setup(in,out);}
   
-  void Plan(Complex *in, Complex *out) {
+  fftw_plan Plan(Complex *in, Complex *out) {
     const int n[1]={nx};
-    plan=fftw_plan_many_dft_c2r(1,n,m,
+    return fftw_plan_many_dft_c2r(1,n,m,
 				(fftw_complex *) in,NULL,stride,dist,
 				(double *) out,NULL,stride,2*dist,
 				effort);
@@ -473,8 +526,16 @@ public:
 	Complex *out=NULL)
     : fftw(nx*ny,sign), nx(nx), ny(ny) {Setup(in,out);} 
   
-  void Plan(Complex *in, Complex *out) {
-    plan=fftw_plan_dft_2d(nx,ny,(fftw_complex *) in, (fftw_complex *) out,
+#ifdef __Array_h__
+  fft2d(int sign, array2<Complex>& in, array2<Complex>& out=NULL2) 
+    : fftw(in.Nx()*in.Ny(),sign), nx(in.Nx()), ny(in.Ny()) {Setup(in,out);} 
+  
+  fft2d(int sign, Array2<Complex>& in, Array2<Complex>& out=NULL2) 
+    : fftw(in.Nx()*in.Ny(),sign), nx(in.Nx()), ny(in.Ny()) {Setup(in,out);} 
+#endif  
+  
+  fftw_plan Plan(Complex *in, Complex *out) {
+    return fftw_plan_dft_2d(nx,ny,(fftw_complex *) in, (fftw_complex *) out,
 			  sign,effort);
   }
 };
@@ -512,8 +573,18 @@ public:
 	  Complex *out=NULL) 
     : fftw(nx*(ny/2+1),-1,nx*ny), nx(nx), ny(ny), shift(true) {Setup(in,out);} 
   
-  void Plan(Complex *in, Complex *out) {
-    plan=fftw_plan_dft_r2c_2d(nx,ny,(double *) in, (fftw_complex *) out,
+#ifdef __Array_h__
+  rcfft2d(array2<Complex>& in, array2<Complex>& out=NULL2)
+    : fftw(in.Nx()*in.Ny(),-1,in.Nx()*2*(in.Ny()-1)),
+      nx(in.Nx()), ny(2*(in.Ny()-1)), shift(true) {Setup(in,out);} 
+  
+  rcfft2d(Array2<Complex>& in, Array2<Complex>& out=NULL2)
+    : fftw(in.Nx()*in.Ny(),-1,in.Nx()*2*(in.Ny()-1)),
+      nx(in.Nx()), ny(2*(in.Ny()-1)), shift(true) {Setup(in,out);} 
+#endif  
+  
+  fftw_plan Plan(Complex *in, Complex *out) {
+    return fftw_plan_dft_r2c_2d(nx,ny,(double *) in, (fftw_complex *) out,
 			      effort);
   }
   
@@ -563,8 +634,18 @@ public:
     : fftw(nx*(realsize(ny,in,out)),1,nx*ny), nx(nx), ny(ny), shift(true)
   {Setup(in,out);} 
   
-  void Plan(Complex *in, Complex *out) {
-    plan=fftw_plan_dft_c2r_2d(nx,ny,(fftw_complex *) in, (double *) out,
+#ifdef __Array_h__
+  crfft2d(array2<Complex>& in, array2<Complex>& out=NULL2)
+    : fftw(in.Nx()*in.Ny(),1,in.Nx()*2*(in.Ny()-1)),
+      nx(in.Nx()), ny(2*(in.Ny()-1)), shift(true) {Setup(in,out);} 
+  
+  crfft2d(Array2<Complex>& in, Array2<Complex>& out=NULL2)
+    : fftw(in.Nx()*in.Ny(),1,in.Nx()*2*(in.Ny()-1)),
+      nx(in.Nx()), ny(2*(in.Ny()-1)), shift(true) {Setup(in,out);} 
+#endif  
+  
+  fftw_plan Plan(Complex *in, Complex *out) {
+    return fftw_plan_dft_c2r_2d(nx,ny,(fftw_complex *) in, (double *) out,
 			      effort);
   }
   
@@ -615,8 +696,18 @@ public:
 	int sign, Complex *in=NULL, Complex *out=NULL)
     : fftw(nx*ny*nz,sign), nx(nx), ny(ny), nz(nz) {Setup(in,out);} 
   
-  void Plan(Complex *in, Complex *out) {
-    plan=fftw_plan_dft_3d(nx, ny, nz, (fftw_complex *) in,
+#ifdef __Array_h__
+  fft3d(int sign, array3<Complex>& in=NULL3, array3<Complex>& out=NULL3)
+    : fftw(in.Nx()*in.Ny()*in.Nz(),sign),
+      nx(in.Nx()), ny(in.Ny()), nz(in.Nz()) {Setup(in,out);} 
+  
+  fft3d(int sign, Array3<Complex>& in=NULL3, Array3<Complex>& out=NULL3)
+    : fftw(in.Nx()*in.Ny()*in.Nz(),sign),
+      nx(in.Nx()), ny(in.Ny()), nz(in.Nz()) {Setup(in,out);} 
+#endif  
+  
+  fftw_plan Plan(Complex *in, Complex *out) {
+    return fftw_plan_dft_3d(nx, ny, nz, (fftw_complex *) in,
 			  (fftw_complex *) out, sign, effort);
   }
 };
@@ -656,8 +747,18 @@ public:
 			       nx(nx), ny(ny), nz(nz),
 			       shift(true) {Setup(in,out);} 
   
-  void Plan(Complex *in, Complex *out) {
-    plan=fftw_plan_dft_r2c_3d(nx,ny,nz,(double *) in, (fftw_complex *) out,
+#ifdef __Array_h__
+  rcfft3d(array3<Complex>& in=NULL3, array3<Complex>& out=NULL3) :
+    fftw(in.Nx()*in.Ny()*in.Nz(),-1,in.Nx()*in.Ny()*2*(in.Nz()-1)),
+    nx(in.Nx()), ny(in.Ny()), nz(2*(in.Nz()-1)), shift(true) {Setup(in,out);} 
+  
+  rcfft3d(Array3<Complex>& in=NULL3, Array3<Complex>& out=NULL3) :
+    fftw(in.Nx()*in.Ny()*in.Nz(),-1,in.Nx()*in.Ny()*2*(in.Nz()-1)),
+    nx(in.Nx()), ny(in.Ny()), nz(2*(in.Nz()-1)), shift(true) {Setup(in,out);} 
+#endif  
+  
+  fftw_plan Plan(Complex *in, Complex *out) {
+    return fftw_plan_dft_r2c_3d(nx,ny,nz,(double *) in, (fftw_complex *) out,
 			      effort);
   }
   
@@ -708,8 +809,18 @@ public:
 			       nx(nx), ny(ny), nz(nz),
 			       shift(true) {Setup(in,out);} 
   
-  void Plan(Complex *in, Complex *out) {
-    plan=fftw_plan_dft_c2r_3d(nx,ny,nz,(fftw_complex *) in, (double *) out,
+#ifdef __Array_h__
+  crfft3d(array3<Complex>& in=NULL3, array3<Complex>& out=NULL3) :
+    fftw(in.Nx()*in.Ny()*in.Nz(),1,in.Nx()*in.Ny()*2*(in.Nz()-1)),
+    nx(in.Nx()), ny(in.Ny()), nz(2*(in.Nz()-1)), shift(true) {Setup(in,out);} 
+  
+  crfft3d(Array3<Complex>& in=NULL3, Array3<Complex>& out=NULL3) :
+    fftw(in.Nx()*in.Ny()*in.Nz(),1,in.Nx()*in.Ny()*2*(in.Nz()-1)),
+    nx(in.Nx()), ny(in.Ny()), nz(2*(in.Nz()-1)), shift(true) {Setup(in,out);} 
+#endif  
+  
+  fftw_plan Plan(Complex *in, Complex *out) {
+    return fftw_plan_dft_c2r_3d(nx,ny,nz,(fftw_complex *) in, (double *) out,
 			      effort);
   }
   

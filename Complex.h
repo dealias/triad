@@ -36,8 +36,8 @@ class Complex
  protected:
 #endif
 
-  Real		   re;
-  Real		   im;
+  Real re;
+  Real im;
 
  public:
 

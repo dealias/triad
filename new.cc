@@ -5,7 +5,7 @@
 
 // #include <mem_test_user>
 
-using std::cout;
+using std::cerr;
 using std::endl;
 using std::set_new_handler;
 
@@ -20,7 +20,7 @@ static size_t dynamic_memory=0;
 
 void my_new_handler()
 {
-  cout << endl << "Memory limits exceeded" << endl;
+  cerr << endl << "Memory limits exceeded" << endl;
   exit(1);
 }
 
@@ -30,12 +30,12 @@ void (*old_new_handler)()=set_new_handler(&my_new_handler);
 #ifdef _RWSTD_THROW_SPEC_NULL
 void *operator new(size_t size, const std::nothrow_t&) _RWSTD_THROW_SPEC_NULL
 #else
+#define _RWSTD_THROW_SPEC_NULL
 void *operator new(size_t size)
 #endif
 {
   void *mem=malloc(size);
-//  void *mem=fftw_malloc(size);
-  if(size && !mem) (my_new_handler)();
+  if(size && !mem) my_new_handler();
   dynamic_memory += size;
   return mem;
 }
@@ -43,21 +43,14 @@ void *operator new(size_t size)
 void *operator new(size_t size, int len)
 {
   void *mem=calloc(len,size);
-//  void *mem=fftw_malloc(len*size);
-//  bzero(mem,len*size);
   if(len && !mem) (my_new_handler)();
   dynamic_memory += len*size;
   return mem;
 }
 
-#ifdef _RWSTD_THROW_SPEC_NULL
 void operator delete(void *ptr) _RWSTD_THROW_SPEC_NULL
-#else
-void operator delete(void *ptr)
-#endif
 {
   free(ptr);
-//  fftw_free(ptr);
 }
 
 // provide a C++ interface to vector-resize via realloc 
