@@ -9,8 +9,8 @@ main()
 	fout << Nx << Ny << 1;
 	
 	if(fout) 
-	  for(unsigned j=0; j < N; j++) 
-		for(unsigned i=0; i < N; i++) 
-		    fout << (float) (i+j*N) << endl;
+	  for(unsigned j=0; j < Ny; j++) 
+		for(unsigned i=0; i < Nx; i++) 
+		    fout << (float) (i+Nx*j) << endl;
 	fout.close();
 }
