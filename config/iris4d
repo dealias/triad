@@ -3,6 +3,6 @@ INCL = -I . -I $(TRI)
 OPT = $(CFLAGS)
 MAKEDEPEND = $(C++) -M -DDEPEND
 #LIB = $(LFLAGS) $(HOME)/lib/libfftw.a -lm
-LIB = $(LFLAGS)
+LIB = $(LFLAGS) -lm
 
 FFT = fft
