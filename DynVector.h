@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __DynVector_h__
 #define __DynVector_h__ 1
 
-#define __DYNVECTOR_H_VERSION__ 1.00
+#define __DYNVECTOR_H_VERSION__ 1.01
 
 #include <cstdlib>
 #include <iostream>
