@@ -1,1 +1,2 @@
-all1 tmax=1 micro=1 dynamic=0 dt=.001 tmax=.4
+all1 micro=1 dynamic=0 dt=.001 tmax=10 itmax=100 $*
+

@@ -83,7 +83,7 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 			}
 			cont=1;
 			do {
-				switch(Solve(t,dt))	{
+				switch(Solve(t,dt)) {
 				case ADJUST:
 					t += dt;
 					ChangeTimestep(dt,sign*min(sign*dt*growfactor,dtmax),t,

@@ -4,12 +4,6 @@
 #define INTEGRATOR(key) \
 {(void) new Entry<key,IntegratorBase>(#key,IntegratorTable);}
 
-inline void IntegratorBase::Source(Var *src, Var *y, double t)
-{
-	Problem->NonLinearSrc(src,y,t);
-	Problem->LinearSrc(src,y,t);
-}
-
 inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0, 
 									  const Var& pred, const Var& corr)
 {
@@ -86,7 +80,7 @@ public:
 	char *Name() {return "LeapFrog";}
 	void Predictor(double, double, int, int);
 	int Corrector(double, int, int, int);
-	void StandardPredictor(double t, double dt, int start, int stop) {
+	void StandardPredictor(double t, double dt, int start, int stop) { 
 		LeapFrog::Predictor(t,dt,start,stop);
 	}
 	int StandardCorrector(double dt, int dynamic, int start, int stop) {

@@ -65,8 +65,8 @@ public:
 	int *ErrorMask() {return errmask;}
 	
 	virtual char *Name() {return "";}
-	virtual void LinearSrc(Var *, Var *, double) {}
-	virtual void NonLinearSrc(Var *, Var *, double) {}
+	
+	virtual void Source(Var *src, Var *y, double t)=0;
 	virtual void Transform(Var *, double, double, Var *&) {}
 	virtual void BackTransform(Var *, double, double, Var *) {}
 	virtual void Initialize() {}
@@ -112,11 +112,13 @@ public:
 		itmax=itmax0;
 		microsteps=microsteps0*Microfactor();
 		verbose=verbose0;
-	}
-	void Integrate(Var *const y, double& t, double tmax, double& dt, 
-				   const double sample);
+   }
+	void Integrate(Var *const y, double& t, double tmax,
+				   double& dt, const double sample);
 	void ChangeTimestep(double& dt, double dtnew, const double t,
 						const double sample);
+	
+	virtual void Source(Var *src, Var *y, double t) {Problem->Source(src,y,t);}
 	
 	void CalcError(const Var& initial, const Var& norm, const Var& pred,
 				   const Var& corr);
@@ -124,7 +126,6 @@ public:
 	virtual void Allocate(int n);
 	virtual char *Name()=0;
 	virtual Solve_RC Solve(double, double)=0;
-	virtual void Source(Var *, Var *, double);
 	virtual int Microfactor() {return 1;}
 	virtual void TimestepDependence(double) {}
 };
@@ -175,7 +176,7 @@ extern VocabularyBase *Vocabulary;
 #include "Param.h"
 #include "Integrator.h"
 
-#define METHOD(key) {(void) new Entry<key,ProblemBase> (#key,ProblemTable);}
+#define METHOD(key) (void) new Entry<key,ProblemBase> (#key,ProblemTable);
 
 #define PLURAL(x) ((x)==1 ? "" : "s")
 
