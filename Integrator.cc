@@ -174,13 +174,17 @@ int PC::Corrector(double dt, int dynamic, int start, int stop)
 	return 1;
 }
 
-int Midpoint::Corrector(double dt, int dynamic, int start, int stop)
+// *** Need to add Transform and BackTransform here...
+Solve_RC Midpoint::Solve(double t, double dt)
 {
-	for(int i=0; i < 100; i++) {
-		PC::Corrector(dt,0,start,stop);
-		Source(source,y1,t+dt);
+	for(int j=0; j < ny; j++) y[j]=y0[j];
+	for(int i=0; i < 10; i++) {
+		if(i > 0) for(int j=0; j < ny; j++) y0[j]=0.5*(y0[j]+y[j]);
+		Source(source,y0,t);
+		for(int j=0; j < ny; j++) y0[j]=y[j]+dt*source[j];
 	}
-	return 1;
+	Problem->Stochastic(y0,t,dt);
+	return SUCCESSFUL;
 }
 
 void LeapFrog::Predictor(double t, double, int start, int stop)

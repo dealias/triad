@@ -7,21 +7,24 @@ template<class T>
 class DynVector
 {
 	T *v;
-	unsigned int alloc;
 	unsigned int size;
+	unsigned int alloc;
+	int allocated;
 public:
-	void Allocate(unsigned int s) {v=new T[alloc=s]; size=0;}
-	void Deallocate() {delete [] v; alloc=0;}
+	void Allocate(unsigned int s) {v=new T[alloc=s]; size=0; allocated=1;}
+	void Deallocate() {delete [] v; size=0; alloc=0; allocated=0;}
 	
-	DynVector() : v(NULL), alloc(0), size(0) {}
+	DynVector() : v(NULL), size(0), alloc(0), allocated(0) {}
+	DynVector(const DynVector& A) : v(A.v), size(A.size),
+		alloc(A.alloc), allocated(0) {}
 	DynVector(unsigned int s) {Allocate(s);}
-	~DynVector() {Deallocate();}
+	~DynVector() {if(allocated) Deallocate();}
 
 	unsigned int Alloc() const {return alloc;}
 	unsigned int Size() const {return size;}
 	
 	void Resize(unsigned int i) {
- 		if (i == 0 && alloc > 0) delete [] v;
+ 		if (i == 0 && alloc) delete [] v;
 		else if(i > alloc) {
 			T *v0=v;
 			v=new T[i];
@@ -44,8 +47,8 @@ public:
 	T *operator () () const {return v;}
 	operator T* () const {return v;}
 	
-	void PushBack(T value) {
-		if (size == alloc) Resize(2*alloc+1);
+	void PushBack(const T& value) {
+		if (size == alloc) Resize(alloc ? 2*alloc : 1);
 		v[size++]=value;
 	}
 	

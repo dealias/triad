@@ -31,6 +31,15 @@ public:
 	Solve_RC Solve(double, double);
 };
 
+class Midpoint : public IntegratorBase {
+protected:	
+	Var *y;
+public:
+	void Allocate(int n) {IntegratorBase::Allocate(n); y=new Var [n];}
+	const char *Name() {return "Midpoint Rule";}
+	Solve_RC Solve(double, double);
+};
+
 class PC : public IntegratorBase {
 protected:
 	int new_y0;
@@ -68,11 +77,6 @@ public:
 								  int stop) {
 		return PC::Corrector(dt,dynamic,start,stop);
 	}
-};
-
-class Midpoint : public PC {
-	const char *Name() {return "Midpoint Rule";}
-	int Corrector(double, int, int, int);
 };
 
 class LeapFrog : public PC {

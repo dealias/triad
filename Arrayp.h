@@ -46,7 +46,9 @@ public:
 	Array1p(unsigned int nx0) {Allocate(nx0);}
 	Array1p(unsigned int nx0, T *v0) {Dimension(nx0,v0);}
 	Array1p(const Array1p<T>& A) {v=A.v; nx=A.nx; state=A.test(temporary);}
-	void Check(int& i, int n, int dim, int m) const {Mod(i,n);}
+	void Check(int& i, int n, unsigned int dim, unsigned int m) const {
+		Mod(i,n);
+	}
 };
 
 template<class T>
@@ -59,7 +61,9 @@ public:
 		check(ix,nx,2,1);
 		return Array1p<T>(ny,v+ix*ny);
 	}
-	void Check(int& i, int n, int dim, int m) const {Mod(i,n);}
+	void Check(int& i, int n, unsigned int dim, unsigned int m) const {
+		Mod(i,n);
+	}
 };
 
 template<class T>
@@ -72,7 +76,9 @@ public:
 		check(ix,nx,3,1);
 		return Array2p<T>(ny,nz,v+ix*nyz);
 	}
-	void Check(int& i, int n, int dim, int m) const {Mod(i,n);}
+	void Check(int& i, int n, unsigned int dim, unsigned int m) const {
+		Mod(i,n);
+	}
 };
 
 template<class T>
@@ -87,7 +93,9 @@ public:
 		check(ix,nx,3,1);
 		return Array3p<T>(ny,nz,nw,v+ix*nyzw);
 	}
-	void Check(int& i, int n, int dim, int m) const {Mod(i,n);}
+	void Check(int& i, int n, unsigned int dim, unsigned int m) const {
+		Mod(i,n);
+	}
 };
 
 #ifdef NDEBUG
