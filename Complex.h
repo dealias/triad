@@ -103,7 +103,6 @@ inline Complex operator / (Real x, const Complex& y);
 inline Complex conj(const Complex& x);
 inline Real real(const Complex& x);
 inline Real imag(const Complex& x);
-inline Real abs(const Complex& x);
 inline Real norm(const Complex& x);
 inline Real arg(const Complex& x);
 inline Complex sqrt(const Complex& x);
