@@ -1,4 +1,4 @@
-/* C++ interface to the XDR External Data Representation I/O routines.
+/* C++ interface to the XDR External Data Representation I/O routines
    Version 1.2
    Copyright (C) 1997 John C. Bowman (bowman@ipp-garching.mpg.de)
 

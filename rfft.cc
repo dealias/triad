@@ -1,25 +1,6 @@
-/* Efficient Derived Fast Fourier transform routines written in C++.
+/* Derived Fast Fourier transform routines
    Version 1.0 Copyright (C) 1997 John C. Bowman (bowman@ipp-garching.mpg.de)
 
-   This file provides a set of efficient portable fft routines derived from
-   the base routines in fft.cc (or one of the various interfaces described
-   therein to existing architecture-specific libraries).
-   
-   rcfft:    Single Real-to-Complex One-Dimensional Fast Fourier Transform
-   crfft:    Single Complex-to-Real One-Dimensional Fast Fourier Transform
-   mrcfft:   Multiple Real-to-Complex One-Dimensional Fast Fourier Transform
-   mcrfft:   Multiple Complex-to-Real One-Dimensional Fast Fourier Transform
-   
-   fft2d:    Two-Dimensional Fast Fourier Transform
-   rcfft2d:  Real-to-Complex Two-Dimensional Fast Fourier Transform
-   crfft2d:  Complex-to-Real Two-Dimensional Fast Fourier Transform
-   rcfft2dT: Transposed Real-to-Complex Two-Dimensional Fast Fourier Transform
-   crfft2dT: Transposed Complex-to-Real Two-Dimensional Fast Fourier Transform
-   
-   fft3d:    Three-Dimensional Fast Fourier Transform
-   rcfft3d:  Real-to-Complex Three-Dimensional Fast Fourier Transform
-   crfft3d:  Complex-to-Real Three-Dimensional Fast Fourier Transform
-   
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or

@@ -15,6 +15,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 {
 	static int TableSize=0;
 	static unsigned int *nTable=NULL, *nkTable=NULL, *nauxTable=NULL;
+	static Real *scaleTable=NULL;
 	static double **aux1[2], **aux2[2];
 	
 	int j;
@@ -24,12 +25,14 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	
 	if(inc1 == 0) inc1=nk;
 	
-	for(j=0; j < TableSize; j++) if(n == nTable[j] && nk == nkTable[j]) break;
+	for(j=0; j < TableSize; j++)
+		if(n == nTable[j] && nk == nkTable[j] && scale == scaleTable[j]) break;
 	
     if(j == TableSize) {
 		TableSize++;
 		nTable=new(nTable,TableSize) unsigned int;
 		nkTable=new(nkTable,TableSize) unsigned int;
+		scaleTable=new(scaleTable,TableSize) Real;
 		nauxTable=new(nauxTable,TableSize) unsigned int;
 		for(int i=0; i < 2; i++) {
 			typedef double *pdouble;
@@ -42,6 +45,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		naux += (2*n+256)*((nk > 64) ? nk : 64);
 		nTable[j]=n;
 		nkTable[j]=nk;
+		scaleTable[j]=scale;
 		nauxTable[j]=naux;
 	
 		for(int isign=-1; isign <= 1; isign += 2) {
@@ -61,5 +65,5 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 
 void fft(Complex *data, unsigned int log2n, int isign, Real scale, int)
 {
-	mfft(data,log2n,isign,1,1,1,1);
+	mfft(data,log2n,isign,1,1,1,scale);
 }
