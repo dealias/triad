@@ -2,7 +2,18 @@
 #define __fftwpp_h__ 1
 
 #include <fstream>
+#include <iostream>
 #include <fftw3.h>
+#include <complex>
+
+#ifndef COMPLEX
+typedef std::complex<double> Complex;
+#endif
+
+using std::ifstream;
+using std::ofstream;
+using std::cerr;
+using std::endl;
 
 inline void fftw_export_wisdom(void (*emitter)(char c, ofstream& s),
 			       ofstream& s)
@@ -15,15 +26,8 @@ inline int fftw_import_wisdom(int (*g)(ifstream& s), ifstream &s)
   return fftw_import_wisdom((int (*) (void *)) g, (void *) &s);
 }
 
-inline void put_wisdom(char c, ofstream& s)
-{
-  s.put(c);
-}
-
-inline int get_wisdom(ifstream& s)
-{
-  return s.get();
-}
+inline void PutWisdom(char c, ofstream& s) {s.put(c);}
+inline int GetWisdom(ifstream& s) {return s.get();}
 
 
 class fftw {
@@ -35,10 +39,39 @@ protected:
   static const unsigned int effort=FFTW_PATIENT;
   fftw_plan plan;
   
-  static bool wise;
-  static const char *wisdom_name;
-  static ifstream ifwisdom;
-  static ofstream ofwisdom;
+  static bool Wise;
+  static const char *WisdomName;
+  static ifstream ifWisdom;
+  static ofstream ofWisdom;
+  
+  // Shift the Fourier origin to (nx/2,0)
+  void Shift(Complex *data, unsigned int nx, unsigned int nyp) {
+    Complex *pstop=data+nx*nyp;
+    int pinc=2*nyp;
+    for(Complex *p=data+nyp; p < pstop; p += pinc) {
+      //#pragma ivdep
+      for(unsigned int j=0; j < nyp; j++) p[j]=-p[j];
+    }
+  }
+
+  // Shift the Fourier origin to (nx/2,ny/2,0)
+  void Shift(Complex *data, unsigned int nx, unsigned int ny,
+	     unsigned int nz) {
+    const unsigned int nzp=nz/2+1;
+    const unsigned int nyzp=ny*nzp;
+    const unsigned int pinc=2*nzp;
+    Complex *p,*pstop;
+    p=pstop=data;
+    for(unsigned i=0; i < nx; i++) {
+      if(i % 2) p -= nzp;
+      else p += nzp;
+      pstop += nyzp;
+      for(; p < pstop; p += pinc) {
+	//#pragma ivdep
+	for(unsigned int k=0; k < nzp; k++) p[k]=-p[k];
+      }
+    }
+  }
   
 public:
   fftw(unsigned int size, int sign, unsigned int n=0) : size(size), sign(sign),
@@ -47,7 +80,7 @@ public:
   virtual void Plan(Complex *in, Complex *out)=0;
   
   void Setup(Complex *in, Complex *out) {
-    if(!wise) LoadWisdom();
+    if(!Wise) LoadWisdom();
     bool alloc=(in == NULL);
     if(alloc) in=new Complex[size];
     if(out == NULL) out=in;
@@ -60,16 +93,16 @@ public:
   }
   
   void LoadWisdom() {
-    ifwisdom.open(wisdom_name);
-    fftw_import_wisdom(get_wisdom,ifwisdom);
-    ifwisdom.close();
-    wise=true;
+    ifWisdom.open(WisdomName);
+    fftw_import_wisdom(GetWisdom,ifWisdom);
+    ifWisdom.close();
+    Wise=true;
   }
 
   void SaveWisdom() {
-    ofwisdom.open(wisdom_name);
-    fftw_export_wisdom(put_wisdom,ofwisdom);
-    ofwisdom.close();
+    ofWisdom.open(WisdomName);
+    fftw_export_wisdom(PutWisdom,ofWisdom);
+    ofWisdom.close();
   }
   
   virtual void Execute(Complex *in, Complex *out) {
@@ -89,27 +122,61 @@ public:
     Execute(in,out);
   }
     
-  void fftNormalized(Complex *in, Complex *out=NULL) {
-    Setout(in,out);
-    Execute(in,out);
-    for (unsigned int i=0; i < size; i++) out[i] *= norm;
+  virtual void fftNormalized(Complex *in, Complex *out=NULL) {
+    fft(in,out);
+    for(unsigned int i=0; i < size; i++) out[i] *= norm;
   }
+  
+  void fftNormalized(Complex *in, Complex *out,
+		     unsigned int nx, unsigned int m,
+		     unsigned int stride, unsigned int dist) {
+    if(stride == 1 && dist == nx) fftw::fftNormalized(in,out);
+    else if(stride == nx && dist == 1) fftw::fftNormalized(in,out);
+    else {
+      fft(in,out);
+      for(unsigned int k=0; k < m; k++) {
+	for(unsigned int j=0; j < nx; j++) {
+	  out[j*stride+k*dist] *= norm;
+	}
+      }
+    }
+  }
+
 };
 
-bool fftw::wise=false;
-const char *fftw::wisdom_name="wisdom.txt";
-ifstream fftw::ifwisdom;
-ofstream fftw::ofwisdom;
-
-class fft1d : public fftw {
+class fft : public fftw {
   unsigned int nx;
 public:  
-  fft1d(unsigned int nx, int sign, Complex *in=NULL, Complex *out=NULL) 
+  fft(unsigned int nx, int sign, Complex *in=NULL, Complex *out=NULL) 
     : fftw(nx,sign), nx(nx) {Setup(in,out);} 
   
   void Plan(Complex *in, Complex *out) {
-    plan=fftw_plan_dft_1d(nx, (fftw_complex *) in, (fftw_complex *) out,
-			  sign, effort);
+    plan=fftw_plan_dft_1d(nx,(fftw_complex *) in, (fftw_complex *) out,
+		       sign,effort);
+  }
+};
+  
+class mfft : public fftw {
+  unsigned int nx;
+  unsigned int m;
+  unsigned int stride;
+  unsigned int dist;
+public:  
+  mfft(unsigned int nx, int sign, unsigned int m=1, unsigned int stride=1,
+	 unsigned int dist=1, Complex *in=NULL, Complex *out=NULL) 
+    : fftw((nx-1)*stride+(m-1)*dist+1,sign,nx), nx(nx), m(m),
+      stride(stride), dist(dist) {Setup(in,out);} 
+  
+  void Plan(Complex *in, Complex *out) {
+    int n[1]={nx};
+    plan=fftw_plan_many_dft(1,n,m,
+			    (fftw_complex *) in,NULL,stride,dist,
+			    (fftw_complex *) out,NULL,stride,dist,
+			    sign,effort);
+  }
+  
+  void fftNormalized(Complex *in, Complex *out=NULL) {
+    fftw::fftNormalized(in,out,nx,m,stride,dist);
   }
 };
   
@@ -122,8 +189,8 @@ public:
     : fftw(nx*ny,sign), nx(nx), ny(ny) {Setup(in,out);} 
   
   void Plan(Complex *in, Complex *out) {
-    plan=fftw_plan_dft_2d(nx, ny, (fftw_complex *) in, (fftw_complex *) out,
-			  sign, effort);
+    plan=fftw_plan_dft_2d(nx,ny,(fftw_complex *) in, (fftw_complex *) out,
+			  sign,effort);
   }
 };
 
@@ -142,14 +209,14 @@ public:
   }
 };
 
-class rcfft1d : public fftw {
+class rcfft : public fftw {
   unsigned int nx;
 public:  
-  rcfft1d(unsigned int nx, Complex *in=NULL, Complex *out=NULL) 
+  rcfft(unsigned int nx, Complex *in=NULL, Complex *out=NULL) 
     : fftw(nx/2+1,-1,nx), nx(nx) {Setup(in,out);} 
   
   void Plan(Complex *in, Complex *out) {
-    plan=fftw_plan_dft_r2c_1d(nx, (double *) in, (fftw_complex *) out, effort);
+    plan=fftw_plan_dft_r2c_1d(nx,(double *) in, (fftw_complex *) out, effort);
   }
   
   void Execute(Complex *in, Complex *out) {
@@ -157,14 +224,14 @@ public:
   }
 };
   
-class crfft1d : public fftw {
+class crfft : public fftw {
   unsigned int nx;
 public:  
-  crfft1d(unsigned int nx, Complex *in=NULL, Complex *out=NULL) 
-    : fftw(nx,nx/2+1,nx), nx(nx) {Setup(in,out);} 
+  crfft(unsigned int nx, Complex *in=NULL, Complex *out=NULL) 
+    : fftw(nx/2+1,1,nx), nx(nx) {Setup(in,out);} 
   
   void Plan(Complex *in, Complex *out) {
-    plan=fftw_plan_dft_c2r_1d(nx, (fftw_complex *) in, (double *) out, effort);
+    plan=fftw_plan_dft_c2r_1d(nx,(fftw_complex *) in, (double *) out, effort);
   }
   
   void Execute(Complex *in, Complex *out) {
@@ -172,20 +239,83 @@ public:
   }
 };
   
-class rcfft2d : public fftw {
+class mrcfft : public fftw {
   unsigned int nx;
-  unsigned int ny;
+  unsigned int m;
+  unsigned int stride;
+  unsigned int dist;
 public:  
-  rcfft2d(unsigned int nx, unsigned int ny, Complex *in=NULL,
-	  Complex *out=NULL) 
-    : fftw(nx*(ny/2+1),-1,nx*ny), nx(nx), ny(ny) {Setup(in,out);} 
+  mrcfft(unsigned int nx, unsigned int m=1, unsigned int stride=1,
+	 unsigned int dist=1, Complex *in=NULL, Complex *out=NULL) 
+    : fftw(nx/2*stride+(m-1)*dist+1,-1,nx), nx(nx), m(m),
+      stride(stride), dist(dist) {Setup(in,out);} 
   
   void Plan(Complex *in, Complex *out) {
-    plan=fftw_plan_dft_r2c_2d(nx, ny, (double *) in, (fftw_complex *) out,
-			      effort);
+    const int n[1]={nx};
+    plan=fftw_plan_many_dft_r2c(1,n,m,
+				(double *) in,NULL,stride,2*dist,
+				(fftw_complex *) out,NULL,stride,dist,
+				effort);
   }
   
   void Execute(Complex *in, Complex *out) {
+    fftw_execute_dft_r2c(plan,(double *) in,(fftw_complex *) out);
+  }
+  
+  void fftNormalized(Complex *in, Complex *out=NULL) {
+    fftw::fftNormalized(in,out,(nx/2+1),m,stride,dist);
+  }
+};
+  
+class mcrfft : public fftw {
+  unsigned int nx;
+  unsigned int m;
+  unsigned int stride;
+  unsigned int dist;
+public:
+  mcrfft(unsigned int nx, unsigned int m=1, unsigned int stride=1,
+	 unsigned int dist=1, Complex *in=NULL, Complex *out=NULL) 
+    : fftw(nx/2*stride+(m-1)*dist+1,1,nx), nx(nx), m(m),
+      stride(stride), dist(dist) {Setup(in,out);}
+  
+  void Plan(Complex *in, Complex *out) {
+    const int n[1]={nx};
+    plan=fftw_plan_many_dft_c2r(1,n,m,
+				(fftw_complex *) in,NULL,stride,dist,
+				(double *) out,NULL,stride,2*dist,
+				effort);
+  }
+  
+  void Execute(Complex *in, Complex *out) {
+    fftw_execute_dft_c2r(plan,(fftw_complex *) in,(double *) out);
+  }
+  
+  void fftNormalized(Complex *in, Complex *out=NULL) {
+    fftw::fftNormalized(in,out,(nx/2+1),m,stride,dist);
+  }
+};
+  
+class rcfft2d : public fftw {
+  unsigned int nx;
+  unsigned int ny;
+  bool shift;
+public:  
+  rcfft2d(unsigned int nx, unsigned int ny, Complex *in=NULL,
+	  Complex *out=NULL) 
+    : fftw(nx*(ny/2+1),-1,nx*ny), nx(nx), ny(ny), shift(true) {Setup(in,out);} 
+  
+  void Plan(Complex *in, Complex *out) {
+    plan=fftw_plan_dft_r2c_2d(nx,ny,(double *) in, (fftw_complex *) out,
+			      effort);
+  }
+  
+  void fft(Complex *in, bool shift0=true, Complex *out=NULL) {
+    shift=shift0;
+    fftw::fft(in,out);
+  }
+    
+  void Execute(Complex *in, Complex *out) {
+    if(shift) Shift(in,nx,ny/2+1);
     fftw_execute_dft_r2c(plan,(double *) in,(fftw_complex *) out);
   }
 };
@@ -193,18 +323,25 @@ public:
 class crfft2d : public fftw {
   unsigned int nx;
   unsigned int ny;
+  bool shift;
 public:  
   crfft2d(unsigned int nx, unsigned int ny, Complex *in=NULL,
 	  Complex *out=NULL) 
-    : fftw(nx*(ny/2+1),1,nx*ny), nx(nx), ny(ny) {Setup(in,out);} 
+    : fftw(nx*(ny/2+1),1,nx*ny), nx(nx), ny(ny), shift(true) {Setup(in,out);} 
   
   void Plan(Complex *in, Complex *out) {
-    plan=fftw_plan_dft_c2r_2d(nx, ny, (fftw_complex *) in, (double *) out,
+    plan=fftw_plan_dft_c2r_2d(nx,ny,(fftw_complex *) in, (double *) out,
 			      effort);
   }
   
+  void fft(Complex *in, bool shift0=true, Complex *out=NULL) {
+    shift=shift0;
+    fftw::fft(in,out);
+  }
+    
   void Execute(Complex *in, Complex *out) {
     fftw_execute_dft_c2r(plan,(fftw_complex *) in,(double *) out);
+    if(shift) Shift(out,nx,ny/2+1);
   }
 };
 
@@ -212,17 +349,25 @@ class rcfft3d : public fftw {
   unsigned int nx;
   unsigned int ny;
   unsigned int nz;
+  bool shift;
 public:  
   rcfft3d(unsigned int nx, unsigned int ny, unsigned int nz, Complex *in=NULL,
-	  Complex *out=NULL) 
-    : fftw(nx*ny*(nz/2+1),-1,nx*ny*nz), nx(nx), ny(ny) {Setup(in,out);} 
+	  Complex *out=NULL) : fftw(nx*ny*(nz/2+1),-1,nx*ny*nz),
+			       nx(nx), ny(ny), nz(nz),
+			       shift(true) {Setup(in,out);} 
   
   void Plan(Complex *in, Complex *out) {
-    plan=fftw_plan_dft_r2c_3d(nx, ny, nz, (double *) in, (fftw_complex *) out,
+    plan=fftw_plan_dft_r2c_3d(nx,ny,nz,(double *) in, (fftw_complex *) out,
 			      effort);
   }
   
+  void fft(Complex *in, bool shift0=true, Complex *out=NULL) {
+    shift=shift0;
+    fftw::fft(in,out);
+  }
+    
   void Execute(Complex *in, Complex *out) {
+    if(shift) Shift(in,nx,ny,nz/2+1);
     fftw_execute_dft_r2c(plan,(double *) in,(fftw_complex *) out);
   }
 };
@@ -231,18 +376,26 @@ class crfft3d : public fftw {
   unsigned int nx;
   unsigned int ny;
   unsigned int nz;
+  bool shift;
 public:  
   crfft3d(unsigned int nx, unsigned int ny, unsigned int nz, Complex *in=NULL,
-	  Complex *out=NULL) 
-    : fftw(nx*ny*(nz/2+1),1,nx*ny*nz), nx(nx), ny(ny) {Setup(in,out);} 
+	  Complex *out=NULL) : fftw(nx*ny*(nz/2+1),1,nx*ny*nz),
+			       nx(nx), ny(ny), nz(nz),
+			       shift(true) {Setup(in,out);} 
   
   void Plan(Complex *in, Complex *out) {
-    plan=fftw_plan_dft_c2r_3d(nx, ny, nz, (fftw_complex *) in, (double *) out,
+    plan=fftw_plan_dft_c2r_3d(nx,ny,nz,(fftw_complex *) in, (double *) out,
 			      effort);
   }
   
+  void fft(Complex *in, bool shift0=true, Complex *out=NULL) {
+    shift=shift0;
+    fftw::fft(in,out);
+  }
+    
   void Execute(Complex *in, Complex *out) {
     fftw_execute_dft_c2r(plan,(fftw_complex *) in,(double *) out);
+    if(shift) Shift(out,nx,ny,nz/2+1);
   }
 };
   

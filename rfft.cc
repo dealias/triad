@@ -664,7 +664,7 @@ void crfft3d(Complex *data, unsigned int log2nx, unsigned int log2ny,
   const unsigned int nzp=nz/2+1;
   Complex *p,*pstop;
 
-  const int unsigned nyzp=ny*nzp;
+  const unsigned int nyzp=ny*nzp;
 	
   for(i=0; i < nx; i++)
     mfft(data+i*nyzp,log2ny,isign,nzp,nzp,1);

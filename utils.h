@@ -13,10 +13,10 @@
 #include <cerrno>
 
 #ifdef _MAC
-#include ":arch:mac.h"
+#include "mac.h"
 #else // !_MAC
 
-#include "arch/unix.h"
+#include "unix.h"
 
 #endif // _MAC
 
@@ -78,7 +78,7 @@ inline Real dmod(Real x, Real n) {
 }
 
 template<class T> 
-inline void set(T *to, const T * from, unsigned int n)
+inline void set(T *to, const T *from, unsigned int n)
 {
   memcpy(to,from,sizeof(T)*n);
 }
