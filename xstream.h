@@ -19,8 +19,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __xstream_h__
 #define __xstream_h__ 1
 
-namespace xdr {
-  
 #ifndef _ALL_SOURCE
 #define _ALL_SOURCE 1
 #endif
@@ -35,6 +33,8 @@ namespace xdr {
 #include <rpc/rpc.h>
 #endif
 
+namespace xdr {
+  
 class xbyte {
   unsigned char c;
  public:

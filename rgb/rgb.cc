@@ -35,6 +35,7 @@ const char VERSION[]="1.24";
 #include "rgb.h"
 
 using namespace Array;
+using namespace xdr;
 
 const double pi=PI;
 const double twopi=2.0*PI;

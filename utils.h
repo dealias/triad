@@ -39,6 +39,8 @@ using std::istream;
 using std::ostream;
 using std::ifstream;
 using std::ofstream;
+using xdr::ixstream;
+using xdr::oxstream;
 using std::cin;
 using std::cout;
 using std::cerr;
