@@ -108,7 +108,7 @@ void *bsearch2(register const void *key,
 			   int (*compar)(const void *, const void *, const size_t),
 			   int *match_type);
 
-void check_match(int match_type, char *object, char *s);
+int check_match(int match_type, char *object, char *s);
 			   
 #define OVERRIDE -1,__FILE__,__LINE__
 #define WARNING 0,__FILE__,__LINE__

@@ -155,11 +155,17 @@ void *bsearch2(register const void *key,
 	return (void *) base;
 }
 
-void check_match(int match_type, char *object, char *key)
+int check_match(int match_type, char *object, char *key)
 {
-	if(match_type == -1) msg(ABORT, "Unknown %s: %s",object,key);
-	if(match_type == 0)  msg(ABORT, "Ambiguous %s: %s",object,key);
-	return;
+	switch(match_type) {
+	case -1:
+		msg(OVERRIDE, "Unknown %s: %s",object,key);
+		return 0;
+	case 0:
+		msg(ABORT, "Ambiguous %s: %s",object,key);
+		return 0;
+	}
+	return 1;
 }
 
 int abort_flag=1; 	// If nonzero, abort program after a fatal error.

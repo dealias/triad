@@ -62,9 +62,7 @@ void VocabularyBase::Assign(const char *key)
 	*ptr=0;
 	
 	param=Locate(buffer,&match_type);
-	check_match(match_type,"command",buffer);
-	
-	param->SetStr(++ptr);
+	if(check_match(match_type,"command",buffer)) param->SetStr(++ptr);
 	delete [] buffer;
 }
 
