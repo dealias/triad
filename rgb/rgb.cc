@@ -96,8 +96,8 @@ char *extract=NULL;
 
 enum Parameters {RFACTOR=256,THETA,PHI,YXASPECT,ZXASPECT,POINTSIZE,AVGX,AVGY,\
 		 EXTRACT,NCOLORS,BACKGROUND,XMIN,XMAX,YMIN,YMAX,ZMIN,ZMAX,
-		 LABEL,ALPHA,CROP,XRANGE,YRANGE,ZRANGE,XSLICE,YSLICE,ZSLICE,
-		 CUTOFF,CONST,RATE};
+		 LABEL,BAR,BAND,BANDCOLOR,ALPHA,CROP,XRANGE,YRANGE,ZRANGE,
+		 XSLICE,YSLICE,ZSLICE,CUTOFF,CONST,RATE};
 
 Real Rfactor=2.0;
 Real Theta=0.9;
@@ -336,7 +336,9 @@ void options()
        << "[default " << sy << "]" << endl;
   cerr << "-symmetric\t make color palette symmetric about zero"
        << " (if possible)" << endl;
-  cerr << "-nobar\t\t inhibit palette bar" << endl;
+  cerr << "-bar n\t\t thickess of palette bar in pixels" << endl;
+  cerr << "-band n\t\t thickess of palette separator band in pixels" << endl;
+  cerr << "-bandcolor n\t color of palette separator band" << endl;
   cerr << "-extract format\t extract individual images as tiff, gif, etc." 
        << endl;
   cerr << "-crop geometry\t crop to specified X geometry"
@@ -404,7 +406,9 @@ int main(int argc, char *argv[])
   int n, end=INT_MAX;
   int trans=0;
   int palette=BWRAINBOW;
-  int nobar=0;
+  int bar=5;
+  int band=2;
+  int bandcolor=BLACK;
 	
   int syntax=0;
   extern int optind;
@@ -438,12 +442,14 @@ int main(int argc, char *argv[])
     {"view", 0, &display, 1},
     {"gradient", 0, &gradient, 1},
     {"damp", 0, &damp, 1},
-    {"nobar", 0, &nobar, 1},
     {"extract", 1, 0, EXTRACT},
     {"ncolors", 1, 0, NCOLORS},
     {"background", 1, 0, BACKGROUND},
     {"shear", 1, 0, ALPHA},
     {"label", 1, 0, LABEL},
+    {"bar", 1, 0, BAR},
+    {"band", 1, 0, BAND},
+    {"bandcolor", 1, 0, BANDCOLOR},
     {"crop", 1, 0, CROP},
     {"xrange", 1, 0, XRANGE},
     {"yrange", 1, 0, YRANGE},
@@ -578,6 +584,9 @@ int main(int argc, char *argv[])
     case BACKGROUND:
       background=atoi(optarg);
       break;
+    case BANDCOLOR:
+      bandcolor=atoi(optarg);
+      break;
     case CONST:
       palette=GENERAL;
       if(sscanf(optarg,"%le,%le,%le",&r1,&g1,&b1) != 3)
@@ -613,6 +622,14 @@ int main(int argc, char *argv[])
     case ZRANGE:
       if(sscanf(optarg,"%d,%d",&lower,&upper) != 2)
 	msg(ERROR,"Invalid Z range: %s",optarg);
+      break;
+    case BAR:
+      bar=atoi(optarg);
+      if(bar < 0) msg(ERROR,"Invalid number of pixels: %s", optarg);
+      break;
+    case BAND:
+      band=atoi(optarg);
+      if(band < 0) msg(ERROR,"Invalid number of pixels: %s", optarg);
       break;
     case LABEL:
       label=1;
@@ -753,8 +770,8 @@ int main(int argc, char *argv[])
     if(kmin < lower) kmin=lower;
     if(kmax > upper) kmax=upper;
 		
-    int mpal=nobar ? 0 : max(5,my);
-    int msep=nobar ? 0 : max(2,my);
+    int mpal=max(bar,my);
+    int msep=max(band,my);
 		
     if(rescale && trans != IDENTITY) 
       msg(ERROR, "Rescale for transforms not yet implemented");
@@ -954,11 +971,10 @@ int main(int argc, char *argv[])
 	    }
 	  }
 	}
-	unsigned char black=0;
 	int xmsep=xsize*msep;
 	for(int i=0; i < xmsep; i++) // Output separator
-	  if(grey) fout << black;
-	  else fout << black << black << black;
+	  if(grey) fout << bandcolor;
+	  else fout << Red[bandcolor] << Green[bandcolor] << Blue[bandcolor];
       }
 			
       int Nxmx=(istop-istart)*mx;
