@@ -41,7 +41,7 @@ public:
 	void Add(EntryBase<B> *ptr) {list[n++]=ptr;}
 	unsigned int Size() {return n;}
 	EntryBase<B> **Base() {return list;}
-	EntryBase<B> *Entry(int i) {return list[i];}
+	EntryBase<B> *Entry(unsigned int i) {return list[i];}
 	void List(ostream& os) {
 		for(unsigned int i=0; i < Size(); i++) os << Entry(i)->Key() << newl;
 		os << flush;
