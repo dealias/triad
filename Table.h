@@ -57,7 +57,7 @@ class Table {
 				      KeyCompare,&match_type);
 	if(check_match(match_type,name,key)) break;
 	
-	cout << newl << "Recognized " << name << " values:" << endl;
+	cout << newl << "Recognized " << name << " values:" << endl << endl;
 	List(cout);
 	cout << newl << name << "=";
       
