@@ -57,7 +57,7 @@ public:
   void clear(int flag) const {state &= ~flag;}
   void set(int flag) const {state |= flag;}
 	
-  DynVector() : v(NULL), size(0), alloc(0), state(unallocated) {}
+  DynVector() : v(NULL), size(0), alloc(0), state(allocated) {}
   void SetDynVector(const DynVector<T>& A) {v=A.v; size=A.size;
                                      alloc=A.alloc; state(A.test(temporary));}
   DynVector(const DynVector<T>& A) {SetDynVector(A);}
