@@ -303,7 +303,7 @@ void options()
   cerr << "Options: " << endl;
   cerr << "-b\t\t single-byte (unsigned char instead of float) input"
        << endl;
-  cerr << "-d\t\t double spectral palettes and apply intensity gradient" 
+  cerr << "-2\t\t double spectral palettes and apply intensity gradient" 
        << endl; 
   cerr << "-f\t\t use a floating scale for each frame" << endl;
   cerr << "-g\t\t produce grey-scale output" << endl;
