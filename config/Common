@@ -1,7 +1,7 @@
 D = d
 LIB = $(LFLAGS) -lm
 OPT = -g $(CFLAGS)
-INCL = -I. -I$(TRI) -I-
+INCL = -I. -I$(TRI) -I- -Wno-deprecated
 
 vpath %.cc $(TRI)
 
