@@ -1302,7 +1302,7 @@ inline void Allocate(Array1<T>& A, unsigned int n, int o)
 template<class T>
 inline void Deallocate(T *A)
 {
-  delete A;
+  if(A) delete [] A;
 }
 
 template<class T>
@@ -1320,7 +1320,7 @@ inline void Deallocate(Array1<T>& A)
 template<class T>
 inline void Deallocate(T *A, int o)
 {
-  delete (A+o);
+  if(A) delete [] (A+o);
 }
 
 template<class T>
@@ -1330,9 +1330,9 @@ inline void Deallocate(Array1<T>& A, int)
 }
 
 template<class T>
-inline void Reallocate(T *A, unsigned int n)
+inline void Reallocate(T *&A, unsigned int n)
 {  
-  delete A;
+  if(A) delete [] A;
   A=new T[n];
 }
 
@@ -1349,9 +1349,9 @@ inline void Reallocate(Array1<T>& A, unsigned int n)
 }
 
 template<class T>
-inline void Reallocate(T *A, unsigned int n, int o)
+inline void Reallocate(T *&A, unsigned int n, int o)
 {  
-  delete A;
+  if(A) delete [] A;
   A=new T[n]-o;
 }
 
