@@ -18,14 +18,14 @@ Nu *nu,*nu_inv;
 Real *nuR_inv,*nuI;
 Real *forcing;
 
-Var spdot(Triad *tstart, Triad *tstop);
+Var spdot(Triad *&t, const Triad *tstop);
 
-inline void PrimitiveNucleus(Complex *source)
+inline void PrimitiveNucleus(Var *source)
 {	
-	Complex *k,*kstop=source+Npsi;
-	Triad *tstart=triadBase,**tstop=triadStop;
+	Var *k,*kstop=source+Npsi;
+	Triad *t=triadBase,**tstop=triadStop;
 	
-	for(k=source; k < kstop; k++) *k=spdot(tstart,*tstop++);
+	for(k=source; k < kstop; k++) *k=spdot(t,*(tstop++));
 }
 
 void PrimitiveNonlinearity(Var *source, Var *psi, double)
@@ -38,16 +38,12 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 	// Compute reflected psi's
 	if(reality) {
 		kstop=q=psibuffer+Npsi;
-#if _CRAY		
 #pragma ivdep		
-#endif		
-		for(k=psibuffer; k < kstop; k++,q++) *q=conj(*k);
+		for(k=psibuffer; k < kstop; k++,q++) conjugate(*q,*k);
 	}
 	
 	pstop=pair+Npair;
-#if _CRAY		
 #pragma ivdep		
-#endif		
 	for(p=pair; p < pstop; p++) p->psipq=(*p->p)*(*p->q);
 	
 	PrimitiveNucleus(source);
@@ -57,14 +53,10 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 		Var *q0=q=source+Npsi;
 		kstop=psi+Npsi;
 #if 1
-#if _CRAY		
 #pragma ivdep
-#endif
 		for(k=psi; k < kstop; k++,q++) *q=product(*k,*k);   // psi^2
 		for(int n=1; n < Nmoment; n++) {
-#if _CRAY		
 #pragma ivdep
-#endif
 			for(k=psi; k < kstop; k++,q++,q0++) *q=product(*q0,*k);  // psi^n
 		}
 #else
