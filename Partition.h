@@ -83,7 +83,7 @@ public:
 };
 
 #if _CRAY
-ostream& operator << (ostream& os, const Bin<Cartesian,Polar>& y) {
+ostream& operator << (ostream& os, const Bin<Polar, Cartesian>& y) {
 #else
 template<class T, class D>
 ostream& operator << (ostream& os, const Bin<T,D>& y) {
