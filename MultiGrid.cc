@@ -1,4 +1,4 @@
-#include "options.h"
+#include "utils.h"
 #include "MultiGrid.h"
 
 DirichletBC Dirichlet[1];

@@ -2,7 +2,6 @@
 #define __Grid2_h__ 1
 
 #include "MultiGrid.h"
-#include "Array.h"
 
 template<class T>
 class Grid2 : public Grid<Array2<T>,T> {

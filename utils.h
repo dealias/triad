@@ -324,7 +324,7 @@ const int default_nperline=4;
 static const char *outerror="Cannot write %s to output stream";
 
 template<class T>	
-inline void out_curve(oxstream& os, T *f, char *text, int n, int)
+inline void out_curve(oxstream& os, T *f, const char *text, int n, int)
 {
 	os << n;
 	for(int i=0; i < n; i++) os << f[i];
@@ -332,7 +332,8 @@ inline void out_curve(oxstream& os, T *f, char *text, int n, int)
 }
 
 template<class T>
-inline void out_function(oxstream& os, T (*f)(int), char *text, int n, int)
+inline void out_function(oxstream& os, T (*f)(int), const char *text, 
+						 int n, int) 
 {
 	os << n;
 	for(int i=0; i < n; i++) os << (*f)(i);
@@ -340,7 +341,7 @@ inline void out_function(oxstream& os, T (*f)(int), char *text, int n, int)
 }
 
 template<class T>
-inline void out_function(ostream& os, T (*f)(int), char *text, int n,
+inline void out_function(ostream& os, T (*f)(int), const char *text, int n,
 						 int nperline)
 {
 	int i;
@@ -354,7 +355,7 @@ inline void out_function(ostream& os, T (*f)(int), char *text, int n,
 }
 
 template<class T>	
-inline void out_curve(ostream& os, T *f, char *text, int n, int nperline)
+inline void out_curve(ostream& os, T *f, const char *text, int n, int nperline)
 {
 	int i;
 	os << "# " << text << newl;
@@ -367,31 +368,32 @@ inline void out_curve(ostream& os, T *f, char *text, int n, int nperline)
 }
 
 template<class S>
-inline void out_function(S& os, Real (*f)(int), char *text, int n)
+inline void out_function(S& os, Real (*f)(int), const char *text, int n)
 {
 	out_function(os,f,text,n,default_nperline);
 }
 	
 template<class S, class T>
-inline void out_curve(S& os, T *f, char *text, int n)
+inline void out_curve(S& os, T *f, const char *text, int n)
 {
 	out_curve(os,f,text,n,default_nperline);
 }
 
 template<class S, class T>
-inline void out_curve(S& os, T f, char *text)
+inline void out_curve(S& os, T f, const char *text)
 {
 	out_curve(os,&f,text,1,default_nperline);
 }
 
 template<class S>
-void out_real(S& os, Real *f, char *textre, char *, int n, int nperline) 
+void out_real(S& os, Real *f, const char *textre, const char *,
+			  int n, int nperline) 
 {
 	out_curve(os,f,textre,n,nperline);
 }
 
 template<class S>
-void out_real(S& os, Real *f, char *textre, char *, int n)
+void out_real(S& os, Real *f, const char *textre, const char *, int n)
 {
 	out_curve(os,f,textre,n,default_nperline);
 }
@@ -401,7 +403,7 @@ Real out_re(int i);
 Real out_im(int i);
 
 template<class S>
-void out_real(S& os, Complex *f, char *textre, char *textim, int n,
+void out_real(S& os, Complex *f, const char *textre, const char *textim, int n,
 			  int nperline) 
 {
 	out_base=f;
@@ -410,7 +412,7 @@ void out_real(S& os, Complex *f, char *textre, char *textim, int n,
 }
 
 template<class S>
-void out_real(S& os, Complex *f, char *textre, char *textim, int n)
+void out_real(S& os, Complex *f, const char *textre, const char *textim, int n)
 {
 	out_base=f;
 	out_function(os,out_re,textre,n,default_nperline);
