@@ -613,7 +613,7 @@ public:
 			      effort);
   }
   
-  void fft(Complex *in, Complex *out, bool shift0) {
+  void fft(Complex *in, Complex *out=NULL, bool shift0=false) {
     shift=shift0;
     fftw::fft(in,out);
   }
@@ -680,7 +680,7 @@ public:
 			      effort);
   }
   
-  void fft(Complex *in, Complex *out, bool shift0) {
+  void fft(Complex *in, Complex *out=NULL, bool shift0=false) {
     shift=shift0;
     fftw::fft(in,out);
   }
@@ -798,7 +798,7 @@ public:
 			      effort);
   }
   
-  void fft(Complex *in, Complex *out, bool shift0) {
+  void fft(Complex *in, Complex *out=NULL, bool shift0=false) {
     shift=shift0;
     fftw::fft(in,out);
   }
@@ -862,7 +862,7 @@ public:
 			      effort);
   }
   
-  void fft(Complex *in, Complex *out, bool shift0) {
+  void fft(Complex *in, Complex *out=NULL, bool shift0=false) {
     shift=shift0;
     fftw::fft(in,out);
   }
