@@ -27,7 +27,7 @@ void manimate(int argc, char *const argf[], int n, char *const type,
 
 int verbose=0;
 
-extern "C" int getopt(int argc, char *const argv[], const char *optstring);
+//extern "C" int getopt(int argc, char *const argv[], const char *optstring);
 
 int main(int argc, char *const argv[])
 {
