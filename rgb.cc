@@ -517,6 +517,9 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 			 char *const type)
 {
 	strstream buf;
+#ifndef __i386__  /* Workaround bug in ImageMagick-3.9.1-1.i386.rpm */
+	unsetenv("DISPLAY");
+#endif	
 	buf << "montage -size " << xsize << "x" << ysize
 	    << " -geometry " << xsize << "x" << ysize << " -interlace none";
 	for(int f=0; f < nfiles; f++) {
