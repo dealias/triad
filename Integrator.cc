@@ -204,6 +204,7 @@ Solve_RC AdamsBashforth::Solve(double t, double& dt)
 		break;
 	}
  
+	Problem->Stochastic(y0,t,dt);
 	return SUCCESSFUL;
 }
 

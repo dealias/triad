@@ -113,6 +113,8 @@ char *dashify(const char *s, char *s2=NULL);
 char *undashify(const char *s, char *s2=NULL);
 char *convert(const char *s, char from, char to, char *s2);
 
+int RealCompare(const void *a, const void *b);
+
 const char null[1]="";
 extern "C" char *strdup(const char *);
 

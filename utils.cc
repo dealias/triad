@@ -64,9 +64,9 @@ char *convert(const char *s, char from, char to, char *s2)
 	return s2;
 }
 
-int RealCompare(const Real *a, const Real *b)
+int RealCompare(const void *a, const void *b)
 {
-	return isgn(a-b);
+	return isgn(*(Real *) a - *(Real *)b);
 }
 
 // Generalized strncmp utility.
