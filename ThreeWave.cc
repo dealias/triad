@@ -29,7 +29,7 @@ NWaveVocabulary::NWaveVocabulary()
 	VOCAB_ARRAY(IC);
 	VOCAB_ARRAY(nu0);
 	
-	PROBLEM(SR);
+	METHOD(SR);
 	
 	INTEGRATOR(C_Euler);
 	INTEGRATOR(I_PC);
