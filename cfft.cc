@@ -1,9 +1,10 @@
+#include "options.h"
 #include "fft.h"
 
 extern "C" void CFTFAX(const int& n, int* ifax, Real *trig);
 						
 extern "C" void CFFTMLT(Real *ar, Real *ai, Real *work, Real *trigs,
-						const int& ifax , const int& inc, const int& jump,
+						int *ifax , const int& inc, const int& jump,
 						const int& n, const int& lot, const int& isign);
 
 void fft4(Complex *data, unsigned int log4n, int isign)
@@ -13,14 +14,15 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 	static int lastsign=0;
 	static Complex *phase;
 	static Real *work,*trigs;
+	int ifax[19];
 
 	m=1 << log4n;
 	
 	if(m != lastsize) {
 		if(m > lastsize) {
 			phase=new(phase,m*m) Complex;
-			work=new(work,4*m*m) Complex;
-			trigs=new(trigs,2*n) Complex;
+			work=new(work,4*m*m) Real;
+			trigs=new(trigs,2*m) Real;
 		}
 		lastsize=m;
 		Complex factor=exp(twopi*I/(m*m));
@@ -34,7 +36,7 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 		CFTFAX(m,ifax,trigs);
 	}
 	
-	CFFTMULT(&data[0].re,&data[0].im,work,trigs,ifax,m,1,m,m,isign);
+	CFFTMLT(&data[0].re,&data[0].im,work,trigs,ifax,m,1,m,m,isign);
 	
 	for(k=0; k < m; k++) {
 		Complex *p=data+m*k, *q=data+k;
@@ -58,7 +60,7 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 		for(k=0; k < m; k++) p[k] *= conj(phasej[k]);
 	}
 	
-	CFFTMULT(&data[0].re,&data[0].im,work,trigs,ifax,m,1,m,m,isign);
+	CFFTMLT(&data[0].re,&data[0].im,work,trigs,ifax,m,1,m,m,isign);
 }
 
 extern "C" void CCFFT(const int& isign, const int& n, double& scale,
@@ -74,9 +76,8 @@ extern "C" void CSFFT(const int& isign, const int& n, double& scale,
 					  int* isys);
 
 static double *table,*work;
-static double *table2,*work2;
-static int minus1=-1, zero=0, one=1;
-static int nlast=0, nlast2=0, isys[1]={0};
+static int zero=0;
+static int nlast=0, isys[1]={0};
 
 inline void ccfft(Complex *data, unsigned int n, int isign, double scale)
 {
