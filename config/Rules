@@ -1,7 +1,7 @@
 .cc.o:
 	$(C++) $(OPT) $(INCL) -o $@ -c $<
 
-$(DEFAULT):  $(CLEAN) dependencies
+default: $(CLEAN) dependencies
 	make -f $(TRI)/config/Compile files
 
 clean:  FORCE
