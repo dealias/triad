@@ -141,7 +141,6 @@ static Real equilibrium(int i)
 	return 0.5/(alpha+beta*k*k);
 }
 
-Var *moment;
 static ofstream fparam,fevt,fekvt,favgy[Nmoment],fprolog;
 Real *K,*Th,*Area,*y2;
 Real continuum_factor=1.0/twopi2;
