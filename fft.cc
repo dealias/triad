@@ -1,44 +1,53 @@
 #include "utils.h"
 
-static Complex *wpTablep,*wpTablen;
-static Complex *WTablep,*WTablen;
-static unsigned int TableSize=0, WTablepSize=0, WTablenSize=0;
+static Complex *wpTable;
+static Complex *WTable;
+static unsigned int TableSize=0, WTableSize=0;
+
 void fft(Complex *data, unsigned int log2n, int isign);
 
 void fft_init(unsigned int log2n)
 {
 	unsigned int n=1 << log2n;
 	
-	wpTablep=new(wpTablep,log2n) Complex;
-	wpTablen=new(wpTablen,log2n) Complex;
-		
+	wpTable=new(wpTable,log2n) Complex;
 	unsigned int mmax=1 << TableSize;
 	while (n > mmax) {
 		mmax <<= 1;
-		Real arg=twopi/mmax;
-		wpTablep[TableSize]=expim1(arg);
-		wpTablen[TableSize]=expim1(-arg);
+		wpTable[TableSize]=expim1(twopi/mmax);
 		TableSize++;
 	}
 }
 	
+void rfft_init(unsigned int log2n)
+{
+	unsigned int n4=1 << (log2n-1);
+	
+	WTable=new(WTable,n4) Complex;
+	WTableSize=n4;
+	WTable[0]=Complex(0.0,0.5);
+	
+	Complex wp=1.0+wpTable[log2n];
+	for(int i=1; i < n4; i++) WTable[i]=WTable[i-1]*wp;
+}
+
 void fft_br(Complex *data, unsigned int log2n)
 {
 	if(log2n > TableSize) fft_init(log2n);
 		
 	unsigned int n=1 << log2n;
-	Complex *pstop=data+n,*wp=wpTablep+2;
+	Complex *pstop=data+n,*wp=wpTable+2;
 	
  	if (n > 1) {
 #pragma ivdep			
 		for(Complex *p=data; p < pstop; p += 2) {
-			Complex *p1=p+1;
-			Real tempre=p->re-p1->re;
-			Real tempim=p->im-p1->im;
-			p->re += p1->re;
-			p->im += p1->im;
-			p1->re=tempre;
-			p1->im=tempim;
+			Complex *q=p+1;
+			Real tempre=p->re-q->re;
+			Real tempim=p->im-q->im;
+			p->re += q->re;
+			p->im += q->im;
+			q->re=tempre;
+			q->im=tempim;
 		}
 	}
 	
@@ -120,7 +129,7 @@ void fft_brinv(Complex *data, unsigned int log2n)
 	
 	unsigned int n=1 << log2n;
 	unsigned int istep=n;
-	Complex *pstop=data+n,*wp=wpTablen+log2n-1;
+	Complex *pstop=data+n,*wp=wpTable+log2n-1;
 
  	while (istep > 4) {
 		unsigned int mmax=istep >> 1;
@@ -136,10 +145,10 @@ void fft_brinv(Complex *data, unsigned int log2n)
 			q->im=tempim;
 		}
 		
-		Real c=1.0+wp->re, s=wp->im;
+		Real c=1.0+wp->re, s=-wp->im;
 		for(unsigned int m=1; m < mmax-1; m += 2) {
-			Real c2=c+c*wp->re-s*wp->im;
-			Real s2=s+s*wp->re+c*wp->im;
+			Real c2=c+c*wp->re+s*wp->im;
+			Real s2=s+s*wp->re-c*wp->im;
 #pragma ivdep			
 			for(p=data+m; p < pstop; p += istep) {
 				Complex *p1=p+1,*q=p+mmax,*q1=q+1;
@@ -156,8 +165,8 @@ void fft_brinv(Complex *data, unsigned int log2n)
 			    q1->re=c2*temp2re-s2*temp2im;
 				q1->im=c2*temp2im+s2*temp2re;
 			}
-			c=c2+c2*wp->re-s2*wp->im;
-			s=s2+s2*wp->re+c2*wp->im;
+			c=c2+c2*wp->re+s2*wp->im;
+			s=s2+s2*wp->re-c2*wp->im;
 		}
 #pragma ivdep			
 		for(p=data+mmax-1; p < pstop; p += istep) {
@@ -195,13 +204,13 @@ void fft_brinv(Complex *data, unsigned int log2n)
 	if (n > 1) {
 #pragma ivdep			
 		for(Complex *p=data; p < pstop; p += 2) {
-			Complex *p1=p+1;
-			Real tempre=p->re-p1->re;
-			Real tempim=p->im-p1->im;
-			p->re += p1->re;
-			p->im += p1->im;
-			p1->re=tempre;
-			p1->im=tempim;
+			Complex *q=p+1;
+			Real tempre=p->re-q->re;
+			Real tempim=p->im-q->im;
+			p->re += q->re;
+			p->im += q->im;
+			q->re=tempre;
+			q->im=tempim;
 		}
 	}
 }
@@ -211,25 +220,19 @@ void rfft_br(Complex *data, unsigned int log2n)
 	unsigned int i;
 	
 	if(log2n > TableSize) fft_init(log2n+1);
-//	fft_br(data,log2n);
-	fft(data,log2n,1);
+	fft_br(data,log2n);
+//	fft(data,log2n,1);
 	
 	unsigned int n2=1 << log2n;
-	unsigned int n4=n2/2;
-	if(WTablepSize != n4) {
-		Complex wp=1.0+wpTablep[log2n];
-		WTablep=new(WTablep,n4) Complex;
-		WTablepSize=n4;
-		WTablep[0]=Complex(0.0,0.5);
-		for(i=1; i < n4; i++) WTablep[i]=WTablep[i-1]*wp;
-	}
+	unsigned int n4=n2 >> 1;
+	if(WTableSize != n4) rfft_init(log2n);
 	
 	data[n2]=data[0].re-data[0].im;
 	data[0]=data[0].re+data[0].im;
 #pragma ivdep	
 	for(i=1; i < n4; i++) {
 		Complex u=data[i], v=conj(data[n2-i]);
-		Complex A=0.5*(u+v), B=WTablep[i]*(u-v);
+		Complex A=0.5*(u+v), B=WTable[i]*(u-v);
 		data[i]=A-B;
 		data[n2-i]=conj(A+B);
 	}
@@ -241,34 +244,26 @@ void rfft_brinv(Complex *data, unsigned int log2n)
 	if(log2n > TableSize) fft_init(log2n+1);
 	
 	unsigned int n2=1 << log2n;
-	unsigned int n4=n2/2;
-	if(WTablenSize != n4) {
-		Complex wp=1.0+wpTablen[log2n];
-		WTablen=new(WTablen,n4) Complex;
-		WTablenSize=n4;
-		WTablen[0]=Complex(0.0,-0.5);
-		for(i=1; i < n4; i++) WTablen[i]=WTablen[i-1]*wp;
-	}
+	unsigned int n4=n2 >> 1;
+	if(WTableSize != n4) rfft_init(log2n);
 	
 	data[0].im=0.5*(data[0].re-data[n2].re);
 	data[0].re=0.5*(data[0].re+data[n2].re);
 #pragma ivdep	
 	for(i=1; i < n4; i++) {
 		Complex u=data[i], v=conj(data[n2-i]);
-		Complex A=0.5*(u+v), B=WTablen[i]*(u-v);
+		Complex A=0.5*(u+v), B=conj(WTable[i])*(u-v);
 		data[i]=A-B;
 		data[n2-i]=conj(A+B);
 	}
 	
-//	fft_brinv(data,log2n);
-	fft(data,log2n,-1);
+	fft_brinv(data,log2n);
+//	fft(data,log2n,-1);
 }
 
 void fft(Complex *data, unsigned int log2n, int isign)
 {
-	unsigned int mmax,m,j,istep,i,n;
-	static Complex *wpTable;
-	static unsigned int TableSize;
+	unsigned int m,j,istep,i,n;
 
 	n=1 << log2n;
 
@@ -288,15 +283,23 @@ void fft(Complex *data, unsigned int log2n, int isign)
 		j += m;
 	}
 	
-	if(log2n > TableSize) wpTable=new(wpTable,log2n) Complex;
-	mmax=1 << TableSize;
-	while (mmax < n) {
-		mmax <<= 1;
-		wpTable[TableSize++]=expim1(twopi/mmax);
+	if(log2n > TableSize) fft_init(log2n);
+	
+	Complex *pstop=data+n, *wp=wpTable+1;
+	
+	if(n > 1) {
+		for(Complex *p=data; p < pstop; p += 2) {
+			Complex *q=p+1;
+			Real tempre=p->re-q->re;
+			Real tempim=p->im-q->im;
+			p->re += q->re;
+			p->im += q->im;
+			q->re=tempre;
+			q->im=tempim;
+		}
 	}
 	
-	mmax=1; 
-	Complex *wp=wpTable, *pstop=data+n;
+	unsigned int mmax=2; 
  	while (mmax < n) {
 		istep=mmax << 1;
 		Complex *p;
@@ -312,7 +315,7 @@ void fft(Complex *data, unsigned int log2n, int isign)
 		Real wpre=wp->re, wpim=wp->im*isign;
 		wp++;
 		Real c=1.0+wpre, s=wpim;
-		for(m=1; m < mmax; m++) {
+		for(m=1; m < mmax-1; m++) {
 			for(p=data+m; p < pstop; p += istep) {
 				Complex *q=p+mmax;
 				Real tempre=c*q->re-s*q->im;
@@ -325,6 +328,15 @@ void fft(Complex *data, unsigned int log2n, int isign)
 			Real wtemp=c;
 			c += c*wpre-s*wpim;
 			s += s*wpre+wtemp*wpim;
+		}
+		for(p=data+mmax-1; p < pstop; p += istep) {
+			Complex *q=p+mmax;
+			Real tempre=c*q->re-s*q->im;
+			Real tempim=c*q->im+s*q->re;
+			q->re=p->re-tempre;
+			q->im=p->im-tempim;
+			p->re += tempre;
+			p->im += tempim;
 		}
 		mmax=istep;
 	}
