@@ -1,6 +1,6 @@
 /*                          T R I A D    
 An object-oriented C++ package for integrating initial value problems.
-Copyright (C) 1996 John C. Bowman (bowman@ipp-garching.mpg.de)
+Copyright (C) 1997 John C. Bowman (bowman@ipp-garching.mpg.de)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
