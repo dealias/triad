@@ -44,8 +44,8 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	
 		for(int isign=-1; isign <= 1; isign += 2) {
 			int i=(isign == -1);
-			aux1[i][j]=new(aux1[i][j],naux) Real;
-			aux2[i][j]=new(aux2[i][j],naux) Real;
+			aux1[i][j]=new double[naux];
+			aux2[i][j]=new double[naux];
 			dcft(one,data,inc1,inc2,data,inc1,inc2,n,nk,isign,scale,
 				 aux1[i][j],naux,aux2[i][j],naux);
 		}
