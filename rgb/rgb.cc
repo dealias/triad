@@ -90,6 +90,8 @@ static int xstart=0, xstop=INT_MAX;
 static int ystart=0, ystop=INT_MAX;
 static int lower=0, upper=INT_MAX;
 
+//static int nklevel=8, njlevel=6;
+
 char *extract=NULL;
 
 enum Parameters {RFACTOR=256,THETA,PHI,YXASPECT,ZXASPECT,POINTSIZE,AVGX,AVGY,\
@@ -1279,8 +1281,10 @@ void Torus(Array2<Ivec>& Index)
 	sincos(Phi,&sinPhi,&cosPhi);
 	sincos(Theta,&sinTheta,&cosTheta);
 	
+//	cutoff=0.0;
+//	cutoff=1.95*pi;
 	cutoff=1.75*pi;
-	
+
 	uoffset=0.5+Rp*1.2;
 	voffset=0.5+Rp*1.5;
 	
@@ -1295,40 +1299,83 @@ void Torus(Array2<Ivec>& Index)
 	Ayx=-cosTheta*sinPhi; Ayy=cosTheta*cosPhi; Ayz=sinTheta;
 	Azx=sinTheta*sinPhi; Azy=-sinTheta*cosPhi; Azz=cosTheta;
 	
-	int nlevel=8;
-	int njlevel=6;
-	int maxnum=pow(2,nlevel-1);
-	int maxjnum=pow(2,njlevel-1);
-	int minknum=8;
-	int minjnum=8;
-	for(int k=0; k < nz; k++)  {
-		for(int j=0; j < ny; j++)  {
-			Project(nx-1,j,k);
-			int count;
-			int jcount;
-			int num=1;
-			Real denom=0.5;
-			while(1) {
-				count=0;
-				for(int kp=0; kp < num; kp++) {
-					Real k2=k+denom*(2*kp+1);
-					int jnum=1;
-					Real jdenom=0.5;
-					while(1) {
-						jcount=0;
-						for(int jp=0; jp < jnum; jp++) {
-							jcount += Project(nx-1,j+jdenom*(2*jp+1),k2);
+	int minnum1=8;
+	int minnum2=8;
+	
+	int n1level=8;
+	int n2level=8;
+	
+	int maxnum1=pow(2,n1level-1);
+	int maxnum2=pow(2,n2level-1);
+	
+	int maxk=cutoff ? min(nz,(int) ((cutoff/twopibynz)+1.5)) : nz;
+	
+	for(int i=0; i < nx; i += nx-1)  {
+		for(int j=-1; j < ny; j++)  {
+			for(int k=cutoff ? 0 : -1; k < maxk; k++) {
+				Project(i,j,k);
+				int count1;
+				int num1=1;
+				Real denom1=0.5;
+				while(1) {
+					count1=0;
+					for(int kp=0; kp < num1; kp++) {
+						Real k2=k+denom1*(2*kp+1);
+						Real denom2=0.5;
+						int count2;
+						int num2=1;
+						while(1) {
+							count2=0;
+							for(int jp=0; jp < num2; jp++) {
+								Real j2=j+denom2*(2*jp+1);
+								count2 += Project(i,j2,k2);
+							}
+							if((!count2 && num2 >= minnum2) || num2 >= maxnum2)
+								break;
+							num2 *= 2;
+							denom2 *= 0.5;
 						}
-						if((!jcount && jnum >= minjnum) 
-						   || jnum >= maxjnum) break;
-						jnum *= 2;
-						jdenom *= 0.5;
+						count1 += count2;
 					}
-					count += jcount;
+					if((!count1 && num1 >= minnum1) || num1 >= maxnum1) break;
+					num1 *= 2;
+					denom1 *= 0.5;
 				}
-				if((!count && num >= minknum) || num >= maxnum) break;
-				num *= 2;
-				denom *= 0.5;
+			}
+		}
+	}
+	
+	for(int k=cutoff ? 0 : -1; k < maxk; k += cutoff ? maxk-1 : maxk) {
+		for(int i=0; i < nx; i++)  {
+			for(int j=-1; j < ny; j++)  {
+				Project(i,j,k);
+				int count1;
+				int num1=1;
+				Real denom1=0.5;
+				while(1) {
+					count1=0;
+					for(int ip=0; ip < num1; ip++) {
+						Real i2=i+denom1*(2*ip+1);
+						Real denom2=0.5;
+						int count2;
+						int num2=1;
+						while(1) {
+							count2=0;
+							for(int jp=0; jp < num2; jp++) {
+								Real j2=j+denom2*(2*jp+1);
+								count2 += Project(i2,j2,k);
+							}
+							if((!count2 && num2 >= minnum2) || num2 >= maxnum2)
+								break;
+							num2 *= 2;
+							denom2 *= 0.5;
+						}
+						count1 += count2;
+					}
+					if((!count1 && num1 >= minnum1) || num1 >= maxnum1) break;
+					num1 *= 2;
+					denom1 *= 0.5;
+				}
 			}
 		}
 	}
@@ -1337,7 +1384,7 @@ void Torus(Array2<Ivec>& Index)
 int Project(double xi, double xj, double xk)
 {
 	Real phi=xk*twopibynz;
-	if(phi >= 0 && phi <= cutoff) {
+	if(!cutoff || (phi >= 0 && phi <= cutoff)) {
 		Real sinphi,cosphi;
 		sincos(phi,&sinphi,&cosphi);
 		Real theta=xj*twopibyny;
