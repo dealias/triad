@@ -113,9 +113,10 @@ VocabularyBase::VocabularyBase()
 	
 	INTEGRATOR(Exact);
 	INTEGRATOR(Euler);
+	INTEGRATOR(Midpoint);
+	INTEGRATOR(AdamsBashforth);
 	INTEGRATOR(PC);
 	INTEGRATOR(LeapFrog);
-	INTEGRATOR(Midpoint);
 	INTEGRATOR(RK2);
 	INTEGRATOR(RK4);
 	INTEGRATOR(RK5);
@@ -293,7 +294,7 @@ void read_init()
 {
 	int i,ny0;
 	double t0,dt0;
-	char *type=restart ? "restart" : "initialization";
+	const char *type=restart ? "restart" : "initialization";
 	char *ny_msg=
 		"Current value of ny (%d) disagrees with value (%d) in file\n%s";
 	
