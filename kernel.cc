@@ -85,7 +85,7 @@ ProblemBase::ProblemBase()
 	VOCAB(approximation,"","");
 	VOCAB(integrator,"","");
 	
-	VOCAB_NODUMP(average,0,1) // Obsolete
+	VOCAB_NODUMP(average,0,1); // Obsolete
 		
 	ApproximationTable=new Table<ApproximationBase>("approximation",
 													ApproximationCompare,
