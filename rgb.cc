@@ -329,7 +329,7 @@ int main(int argc, char *const argv[])
 		exit(1);
 	}
 	
-	if(nfiles > 1) pointsize=12;
+	if(nfiles > 1 && !pointsize) pointsize=12;
 	
 	char *const *argf=argv+optind;
 		
