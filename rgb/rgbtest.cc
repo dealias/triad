@@ -3,7 +3,7 @@
 
 main()
 {
-	int Nx=256, Ny=256;
+	int Nx=16, Ny=16;
 
 	oxstream fout("data");
 	fout << Nx << Ny << 1;
