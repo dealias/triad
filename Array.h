@@ -1,5 +1,5 @@
 /* Array.h:  A high-performance multi-dimensional C++ array class
-Copyright (C) 1998 John C. Bowman (bowman@math.ualberta.ca)
+Copyright (C) 1999 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.03J
+#define __ARRAY_H_VERSION__ 1.04
 
 // Defining NDEBUG improves optimization but disables argument checking.
 
@@ -38,11 +38,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #define CONST
 #endif
 
-#ifndef __ARRAY_EXIT
-#define __ARRAY_EXIT(x) cout << newl << "ERROR: " << x << "." << endl; exit(1)
-#endif
-
 inline ostream& _newl(ostream& s) {s << '\n'; return s;}
+
+#ifndef __ARRAY_EXIT
+#define __ARRAY_EXIT(x) cout << _newl << "ERROR: " << x << "." << endl; exit(1)
+#endif
 
 template<class T>
 class Array1 {

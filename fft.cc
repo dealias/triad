@@ -1,5 +1,5 @@
  /* Base Fast Fourier Transform routines
-   Version 1.2 Copyright (C) 1997 John C. Bowman (bowman@math.ualberta.ca)
+   Version 1.3 Copyright (C) 1999 John C. Bowman (bowman@math.ualberta.ca)
    
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -805,13 +805,13 @@ static void mfft_br(Complex *data, unsigned int log2n, int isign,
 void mrcfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 			unsigned int inc1, unsigned int inc2, Real scale, int bitreverse)
 {		 
-	if(inc1 == 1) mrcfft0(data,log2n,isign,nk,inc1,inc2,scale,bitreverse);
-	else exit(1); // Not implemented.
+	assert(inc1 == 1);
+	mrcfft0(data,log2n,isign,nk,inc1,inc2,scale,bitreverse);
 }
 
 void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 			unsigned int inc1, unsigned int inc2, Real scale, int bitreverse)
 {		 
-	if(inc1 == 1) mcrfft0(data,log2n,isign,nk,inc1,inc2,scale,bitreverse);
-	else exit(1); // Not implemented.
+	assert(inc1 == 1);
+	mcrfft0(data,log2n,isign,nk,inc1,inc2,scale,bitreverse);
 }

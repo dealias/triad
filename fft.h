@@ -3,6 +3,7 @@
 
 #define FFTW_1_0_COMPATIBILITY 0
 #define FFTW_NOPROTO
+#include <assert.h>
 #include "fftw.h"
 #include "rfftw.h"
 #include "fstream.h"

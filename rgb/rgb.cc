@@ -30,6 +30,7 @@ const char VERSION[]="1.06J";
 
 #include "getopt.h"
 #include "DynVector.h"
+#include "utils.h"
 #include "rgb.h"
 
 #ifndef PI
@@ -1247,6 +1248,14 @@ public:
 };
 
 
+Real Axx,Axy,Axz;
+Real Ayx,Ayy,Ayz;
+Real Azx,Azy,Azz;
+
+Real twopibyny,twopibynz;
+Array2<Real> maxz;
+Array2<Ivec> index0;
+
 void Torus(Array2<Ivec>& Index)
 {
 	for(int u=0; u < Nx; u++)  {
@@ -1255,8 +1264,14 @@ void Torus(Array2<Ivec>& Index)
 		}
 	}
 	
-	Real nybytwopi=ny/twopi;
-	Real nzbytwopi=nz/twopi;
+	index0.Dimension(Nx,Ny);
+	index0.Set(Index());
+	
+	twopibyny=twopi/ny;
+	twopibynz=twopi/nz;
+	
+	maxz.Allocate(Nx,Ny);
+	maxz=-REAL_MAX;
 	
 	Real cosPhi,sinPhi;
 	Real cosTheta,sinTheta;
@@ -1273,88 +1288,80 @@ void Torus(Array2<Ivec>& Index)
 	
 	yfactor=twopi/(ymax-ymin);
 	
-	Real Axx,Axy,Axz;
-	Real Ayx,Ayy,Ayz;
-	Real Azx,Azy,Azz;
-
-	// Rotate about x axis by Theta, then about new z axis by Phi.
+	// Rotate about z axis by -Phi, then about new x axis by -Theta.
 	
-	Axx=cosPhi;			Axy=-sinPhi*cosTheta;	Axz=sinPhi*sinTheta;
-	Ayx=sinPhi; 		Ayy=cosPhi*cosTheta;	Ayz=-cosPhi*sinTheta;
-	Azx=0.0;			Azy=sinTheta;			Azz=cosTheta;
+	Axx=cosPhi;          Axy=sinPhi;         Axz=0.0;
+	Ayx=-cosTheta*sinPhi; Ayy=cosTheta*cosPhi; Ayz=sinTheta;
+	Azx=sinTheta*sinPhi; Azy=-sinTheta*cosPhi; Azz=cosTheta;
 	
-	Real Pzinv=1.0/Pz;
-	unsigned int last=0;
-	Real nsliceinv=1.0/nslice;
-	int npass=3;
-	for(int u=0; u < Nx; u++) {
-		for(int v=0; v < Ny; v++) {
-			unsigned int detected=0;
-			Real u0=u-uoffset;
-			Real v0=(Ny-v)-voffset;
-			Real dmin=REAL_MAX;
-			Toroidal T;
-			Real z0=Pz;
-			Real minz=-Pz;
-			Real maxz=Pz;
-			for(int pass=0; pass < npass; pass++) {
-				Real deltaz=(maxz-minz)*nsliceinv;
-				Real z=maxz;
-				for(int n=0; n < nslice; n++) {
-					Real projection=1.0-Pzinv*z;
-					Real x=u0*projection;
-					Real y=v0*projection;
-					Real xp=Axx*x+Axy*y+Axz*z;
-					Real yp=Ayx*x+Ayy*y+Ayz*z;
-					Real zp=Azx*x+Azy*y+Azz*z;
-					T.SetCartesian(xp,yp,zp);
-					T.Map();
-					if(T.InRange()) {
-						minz=z;
-						last=detected=1;
-						break;
-					}
-					
-					if(pass < npass-1) {
-						Real distance=T.Distance();
-						if (distance < dmin) {
-							dmin=distance;
-							z0=z;
+	int nlevel=8;
+	int njlevel=6;
+	int maxnum=pow(2,nlevel-1);
+	int maxjnum=pow(2,njlevel-1);
+	int minknum=8;
+	int minjnum=8;
+	for(int k=0; k < nz; k++)  {
+		for(int j=0; j < ny; j++)  {
+			Project(nx-1,j,k);
+			int count;
+			int jcount;
+			int num=1;
+			Real denom=0.5;
+			while(1) {
+				count=0;
+				for(int kp=0; kp < num; kp++) {
+					Real k2=k+denom*(2*kp+1);
+					int jnum=1;
+					Real jdenom=0.5;
+					while(1) {
+						jcount=0;
+						for(int jp=0; jp < jnum; jp++) {
+							jcount += Project(nx-1,j+jdenom*(2*jp+1),k2);
 						}
+						if((!jcount && jnum >= minjnum) 
+						   || jnum >= maxjnum) break;
+						jnum *= 2;
+						jdenom *= 0.5;
 					}
-					
-					maxz=z;
-					z -= deltaz;
+					count += jcount;
 				}
-				if(detected) break;
-
-				minz=z0-deltaz;
-				maxz=z0+deltaz;
+				if((!count && num >= minknum) || num >= maxnum) break;
+				num *= 2;
+				denom *= 0.5;
 			}
-			
-			if(detected) {
-				Toroidal T0;
-				for(int n=0; n < 20; n++) {
-					Real z=0.5*(maxz+minz);
-					Real projection=1.0-Pzinv*z;
-					Real x=u0*projection;
-					Real y=v0*projection;
-					Real xp=Axx*x+Axy*y+Axz*z;
-					Real yp=Ayx*x+Ayy*y+Ayz*z;
-					Real zp=Azx*x+Azy*y+Azz*z;
-				
-					T0.SetCartesian(xp,yp,zp);
-					T0.Map();
-					if(T0.InRange()) {
-						minz=z;
-						T=T0;
-					} else maxz=z;
-				}
-			}
-			
-			Index(u,v)=detected ?
-				Ivec(T.r,T.theta*nybytwopi,T.phi*nzbytwopi) :
-				Ivec(Undefined,Undefined,Undefined);
 		}
 	}
+}
+
+int Project(double xi, double xj, double xk)
+{
+	Real phi=xk*twopibynz;
+	if(phi >= 0 && phi <= cutoff) {
+		Real sinphi,cosphi;
+		sincos(phi,&sinphi,&cosphi);
+		Real theta=xj*twopibyny;
+		if(alpha) theta += (zmin+xk*deltaz)*alpha*yfactor*(xmin+xi*deltax);
+		Real sintheta,costheta;
+		sincos(theta,&sintheta,&costheta);
+		Real r=a0+xi;
+		Real rperp=R0+r*costheta;
+		Real x=rperp*cosphi;
+		Real y=rperp*sinphi;
+		Real z=r*sintheta;
+							
+		Real xp=Axx*x+Axy*y+Axz*z;
+		Real yp=Ayx*x+Ayy*y+Ayz*z;
+		Real zp=Azx*x+Azy*y+Azz*z;
+							
+		Real projection=Pz/(Pz-zp);
+		int u=(int)(xp*projection+uoffset);
+		int v=Ny-((int)(yp*projection+voffset));
+		if(u >= 0 && u < Nx && v >=0 && v < Ny
+		   && zp > maxz(u,v)) {
+			maxz(u,v)=zp;
+			index0(u,v)=Ivec(xi,xj,xk);
+			return 1;
+		}	
+	}
+	return 0;
 }

@@ -1,7 +1,7 @@
 #ifndef __DynVector_h__
 #define __DynVector_h__ 1
 
-#include "utils.h"
+#include <stdlib.h>
 
 template<class T>
 class DynVector

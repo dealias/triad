@@ -86,13 +86,13 @@ void fft(Complex *data, unsigned int log2n, int isign, Real scale, int)
 void mrcfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 			unsigned int inc1, unsigned int inc2, Real scale, int bitreverse)
 {		 
-	if(inc1 == 1) mrcfft0(data,log2n,isign,nk,inc1,inc2,scale,bitreverse);
-	else exit(1); // Not implemented.
+	assert(inc1 == 1);
+	mrcfft0(data,log2n,isign,nk,inc1,inc2,scale,bitreverse);
 }
 
 void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 			unsigned int inc1, unsigned int inc2, Real scale, int bitreverse)
 {		 
-	if(inc1 == 1) mcrfft0(data,log2n,isign,nk,inc1,inc2,scale,bitreverse);
-	else exit(1); // Not implemented.
+	assert(inc1 == 1);
+	mcrfft0(data,log2n,isign,nk,inc1,inc2,scale,bitreverse);
 }

@@ -1,6 +1,6 @@
 /* C++ interface to the XDR External Data Representation I/O routines
-   Version 1.3J
-   Copyright (C) 1997 John C. Bowman <bowman@math.ualberta.ca>
+   Version 1.3
+   Copyright (C) 1999 John C. Bowman <bowman@math.ualberta.ca>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
