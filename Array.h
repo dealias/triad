@@ -1354,7 +1354,7 @@ inline void Dimension(T *&A, unsigned int, T *v, int o)
 template<class T>
 inline void Allocate(T *&A, unsigned int n, size_t align=0)
 {
-  if(align) A=new(n,align) T;
+  if(align) newAlign(A,n,align);
   else A=new T[n];
 }
 
