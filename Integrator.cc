@@ -128,7 +128,7 @@ Solve_RC PC::Solve(double t, double dt)
 	Problem->Transform(y0,t,dt,yi);
 	
 	Predictor(t,dt,0,nyprimary);
-	if(!Corrector(dt,0,0,nyprimary)) {
+	if(!Corrector(dt,dynamic,0,nyprimary)) {
 		if(hybrid) StandardCorrector(dt,dynamic,0,nyprimary);
 		else return NONINVERTIBLE;
 	}
