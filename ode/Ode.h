@@ -176,7 +176,7 @@ int I_PC::Corrector()
     for(unsigned int j=0; j < ny; j++) {
       Var pred=y[j];
       y[j]=y0[j]*expinv[j]+halfdt*(source0[j]*expinv[j]+source[j]);
-      if(!errmask || errmask[j]) 
+      if(!Active(errmask) || errmask[j])
 	CalcError(y0[j]*expinv[j],y[j],pred,y[j]);
     }
     ExtrapolateTimestep();
@@ -199,7 +199,7 @@ int E_PC::Corrector()
     for(unsigned int j=0; j < ny; j++) {
       Var temp=0.5*(source0[j]+source[j]);
       y[j]=expinv[j]*y0[j]+onemexpinv[j]*temp;
-      if(!errmask || errmask[j]) 
+      if(!Active(errmask) || errmask[j])
 	CalcError(y0[j]*dtinv,temp,source0[j],temp);
     }
     ExtrapolateTimestep();
@@ -230,7 +230,7 @@ int LE_PC::Corrector()
       y[j]=expinv[j]*y0[j]+onemexpinv[j]*source[j];
     }
     for(unsigned int j=0; j < ny; j++)
-      if(!errmask || errmask[j]) 
+      if(!Active(errmask) || errmask[j])
 	CalcError(y0[j]*dtinv,source[j],source0[j],source[j]);
     ExtrapolateTimestep();
   } else for(unsigned int j=0; j < ny; j++)
@@ -267,7 +267,7 @@ int C_PC::Corrector()
     for(unsigned int j=0; j < ny; j++) {
       Var pred=y[j];
       if(!Correct(y0[j],y[j],source0[j],source[j],dt)) return 0;
-      if(!errmask || errmask[j]) CalcError(y0[j],y[j],pred,y[j]);
+      if(!Active(errmask) || errmask[j]) CalcError(y0[j],y[j],pred,y[j]);
     }
     ExtrapolateTimestep();
   } else for(unsigned int j=0; j < ny; j++)

@@ -33,7 +33,6 @@ inline double pow(double x, int p)
     if((p >>= 1) == 0)	return r;
     x *= x;
   }
-  return 0;
 }
 
 inline double pow(double x, unsigned int p)
@@ -47,7 +46,6 @@ inline double pow(double x, unsigned int p)
     if((p >>= 1) == 0)	return r;
     x *= x;
   }
-  return 0;
 }
 
 inline int pow(int x, int p)
@@ -62,7 +60,6 @@ inline int pow(int x, int p)
     if((p >>= 1) == 0)	return r;
     x *= x;
   }
-  return 0;
 }
 
 inline unsigned int pow(unsigned int x, unsigned int p)
@@ -76,7 +73,6 @@ inline unsigned int pow(unsigned int x, unsigned int p)
     if((p >>= 1) == 0)	return r;
     x *= x;
   }
-  return 0;
 }
 
 #endif
