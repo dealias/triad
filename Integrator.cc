@@ -18,10 +18,13 @@ inline void IntegratorBase::ChangeTimestep(double& dt, double dtnew,
 static clock_t realtime,lasttime=0;
 static const int nperline=10;
 
-void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
-							   double& dt, const double sample)
+void IntegratorBase::Integrate(ProblemBase& problem, Var *const y,
+							   double& t, double tmax, 
+							   double& dt, const double sample,
+							   int& iteration)
 	// Don't dump or microprocess if sample is negative.
 {
+	Problem=&problem;
 	double dtold=0.0, dtorig=0.0;
 	int it,itx,cont;
 	int nout=0, final=1;

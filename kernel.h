@@ -66,7 +66,7 @@ public:
 	
 	virtual const char *Name() {return "";}
 	
-	virtual void Source(Var *src, Var *y, double t)=0;
+	virtual void Source(Var *src, Var *y, double t) {};
 	virtual void Transform(Var *, double, double, Var *&) {}
 	virtual void BackTransform(Var *, double, double, Var *) {}
 	virtual void Stochastic(Var *, double, double) {}
@@ -74,8 +74,8 @@ public:
 	virtual void FinalOutput() {}
 	virtual int Microprocess() {return 0;}
 	
-	virtual void InitialConditions()=0;
-	virtual void Output(int it)=0;
+	virtual void InitialConditions() {};
+	virtual void Output(int it) {};
 };
 	
 Compare_t ProblemCompare;
@@ -85,6 +85,7 @@ extern ProblemBase *Problem;
 class IntegratorBase {
 protected:
 	const char *abbrev;
+	ProblemBase *Problem;
 	unsigned int ny;
 	Var *y0, *yi, *source;
 	double errmax;
@@ -96,12 +97,13 @@ protected:
 	int itmax,microsteps;
 	int microprocess;
 	int verbose;
+	int dynamic;
 public:	
 	void SetAbbrev(const char *abbrev0) {abbrev=abbrev0;}
 	const char *Abbrev() {return abbrev;}
 	void SetParam(double tolmax, double tolmin, double stepfactor0,
 				  double stepnoninvert, double dtmin0, double dtmax0,
-				  int itmax0, int microsteps0, int verbose0) {
+				  int itmax0, int microsteps0, int verbose0, int dynamic0) {
 		if(tolmax < tolmin) msg(ERROR_GLOBAL,"tolmax < tolmin"); 
 		tolmax2=tolmax*tolmax;
 		tolmin2=tolmin*tolmin;
@@ -113,9 +115,10 @@ public:
 		itmax=itmax0;
 		microsteps=microsteps0*Microfactor();
 		verbose=verbose0;
+		dynamic=dynamic0;
    }
-	void Integrate(Var *const y, double& t, double tmax,
-				   double& dt, const double sample);
+	void Integrate(ProblemBase& problem, Var *const y, double& t, double tmax,
+				   double& dt, const double sample, int& iteration);
 	void ChangeTimestep(double& dt, double dtnew, const double t,
 						const double sample);
 	

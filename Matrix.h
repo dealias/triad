@@ -295,8 +295,6 @@ inline Array2<T>& Array2<T>::operator *= (T A)
 }
 #endif
 
-// Compute A=C^{-1} B
-
 template<class T>
 void GaussJordan(const Array2<T>& a, const Array2<T>& b)
 {
@@ -391,6 +389,8 @@ void GaussJordan(const Array2<T>& a, const Array2<T>& b)
 	}
 }
 	
+// Compute A=C^{-1} B
+
 template<class T>
 inline void Divide(const Array2<T>& A, const Array2<T>& C, const Array2<T>& B)
 {
@@ -518,7 +518,7 @@ inline Array2<T> operator - (const Array2<T>& B, T C)
 template<class T>
 inline Array2<T> operator + (T B, const Array2<T>& C)
 {
-	Array2<T> A(B.Nx(),B.Ny());
+	Array2<T> A(C.Nx(),C.Ny());
 	Add(A,B,C);
 	A.Hold();
 	return A;

@@ -258,12 +258,12 @@ int main(int argc, char *argv[])
 	Integrator->Allocate(ny);
 	
 	Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,dtmin,dtmax,
-						 itmax,microsteps,verbose);
+						 itmax,microsteps,verbose,dynamic);
 	
 	cout << newl << "INTEGRATING:" << endl;
 	set_timer();
 	
-	Integrator->Integrate(y,t,tmax,dt,sample);
+	Integrator->Integrate(*Problem,y,t,tmax,dt,sample,iteration);
 	
 	Problem->FinalOutput();
 	
