@@ -271,7 +271,7 @@ inline double drand()
 	return ((double) rand())/RAND_MAX;
 }
 
-inline void crand_gauss(Real w)
+inline void crand_gauss(Real& w)
 {
 	double factor,r2,v1,v2;
 	static int flag=0;
