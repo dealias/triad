@@ -3,7 +3,6 @@
 #include "Polar.h"
 #include "Cartesian.h"
 
-#include <sys/mode.h>
 #include <sys/stat.h>
 
 char *NWaveVocabulary::Name() {return "N-Wave";}
@@ -204,7 +203,7 @@ void NWave::InitialConditions()
 		sprintf(tempbuffer,"avgy%d",n);
 		extern int mkdir(const char *, mode_t); 
 
-		mkdir(Vocabulary->FileName(dirsep,tempbuffer),0xFFFF);
+		mkdir(Vocabulary->FileName(dirsep,tempbuffer),0);
 		errno=0;
 		sprintf(avgyre[n],"y.re^%d",n);
 		sprintf(avgyim[n],"y.im^%d",n);
