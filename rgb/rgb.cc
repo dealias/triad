@@ -1193,11 +1193,6 @@ public:
 	Cartesian(Real x_, Real y_, Real z_) : x(x_), y(y_), z(z_) {}
 };
 
-inline double hypot(double x, double y)
-{
-	return sqrt(x*x+y*y);
-}
-
 class Toroidal {
 public:
 	Real r;
