@@ -2,11 +2,11 @@
 #define __utils_h__ 1
 
 #include "xstream.h"
-#include <fstream.h>
-#include <stddef.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <math.h>
+#include <fstream>
+#include <cstddef>
+#include <cstdarg>
+#include <cstdlib>
+#include <cmath>
 #include <memory>
 
 #if _MAC
@@ -30,6 +30,15 @@ size_t memory();
 #define __ExternalArrayExit
 #define __ExternalDynVectorExit
 #include "Array.h"
+
+using std::istream;
+using std::ostream;
+using std::cin;
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::ends;
+using std::flush;
 
 extern const double pi;
 extern const double twopi;
