@@ -41,6 +41,7 @@ namespace Array {
   
 inline ostream& _newl(ostream& s) {s << '\n'; return s;}
 
+inline void ArrayExit(char *x);
 #ifndef __ExternalArrayExit
 inline void ArrayExit(char *x)
 {

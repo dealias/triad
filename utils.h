@@ -175,7 +175,7 @@ enum ErrorCode {WARNING_,OVERRIDE_,SLEEP_,ERROR_};
 
 #define __ArrayExtensions
 #define __ExternalArrayExit
-inline void ArrayExit(char *x) {msg(ERROR_GLOBAL,x);}
+inline void Array::ArrayExit(char *x) {msg(ERROR_GLOBAL,x);}
 	
 enum ExitCode {FATAL=-1,CONTINUE,COMPLETE};
 extern ExitCode exit_signal;
