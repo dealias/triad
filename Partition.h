@@ -77,7 +77,13 @@ public:
 	Real Y() {return cen.Y();}
 	
 	Real InBin(const D& m) {return InInterval(m,min,max);}
-	void Count(const D& m) {if(InBin(m)) mode[nmode++].Store(m,1.0);}
+	void Count(const D& m) {
+		if(InBin(m)) {
+			mode[nmode++].Store(m,1.0);
+			area=1.0;
+		}
+	}
+	
 	void MakeModes();
 };
 
