@@ -125,7 +125,6 @@ int E_RK3::Corrector()
 
 void E_RK4::Predictor()
 {
-//  msg(ERROR,"This integrator is broken.");
   for(unsigned int j=0; j < Nspecial; j++)	
     y[j]=coeff0h[j]*y0[j]+coeff1h[j]*source0[j];
   Exponential::Source(Src1,Y,t+halfdt);
