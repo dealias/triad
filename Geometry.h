@@ -227,6 +227,7 @@ void Partition<T>::ComputeTriads() {
 		if(!formatted && output) {
 			filename=WeightFileName("f");
 			fout.open(filename);
+			fout.precision(REAL_DIG);
 			if(!fout) msg(ERROR,"Weight file %s could not be opened",filename);
 			fout << Nweight << endl;
 			for(i=0; i < Nweight; i++) fout << weight[i] << endl;

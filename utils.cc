@@ -162,14 +162,14 @@ void check_match(int match_type, char *object, char *key)
 int abort_flag=1; 	// If nonzero, abort program after a fatal error.
 int beep_enabled=1; // If nonzero, enable terminal beeping during errors.
 
-#if(__GNUC__)	
+#ifdef __GNUC__ 	
 #define	vform(os,format,vargs) os.vform(format,vargs);
 #else
 #define vform(os,format,vargs) \
 {os.flush(); vprintf(format,vargs); fflush(stdout);}
 #endif			
 
-#if(__unix)
+#if __unix
 #include <unistd.h>
 #endif
 
@@ -182,7 +182,7 @@ void msg(int fatal, char *file, int line, char *format,...)
 	cout << endl;
 	if(beep_enabled) {beep_enabled=0; cout << beep;}
 	
-#if(__unix)
+#if __unix
 	if(fatal == -1 && isatty(STDIN_FILENO)) {fatal=0; override=1;}
 #endif	
 
