@@ -1383,7 +1383,7 @@ int System(const char *command)
     char *argv[4];
     argv[0] = strdup("sh");
     argv[1] = strdup("-c");
-    argv[2] = command;
+    argv[2] = strdup(command);
     argv[3] = 0;
     execve("/bin/sh",argv,environ);
     exit(127);
