@@ -278,6 +278,7 @@ void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	unsigned int ny=1 << log2ny;
 	const unsigned int nyp=ny/2+1;
 	const unsigned int nx2=nx/2;
+	const int nx1=nx+offset;
 	Complex *p;
 
 	// Enforce reality condition
@@ -285,21 +286,21 @@ void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 #pragma ivdep
 	for(i=1; i < nx2; i++) data[i]=conj(data[nx-i]);
 	
-	Complex *pstop=data+nx*nyp;
-	int pinc=2*nx;
-	for(p=data; p < pstop; p += nx) {
+	Complex *pstop=data+nx1*nyp;
+	int pinc=2*nx1;
+	for(p=data; p < pstop; p += nx1) {
 #pragma ivdep
 		for(i=1; i < nx; i += 2) p[i]=-p[i];
 	}
 
-	mfft(data,log2nx,isign,nyp,1,nx+offset);
+	mfft(data,log2nx,isign,nyp,1,nx1);
 	
 	for(p=data; p < pstop; p += pinc) {
 #pragma ivdep
 		for(i=1; i < nx; i += 2) p[i]=-p[i];
 	}
 	
-	for(p=data+nx; p < pstop; p += pinc) {
+	for(p=data+nx1; p < pstop; p += pinc) {
 #pragma ivdep
 		for(i=0; i < nx; i += 2) p[i]=-p[i];
 	}
@@ -324,25 +325,26 @@ void rcfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	unsigned int nx=1 << log2nx;
 	unsigned int ny=1 << log2ny;
 	const unsigned int nyp=ny/2+1;
+	const int nx1=nx+offset;
 	Complex *p;
 
 	mrcfft(data,log2ny,isign,nx);
 	
-	Complex *pstop=data+nx*nyp;
-	int pinc=2*nx;
+	Complex *pstop=data+nx1*nyp;
+	int pinc=2*nx1;
 	for(p=data; p < pstop; p += pinc) {
 #pragma ivdep
 		for(i=1; i < nx; i += 2) p[i]=-p[i];
 	}
 	
-	for(p=data+nx; p < pstop; p += pinc) {
+	for(p=data+nx1; p < pstop; p += pinc) {
 #pragma ivdep
 		for(i=0; i < nx; i += 2) p[i]=-p[i];
 	}
 	
-	mfft(data,log2nx,isign,nyp,1,nx+offset);
+	mfft(data,log2nx,isign,nyp,1,nx1);
 	
-	for(p=data; p < pstop; p += nx) {
+	for(p=data; p < pstop; p += nx1) {
 #pragma ivdep
 		for(i=1; i < nx; i += 2) p[i]=-p[i];
 	}
