@@ -35,6 +35,10 @@ NWave::NWave()
 	NWaveProblem=this; SetLinearity(STANDARD);
 }
 
+void NWave::LinearSrc(Var *src, Var *y, double t) {
+	NWaveProblem->Linearity(src,y,t);
+}
+
 inline void ConstantForcing(Var *source, double t)
 {
 	if(t-last_t > tauforce) {last_t=t; crand_gauss(&random_factor);}
