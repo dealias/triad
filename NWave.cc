@@ -173,29 +173,28 @@ extern Var *ZeroBuffer;
 
 int CartesianPad(Var *to, Var *from)
 {
+	Var *k=to;
 	for(int i=0; i < NRows; i++) {
-		int ncol=RowBoundary[i+1]-RowBoundary[i];
-		Var *k,*kstop=to+ncol;
+		Var *kstop=k+RowBoundary[i+1]-RowBoundary[i];
 #pragma ivdep
-		for(k=to; k < kstop; k++) *k=*(from++);
-		k=kstop;
+		for(; k < kstop; k++) *k=*(from++);
 		kstop += NPad;
 		Var *zero=ZeroBuffer;
 #pragma ivdep
 		for(; k < kstop; k++) *k=*(zero++);
-		to=kstop;
 	}
-	return to-psibuffer;
+	return k-psibuffer;
 }
 
 void CartesianUnPad(Var *to, Var *from)
 {
+	Var *k=to;
 	for(int i=0; i < NRows; i++) {
 		int ncol=RowBoundary[i+1]-RowBoundary[i];
-		Var *k,*kstop=to+ncol;
+		Var *kstop=k+ncol;
 #pragma ivdep
-		for(k=to; k < kstop; k++) *k=*(from++);
-		to=kstop; from += ncol+NPad;
+		for(; k < kstop; k++) *k=*(from++);
+		from += NPad;
 	}
 }
 
