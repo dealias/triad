@@ -33,6 +33,9 @@ protected:
 public:
   void Allocator() {PC::Allocator(); Exponential::Allocator();}
   const char *Name() {return "Exponential Predictor-Corrector";}
+  void Source(const vector2& Src, const vector2& Y, double t) {
+    Exponential::Source(Src,Y,t);
+  }
   void TimestepDependence() {
     PC::TimestepDependence();
     dtinv=1.0/dt;
@@ -58,6 +61,9 @@ public:
     Allocate(coeff2,Nspecial);
   }
   const char *Name() {return "Second-Order Exponential Runge-Kutta";}
+  void Source(const vector2& Src, const vector2& Y, double t) {
+    Exponential::Source(Src,Y,t);
+  }
   void TimestepDependence() {
     PC::TimestepDependence();
     for(unsigned int j=0; j < Nspecial; j++) {
@@ -100,6 +106,9 @@ public:
     if(dynamic) Allocate(coeff2,Nspecial);
   }
   const char *Name() {return "Third-Order Exponential Runge-Kutta";}
+  void Source(const vector2& Src, const vector2& Y, double t) {
+    Exponential::Source(Src,Y,t);
+  }
   void TimestepDependence() {
     PC::TimestepDependence();
     for(unsigned int j=0; j < Nspecial; j++) {

@@ -4,7 +4,7 @@ POLL = poll
 
 include $(TRI)/config/Common
 
-FILES = Ode $(CORE) $(UTILS)
+FILES = Ode Exponential $(CORE) $(UTILS)
 DEPEND = $(TRIAD)
 
 include $(TRI)/config/Rules

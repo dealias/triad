@@ -2,6 +2,7 @@
 
 #include "options.h"
 #include "kernel.h"
+#include "Exponential.h"
 
 using namespace Array;
 
@@ -57,7 +58,7 @@ OdeVocabulary::OdeVocabulary()
 {
   Vocabulary=this;
 	
-  VOCAB(nu0,(Var) 0.0,(Var) 0.0,"linear damping");
+  VOCAB(nu0,(Real) 0.0,(Real) 0.0,"linear damping");
   VOCAB(A,(Var) 0.0,(Var) 0.0,"coefficient A");
   VOCAB(B,(Var) 0.0,(Var) 0.0,"coefficient B");
 	
@@ -69,8 +70,12 @@ OdeVocabulary::OdeVocabulary()
   INTEGRATOR(E_Euler);
   INTEGRATOR(RB1);
   INTEGRATOR(I_PC);
+  
   INTEGRATOR(E_PC);
-  INTEGRATOR(LE_PC);
+  INTEGRATOR(E_RK2);
+  INTEGRATOR(E_RK3);
+  INTEGRATOR(E_RK4);
+  
   INTEGRATOR(C_PC);
   INTEGRATOR(Implicit);
 }
@@ -119,3 +124,17 @@ void Ode::LinearSource(const vector2& Src, const vector2& Y, double)
   source[0] -= nu[0]*y[0];
 }
 
+unsigned Exponential::NSpecial()
+{
+  return 1;
+}
+
+void Exponential::Source(const vector2& Src, const vector2& Y, double t) 
+{
+  OdeProblem->NonLinearSource(Src,Y,t);
+}
+
+Nu Exponential::LinearCoeff(unsigned int i) 
+{
+  return nu[i];
+}

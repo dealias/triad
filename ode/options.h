@@ -8,6 +8,6 @@
 
 typedef Complex Var;
 
-typedef Var Nu;
+typedef Real Nu;
 
 #endif

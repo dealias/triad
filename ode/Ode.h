@@ -3,7 +3,7 @@
 
 // Specialized ODE integrators
 
-class Exponential {
+class Exponential0 {
 protected:
   Nuvector nu_inv, expinv, onemexpinv;
 public:
@@ -44,13 +44,13 @@ public:
   Solve_RC Solve();
 };
 
-class E_Euler : public Euler, public Exponential {
+class E_Euler : public Euler, public Exponential0 {
 public:
-  void Allocator() {Euler::Allocator(); Exponential::Allocator(ny);}
+  void Allocator() {Euler::Allocator(); Exponential0::Allocator(ny);}
   const char *Name() {return "Exponential Euler";}
   Solve_RC Solve();
   void TimestepDependence() {
-    Exponential::TimestepDependence(dt,ny);
+    Exponential0::TimestepDependence(dt,ny);
   }
   void Source(const vector2& Src, const vector2& Y, double t) {
     OdeProblem->NonLinearSource(Src,Y,t);
@@ -92,14 +92,15 @@ public:
   }
 };
 
-class E_PC : public PC, public Exponential {
+#if 0
+class LE_PC : public PC, public Exponential0 {
 protected:
   double dtinv;
 public:
-  void Allocator() {PC::Allocator(); Exponential::Allocator(ny);}
-  const char *Name() {return "Exponential Predictor-Corrector";}
+  void Allocator() {PC::Allocator(); Exponential0::Allocator(ny);}
+  const char *Name() {return "Linearized Exponential Predictor-Corrector";}
   void TimestepDependence() {
-    Exponential::TimestepDependence(dt,ny);
+    Exponential0::TimestepDependence(dt,ny);
     dtinv=1.0/dt;
   }
   void Predictor();
@@ -108,13 +109,7 @@ public:
     OdeProblem->NonLinearSource(Src,Y,t);
   }
 };
-
-class LE_PC : public E_PC {
-public:
-  const char *Name() {return "Linearized Exponential Predictor-Corrector";}
-  void Predictor();
-  int Corrector();
-};
+#endif
 
 class CorrectC_PC {
  public:
@@ -186,29 +181,7 @@ int I_PC::Corrector()
   return 1;
 }
 
-void E_PC::Predictor()
-{
-  for(unsigned int j=0; j < ny; j++)	
-    y[j]=expinv[j]*y0[j]+onemexpinv[j]*source0[j];
-}
-
-int E_PC::Corrector()
-{
-  Source(Src,Y,t+dt);
-  if(dynamic) {
-    for(unsigned int j=0; j < ny; j++) {
-      Var temp=0.5*(source0[j]+source[j]);
-      y[j]=expinv[j]*y0[j]+onemexpinv[j]*temp;
-      if(!Active(errmask) || errmask[j])
-	CalcError(y0[j]*dtinv,temp,source0[j],temp);
-    }
-    ExtrapolateTimestep();
-  } else for(unsigned int j=0; j < ny; j++) {
-    y[j]=expinv[j]*y0[j]+onemexpinv[j]*0.5*(source0[j]+source[j]);
-  }
-  return 1;
-}
-
+#if 0
 void LE_PC::Predictor()
 {
   //	nu[0]=A+2.0*B*y0[0];
@@ -237,6 +210,7 @@ int LE_PC::Corrector()
 		
   return 1;
 }
+#endif
 
 inline bool CorrectC_PC::Correct(Real y0, Real& y,
 				 Real source0, Real source,
