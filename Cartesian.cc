@@ -6,10 +6,8 @@
 char *Basis<Cartesian>::Name() {return "Cartesian";}
 
 // Cartesian vocabulary
-extern int Nx; // Number of modes in x-direction
-extern int Ny; // Number of modes in y-direction
-
-Cartesian *CartesianMode;
+int Nx=17; // Number of modes in x-direction
+int Ny=17; // Number of modes in y-direction
 
 void Basis<Cartesian>::MakeBins()
 {

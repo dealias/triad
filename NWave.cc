@@ -94,11 +94,12 @@ void PrimitiveNonlinearitySR(Var *source, Var *psi, double)
 	}
 }
 
+Cartesian *CartesianMode;
+
 void PrimitiveNonlinearity(Var *source, Var *psi, double)
 {
 	int i;
 	Cartesian mk,mp;
-	extern Cartesian *CartesianMode;
 
 	set(psibuffer,psi,Npsi);
 	
@@ -647,26 +648,6 @@ int C_RK5::Corrector(Var *y0, double, double& errmax, int start, int stop)
 	return 1;
 }
 
-void compute_invariants(Var *y, int Npsi, Real& E, Real& Z, Real& P)
-{
-	Real Ek,Zk,Pk,k2;
-	E=Z=P=0.0;
-	for(int i=0; i < Npsi; i++) {
-		k2=Geometry->K2(i);
-		Ek=Geometry->Normalization(i)*abs2(y[i])*Geometry->Area(i);
-		Zk=k2*Ek;
-		Pk=k2*Zk;
-		E += Ek;
-		Z += Zk;
-		P += Pk;
-	}
-	
-	Real factor=(reality ? 1.0: 0.5)*continuum_factor;
-	E *= factor;
-	Z *= factor;
-	P *= factor;
-}	
-
 void display_invariants(Real E, Real Z, Real P)
 {
 	cout << "Energy = " << E << endl;
@@ -700,3 +681,4 @@ void NWave::FinalOutput()
 		display_invariants(E,Z,P);
 	}
 }
+

@@ -4,7 +4,7 @@ static Complex *wpTablep;
 static Complex *wpTablen;
 static unsigned int TableSize=0;
 
-inline void fft_br(Complex *data, unsigned int log2n)
+void fft_br(Complex *data, unsigned int log2n)
 {
 	unsigned int n=1 << log2n;
 	unsigned int mmax=1;
@@ -17,6 +17,7 @@ inline void fft_br(Complex *data, unsigned int log2n)
 		wp++;
 		for (unsigned int m=0; m < mmax; m++) {
 			Complex *p,*q;
+#pragma ivdep			
 			for (p=data+m; p < pstop; p += istep) {
 				q=p+mmax;
 				Real tempre=c*q->re-s*q->im;
@@ -34,7 +35,7 @@ inline void fft_br(Complex *data, unsigned int log2n)
 	}
 }
 
-inline void fft_brinv(Complex *data, unsigned int log2n)
+void fft_brinv(Complex *data, unsigned int log2n)
 {
 	unsigned int n=1 << log2n;
 	unsigned int istep=n;
@@ -47,6 +48,7 @@ inline void fft_brinv(Complex *data, unsigned int log2n)
 		wp--;
 		for (unsigned int m=0; m < mmax; m++) {
 			Complex *p,*q;
+#pragma ivdep			
 			for (p=data+m; p < pstop; p += istep) {
 				q=p+mmax;
 				Real tempre=p->re-q->re;

@@ -10,7 +10,8 @@ include config/$(HOSTTYPE)
 UTILS = utils.o strcasecmp.o new.o $(POLL) $(ARCH)
 CORE = kernel.o Approx.o Integrator.o Param.o $(UTILS)
 POLAR = Polar.o PolarAverage.o simpfast.o
-TRIAD = $(CORE) NWave.o Geometry.o Cartesian.o convolve.o $(POLAR)
+NWAVE = NWave.o convolve.o Cartesian.o
+TRIAD = Geometry.o $(NWAVE) $(CORE) $(POLAR)
 
 
 .SUFFIXES: .cc
@@ -19,7 +20,7 @@ triad:	Navier.o $(TRIAD)
 	$(C++) $(OPT) -o triad Navier.o $(TRIAD) $(LIB) 
 
 w3:	ThreeWave.o $(TRIAD)
-	$(C++) $(OPT) -o triad ThreeWave.o NWave.o $(CORE) $(LIB)
+	$(C++) $(OPT) -o triad ThreeWave.o $(NWAVE) $(CORE) $(LIB)
 
 kepler:	Kepler.o $(CORE)
 	$(C++) $(OPT) -o triad Kepler.o $(CORE) $(LIB)

@@ -3,6 +3,9 @@
 
 #include "Basis.h"
 
+extern int Nx;
+extern int Ny;
+
 class Cartesian {
 public:	
 	int x,y;	// wavenumber components
@@ -63,6 +66,7 @@ inline ostream& operator << (ostream& os, const Cartesian& b) {
 	return os;
 }
 	
+extern Cartesian *CartesianMode;
 
 inline int Basis<Cartesian>::InGrid(Cartesian& m)
 {

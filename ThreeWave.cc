@@ -11,13 +11,13 @@ int randomIC=0;
 Mc Mkpq[]={1.0,1.0,-2.0};
 static Nu nu0[]={0.0,0.0,0.0};
 static Var IC[]={sqrt(1.5),0.0,sqrt(1.5)};
-Real Area0[]={1.0,1.0,1.0};
-Real continuum_factor;
+Real *K;
 Real tauforce=0.0;
 
 NWave::NWave()
 {
 	Problem=this;
+	
 	reality=0;
 	
 	VOCAB(randomIC,0,1);
@@ -44,7 +44,6 @@ void None::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
 {
 	*LinearSrc=StandardLinearity;
 	*NonlinearSrc=PrimitiveNonlinearitySR;
-	continuum_factor=1.0;
 }
 
 NWave ThreeWaveProblem;
@@ -111,6 +110,26 @@ void NWave::Initialize()
 	if(average) for(i=Npsi; i < ny; i++) y[i]=0.0;
 }
 
+void compute_invariants(Var *y, int Npsi, Real& E, Real& Z, Real& P)
+{
+	Real Ek,Zk,Pk,k2;
+	E=Z=P=0.0;
+	for(int i=0; i < Npsi; i++) {
+		k2=K[i]*K[i];
+		Ek=abs2(y[i]);
+		Zk=k2*Ek;
+		Pk=k2*Zk;
+		E += Ek;
+		Z += Zk;
+		P += Pk;
+	}
+	
+	Real factor=(reality ? 1.0: 0.5);
+	E *= factor;
+	Z *= factor;
+	P *= factor;
+}	
+
 void NWave::Output(int)
 {
 	int i;
@@ -119,3 +138,9 @@ void NWave::Output(int)
 	for(i=0; i < Npsi-1; i++) fout << y[i] << "\t";
 	fout << y[i] << endl;
 }
+
+Nu LinearityAt(int)
+{
+	return 0.0;
+}
+

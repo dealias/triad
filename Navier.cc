@@ -36,9 +36,6 @@ int pH=1;
 
 int randomIC=1;
 
-int Nx=17;
-int Ny=17;
-
 NWave::NWave()
 {
 	Problem=this;
@@ -162,15 +159,6 @@ void ComputeLinearity(const Polar& v, Complex& nu)
 	nu=-growth(v)+I*frequency(v);
 }
 
-Nu LinearityAt(int i)
-{
-	Nu nu;
-	Real k=Geometry->K(i);
-	Real th=Geometry->Th(i);
-	ComputeLinearity(Polar(k,th),nu);
-	return nu;
-}
-
 static Real equilibrium(int i)
 {
 	Real k=Geometry->K(i);
@@ -257,6 +245,26 @@ void NWave::Initialize()
 	delete [] nuC;
 }
 
+void compute_invariants(Var *y, int Npsi, Real& E, Real& Z, Real& P)
+{
+	Real Ek,Zk,Pk,k2;
+	E=Z=P=0.0;
+	for(int i=0; i < Npsi; i++) {
+		k2=Geometry->K2(i);
+		Ek=Geometry->Normalization(i)*abs2(y[i])*Geometry->Area(i);
+		Zk=k2*Ek;
+		Pk=k2*Zk;
+		E += Ek;
+		Z += Zk;
+		P += Pk;
+	}
+	
+	Real factor=(reality ? 1.0: 0.5)*continuum_factor;
+	E *= factor;
+	Z *= factor;
+	P *= factor;
+}	
+
 void NWave::Output(int)
 {
 	Real E,Z,P;
@@ -275,4 +283,13 @@ void NWave::Output(int)
 		out_curve(favgy[n],y+Npsi*(n+1),"y^n",Npsi);
 		favgy[n].flush();
 	}
+}
+
+Nu LinearityAt(int i)
+{
+	Nu nu;
+	Real k=Geometry->K(i);
+	Real th=Geometry->Th(i);
+	ComputeLinearity(Polar(k,th),nu);
+	return nu;
 }
