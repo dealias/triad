@@ -7,7 +7,7 @@
 inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0, 
 				      const Var& pred, const Var& corr)
 {
-  if(pred != initial) {
+  if(initial != 0.0 && pred != initial) {
     Real error=max(divide0(abs2(corr-pred),
 			   max(abs2(norm0),abs2(initial))));
     if(error > errmax) errmax=error;
