@@ -26,8 +26,7 @@ void my_new_handler()
 
 void (*old_new_handler)()=set_new_handler(&my_new_handler);
 
-// For Compaq cxx compiler:
-#ifdef _RWSTD_THROW_SPEC_NULL
+#ifdef __DECCXX_LIBCXX_RH70
 void *operator new(size_t size, const std::nothrow_t&) _RWSTD_THROW_SPEC_NULL
 #else
 #define _RWSTD_THROW_SPEC_NULL
