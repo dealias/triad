@@ -3,7 +3,8 @@ OPT = $(CFLAGS)
 LIB = $(LFLAGS) -lsci -lm
 MAKEDEPEND = /lib/cpp -M
 
-ARCH = unix.o
-FFT = cfft.o
-POLL = tremain.o
+ARCH = unix
+FFT = cfft
+POLL = tremain
+
 

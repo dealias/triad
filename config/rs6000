@@ -1,7 +1,7 @@
 C++ = xlC -+ -D_ANSI_C_SOURCE
 OPT = $(CFLAGS)
 LIB = $(LFLAGS) -lessl -lm
-MAKEDEPEND = $(C++) -M 
+MAKEDEPEND = $(C++) -M -P
 D = u
 
 ARCH = unix.o
