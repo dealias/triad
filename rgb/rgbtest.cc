@@ -1,5 +1,5 @@
 #include <iostream>
-#include "xstream"
+#include "../xstream.h"
 
 main()
 {
@@ -9,8 +9,8 @@ main()
 	fout << N << N << 1;
 	
 	if(fout) 
-	  for(j=0; j < N; j++) 
-		for(i=0; i < N; i++) 
+	  for(unsigned j=0; j < N; j++) 
+		for(unsigned i=0; i < N; i++) 
 		    fout << (float) (i+j*N) << endl;
 	fout.close();
 }
