@@ -254,7 +254,7 @@ int main(int argc, char *const argv[])
 				if(n < begin) continue;
 				if(vmin < gmin) gmin=vmin;
 				if(vmax > gmax) gmax=vmax;
-			} while (n++ < end && rc == 0)
+			} while (n++ < end && rc == 0);
 			
 			if(zero && gmin < 0 && gmax > 0) {
 				gmax=max(-gmin,gmax);
