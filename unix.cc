@@ -8,15 +8,11 @@
 #include <pwd.h>
 #include <sys/times.h>
 
-#ifndef _POSIX_C_SOURCE
-#define _POSIX_C_SOURCE
-#endif
 #ifdef __STRICT_ANSI__
 #undef __STRICT_ANSI__
 #endif
 #include <time.h>
 #define __STRICT_ANSI__
-#undef _POSIX_C_SOURCE
 
 #include <string.h>
 #include <strstream.h>
