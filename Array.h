@@ -18,14 +18,18 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.08J
+#define __ARRAY_H_VERSION__ 1.08
 
 // Defining NDEBUG improves optimization but disables argument checking.
 
 #ifdef NDEBUG
 #define check(i,n,dim,m)
+#define checkActivate(i) CheckActivate(i)
+#define Size0 CheckSize
 #else
 #define check(i,n,dim,m) Check(i,n,dim,m)
+#define checkActivate(i) Activate()
+#define Size0 Size
 #endif
 
 #include <iostream.h>
@@ -53,7 +57,7 @@ protected:
 public:
     enum alloc_state {unallocated=0, allocated=1, temporary=2};
 	virtual unsigned int Size() const {return nx;}
-	unsigned int Size0() const {
+	unsigned int CheckSize() const {
 		if(!test(allocated) && Size() == 0)
 			cout << "WARNING: Operation attempted on unallocated array." 
 				 << endl;
@@ -63,7 +67,23 @@ public:
 	int test(int flag) const {return state & flag;}
 	void clear(int flag) CONST {state &= ~flag;}
 	void set(int flag) CONST {state |= flag;}
-	void Allocate(unsigned int nx0) {Dimension(nx0); v=new T[Size()]; set(allocated);}
+	void Activate() {
+		v=new T[Size()];
+		set(allocated);
+	}
+	void CheckActivate(int dim) {
+		if (test(allocated)) {
+			strstream buf;
+			buf << "Reallocation of Array" << dim
+				<< " attempted (must Deallocate first)" << ends;
+			__ARRAY_EXIT(buf.str());
+		}
+		Activate();
+	}
+	void Allocate(unsigned int nx0) {
+		Dimension(nx0);
+		checkActivate(1);
+	}
 	void Deallocate() CONST {delete [] v; clear(allocated);}
 	void Dimension(unsigned int nx0) {nx=nx0;}
 	void Dimension(unsigned int nx0, T *v0) {Dimension(nx0); v=v0; clear(allocated);}
@@ -191,8 +211,7 @@ public:
 	}
 	void Allocate(unsigned int nx0, unsigned int ny0) {
 		Dimension(nx0,ny0);
-		v=new T[Size()];
-		set(allocated);
+		checkActivate(2);
 	}
 	
 	array2() : ny(0) {}
@@ -279,8 +298,7 @@ public:
 	unsigned int Size() const {return nx*nyz;}
 	void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0) {
 		Dimension(nx0,ny0,nz0);
-		v=new T[Size()];
-		set(allocated);
+		checkActivate(3);
 	}
 	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0) {
 		nx=nx0; ny=ny0; nz=nz0; nyz=ny*nz;
@@ -292,7 +310,9 @@ public:
 	}
 	
 	array3() : nz(0) {}
-	array3(unsigned int nx0, unsigned int ny0, unsigned int nz0) {Allocate(nx0,ny0,nz0);}
+	array3(unsigned int nx0, unsigned int ny0, unsigned int nz0) {
+		Allocate(nx0,ny0,nz0);
+	}
 	array3(unsigned int nx0, unsigned int ny0, unsigned int nz0, T *v0) {Dimension(nx0,ny0,nz0,v0);}
 	
 	unsigned int Nz() const {return nz;}
@@ -373,23 +393,27 @@ protected:
 	unsigned int nw;
 public:
 	unsigned int Size() const {return nx*nyzw;}
-	void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0, unsigned int nw0) {
+	void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+				  unsigned int nw0) {
 		Dimension(nx0,ny0,nz0,nw0);
-		v=new T[Size()];
-		set(allocated);
+		checkActivate(4);
 	}
-	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0, unsigned int nw0) {
+	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+				   unsigned int nw0) {
 		nx=nx0; ny=ny0; nz=nz0; nw=nw0; nzw=nz*nw; nyzw=ny*nzw;
 	}
-	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0, unsigned int w0, T *v0) {
+	void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+				   unsigned int w0, T *v0) {
 		Dimension(nx0,ny0,nz0,w0);
 		v=v0;
 		clear(allocated);
 	}
 	
 	array4() : nw(0) {}
-	array4(unsigned int nx0, unsigned int ny0, unsigned int nz0, unsigned int nw0) {Allocate(nx0,ny0,nz0,nw0);}
-	array4(unsigned int nx0, unsigned int ny0, unsigned int nz0, unsigned int nw0, T *v0) {
+	array4(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+		   unsigned int nw0) {Allocate(nx0,ny0,nz0,nw0);}
+	array4(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+		   unsigned int nw0, T *v0) {
 		Dimension(nx0,ny0,nz0,nw0,v0);
 	}
 
@@ -421,11 +445,13 @@ public:
 	}
 	
 	array4<T>& operator += (array4<T>& A) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] += A(i);
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] += A(i);
 		return *this;
 	}
 	array4<T>& operator -= (array4<T>& A) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] -= A(i);
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] -= A(i);
 		return *this;
 	}
 	
@@ -497,9 +523,8 @@ public:
 	}
 	void Allocate(unsigned int nx0, int ox0=0) {
 		Dimension(nx0,ox0);
-		v=new T[Size()];
+		checkActivate(1);
 		Offsets();
-		set(allocated);
 	}
 	
 	Array1() : ox(0) {}
@@ -550,9 +575,8 @@ public:
 	}
 	void Allocate(unsigned int nx0, unsigned int ny0, int ox0=0, int oy0=0) {
 		Dimension(nx0,ny0,ox0,oy0);
-		v=new T[Size()];
+		checkActivate(2);
 		Offsets();
-		set(allocated);
 	}
 
 	Array2() : oy(0) {}
@@ -614,9 +638,8 @@ public:
 	void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 				  int ox0=0, int oy0=0, int oz0=0) {
 		Dimension(nx0,ny0,nz0,ox0,oy0,oz0);
-		v=new T[Size()];
+		checkActivate(3);
 		Offsets();
-		set(allocated);
 	}
 	
 	Array3() : oz(0) {}
@@ -684,9 +707,8 @@ public:
 				  unsigned int nw0,
 				  int ox0=0, int oy0=0, int oz0=0, int ow0=0) {
 		Dimension(nx0,ny0,nz0,nw0,ox0,oy0,oz0,ow0);
-		v=new T[Size()];
+		checkActivate(4); 
 		Offsets();
-		set(allocated);
 	}
 	
 	Array4() : ow(0) {}
@@ -737,6 +759,8 @@ public:
 #endif
 
 #undef check
+#undef checkActivate
+#undef Size0
 
 #endif
 
