@@ -1,8 +1,6 @@
 #ifndef __DynVector_h__
 #define __DynVector_h__ 1
 
-/* Hello */
-
 #include <stdlib.h>
 
 template<class T>
