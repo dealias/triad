@@ -303,12 +303,12 @@ void fft(Complex *data, unsigned int log2n, int isign, int bitreverse)
 
 // Return the Fourier transform of nk Complex vector's.
 // Before calling, data must be allocated as Complex[nk*n].
-// On entry: data contains the n Complex values for each k=0,...,nk.
+// On entry: data contains the n Complex values for each k=0,...,nk-1.
 //           log2n contains the base-2 logarithm of n.
 //           isign is +1 for a forward transform, -1 for an inverse transform.
 //           inc1 is the stride between the elements of each Complex vector.
 //           inc2 is the stride between first elements of the vectors.
-// On exit:  data contains the n Complex Fourier values for each k=0,...nk.
+// On exit:  data contains the n Complex Fourier values for each k=0,...nk-1.
 // Note: When computing an inverse transform, the result must be divided by n.
 
 void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
@@ -485,12 +485,12 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 
 // Return the two-dimensional Fourier transform of a Complex vector.
 // Before calling, data must be allocated as Complex[nx*ny].
-// On entry: data[ny*i+j] contains the ny Complex values for each i=0,...,nx.
+// On entry: data[ny*i+j] contains the ny Complex values for each i=0,...,nx-1.
 //           log2nx contains the base-2 logarithm of nx.
 //           log2ny contains the base-2 logarithm of ny.
 //           isign is +1 for a forward transform, -1 for an inverse transform.
 // On exit:  data[ny*i+j] contains the ny Complex Fourier values for
-// each i=0,...nx.
+// each i=0,...nx-1.
 // Note: When computing an inverse transform, the result must be divided
 // by nx*ny.
 

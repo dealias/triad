@@ -127,7 +127,7 @@ void crfft(Complex *data, unsigned int log2n, int isign, int bitreverse)
 // length n/2+1, corresponding to the non-negative part of the frequency
 // spectrum. Before calling, data must be allocated as Complex[nk*(n/2+1)].
 // On entry: data contains the n/2+1 Complex Fourier transform values for
-// each k=0,...,nk. 
+// each k=0,...,nk-1. 
 //           log2n contains the base-2 logarithm of n.
 //           isign is +1 for a forward transform, -1 for an inverse transform.
 //           inc1 is the stride between the elements of each Complex vector.
@@ -187,19 +187,18 @@ void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	mfft(data,log2n,-1,nk,inc1,inc2,bitreverse);
 }
 
-// Return the two-dimensional real inverse Fourier transform of
-// the n/2+1 Complex values corresponding to the non-negative part of the
-// frequency spectrum.
+// Return the two-dimensional real inverse Fourier transform of the
+// nx*(ny/2+1) spectral values taken from the positive frequency half-plane.
 // Before calling, data must be allocated as Complex[nx*(ny/2+1)].
 // On entry: data[i+nx*j] contains the nx Complex values for
-// each j=0,...,ny/2+1. 
+// each j=0,...,ny/2. 
 //           log2nx contains the base-2 logarithm of nx.
 //           log2ny contains the base-2 logarithm of ny.
-// On exit:  data[i+nx*j] contains the ny real Fourier values.
-// for each i=0,...,nx stored as a Complex array of length nx*(ny/2+1).
+// On exit: ((Real *) data)[2*i+j+(nx-1)*(j/2)*2] contains 
+// the (i,j)th real value, indexed by i=0,...,nx-1 and j=0,...,ny-1.
 // Note: The final result must be divided by nx*ny.
 
-void crfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
+void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 			 int isign)
 {
 	unsigned int i,j;
@@ -221,26 +220,25 @@ void crfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	
 	for(j=1; j < nyp; j += 2) {
 		Complex *p=data+nx*j;
-		for(i=0; i < nx; i ++) p[i] *= -1.0;
+		for(i=0; i < nx; i++) p[i] *= -1.0;
 	}
-	
+
 	mcrfft(data,log2ny,isign,nx);
 }
 
-#if 0
-// Return the two-dimensional real inverse Fourier transform of
-// the n/2+1 Complex values corresponding to the non-negative part of the
-// frequency spectrum.
+// Return the two-dimensional real inverse Fourier transform of the
+// nx*(ny/2+1) spectral values taken from the positive frequency half-plane.
 // Before calling, data must be allocated as Complex[nx*(ny/2+1)].
 // On entry: data[(ny/2+1)*i+j] contains the (ny/2+1) Complex values for
-// each i=0,...,nx. 
+// each i=0,...,nx-1. 
 //           log2nx contains the base-2 logarithm of nx.
 //           log2ny contains the base-2 logarithm of ny.
-// On exit:  data[(ny+2)*i+j] contains the ny real Fourier values 
-// for each i=0,...,nx stored as a Complex array of length nx*(ny/2+1).
+// On exit:  ((Real *) data)[(ny+2)*i+j] contains
+// the (i,j)th real value, indexed by i=0,...,nx-1 and j=0,...,ny-1.
 // Note: The final result must be divided by nx*ny.
 
-void rfft2d_inv0(Complex *data, unsigned int log2nx, unsigned int log2ny)
+void crfft2d(Complex *data, unsigned int log2nx, unsigned int log2ny,
+			 int isign)
 {
 	unsigned int i,j;
 	unsigned int nx=1 << log2nx;
@@ -264,6 +262,5 @@ void rfft2d_inv0(Complex *data, unsigned int log2nx, unsigned int log2ny)
 		for(j=1; j < nyp; j += 2) p[j] *= -1.0;
 	}
 	
-	for(i=0; i < nx; i++) crfft(data+i*nyp,log2ny);
+	mcrfft(data,log2ny,isign,nx,1,nyp);
 }
-#endif
