@@ -43,8 +43,8 @@ depend:
 	kernel.cc Approx.cc Integrator.cc Param.cc ThreeWave.cc \
 	Navier.cc NWave.cc Geometry.cc Cartesian.cc convolve.cc fft.cc \
 	Polar.cc PolarAverage.cc simpfast.cc \
-	Kepler.cc Lotka.cc utils.cc strcasecmp.cc new.cc poll.cc \
-	idle.cc unix.cc
+	Kepler.cc Lotka.cc utils.cc strcasecmp.cc new.cc \
+	poll.cc idle.cc unix.cc cfft.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
