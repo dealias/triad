@@ -87,6 +87,10 @@ Real Phi=0.9;
 Real yxaspect=1.0;
 Real zxaspect=1.0;
 
+const int Nxfine=4;
+const int Nyfine=5;
+const int Nzfine=10;
+
 const int Undefined=-2;
 
 void cleanup();
@@ -278,9 +282,9 @@ void options()
 	cerr << "-Y ysize\t explicit vertical size" << endl;
 	cerr << "-Z zsize\t explicit number of sections/frame" << endl;
 	cerr << "-pointsize size\t point size to use with labels" << endl;
-	cerr << "-avgx size\t number of data points per pixel in x direction " 
+	cerr << "-avgx points\t number of data points per pixel in x direction " 
 		 << "[default " << sx << "]" << endl;
-	cerr << "-avgy size\t number of data points per pixel in y direction " 
+	cerr << "-avgy points\t number of data points per pixel in y direction " 
 		 << "[default " << sy << "]" << endl;
 	cerr << "-symmetric\t make color palette symmetric about zero"
 		 << " (if possible)" << endl;
@@ -337,6 +341,9 @@ int main(int argc, char *const argv[])
                {"symmetric", 0, &symmetric, 1},
                {"avgx", 1, 0, AVGX},
                {"avgy", 1, 0, AVGY},
+               {"Nxfine", 1, 0, NXFINE},
+               {"Nyfine", 1, 0, NYFINE},
+               {"Nzfine", 1, 0, NZFINE},
                {"pointsize", 1, 0, POINTSIZE},
                {"Rfactor", 1, 0, RFACTOR},
                {"Theta", 1, 0, THETA},
@@ -439,6 +446,15 @@ int main(int argc, char *const argv[])
 			break;
 		case AVGY:
 			sy=atoi(optarg);
+			break;
+		case NXFINE:
+			Nxfine=atoi(optarg);
+			break;
+		case NYFINE:
+			Nyfine=atoi(optarg);
+			break;
+		case NZFINE:
+			Nzfine=atoi(optarg);
 			break;
 		case POINTSIZE:
 			pointsize=atoi(optarg);
@@ -922,11 +938,6 @@ void Torus(Array2<Ivec> Index)
 		}
 	}
 	
-	const int Nxfine=4;
-	const int Nyfine=5;
-//	const int Nzfine=200;
-	const int Nzfine=10;
-
 	const Real xfinestep=1.0/(2.0*Nxfine+1.0);
 	const Real yfinestep=1.0/(2.0*Nyfine+1.0);
 	const Real zfinestep=1.0/(2.0*Nzfine+1.0);
