@@ -19,7 +19,7 @@ char *Partition<Polar,Cartesian>::Name() {return "Polar";}
 
 char *Partition<Polar,Cartesian>::WeightFileName() {
 	char *filename=new char[strlen(Vocabulary->Abbrev())+strlen(Name())+100];
-	sprintf(filename,"%s/%s/%dx%d_%g:%g_%g%s%s%s",Vocabulary->Abbrev(),
+	sprintf(filename,"%s/%s/%dx%d_%g:%g_%g%s%s",Vocabulary->Abbrev(),
 			downcase(Name()),Nr,Nth,krmin,krmax,kthmin,reality ? "R" : "",
 			discrete ? "D" : "");
 	return filename;
