@@ -41,14 +41,14 @@ namespace Array {
   
 inline ostream& _newl(ostream& s) {s << '\n'; return s;}
 
-#ifndef __ExternalArrayExit
-inline void __ArrayExit(char *x)
+inline void DefaultArrayExit(char *x)
 {
   cout << _newl << "ERROR: " << x << "." << endl;
   exit(1);
 } 
-#endif
 
+static void (*ArrayExit)(char *)=DefaultArrayExit;
+  
 template<class T>
 class array1 {
  protected:
@@ -60,7 +60,7 @@ class array1 {
   virtual unsigned int Size() const {return size;}
   unsigned int CheckSize() const {
     if(!test(allocated) && size == 0)
-      __ArrayExit("Operation attempted on unallocated array"); 
+      ArrayExit("Operation attempted on unallocated array"); 
     return size;
   }
 	
@@ -76,7 +76,7 @@ class array1 {
       strstream buf;
       buf << "Reallocation of Array" << dim
 	  << " attempted (must Deallocate first)" << ends;
-      __ArrayExit(buf.str());
+      ArrayExit(buf.str());
     }
     Activate();
   }
@@ -114,7 +114,7 @@ class array1 {
       if(i < 0) buf << " < " << o;
       else buf << " > " << n+o-1;
       buf << ")" << ends;
-      __ArrayExit(buf.str());
+      ArrayExit(buf.str());
     }
   }
 	

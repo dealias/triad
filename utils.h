@@ -35,6 +35,8 @@ extern char beep;
 inline ostream& newl(ostream& s) {s << '\n'; return s;}
 inline oxstream& newl(oxstream& s) {return s;}
 
+void init();
+  
 inline Real sgn1(const Real x)
 {
   return x >= 0.0 ? 1.0 : -1.0;
@@ -173,6 +175,8 @@ enum ErrorCode {WARNING_,OVERRIDE_,SLEEP_,ERROR_};
 #define SLEEP_GLOBAL SLEEP_,"",0
 #define ERROR_GLOBAL ERROR_,"",0
 
+#define __ArrayExtensions
+	
 enum ExitCode {FATAL=-1,CONTINUE,COMPLETE};
 extern ExitCode exit_signal;
 

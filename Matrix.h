@@ -589,7 +589,7 @@ void GaussJordan(const Array2<T>& a, const Array2<T>& b)
 	      col=k;
 	    }
 	  } else if(pivot[k] > 1) 
-	    {__ArrayExit("Singular matrix");}
+	    {ArrayExit("Singular matrix");}
 	}
       }
     }
@@ -615,7 +615,7 @@ void GaussJordan(const Array2<T>& a, const Array2<T>& b)
     // We are now ready to divide the pivot row by the pivot element,
     // located at row and col. 
     indx_c[i]=col;
-    if(acol[col] == 0.0) {__ArrayExit("Singular matrix");}
+    if(acol[col] == 0.0) {ArrayExit("Singular matrix");}
     T pivinv=1.0/acol[col];
     acol[col]=1.0;
     for(unsigned int l=0; l < n; l++) acol[l] *= pivinv;

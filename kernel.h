@@ -13,10 +13,6 @@
 #include "DynVector.h"
 #include "Table.h"
 
-#define __ArrayExtensions
-#define __ExternalArrayExit
-void __ArrayExit(char *x);
-	
 // Global variables
 extern double t;
 extern double last_dump;

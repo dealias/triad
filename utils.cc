@@ -6,17 +6,24 @@
 #include <time.h>
 #include <string.h>
 
+#include "Array.h"
+
 char* run="";
 ExitCode exit_signal=COMPLETE;
-
-void __ArrayExit(char *x)
-{
-  msg(ERROR,x);
-} 
 
 const double pi=PI;
 const double twopi=2.0*pi;
 const double twopi2=twopi*twopi;
+
+void msgArrayExit(char *x)
+{
+  msg(ERROR_GLOBAL,x);
+} 
+
+void init()
+{
+  Array::ArrayExit=msgArrayExit;
+}
 
 char *upcase(const char *s, char *s2)
 {

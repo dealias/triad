@@ -145,6 +145,7 @@ int main(int argc, char *argv[])
 	
   inform=mailuser;
   cout.precision(REAL_DIG);
+  init();
 	
   cout << newl << PROGRAM << " version " << VERSION
        << " [(C) John C. Bowman 2000]" << newl;
