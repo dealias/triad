@@ -95,11 +95,12 @@ char *extract=NULL;
 enum Parameters {RFACTOR=256,THETA,PHI,YXASPECT,ZXASPECT,POINTSIZE,AVGX,AVGY,\
 				 EXTRACT,NCOLORS,BACKGROUND,XMIN,XMAX,YMIN,YMAX,ZMIN,ZMAX,
 				 LABEL,ALPHA,CROP,XRANGE,YRANGE,ZRANGE,XSLICE,YSLICE,ZSLICE,
-				 CONST,RATE};
+				 CUTOFF,CONST,RATE};
 
 Real Rfactor=2.0;
 Real Theta=0.9;
 Real Phi=0.9;
+Real cutoff=0.0;
 Real yxaspect=1.0;
 Real zxaspect=1.0;
 
@@ -387,6 +388,8 @@ void options()
 		 << "]" << endl;
 	cerr << "-Phi radians\t angle to rotate about Z axis [default " << Phi
 		 << "]" << endl;
+	cerr << "-cutoff radians\t cutoff for toroidal angle [default " << cutoff
+		 << "]" << endl;
 	cerr << "-yxaspect ratio\t Y/X aspect ratio [default " << yxaspect 
 		 << "]" << endl;
 	cerr << "-zxaspect ratio\t Z/X aspect ratio [default " << zxaspect 
@@ -460,6 +463,7 @@ int main(int argc, char *argv[])
                {"Rfactor", 1, 0, RFACTOR},
                {"Theta", 1, 0, THETA},
                {"Phi", 1, 0, PHI},
+               {"cutoff", 1, 0, CUTOFF},
                {"yxaspect", 1, 0, YXASPECT},
                {"zxaspect", 1, 0, ZXASPECT},
                {0, 0, 0, 0}
@@ -615,6 +619,9 @@ int main(int argc, char *argv[])
 			break;
 		case ALPHA:
 			alpha=atof(optarg);
+			break;
+		case CUTOFF:
+			cutoff=atof(optarg);
 			break;
 		case XMIN:
 			xmin=atof(optarg);
@@ -1196,7 +1203,6 @@ void Circle(Array2<Ivec>& Index)
 Real deltax,deltaz;
 Real yfactor;
 Real uoffset,voffset;
-Real cutoff;
 
 int Project(double xi, double xj, double xk);
 
@@ -1295,7 +1301,7 @@ void Torus(Array2<Ivec>& Index)
 	
 //	cutoff=0.0;
 //	cutoff=1.95*pi;
-	cutoff=1.75*pi;
+//	cutoff=1.75*pi;
 
 	uoffset=0.5+Rp*1.2;
 	voffset=0.5+Rp*1.5;
