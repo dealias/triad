@@ -84,7 +84,7 @@ INLINE ostream& operator << (ostream& os, const Bin<T,D>& y) {
 }
 
 class WeightIndex {
-	short int k,p,q;
+	unsigned short int k,p,q;
 public:
 	WeightIndex() {}
 	WeightIndex(int k0, int p0, int q0) : k(k0), p(p0), q(q0) {}
