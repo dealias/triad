@@ -19,13 +19,12 @@ const char PROGRAM[]="RGB";
 const char VERSION[]="1.11";
 
 #include "xstream.h"
-#include <iostream.h>
+#include <iostream>
 #include <limits>
-#include <errno.h>
-#include <strstream.h>
-#include <iomanip.h>
+#include <cerrno>
+#include <sstream>
+#include <iomanip>
 #include <unistd.h>
-#include <string>
 #include <sys/wait.h>
 
 #include "getopt.h"
@@ -47,7 +46,7 @@ const int NDIGITS=4;
 
 static double *vminf, *vmaxf;
 static char *rgbdir;
-static strstream rgbdirbuf;
+static ostringstream rgbdirbuf;
 static int xsize,ysize;
 
 int verbose=0;
@@ -65,7 +64,7 @@ static int label=0;
 static int pointsize=0;
 static int grey=0;
 static const char *convertprog;
-static strstream option;
+static ostringstream option;
 static int Nx,Ny;
 static Real Pz;
 static int a0,a;
@@ -720,19 +719,19 @@ int main(int argc, char *argv[])
     vmaxf=new double[nfiles];
   }
 	
-  strstream dirbuf;
+  ostringstream dirbuf;
   rgbdir=getenv("RGB_DIR");
   if(rgbdir) dirbuf << rgbdir;
   else dirbuf << "/tmp/" << getenv("USER");
   unsigned int process=getpid();
-  dirbuf << "/rgb." << process << ends;
-  rgbdirbuf << dirbuf.str() << "/" << ends;
-  strstream buf;
-  buf << "mkdirhier " << dirbuf.str() << ends;
-  char *cmd=buf.str();
+  dirbuf << "/rgb." << process;
+  rgbdirbuf << dirbuf.str() << "/";
+  ostringstream buf;
+  buf << "mkdirhier " << dirbuf.str();
+  char *cmd=buf.str().c_str();
   if(verbose) cout << cmd << endl;
   system(cmd);
-  rgbdir=rgbdirbuf.str();
+  rgbdir=rgbdirbuf.str().c_str();
 	
   if(!grey) MakePalette(palette);
 	
@@ -888,10 +887,10 @@ int main(int argc, char *argv[])
 			
       if(!floating_scale) {vmin=gmin; vmax=gmax;}
 			
-      strstream buf;
+      ostringstream buf;
       buf << rgbdir << fieldname << setfill('0') << setw(NDIGITS)
 	  << set << "." << format << ends;
-      char *oname=buf.str();
+      char *oname=buf.str().c_str();
       ofstream fout(oname);
       if(!fout) {
 	cleanup();
@@ -1012,9 +1011,9 @@ int main(int argc, char *argv[])
       make_mpeg=0;
       if(display) {
 	montage(nfiles,argf,0,format,"tiff");
-	strstream buf;
+	ostringstream buf;
 	buf << "xv " << outname << begin << ".tiff" << ends;
-	cmd=buf.str();
+	cmd=buf.str().c_str();
 	if(verbose) cout << cmd << endl;
 	system(cmd);
       } else {
@@ -1030,9 +1029,9 @@ int main(int argc, char *argv[])
 	if(make_mpeg) mpeg(nfiles,nset-1,"mpg",xsize,ysize);
 	else animate(nfiles,outname,nset-1,"miff","%d",xsize,ysize);
       } else {
-	strstream buf;
+	ostringstream buf;
 	buf << "%0" << NDIGITS << "d" << ends;
-	animate(nfiles,argf[0],nset-1,format,buf.str(),xsize,ysize);
+	animate(nfiles,argf[0],nset-1,format,buf.str().c_str(),xsize,ysize);
       }
     }
   }
@@ -1043,9 +1042,9 @@ int main(int argc, char *argv[])
 void cleanup()
 {
   if(!preserve) {
-    strstream buf;
+    ostringstream buf;
     buf << "rm -r " << rgbdir << " >& /dev/null" << ends;
-    char *cmd=buf.str();
+    char *cmd=buf.str().c_str();
     if(verbose) cout << cmd << endl;
     system(cmd);
   }
@@ -1060,7 +1059,7 @@ char *separator="                                               ";
 void montage(unsigned int nfiles, char *argf[], int n, const char *format,
 	     const char *type)
 {
-  strstream buf;
+  ostringstream buf;
   int frame;
 	
   buf << convertprog << " -size " << xsize << "x" << ysize << 
@@ -1090,12 +1089,12 @@ void montage(unsigned int nfiles, char *argf[], int n, const char *format,
   buf << outname << frame << "." << type;
   if(!verbose) buf << ">& /dev/null";
   buf << ends;
-  char *cmd=buf.str();
+  char *cmd=buf.str().c_str();
   if(verbose) cout << cmd << endl;
   system(cmd);
 	
   if(n > 0 && !preserve) {
-    strstream buf;
+    ostringstream buf;
     buf << "rm ";
     for(unsigned int f=0; f < nfiles; f++) {
       const char *fieldname=argf[f];
@@ -1104,7 +1103,7 @@ void montage(unsigned int nfiles, char *argf[], int n, const char *format,
     }
     if(!verbose) buf << " >& /dev/null";
     buf << ends;
-    cmd=buf.str();
+    cmd=buf.str().c_str();
     if(verbose) cout << cmd << endl;
     system(cmd);
   }
@@ -1112,11 +1111,11 @@ void montage(unsigned int nfiles, char *argf[], int n, const char *format,
 
 void identify(int, int n, const char *type, int& xsize, int& ysize)
 {
-  strstream buf;
+  ostringstream buf;
   char *iname=".identify";
   buf << "identify " << rgbdir << outname << n << "." << type
       << " > " << iname << ends;
-  char *cmd=buf.str();
+  char *cmd=buf.str().c_str();
   if(verbose) cout << cmd << endl;
   system(cmd);
   ifstream fin(iname);
@@ -1136,7 +1135,7 @@ void identify(int, int n, const char *type, int& xsize, int& ysize)
 
 void mpeg(int, int n, const char *type, int xsize, int ysize)
 {
-  strstream buf;
+  ostringstream buf;
 // Workaround for bug in convert:
   if(xsize % 2) xsize++;
   if(ysize % 2) ysize++;
@@ -1146,7 +1145,7 @@ void mpeg(int, int n, const char *type, int xsize, int ysize)
       << "." << type;
   if(!verbose) buf << " > /dev/null";
   buf << ends;
-  char *cmd=buf.str();
+  char *cmd=buf.str().c_str();
   if(verbose) cout << cmd << endl;
   system(cmd);
 }
@@ -1154,11 +1153,11 @@ void mpeg(int, int n, const char *type, int xsize, int ysize)
 void animate(int, const char *filename, int n, const char *type, 
 	     const char *pattern, int xsize, int ysize)
 {
-  strstream buf;
+  ostringstream buf;
   buf << "animate -scenes 0-" << n << " -size " << xsize << "x" << ysize
       << " -depth 8 " << type << ":" << rgbdir << filename << pattern
       << "." << type << ends;
-  char *cmd=buf.str();
+  char *cmd=buf.str().c_str();
   if(verbose) cout << cmd << endl;
   system(cmd);
 }
