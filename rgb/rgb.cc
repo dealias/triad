@@ -750,8 +750,6 @@ int main(int argc, char *argv[])
     const char *fieldname=argf[f];
     ixstream xin;
 		
-    openfield(xin,fieldname,nx,ny,nz);
-	
     double *vmink=new double [nz], *vmaxk=new double [nz];
 		
     kmin=0;
@@ -834,6 +832,7 @@ int main(int argc, char *argv[])
     if(display) floating_scale=1;
 		
     if(!floating_scale || begin < 0 || end < 0)	{
+      openfield(xin,fieldname,nx,ny,nz);
       n=0;
       int rc;
       int s=1;
@@ -859,9 +858,9 @@ int main(int argc, char *argv[])
 	vminf[f]=gmin;
 	vmaxf[f]=gmax;
       }
+    xin.close();
     }
 		
-    xin.close();
     openfield(xin,fieldname,nx,ny,nz);
 		
     if(begin < 0) begin += nset;
