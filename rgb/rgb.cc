@@ -999,7 +999,7 @@ int main(int argc, char *argv[])
       if(display) {
 	montage(nfiles,argf,0,format,"tiff");
 	strstream buf;
-	buf << "xv " << outname << begin << ".tiff"	<< "&" << ends;
+	buf << "xv " << outname << begin << ".tiff" << ends;
 	cmd=buf.str();
 	if(verbose) cout << cmd << endl;
 	system(cmd);
