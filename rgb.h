@@ -1,5 +1,5 @@
 const int Ncolors=252;
-const int PaletteMax=209;
+const int ColorPaletteMax=209;
 typedef unsigned char u_char;
 
 u_char red[Ncolors]={255,255,255,255,255,255,255,255,255,255,255,255,255,255,
