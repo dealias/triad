@@ -83,8 +83,7 @@ public:
 
 class E_RK3 : public PC, public Exponential {
 protected:
-  Nuvector coeff0h,coeff1h,coeffA,coeffB,coeffC;
-  Nuvector coeff2;
+  Nuvector coeff0h,coeff1h,coeff2,coeffA,coeffB,coeffC;
   vector source1,source2;
   vector2 Src1,Src2;
 public:
@@ -121,9 +120,9 @@ public:
       coeff0h[j]=0.5*x*temph+1.0;
       coeff1[j]=temp*dt;
       coeff1h[j]=temph*halfdt;
-      coeffA[j]=((x*x-3.0*x+4.0)*temp3+0.5*(x-1))*dt;
-      coeffB[j]=2.0*((x-2)*temp3+0.5)*dt;
-      coeffC[j]=(-(x-4)*temp3-0.5)*dt;
+      coeffA[j]=((x*x-3.0*x+4.0)*temp3+0.5*(x-1.0))*dt;
+      coeffB[j]=2.0*((x-2.0)*temp3+0.5)*dt;
+      coeffC[j]=(-(x-4.0)*temp3-0.5)*dt;
       if(Array::Active(coeff2)) coeff2[j]=(x*temp3+0.5)*dt;
     }
   }
