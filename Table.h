@@ -21,7 +21,7 @@ class Table {
 	Compare_t *Compare;
 	KeyCompare_t *KeyCompare;
 	DynVector<EntryBase<B> *>list;
-	int n;
+	unsigned int n;
 public:
 	static int DefaultCompare(const void *a, const void *b) {
 		return strcasecmp((*(EntryBase<B> **)a)->Key(),
@@ -39,11 +39,11 @@ public:
 		name=name0; n=0; Compare=DefaultCompare; KeyCompare=DefaultKeyCompare;
 	}
 	void Add(EntryBase<B> *ptr) {list[n++]=ptr;}
-	int Size() {return n;}
+	unsigned int Size() {return n;}
 	EntryBase<B> **Base() {return list;}
 	EntryBase<B> *Entry(int i) {return list[i];}
 	void List(ostream& os) {
-		for(int i=0; i < Size(); i++) os << Entry(i)->Key() << newl;
+		for(unsigned int i=0; i < Size(); i++) os << Entry(i)->Key() << newl;
 		os << flush;
 	}
 	B *Locate (const char *& key) {

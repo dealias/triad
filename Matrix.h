@@ -239,7 +239,7 @@ inline void MultAdd(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C,
 				work[k]=sum;
 			}
 			Array1(T) Di=D[i];
-			for(unsigned int k=0; k < cny; k++) Ai[k]=work[k]+Di[k];
+			for(k=0; k < cny; k++) Ai[k]=work[k]+Di[k];
 		}
 	}		
 }

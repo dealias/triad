@@ -10,49 +10,49 @@ protected:
 	int offset; // Offset for implementing Neumann boundary condition
 public:	
 	BC() {}
-	int Internal() {return internal;}
-	int External() {return external;}
-	int Offset() {return offset;}
-	virtual int Resolution(int radix, int lvl) {return 0;}
+	int Internal() const {return internal;}
+	int External() const {return external;}
+	int Offset() const {return offset;}
+	virtual int Resolution(int radix, int lvl) const =0;
 };
 
 class DirichletBC : public BC {
 public:	
 	DirichletBC() {internal=2; external=0; offset=0;}
-	int Resolution(int radix, int lvl) {return pow(radix,lvl+1)-1;}
+	int Resolution(int radix, int lvl) const {return pow(radix,lvl+1)-1;}
 };
 
 class NeumannBC : public BC {
 public:	
 	NeumannBC() {internal=0; external=2; offset=-1;}
-	int Resolution(int radix, int lvl) {return pow(radix,lvl)+1;}
+	int Resolution(int radix, int lvl) const {return pow(radix,lvl)+1;}
 };
 
 class PeriodicBC : public BC {
 public:	
 	PeriodicBC() {internal=1; external=1; offset=0;}
-	int Resolution(int radix, int lvl) {return pow(radix,lvl+1);}
+	int Resolution(int radix, int lvl) const {return pow(radix,lvl+1);}
 };
 
 class PeriodicBC2 : public BC {
 public:	
 	PeriodicBC2() {internal=1; external=3; offset=-1;}
-	int Resolution(int radix, int lvl) {return pow(radix,lvl+1);}
+	int Resolution(int radix, int lvl) const {return pow(radix,lvl+1);}
 };
 
-const DirichletBC Dirichlet;
-const NeumannBC Neumann;
-const PeriodicBC Periodic;
-const PeriodicBC Mixed1;
+const DirichletBC Dirichlet[1];
+const NeumannBC Neumann[1];
+const PeriodicBC Periodic[1];
+const PeriodicBC Mixed1[1];
 
 class Limits {
 public:
 	Real min, max;
-	BC bc;
+	const BC *bc;
 	int skiplevels; // number of levels to skip in this direction
 	int n0; // number of points in lowest level
 	Limits() {};
-	Limits(Real min_, Real max_, BC bc_=Dirichlet, int skiplevels_=0,
+	Limits(Real min_, Real max_, const BC *bc_=Dirichlet, int skiplevels_=0,
 		   int n0_=1) :
 		min(min_), max(max_), bc(bc_), skiplevels(skiplevels_), n0(n0_) {
 		if(skiplevels < 0) skiplevels=0;
@@ -92,14 +92,14 @@ public:
 					  Real& h2, Real& h2inv, int& start, int& r, int& offset) {
 		// number of points in one direction
 		int lvl=max(level-limits.skiplevels,0);
-		n=limits.n0*limits.bc.Resolution(radix,lvl);
-		if(lvl > 0) n1=limits.n0*limits.bc.Resolution(radix,lvl-1);
+		n=limits.n0*limits.bc->Resolution(radix,lvl);
+		if(lvl > 0) n1=limits.n0*limits.bc->Resolution(radix,lvl-1);
 		else n1=n;
-		int bcpts=limits.bc.Internal()+limits.bc.External();
+		int bcpts=limits.bc->Internal()+limits.bc->External();
 		nbc=n+bcpts;
 		n1bc=n1+bcpts;
 		allpoints *= nbc;
-		h=(limits.max-limits.min)/(n+limits.bc.Internal()-1);
+		h=(limits.max-limits.min)/(n+limits.bc->Internal()-1);
 		hinv=1.0/h;
 		h2=h*h; h2inv=hinv*hinv;
 #ifdef NDEBUG		
@@ -107,7 +107,7 @@ public:
 #else		
 		x.Allocate(nbc);
 #endif		
-		offset=limits.bc.Offset();
+		offset=limits.bc->Offset();
 		for(int i=0; i < nbc; i++)
 			x[i]=limits.min+(i+offset)*h;
 		if(level <= limits.skiplevels) {start=1; r=1; offset=0;}

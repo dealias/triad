@@ -7,7 +7,7 @@
 
 #include "kernel.h"
 
-extern int NParam;
+extern unsigned int NParam;
 extern int param_warn;
 
 inline void VocabularyBase::ParamAdd(ParamBase *p)
