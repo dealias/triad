@@ -37,6 +37,7 @@ int main(int argc, char *const argv[])
 	int c;
 	int label=0;
 	int make_mpeg=0;
+	int zero=0;
 	int syntax=0;
 	extern int optind;
 	extern char *optarg;
@@ -45,7 +46,7 @@ int main(int argc, char *const argv[])
 	optind=0;
 #endif	
 	while (1) {
-		c = getopt(argc,argv,"hlmvx:H:V:");
+		c = getopt(argc,argv,"hlmvzx:H:V:");
 		if (c == -1) break;
 		switch (c) {
 		case 'h':
@@ -54,9 +55,11 @@ int main(int argc, char *const argv[])
 			cerr << "-l\t\t label frames with file names and values" << endl;
 			cerr << "-m\t\t generate .mpg mpeg file" << endl;
 			cerr << "-v\t\t verbose output" << endl;
-			cerr << "-x <mag>\t overall magnifcation factor" << endl;
-			cerr << "-H <hmag>\t horizontal magnifcation factor" << endl;
-			cerr << "-V <vmag>\t vertical magnifcation factor" << endl;
+			cerr << "-z\t\t make color palette symmetric about zero" <<
+				" (if possible)" << endl;
+			cerr << "-x <mag>\t overall magnification factor" << endl;
+			cerr << "-H <hmag>\t horizontal magnification factor" << endl;
+			cerr << "-V <vmag>\t vertical magnification factor" << endl;
 			exit(0);
 		case 'l':
 			label=1;
@@ -69,6 +72,9 @@ int main(int argc, char *const argv[])
 			break;
 		case 'x':
 			mx=my=atoi(optarg);
+			break;
+		case 'z':
+			zero=1;
 			break;
 		case 'H':
 			mx=atoi(optarg);
@@ -85,8 +91,8 @@ int main(int argc, char *const argv[])
 	int nfiles=argc-optind;
 	if(syntax || nfiles < 1) {
 		cerr << "Usage: " << argv[0]
-			 << " [-hlmv -x <mag> -H <hmag> -V <vmag>] file1 file2 ..." << endl
-			 << endl << "Use '" << argv[0]
+			 << " [-hlmvz -x <mag> -H <hmag> -V <vmag>] file1 file2 ..."
+			 << endl << endl << "Use '" << argv[0]
 			 << " -h' for a descriptions of options." << endl;
 		exit(1);
 	}
@@ -137,6 +143,11 @@ int main(int argc, char *const argv[])
 				msg(ERROR,"Inconsistent image size");
 		}
 	
+		if(zero && vminf < 0 && vmaxf > 0) {
+			vmaxf=max(-vminf,vmaxf);
+			vminf=-vmaxf;
+		}
+		
 		vmin[f]=vminf;
 		vmax[f]=vmaxf;
 		nset=n;
