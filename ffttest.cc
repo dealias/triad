@@ -8,8 +8,8 @@ Complex gfft(Complex *data, unsigned int n, int isign, unsigned k,
 {
   if(n == 1) return data[0];
   unsigned n2=n/2;
-  Complex even=gfft(data,n2,isign,k,level+1);
-  Complex odd=gfft(data+(1 << level),n2,isign,k,level+1);
+  Complex even=gfft(data,n2,isign,k,2*level);
+  Complex odd=gfft(data+level,n2,isign,k,2*level);
   Real phase=isign*twopi/n;
   Complex factor=expi(k*phase);
   return even+factor*odd;
@@ -20,7 +20,7 @@ void fft(Complex *data, unsigned int log2n, int isign, Real scale,
 {
   unsigned n=1 << log2n;
   Complex out[n];
-  for(unsigned k=0; k < n; k++) out[k]=gfft(data,n,isign,k,0);
+  for(unsigned k=0; k < n; k++) out[k]=gfft(data,n,isign,k,1);
   for(unsigned i=0; i < n; i++) data[i] = out[i] * scale;
 }
 
