@@ -279,23 +279,23 @@ void RK5::Predictor(double t, double, int start, int stop)
 	Source(source,y,t+a1);
 #pragma ivdep		
 	for(j=start; j < stop; j++) y2[j]=y0[j]+b20*source0[j]+b21*source[j];
-	Problem->BackTransform(y2,t+a2,a2,yi);
+	Problem->BackTransform(y2,t+a2,a2,y);
 	Source(source2,y2,t+a2);
 #pragma ivdep		
 	for(j=start; j < stop; j++) y3[j]=y0[j]+b30*source0[j]+b31*source[j]+
 									b32*source2[j];
-	Problem->BackTransform(y3,t+a3,a3,yi);
+	Problem->BackTransform(y3,t+a3,a3,y2);
 	Source(source3,y3,t+a3);
 #pragma ivdep		
 	for(j=start; j < stop; j++) y4[j]=y0[j]+b40*source0[j]+b41*source[j]+
 									b42*source2[j]+b43*source3[j];
-	Problem->BackTransform(y4,t+a4,a4,yi);
+	Problem->BackTransform(y4,t+a4,a4,y3);
 	Source(source4,y4,t+a4);
 #pragma ivdep		
 	for(j=start; j < stop; j++) y[j]=y0[j]+b50*source0[j]+b51*source[j]+
 									b52*source2[j]+b53*source3[j]+
 									b54*source4[j];
-	Problem->BackTransform(y,t+a5,a5,yi);
+	Problem->BackTransform(y,t+a5,a5,y4);
 	Source(source,y,t+a5);
 }
 
