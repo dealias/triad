@@ -247,7 +247,7 @@ int main(int argc, char *const argv[])
 	buf << "mkdirhier " << rgbdirbuf.str() << ends;
 	char *cmd=buf.str();
 	system(cmd);
-	rgbdirbuf << "/rgb." << getpid() << "/" << ends;
+	rgbdirbuf << "/" << ends;
 	rgbdir=rgbdirbuf.str();
 	
 	char *const format=gray ? "gray" : "rgb";
