@@ -40,7 +40,7 @@ const Array2<T>& exp(const Array2<T>& A)
 	unsigned int n2=n;
 	static DynVector<T> temp(n2);
 	if(n2 > temp.Alloc()) temp.Resize(n2);
-	static Array2<T> B(n,n,temp);
+	Array2<T> B(n,n,temp);
 	
 	static RK5 Int;
 	Int.Allocate(n);
