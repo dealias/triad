@@ -8,9 +8,10 @@ int Ntriad;
 //	(0 => evolve all modes, 1 => evolve only half of the modes).
 int reality=1;	
 
-Var *psibuffer;
-Pair *pair;
+Var *psibuffer,*pqbuffer;
+DynVector<Pair> pair;
 DynVector<Triad> triad;
+Pair *pairBase;
 Triad *triadBase;
 Triad **triadStop;
 
@@ -58,9 +59,10 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 		for(Var *k=psibuffer; k < kstop; k++,q++) conjugate(*q,*k);
 	}
 	
-	Pair *pstop=pair+Npair;
+	Pair *pstop=pairBase+Npair;
+	Var *pq=pqbuffer;
 #pragma ivdep		
-	for(Pair *p=pair; p < pstop; p++) p->psipq=(*p->p)*(*p->q);
+	for(Pair *p=pairBase; p < pstop; p++) *(pq++)=(*p->p)*(*p->q);
 	
 	Triad *t=triadBase,**tstop=triadStop;
 	Var *kstop=source+Npsi;

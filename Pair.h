@@ -7,9 +7,7 @@
 class Pair {
 public:
 	Var *p, *q;
-	Var psipq;
-	Var *Store(Var *p0, Var *q0) {p=p0; q=q0; return Index();}
-	Var *Index() {return &psipq;}
+	void Store(Var *p0, Var *q0) {p=p0; q=q0;}
 };
 
 class Triad {
@@ -25,9 +23,10 @@ extern int Ntriad;
 
 extern int reality;
 
-extern Var *psibuffer;
-extern Pair *pair;
+extern Var *psibuffer,*pqbuffer;
+extern DynVector<Pair> pair;
 extern DynVector<Triad> triad;
+extern Pair *pairBase;
 extern Triad *triadBase;
 extern Triad **triadStop;
 

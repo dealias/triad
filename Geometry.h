@@ -252,8 +252,9 @@ void Partition<T>::ComputeTriads() {
 		if(!fout.good()) msg(ERROR,"Error writing to weight file %s",filename);
 	}
 	
-	pqindex=new Var*[pq(n,n)];
-	pair=new Pair[pq(n,n)];
+	int npq=pq(n,n);
+	pqindex=new Var*[npq];
+	pqbuffer=new Var[npq];
 	for(p=0; p < n; p++) for(q=p; q < n; q++) pqindex[pq(p,q)]=NULL;
 	triadStop=new Triad*[Nmode];
 	Triad *triadBase0=triad.Base();
@@ -266,8 +267,10 @@ void Partition<T>::ComputeTriads() {
 				
 				if(nkpq != 0.0)	{
 					index=pqindex+pq(p,q);
-					if(!*index) *index=pair[Npair++].Store(&psibuffer[p],
-														   &psibuffer[q]);
+					if(!*index) {
+						*index=pqbuffer+Npair;
+						pair[Npair++].Store(&psibuffer[p],&psibuffer[q]);
+					}
 					nkpq *= ((p==q) ? 0.5 : 1.0) * norm;
 					triad[Ntriad++].Store(*index,nkpq);
 				}
@@ -279,6 +282,8 @@ void Partition<T>::ComputeTriads() {
 	triadBase=triad.Base();
 	for(k=0; k < Nmode; k++) triadStop[k] += triadBase-triadBase0;
 
+	pairBase=pair.Base();
+	
 	delete [] pqindex;
 	weight.~DynVector();
 
