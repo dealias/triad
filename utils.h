@@ -114,22 +114,22 @@ inline Real abs2(const Complex& x)
 	return x.real()*x.real()+x.imag()*x.imag();
 }
 
-inline Real product(const Real x,const Real y)
+inline Real product(const Real x, const Real y)
 {
 	return x*y;
 }
 
-inline Complex product(const Complex& x,const Complex& y)
+inline Complex product(const Complex& x, const Complex& y)
 {
 	return Complex(x.real()*y.real(),x.imag()*y.imag());
 }
 
-inline void conjugate(Real& x, Real& y)
+inline void conjugate(Real& x, const Real y)
 {
 	x=y;
 }
 
-inline void conjugate(Complex& x, Complex& y)
+inline void conjugate(Complex& x, const Complex& y)
 {
 	x.re=y.re;
 	x.im=-y.im;

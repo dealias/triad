@@ -10,51 +10,22 @@ int reality=1;
 
 Var *psibuffer;
 Pair *pair;
-DynVector<Mc> Mkpq;
-DynVector<Var *> ptrpq;
-Mc *MkpqBase,**MkpqStop;
-Var **ptrpqBase;
+DynVector<Triad> triad;
+Triad *triadBase;
+Triad **triadStop;
 
 Nu *nu,*nu_inv;
 Real *nuR_inv,*nuI;
 Real *forcing;
 
-// Special cases to help xlC with optimization:
+Var spdot(Triad *tstart, Triad *tstop);
 
-#if(0)
-inline void PrimitiveNucleus(Real *source, Real)
-{
-	Real *k,*kstop=source+Npsi;
-	Real sum;
-	Triad *t=triadBase,*tstop,**triadstop=triadStop;
-
-	for(k=source; k < kstop; k++) {
-		tstop=*(triadstop++);
-		for(sum=0.0; t < tstop; t++) {
-			sum += t->Mkpq*(*(Real *) t->pq);
-		}
-		*k=sum;
-	}
-}
-#endif
-
-inline void PrimitiveNucleus(Complex *source, Real)
+inline void PrimitiveNucleus(Complex *source)
 {	
 	Complex *k,*kstop=source+Npsi;
-	Real sumre,sumim;
-	Mc *mc=MkpqBase,*mcstop,**Mkpqstop=MkpqStop;
-	Real **ptr=(Real **)ptrpqBase,*pq;
+	Triad *tstart=triadBase,**tstop=triadStop;
 	
-	for(k=source; k < kstop; k++) {
-		mcstop=*(Mkpqstop++);
-		pq=*ptr;
-		for(sumre=sumim=0.0; mc < mcstop; mc++,pq=*(++ptr)) {
-			sumre += (*mc)*(*pq);
-			sumim -= (*mc)*(*(++pq));
-		}
-		(*k).re=sumre;
-		(*k).im=sumim;
-	}
+	for(k=source; k < kstop; k++) *k=spdot(tstart,*tstop++);
 }
 
 void PrimitiveNonlinearity(Var *source, Var *psi, double)
@@ -67,25 +38,33 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 	// Compute reflected psi's
 	if(reality) {
 		kstop=q=psibuffer+Npsi;
+#if _CRAY		
 #pragma ivdep		
-		for(k=psibuffer; k < kstop; k++,q++) conjugate(*q,*k);
+#endif		
+		for(k=psibuffer; k < kstop; k++,q++) *q=conj(*k);
 	}
 	
 	pstop=pair+Npair;
+#if _CRAY		
 #pragma ivdep		
+#endif		
 	for(p=pair; p < pstop; p++) p->psipq=(*p->p)*(*p->q);
 	
-	PrimitiveNucleus(source, *MkpqBase);
+	PrimitiveNucleus(source);
 	
 	// Compute moments
 	if(average && Nmoment > 0) {
 		Var *q0=q=source+Npsi;
 		kstop=psi+Npsi;
 #if 1
+#if _CRAY		
 #pragma ivdep
+#endif
 		for(k=psi; k < kstop; k++,q++) *q=product(*k,*k);   // psi^2
 		for(int n=1; n < Nmoment; n++) {
+#if _CRAY		
 #pragma ivdep
+#endif
 			for(k=psi; k < kstop; k++,q++,q0++) *q=product(*q0,*k);  // psi^n
 		}
 #else

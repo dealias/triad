@@ -10,7 +10,7 @@ include config/$(HOSTTYPE)
 UTILS = utils.o strcasecmp.o new.o $(POLL) $(ARCH)
 CORE = kernel.o Approx.o Integrator.o Param.o $(UTILS)
 POLAR = Polar.o PolarAverage.o simpfast.o
-TRIAD = $(CORE) NWave.o Geometry.o $(POLAR)
+TRIAD = $(CORE) NWave.o NWave2.o Geometry.o $(POLAR)
 
 
 .SUFFIXES: .cc
@@ -40,7 +40,7 @@ clean:
 depend:
 	$(MAKEDEPEND) $(MDOPT) -I /usr/local/include \
 	kernel.cc Approx.cc Integrator.cc Param.cc ThreeWave.cc \
-	Navier.cc NWave.cc Geometry.cc Polar.cc PolarAverage.cc simpfast.cc \
+	Navier.cc NWave.cc NWave2.cc Geometry.cc Polar.cc PolarAverage.cc simpfast.cc \
 	Kepler.cc Lotka.cc utils.cc strcasecmp.cc new.cc poll.cc \
 	idle.cc unix.cc
 
@@ -184,6 +184,26 @@ NWave.o: /usr/include/values.h /usr/local/include/i386/__math.h arch/i386.h
 NWave.o: /usr/local/include/i386/extensions.h new.h precision.h Complex.h
 NWave.o: pow.h types.h DynVector.h Table.h Param.h Integrator.h Approx.h
 NWave.o: Geometry.h Pair.h Bin.h
+NWave2.o: NWave.h kernel.h /usr/lib/g++-include/iostream.h
+NWave2.o: /usr/lib/g++-include/streambuf.h /usr/lib/g++-include/libio.h
+NWave2.o: /usr/lib/g++-include/_G_config.h /usr/lib/g++-include/fstream.h
+NWave2.o: /usr/include/stdio.h /usr/local/lib/gcc-include/limits.h
+NWave2.o: /usr/local/lib/gcc-include/syslimits.h /usr/include/errno.h
+NWave2.o: /usr/include/features.h /usr/include/sys/cdefs.h
+NWave2.o: /usr/include/linux/errno.h /usr/include/time.h
+NWave2.o: /usr/lib/g++-include/string.h /usr/lib/g++-include/cstring
+NWave2.o: /usr/lib/g++-include/std/cstring.h
+NWave2.o: /usr/lib/g++-include/std/cstddef.h
+NWave2.o: /usr/lib/g++-include/std/stddef.h utils.h
+NWave2.o: /usr/local/lib/gcc-include/stdarg.h /usr/include/stdlib.h
+NWave2.o: /usr/include/alloca.h /usr/include/math.h /usr/include/huge_val.h
+NWave2.o: /usr/include/endian.h /usr/include/bytesex.h
+NWave2.o: /usr/include/linux/version.h /usr/include/asm/byteorder.h
+NWave2.o: /usr/include/nan.h /usr/local/lib/gcc-include/float.h
+NWave2.o: /usr/include/values.h /usr/local/include/i386/__math.h arch/i386.h
+NWave2.o: /usr/local/include/i386/extensions.h new.h precision.h Complex.h
+NWave2.o: pow.h types.h DynVector.h Table.h Param.h Integrator.h Approx.h
+NWave2.o: Geometry.h Pair.h Bin.h
 Geometry.o: NWave.h kernel.h /usr/lib/g++-include/iostream.h
 Geometry.o: /usr/lib/g++-include/streambuf.h /usr/lib/g++-include/libio.h
 Geometry.o: /usr/lib/g++-include/_G_config.h /usr/lib/g++-include/fstream.h
@@ -240,8 +260,11 @@ PolarAverage.o: /usr/include/errno.h /usr/include/linux/errno.h
 PolarAverage.o: /usr/include/alloca.h /usr/lib/g++-include/fstream.h
 PolarAverage.o: arch/i386.h /usr/local/include/i386/extensions.h new.h pow.h
 PolarAverage.o: /usr/local/lib/gcc-include/limits.h
-PolarAverage.o: /usr/local/lib/gcc-include/syslimits.h Geometry.h Pair.h
-PolarAverage.o: DynVector.h
+PolarAverage.o: /usr/local/lib/gcc-include/syslimits.h Geometry.h kernel.h
+PolarAverage.o: /usr/include/stdio.h /usr/include/time.h
+PolarAverage.o: /usr/lib/g++-include/string.h /usr/lib/g++-include/cstring
+PolarAverage.o: /usr/lib/g++-include/std/cstring.h DynVector.h Table.h
+PolarAverage.o: Param.h Integrator.h Approx.h Pair.h
 simpfast.o: /usr/include/math.h /usr/include/features.h
 simpfast.o: /usr/include/sys/cdefs.h /usr/include/huge_val.h
 simpfast.o: /usr/include/endian.h /usr/include/bytesex.h
@@ -315,27 +338,25 @@ new.o: /usr/lib/g++-include/std/cstddef.h /usr/include/errno.h
 new.o: /usr/include/linux/errno.h /usr/include/alloca.h
 new.o: /usr/lib/g++-include/iostream.h /usr/lib/g++-include/streambuf.h
 new.o: /usr/lib/g++-include/libio.h new.h
-arch/idle.o: /usr/include/stdio.h /usr/lib/g++-include/libio.h
-arch/idle.o: /usr/lib/g++-include/_G_config.h /usr/include/stdlib.h
-arch/idle.o: /usr/include/features.h /usr/include/sys/cdefs.h
-arch/idle.o: /usr/lib/g++-include/std/stddef.h
-arch/idle.o: /usr/lib/g++-include/std/cstddef.h /usr/include/errno.h
-arch/idle.o: /usr/include/linux/errno.h /usr/include/alloca.h
-arch/idle.o: /usr/include/unistd.h /usr/include/posix_opt.h
-arch/idle.o: /usr/include/gnu/types.h /usr/include/confname.h
-arch/idle.o: /usr/include/sys/types.h /usr/include/linux/types.h
-arch/idle.o: /usr/include/asm/types.h /usr/lib/g++-include/string.h
-arch/idle.o: /usr/lib/g++-include/cstring /usr/lib/g++-include/std/cstring.h
-arch/unix.o: /usr/include/stdlib.h /usr/include/features.h
-arch/unix.o: /usr/include/sys/cdefs.h /usr/lib/g++-include/std/stddef.h
-arch/unix.o: /usr/lib/g++-include/_G_config.h
-arch/unix.o: /usr/lib/g++-include/std/cstddef.h /usr/include/errno.h
-arch/unix.o: /usr/include/linux/errno.h /usr/include/alloca.h
-arch/unix.o: /usr/include/unistd.h /usr/include/posix_opt.h
-arch/unix.o: /usr/include/gnu/types.h /usr/include/confname.h
-arch/unix.o: /usr/include/sys/types.h /usr/include/linux/types.h
-arch/unix.o: /usr/include/asm/types.h /usr/include/stdio.h
-arch/unix.o: /usr/lib/g++-include/libio.h /usr/include/pwd.h
-arch/unix.o: /usr/include/sys/times.h /usr/include/time.h
-arch/unix.o: /usr/include/linux/times.h /usr/lib/g++-include/string.h
-arch/unix.o: /usr/lib/g++-include/cstring /usr/lib/g++-include/std/cstring.h
+idle.o: /usr/include/stdio.h /usr/lib/g++-include/libio.h
+idle.o: /usr/lib/g++-include/_G_config.h /usr/include/stdlib.h
+idle.o: /usr/include/features.h /usr/include/sys/cdefs.h
+idle.o: /usr/lib/g++-include/std/stddef.h /usr/lib/g++-include/std/cstddef.h
+idle.o: /usr/include/errno.h /usr/include/linux/errno.h /usr/include/alloca.h
+idle.o: /usr/include/unistd.h /usr/include/posix_opt.h
+idle.o: /usr/include/gnu/types.h /usr/include/confname.h
+idle.o: /usr/include/sys/types.h /usr/include/linux/types.h
+idle.o: /usr/include/asm/types.h /usr/lib/g++-include/string.h
+idle.o: /usr/lib/g++-include/cstring /usr/lib/g++-include/std/cstring.h
+unix.o: /usr/include/stdlib.h /usr/include/features.h
+unix.o: /usr/include/sys/cdefs.h /usr/lib/g++-include/std/stddef.h
+unix.o: /usr/lib/g++-include/_G_config.h /usr/lib/g++-include/std/cstddef.h
+unix.o: /usr/include/errno.h /usr/include/linux/errno.h /usr/include/alloca.h
+unix.o: /usr/include/unistd.h /usr/include/posix_opt.h
+unix.o: /usr/include/gnu/types.h /usr/include/confname.h
+unix.o: /usr/include/sys/types.h /usr/include/linux/types.h
+unix.o: /usr/include/asm/types.h /usr/include/stdio.h
+unix.o: /usr/lib/g++-include/libio.h /usr/include/pwd.h
+unix.o: /usr/include/sys/times.h /usr/include/time.h
+unix.o: /usr/include/linux/times.h /usr/lib/g++-include/string.h
+unix.o: /usr/lib/g++-include/cstring /usr/lib/g++-include/std/cstring.h
