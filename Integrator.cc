@@ -174,8 +174,9 @@ void LeapFrog::Predictor(double t, double, int start, int stop)
 	
 int LeapFrog::Corrector(double dt, double& errmax, int start, int stop)
 {
-	for(int j=start; j < stop; j++) y[j]=y0[j]+dt*source[j];
-	if(dynamic) for(int j=start; j < stop; j++)
+	int j;
+	for(j=start; j < stop; j++) y[j]=y0[j]+dt*source[j];
+	if(dynamic) for(j=start; j < stop; j++)
 		calc_error(y0[j],y[j],y0[j]+dt*source0[j],y[j],errmax);
 	return 1;
 }
