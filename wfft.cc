@@ -28,7 +28,7 @@ static int init_plan(unsigned int n, int inc1)
 	ifwisdom.close();
 	
 	int options=FFTW_MEASURE | FFTW_USE_WISDOM | FFTW_IN_PLACE;
-	Complex data0[n];
+	Complex *data0=new Complex[n];
 	plan[nplan-1]=fftw_create_plan(n, 1, options);
 	planinv[nplan-1]=fftw_create_plan(n, -1, options);
 	
