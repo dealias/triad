@@ -348,6 +348,7 @@ inline void out_function(ostream& os, T (*f)(unsigned int), const char *text,
 {
 	unsigned int i;
 	os << "# " << text << newl;
+	if(n == 0) return;
 	for(i=0; i < n-1;) {
 		os << (*f)(i);
 		if(++i % nperline) os << "\t"; else os << " \\\n";
@@ -362,6 +363,7 @@ inline void out_curve(ostream& os, T *f, const char *text, unsigned int n,
 {
 	unsigned int i;
 	os << "# " << text << newl;
+	if(n == 0) return;
 	for(i=0; i < n-1;) {
 		os << f[i];
 		if(++i % nperline) os << "\t"; else os << " \\\n";
