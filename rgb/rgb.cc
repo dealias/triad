@@ -1309,7 +1309,7 @@ void Torus(Array2<Ivec>& Index)
 	Azx=sinTheta*sinPhi; Azy=-sinTheta*cosPhi; Azz=cosTheta;
 	
 	int mini=64;
-	int minj=64;
+	int minj=1;
 	int mink=64;
 	
 	int maxk=cutoff ? min(nz,(int) ((cutoff/twopibynz)+1.5)) : nz;
