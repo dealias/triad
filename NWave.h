@@ -30,7 +30,7 @@ public:
 enum Linearity {STANDARD,EXPONENTIAL,CONSERVATIVE_EXPONENTIAL};
 
 class NWave : public ProblemBase {
-	int lintype;
+	Linearity lintype;
 	Source_t (NWave::*Linearity[3]);
 public:
 	void InitialConditions();
@@ -50,9 +50,7 @@ public:
 										  double t);
 	void SetLinearity(int type) {lintype=type;}
 	
-	NWave() : Linearity(STANDARD,EXPONENTIAL,CONSERVATIVE_EXPONENTIAL) {
-		lintype=0;
-	}
+	NWave() {lintype=STANDARD;}
 private: 
 };
 
