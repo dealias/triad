@@ -7,8 +7,7 @@ INCL = -I . -I $(TRI) -I-
 
 include $(TRI)/config/$(HOSTTYPE)
 
-UTILS = utils strcasecmp new $(POLL) $(ARCH)
+UTILS = utils strcasecmp new $(ARCH) $(POLL)
 CORE = kernel Integrator Param 
 
 .SUFFIXES: .cc
-

@@ -1,12 +1,13 @@
 TRI = .
-ARCH = unix fft
+ARCH = unix
+FFT = fft
 POLL = poll
 
 include $(TRI)/config/Common
 INCL = 
 
 POLAR = Polar PolarAverage simpfast
-NWAVE = NWave Geometry convolve Cartesian $(CORE) $(UTILS)
+NWAVE = NWave Geometry convolve Cartesian $(FFT) $(CORE) $(UTILS)
 NAVIER = Navier $(NWAVE) $(POLAR)
 THREEWAVE = ThreeWave $(NWAVE)
 POLARAVG = PolarAverageTest PolarAverage simpfast

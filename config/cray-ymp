@@ -2,6 +2,7 @@ C++ = /usr/bin/CC -D_POSIX_SOURCE
 OPT = $(CFLAGS)
 LIB = $(LFLAGS) -lsci -lm
 MDOPT = -I /usr/include/CC
-ARCH = unix.o cfft.o
+ARCH = unix.o
+FFT = cfft.o
 POLL = tremain.o
 
