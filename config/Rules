@@ -1,8 +1,8 @@
 .cc.o:
 	$(C++) $(OPT) $(INCL) -o $@ -c $<
 
-triad: $(TRIAD:=.o)
-	$(C++) $(OPT) -o triad $(TRIAD:=.o) $(LIB) $(LIBFFT)
+triad: 
+	make -f $(TRI)/config/Depend compile NAME=triad
 
 clean:
 	rm -rf *.o *.$(D) *mon.out $(CLEAN)
@@ -13,6 +13,3 @@ clean:
 ifneq ($(wildcard $(TRI)/config/$(HOSTTYPE).rules),)
 include $(TRI)/config/$(HOSTTYPE).rules
 endif
-
-include $(DEPEND:=.$(D))
-

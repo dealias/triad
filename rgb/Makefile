@@ -4,11 +4,10 @@ POLL = poll
 
 include $(TRI)/config/Common
 
-RGB = rgb palette msg new getopt
-DEPEND = $(RGB)
+FILES = rgb palette msg new getopt
 
-rgb: $(RGB:=.o)
-	$(C++) $(OPT) -o rgb $(RGB:=.o) $(LIB)
+rgb:
+	make -f $(TRI)/config/Depend compile NAME=rgb
 
 include $(TRI)/config/Rules
 
