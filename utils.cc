@@ -186,7 +186,7 @@ char *atos(const char *s)
 	return s2;
 }
 
-void crand_gauss(Real *w)
+void crand_gauss(Real& w)
 {
 	double factor,r2,v1,v2;
 	static int flag=0;
@@ -208,7 +208,7 @@ void crand_gauss(Real *w)
 	}
 }
 
-void crand_gauss(Complex *w)
+void crand_gauss(Complex& w)
 {
 	double r2,v1,v2;
 	do {
