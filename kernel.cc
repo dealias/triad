@@ -53,7 +53,6 @@ static ofstream gparam,fdump,fstats,flock;
 int itmax=-1;
 double tmax=0.0;
 double dt=0.0;
-int Nmoment=0;
 int dynamic=1;
 double tolmax=0.005;
 double tolmin=0.0;

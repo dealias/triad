@@ -116,16 +116,13 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 void IntegratorBase::Allocate(int n)
 {
 	ny=n; yi=NULL; source=new(n) (Var);
-	nyprimary=ny/(Nmoment+1);
-	if(nyprimary*(Nmoment+1) != ny) 
-		msg(ERROR, "ny=%d is incompatible with Nmoment=%d",ny,Nmoment);
 }
 
 Solve_RC Euler::Solve(double t, double dt)
 {
 	Source(source,y0,t);
 	Problem->Transform(y0,t,dt,yi);
-	for(int j=0; j < nyprimary; j++) y0[j] += dt*source[j];
+	for(int j=0; j < ny; j++) y0[j] += dt*source[j];
 	Problem->BackTransform(y0,t+dt,dt,yi);
 	return SUCCESSFUL;
 }
@@ -138,18 +135,12 @@ Solve_RC PC::Solve(double t, double dt)
 	if(new_y0) Source(source0,y0,t);
 	Problem->Transform(y0,t,dt,yi);
 	
-	Predictor(t,dt,0,nyprimary);
-	if(!Corrector(dt,dynamic,0,nyprimary)) {
-		if(hybrid) StandardCorrector(dt,dynamic,0,nyprimary);
+	Predictor(t,dt,0,ny);
+	if(!Corrector(dt,dynamic,0,ny)) {
+		if(hybrid) StandardCorrector(dt,dynamic,0,ny);
 		else return NONINVERTIBLE;
 	}
 	
-	// Disregard averaging error
-	if(Nmoment) {
-		StandardPredictor(t,dt,nyprimary,ny);
-		StandardCorrector(dt,0,nyprimary,ny);
-	}
-
 	Solve_RC flag=(dynamic ? CheckError() : SUCCESSFUL);
 	new_y0=(flag != UNSUCCESSFUL);
 	if(new_y0) {

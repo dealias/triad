@@ -28,7 +28,6 @@ extern int itmax;
 extern double tmax;
 extern double dt;
 extern double tprecision;
-extern int Nmoment;
 extern int dynamic;
 extern int digits;
 extern int restart;
@@ -85,7 +84,7 @@ extern ProblemBase *Problem;
 class IntegratorBase {
 protected:
 	char *abbrev;
-	int ny,nyprimary;
+	int ny;
 	Var *y0, *yi, *source;
 	double errmax;
 	int *errmask;
