@@ -108,7 +108,7 @@ inline int Basis<Cartesian>::InGrid(Cartesian& m)
 }
 
 void set_fft_parameters();
-void DiscretePad(Var *to, Var *from, Real *norm)
+void DiscretePad(Var *to, Var *from, Real *norm);
 
 #if _CRAY
 void CartesianPad(Var *to, Var *from);
