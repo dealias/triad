@@ -1,5 +1,5 @@
 /* Derived Fast Fourier transform routines
-   Version 1.1 Copyright (C) 1997 John C. Bowman (bowman@ipp-garching.mpg.de)
+   Version 1.2 Copyright (C) 1997 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -181,6 +181,7 @@ void crfft(Complex *data, unsigned int log2n, int isign, Real scale,
 // length n/2, for each k=0,...,nk-1;
 //           log2n contains the base-2 logarithm of n;
 //           isign is the sign (+/- 1) of the phase;
+//           nk is the number of Complex vectors;
 //           [inc1 is the stride between the elements of each Complex vector;]
 //           [inc2 is the stride between first elements of the vectors;]
 //           [scale is a constant by which the results will be multiplied;]
@@ -258,6 +259,7 @@ void mrcfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 // each k=0,...,nk-1, 
 //           log2n contains the base-2 logarithm of n;
 //           isign is the sign (+/- 1) of the phase;
+//           nk is the number of Complex vectors;
 //           [inc1 is the stride between the elements of each Complex vector;]
 //           [inc2 is the stride between first elements of the vectors;]
 //           [scale is a constant by which the results will be multiplied;]

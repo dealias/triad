@@ -18,7 +18,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 const char PROGRAM[]="RGB";
 const char VERSION[]="1.0";
 
-#ifdef NEW_IMAGEMAGICK
+#define NEW_IMAGEMAGICK 1
+
+#if NEW_IMAGEMAGICK
 char yuvformat[]="yuv";
 char yuvinterlace[]="-interlace partition ";
 #else
@@ -514,7 +516,13 @@ char *separator="                                               ";
 void montage(int nfiles, char *const argf[], int n, char *const format,
 			 char *const type)
 {
+#ifdef __alpha__
+#define BUFSIZE 1024
+	char str[BUFSIZE];
+	strstream buf(str,BUFSIZE);
+#else
 	strstream buf;
+#endif	
 	buf << "montage -size " << xsize << "x" << ysize
 	    << " -geometry " << xsize << "x" << ysize << " -interlace none";
 	for(int f=0; f < nfiles; f++) {
@@ -527,7 +535,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 			<< fieldname << setfill('0') << setw(4) << n << "." << format;
 	}
 	buf << " " << yuvinterlace << type << ":" << rgbdir << argf[0] << n;
-#ifndef NEW_IMAGEMAGIK	
+#if !NEW_IMAGEMAGIK	
 	if(strcmp(type,"yuv3") != 0)
 #endif
 		buf << "." << type;

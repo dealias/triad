@@ -42,7 +42,7 @@ static int ny;
 static int explicit_dt=0;
 static int testing=0;
 static double cpu[ncputime],cpu0[ncputime];
-static final_iteration=0;
+static int final_iteration=0;
 static int total_invert_cnt=0;
 
 static char *pname,*rname,*ptemp,*rtemp,*lname;

@@ -7,13 +7,12 @@ const int bitreverse=1; // Use faster bit-reversed FFT's if available
 // components of real functions f and g, respectively. Dealiasing via
 // zero-padding is implemented automatically.
 //
-// Arrays F[n/2+1], G[n/2+1] must be distinct, with n=2^log2n.
-// Input F[i] (0 <= i < m <= n/3), g[i] (0 <= i < n/2).
-// For a 1D convolution, 3*m must be less than n+2.
-// Output H[i] = F (*) G  (0 <= i < m), f[i], g[i] (0 <= i < n/2).
+// Arrays F[n/2+1], g[n/2+1] must be distinct, with n=2^log2n.
+// Input F[i] (0 <= i < m), where 3*m <= n, g[i] (0 <= i < n/2).
+// Output H[i] = F (*) G  (0 <= i < m), F[i]=f[i], g[i] (0 <= i < n/2).
 //
-// Array H[n/2+1] can coincide with either F or G, in which case the output H
-// subsumes f or g, respectively.
+// Array H[n/2+1] can coincide with either F or g, in which case the output H
+// subsumes F or g, respectively.
 
 void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
 			   int log2n)
@@ -39,8 +38,7 @@ void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
 // zero-padding is implemented automatically.
 //
 // Arrays F[n/2+1], G[n/2+1] must be distinct, with n=2^log2n.
-// Input F[i], G[i] (0 <= i < m), where m <= n/3.
-// For a 1D convolution, 3*m must be less than n+2.
+// Input F[i], G[i] (0 <= i < m), where 3*m <= n.
 // Output H[i] = F (*) G  (0 <= i < m), F[i]=f[i], G[i]=g[i] (0 <= i < n/2).
 //
 // Array H[n/2+1] can coincide with either F or G, in which case the output H
@@ -72,13 +70,14 @@ void convolve_direct(Complex *H, Complex *F, Complex *G, unsigned int m)
 {
 	unsigned int i,j;
 	for(i=0; i < m; i++) {
-		H[i]=0.0;
+		Complex sum=0.0;
 #pragma ivdep	
-		for(j=0; j <= i; j++) H[i] += F[j]*G[i-j];
+		for(j=0; j <= i; j++) sum += F[j]*G[i-j];
 #pragma ivdep	
-		for(j=i+1; j < m; j++) H[i] += F[j]*conj(G[j-i]);
+		for(j=i+1; j < m; j++) sum += F[j]*conj(G[j-i]);
 #pragma ivdep	
-		for(j=1; j < m-i; j++) H[i] += conj(F[j])*G[i+j];
+		for(j=1; j < m-i; j++) sum += conj(F[j])*G[i+j];
+		H[i]=sum;
 	}
 }	
 

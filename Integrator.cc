@@ -264,56 +264,6 @@ void RK5::TimestepDependence(double dt)
 	d4=277.0/14336.0*dt; d5=0.25*dt;
 }
 
-#if COMPLEX
-
-void RK5::Predictor(double t, double, int start, int stop)
-{
-	int j;
-#pragma ivdep		
-	for(j=start; j < stop; j++) {
-		y[j].re=y0[j].re+b10*source0[j].re;
-		y[j].im=y0[j].im+b10*source0[j].im;
-	}
-	Problem->BackTransform(y,t+a1,a1,yi);
-	Source(source,y,t+a1);
-#pragma ivdep		
-	for(j=start; j < stop; j++) {
-		y2[j].re=y0[j].re+b20*source0[j].re+b21*source[j].re;
-		y2[j].im=y0[j].im+b20*source0[j].im+b21*source[j].im;
-	}
-	Problem->BackTransform(y2,t+a2,a2,yi);
-	Source(source2,y2,t+a2);
-#pragma ivdep		
-	for(j=start; j < stop; j++) {
-		y3[j].re=y0[j].re+b30*source0[j].re+b31*source[j].re+
-			b32*source2[j].re;
-		y3[j].im=y0[j].im+b30*source0[j].im+b31*source[j].im+
-			b32*source2[j].im;
-	}
-	Problem->BackTransform(y3,t+a3,a3,yi);
-	Source(source3,y3,t+a3);
-#pragma ivdep		
-	for(j=start; j < stop; j++) {
-		y4[j].re=y0[j].re+b40*source0[j].re+b41*source[j].re+
-			b42*source2[j].re+b43*source3[j].re;
-		y4[j].im=y0[j].im+b40*source0[j].im+b41*source[j].im+
-			b42*source2[j].im+b43*source3[j].im;
-	}
-	Problem->BackTransform(y4,t+a4,a4,yi);
-	Source(source4,y4,t+a4);
-#pragma ivdep		
-	for(j=start; j < stop; j++) {
-		y[j].re=y0[j].re+b50*source0[j].re+b51*source[j].re+
-			b52*source2[j].re+b53*source3[j].re+b54*source4[j].re;
-		y[j].im=y0[j].im+b50*source0[j].im+b51*source[j].im+
-			b52*source2[j].im+b53*source3[j].im+b54*source4[j].im;
-	}
-	Problem->BackTransform(y,t+a5,a5,yi);
-	Source(source,y,t+a5);
-}
-	
-#else // COMPLEX
-	
 void RK5::Predictor(double t, double, int start, int stop)
 {
 	int j;
@@ -343,36 +293,19 @@ void RK5::Predictor(double t, double, int start, int stop)
 	Source(source,y,t+a5);
 }
 
-#endif // COMPLEX
-
-
 int RK5::Corrector(double, int dynamic, int start, int stop)
 {
 	int j;
 #pragma ivdep		
 	for(j=start; j < stop; j++) {
-#if COMPLEX	
-		y[j].re=y0[j].re+c0*source0[j].re+c2*source2[j].re+c3*source3[j].re+
-			c5*source[j].re;
-		y[j].im=y0[j].im+c0*source0[j].im+c2*source2[j].im+c3*source3[j].im+
-			c5*source[j].im;
-#else	
 		y[j]=y0[j]+c0*source0[j]+c2*source2[j]+c3*source3[j]+c5*source[j];
-#endif // COMPLEX
 	}
 	
 	if(dynamic) {
 #pragma ivdep		
 		for(j=start; j < stop; j++) {
-#if COMPLEX	
-			y3[j].re=y0[j].re+d0*source0[j].re+d2*source2[j].re+
-				d3*source3[j].re+d4*source4[j].re+d5*source[j].re;
-			y3[j].im=y0[j].im+d0*source0[j].im+d2*source2[j].im+
-				d3*source3[j].im+d4*source4[j].im+d5*source[j].im;
-#else
 			y3[j]=y0[j]+d0*source0[j]+d2*source2[j]+
 				d3*source3[j]+d4*source4[j]+d5*source[j];
-#endif
 		}
 		for(j=start; j < stop; j++)
 			if(!errmask || errmask[j]) CalcError(y0[j],y[j],y3[j],y[j]);

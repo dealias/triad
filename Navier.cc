@@ -439,12 +439,10 @@ void NWave::InitialConditions()
 	
 	if(!restart) remove_dir(Vocabulary->FileName(dirsep,"avgy*"));
 	for(n=0; n < Nmoment; n++) {
-		if(!restart) {
-			strstream buf;
-			buf << "avgy" << n << ends;
-			mkdir(Vocabulary->FileName(dirsep,buf.str()),0xFFFF);
-			errno=0;
-		}
+		strstream buf;
+		buf << "avgy" << n << ends;
+		mkdir(Vocabulary->FileName(dirsep,buf.str()),0xFFFF);
+		errno=0;
 		avgyre[n] << "y.re^" << n << ends;
 		avgyim[n] << "y.im^" << n << ends;
 	}

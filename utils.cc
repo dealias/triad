@@ -18,7 +18,7 @@ char beep='\a';
 
 extern int override;
 extern int sys_nerr;
-extern char *sys_errlist[];
+extern const char *const sys_errlist[];
 
 char *upcase(const char *s, char *s2)
 {

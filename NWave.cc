@@ -36,22 +36,31 @@ void NWave::ConstantForcing(Var *source, double t)
 
 void NWave::ComputeMoments(Var *source, Var *psi)
 {
-	Var *k, *q=source+Nmode, *kstop=psi+Nmode;
+	Var *p=source, *q=source+Nmode;
 #pragma ivdep
-	for(k=psi; k < kstop; k++, q++) {
-#if COMPLEX		
-		(*q).re=realproduct(*(q-Nmode),*k); // S_k*psi_k
-		(*q).im=realproduct(random_factor,*k); // w_k*psi_k
+	double randre=random_factor.re, randim=random_factor.im;
+	for(int i=0; i < Nmode; i++) {
+#if COMPLEX
+		double psire=psi[i].re;
+		double psiim=psi[i].im;
+		double sumre=p[i].re*psire;
+		double sumim=p[i].im*psiim;
+		q[i].re=sumre+sumim;                // S_k*psi_k
+		q[i].im=randre*psire+randim*psiim;  // w_k*psi_k
 #else
-		*q=realproduct(*(q-Nmode),*k); // S_k*psi_k
+		q[i]=realproduct(p[i],psi[i]);        // S_k*psi_k
 #endif		
 	}
+	q += Nmode;
 	if(Nmoment > 1) {
 #pragma ivdep
-		for(k=psi; k < kstop; k++, q++) *q=*k; // psi_k
+		set(q,psi,Nmode);
+		q += Nmode;
+		Complex *kstop=psi+Nmode;
+#pragma ivdep
 		for(int n=2; n < Nmoment; n++) { // psi_k^n
 #pragma ivdep
-			for(k=psi; k < kstop; k++, q++) *q=product(*(q-Nmode),*k);
+			for(Complex *k=psi; k < kstop; k++, q++) *q=product(*(q-Nmode),*k);
 		}
 	}
 }
@@ -64,33 +73,25 @@ void SR::NonLinearSrc(Var *source, Var *psi, double)
 #pragma ivdep		
 	for(Var *k=psibuffer; k < psibufferR; k++) conjugate(*(k+Nmode),*k);
 	
-#if !_CRAYMVP && COMPLEX
-	Var *pq=pqbuffer,*p;
-	for(p=psibuffer; p < psibufferR; p++) {
-		Real psipre=p->re, psipim=p->im;
-		for(Var *q=psibufferR; q < psibufferStop; q++, pq++) {
-			pq->re=psipre*q->re-psipim*q->im;
-			pq->im=psipre*q->im+psipim*q->re;
-		}
-	}
-	for(p=psibufferR; p < psibufferStop; p++) {
-		Real psipre=p->re, psipim=p->im;
-		for(Var *q=p; q < psibufferStop; q++, pq++) {
-			pq->re=psipre*q->re-psipim*q->im;
-			pq->im=psipre*q->im+psipim*q->re;
-		}
-	}
-#else
 #if _CRAYMVP
 #pragma _CRI taskloop private(ip) value(psibuffer,Ntotal,pqIndex,qStart)
 #endif	
 	for(int ip=0; ip < Ntotal; ip++) {
-		Var psip=psibuffer[ip];
 		Var *pq=pqIndex[ip]; 
+#if COMPLEX
+		Real psipre=psibuffer[ip].re;
+		Real psipim=psibuffer[ip].im;
+#pragma ivdep		
+		for(int iq=qStart[ip]; iq < Ntotal; iq++) {
+			pq[iq].re=psipre*psibuffer[iq].re-psipim*psibuffer[iq].im;
+			pq[iq].im=psipre*psibuffer[iq].im+psipim*psibuffer[iq].re;
+		}
+#else
+		Var psip=psibuffer[ip];
 #pragma ivdep		
 		for(int iq=qStart[ip]; iq < Ntotal; iq++) pq[iq]=psip*psibuffer[iq];
-	}
 #endif		
+	}
 	
 #if _CRAYMVP
 #pragma _CRI taskloop private(i) value(source,triadLimits,Nmode)
@@ -98,13 +99,25 @@ void SR::NonLinearSrc(Var *source, Var *psi, double)
 	for(int i=0; i < Nmode; i++) {
 		Triad *t=triadLimits[i].start, *tstop=triadLimits[i].stop;
 #if !_CRAYMVP && COMPLEX && MCREAL
-		Real sumre, sumim;
-		for(sumre=sumim=0.0; t < tstop; t++) {
-			sumre += t->Mkpq * (*(t->pq)).re;
-			sumim -= t->Mkpq * (*(t->pq)).im;
+		Real sum0re=0.0, sum0im=0.0, sum1re=0.0, sum1im=0.0,
+			sum2re=0.0, sum2im=0.0, sum3re=0.0, sum3im=0.0;
+		Triad *tstop0=t+((tstop-t) & 3);
+		for(; t < tstop0; t++) {
+			sum0re += t->Mkpq * t[0].pq->re;
+			sum0im -= t->Mkpq * t[0].pq->im;
 		}
-		source[i].re=sumre;
-		source[i].im=sumim;
+		for(; t < tstop; t += 4) {
+			sum0re += t[0].Mkpq * t[0].pq->re;
+			sum0im -= t[0].Mkpq * t[0].pq->im;
+			sum1re += t[1].Mkpq * t[1].pq->re;
+			sum1im -= t[1].Mkpq * t[1].pq->im;
+			sum2re += t[2].Mkpq * t[2].pq->re;
+			sum2im -= t[2].Mkpq * t[2].pq->im;
+			sum3re += t[3].Mkpq * t[3].pq->re;
+			sum3im -= t[3].Mkpq * t[3].pq->im;
+		}
+		source[i].re=sum0re+sum1re+sum2re+sum3re;
+		source[i].im=sum0im+sum1im+sum2im+sum3im;
 #else		
 		Var sum;
 		for(sum=0.0; t < tstop; t++) sum += t->Mkpq * conj(*(t->pq));
@@ -511,67 +524,6 @@ void I_RK5::Allocate(int n)
 	expinv5=new Nu[nyprimary];
 }
 
-#if COMPLEX
-
-void I_RK5::Predictor(double t, double, int start, int stop)
-{
-	int j;
-#pragma ivdep		
-	for(j=start; j < stop; j++) {
-		expinv[j]=exp(-nu[j]*a1);
-		y[j].re=y0[j].re+b10*source0[j].re;
-		y[j].im=y0[j].im+b10*source0[j].im;
-		y[j] *= expinv[j];
-	}
-	Source(source,y,t+a1);
-#pragma ivdep		
-	for(j=start; j < stop; j++) {
-		source[j] /= expinv[j];
-		expinv[j]=exp(-nu[j]*a2);
-		y2[j].re=y0[j].re+b20*source0[j].re+b21*source[j].re;
-		y2[j].im=y0[j].im+b20*source0[j].im+b21*source[j].im;
-		y2[j] *= expinv[j];
-	}
-	Source(source2,y2,t+a2);
-#pragma ivdep		
-	for(j=start; j < stop; j++) {
-		source2[j] /= expinv[j];
-		expinv[j]=exp(-nu[j]*a3);
-		y3[j].re=y0[j].re+b30*source0[j].re+b31*source[j].re+
-			b32*source2[j].re;
-		y3[j].im=y0[j].im+b30*source0[j].im+b31*source[j].im+
-			b32*source2[j].im;
-		y3[j] *= expinv[j];
-	}
-	Source(source3,y3,t+a3);
-#pragma ivdep		
-	for(j=start; j < stop; j++) {
-		source3[j] /= expinv[j];
-		expinv[j]=exp(-nu[j]*a4);
-		y4[j].re=y0[j].re+b40*source0[j].re+b41*source[j].re+
-			b42*source2[j].re+b43*source3[j].re;
-		y4[j].im=y0[j].im+b40*source0[j].im+b41*source[j].im+
-			b42*source2[j].im+b43*source3[j].im;
-		y4[j] *= expinv[j];
-	}
-	Source(source4,y4,t+a4);
-#pragma ivdep		
-	for(j=start; j < stop; j++) {
-		source4[j] /= expinv[j];
-		expinv5[j]=exp(-nu[j]*a5);
-		y[j].re=y0[j].re+b50*source0[j].re+b51*source[j].re+
-			b52*source2[j].re+b53*source3[j].re+b54*source4[j].re;
-		y[j].im=y0[j].im+b50*source0[j].im+b51*source[j].im+
-			b52*source2[j].im+b53*source3[j].im+b54*source4[j].im;
-		y[j] *= expinv5[j];
-	}
-	Source(source,y,t+a5);
-#pragma ivdep	
-	for(j=start; j < stop; j++) source[j] /= expinv5[j];
-}
-
-#else // COMPLEX
-
 void I_RK5::Predictor(double t, double, int start, int stop)
 {
 	int j;
@@ -614,8 +566,6 @@ void I_RK5::Predictor(double t, double, int start, int stop)
 #pragma ivdep	
 	for(j=start; j < stop; j++) source[j] /= expinv5[j];
 }
-
-#endif // COMPLEX
 
 int I_RK5::Corrector(double dt, int dynamic, int start, int stop)
 {
