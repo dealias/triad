@@ -186,7 +186,7 @@ char *atos(const char *s)
 	return s2;
 }
 
-void crand_gauss(Real *w)
+double drand_gauss(double)
 {
 	double factor,r2,v1,v2;
 	static int flag=0;
@@ -194,7 +194,7 @@ void crand_gauss(Real *w)
 			  
 	if (flag) {
 		flag=0;
-		*w=save;
+		return save;
 	} else {
 		flag=1;
 		do {
@@ -203,12 +203,17 @@ void crand_gauss(Real *w)
 			r2=v1*v1+v2*v2;
 		} while (r2 >= 1.0 || r2 == 0.0);
 		factor=sqrt(-2.0*log(r2)/r2);
-		*w=v1*factor;
 		save=v2*factor;
+		return v1*factor;
 	}
 }
 
-void crand_gauss(Complex *w)
+double crand_gauss(double w)
+{
+	return drand_gauss(w);
+}
+	
+Complex crand_gauss(const Complex&)
 {
 	double r2,v1,v2;
 	do {
@@ -216,7 +221,7 @@ void crand_gauss(Complex *w)
 		v2=2.0*drand()-1.0;
 		r2=v1*v1+v2*v2;
 	} while (r2 >= 1.0 || r2 == 0.0);
-	*w=Complex(v1,v2)*sqrt(-log(r2)/r2);
+	return Complex(v1,v2)*sqrt(-log(r2)/r2);
 }
 
 char *output_filename(char *basename, char *suffix)

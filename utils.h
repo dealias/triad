@@ -353,14 +353,13 @@ inline double drand()
 	return ((double) rand())/RAND_MAX;
 }
 
-void crand_gauss(Real *w);
-void crand_gauss(Complex *w);
+double crand_gauss(Real);
+Complex crand_gauss(const Complex&);
 
 inline double drand_gauss()
 {
 	double w;
-	crand_gauss(&w);
-	return w;
+	return crand_gauss(w);
 }
 
 inline ixstream& operator >> (ixstream& s, Complex& y)
