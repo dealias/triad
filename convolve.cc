@@ -15,22 +15,22 @@ const int bitreverse=1; // Use faster bit-reversed FFT's if available
 // subsumes F or g, respectively.
 
 void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
-			   int log2n)
+	       int log2n)
 {
-	const unsigned int n=1 << log2n, n2=n/2;
-	unsigned int i;
+  const unsigned int n=1 << log2n, n2=n/2;
+  unsigned int i;
 
-//#pragma ivdep	
-	for(i=m; i < n2+1; i++) F[i]=0.0;
-	crfft(F,log2n,-1,1.0,-bitreverse);
+  //#pragma ivdep	
+  for(i=m; i < n2+1; i++) F[i]=0.0;
+  crfft(F,log2n,-1,1.0,-bitreverse);
 	
-//#pragma ivdep	
-	for(i=0; i < n2; i++) {
-		H[i].re=F[i].re*g[i].re;
-		H[i].im=F[i].im*g[i].im;
-	}
+  //#pragma ivdep	
+  for(i=0; i < n2; i++) {
+    H[i].re=F[i].re*g[i].re;
+    H[i].im=F[i].im*g[i].im;
+  }
 	
-	rcfft(H,log2n,1,1.0/n,bitreverse);
+  rcfft(H,log2n,1,1.0/n,bitreverse);
 }
 
 // Compute H = F (*) G, where F and G contain the non-negative Fourier
@@ -45,16 +45,16 @@ void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
 // subsumes f or g, respectively.
 
 void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
-			  int log2n)
+	      int log2n)
 {
-	unsigned int n=1 << log2n;
-	unsigned int i;
+  unsigned int n=1 << log2n;
+  unsigned int i;
 
-//#pragma ivdep	
-	for(i=m; i < n/2+1; i++) G[i]=0.0;
-	crfft(G,log2n,-1,1.0,-bitreverse);
+  //#pragma ivdep	
+  for(i=m; i < n/2+1; i++) G[i]=0.0;
+  crfft(G,log2n,-1,1.0,-bitreverse);
 	
-	convolve0(H,F,G,m,log2n);
+  convolve0(H,F,G,m,log2n);
 }	
 
 // Compute H = F (*) G, where F and G contain the non-negative Fourier
@@ -68,16 +68,16 @@ void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
 
 void convolve_direct(Complex *H, Complex *F, Complex *G, unsigned int m)
 {
-	unsigned int i,j;
-	for(i=0; i < m; i++) {
-		Complex sum=0.0;
-//#pragma ivdep	
-		for(j=0; j <= i; j++) sum += F[j]*G[i-j];
-//#pragma ivdep	
-		for(j=i+1; j < m; j++) sum += F[j]*conj(G[j-i]);
-//#pragma ivdep	
-		for(j=1; j < m-i; j++) sum += conj(F[j])*G[i+j];
-		H[i]=sum;
-	}
+  unsigned int i,j;
+  for(i=0; i < m; i++) {
+    Complex sum=0.0;
+    //#pragma ivdep	
+    for(j=0; j <= i; j++) sum += F[j]*G[i-j];
+    //#pragma ivdep	
+    for(j=i+1; j < m; j++) sum += F[j]*conj(G[j-i]);
+    //#pragma ivdep	
+    for(j=1; j < m-i; j++) sum += conj(F[j])*G[i+j];
+    H[i]=sum;
+  }
 }	
 

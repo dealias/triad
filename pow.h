@@ -25,32 +25,32 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 inline double pow(double x, int p)
 {
-	if(p == 0) return 1.0;
-	if(x == 0.0 && p > 0) return 0.0;
-	if(p < 0) {p=-p; x=1/x;}
+  if(p == 0) return 1.0;
+  if(x == 0.0 && p > 0) return 0.0;
+  if(p < 0) {p=-p; x=1/x;}
 	
-	double r = 1.0;
-	if(p > 0 && p < INT_MAX) for(;;) {
-		if(p & 1) r *= x;
-		if((p >>= 1) == 0)	return r;
-		x *= x;
-	}
-	return 0;
+  double r = 1.0;
+  if(p > 0 && p < INT_MAX) for(;;) {
+    if(p & 1) r *= x;
+    if((p >>= 1) == 0)	return r;
+    x *= x;
+  }
+  return 0;
 }
 
 inline int pow(int x, int p)
 {
-	if(p == 0) return 1;
-	if(x == 0 && p > 0) return 0;
-	if(p < 0) {p=-p; assert(x == 1 || x == -1); return (p % 2) ? x : 1;}
+  if(p == 0) return 1;
+  if(x == 0 && p > 0) return 0;
+  if(p < 0) {p=-p; assert(x == 1 || x == -1); return (p % 2) ? x : 1;}
 	
-	int r = 1;
-	if(p > 0 && p < INT_MAX) for(;;) {
-		if(p & 1) r *= x;
-		if((p >>= 1) == 0)	return r;
-		x *= x;
-	}
-	return 0;
+  int r = 1;
+  if(p > 0 && p < INT_MAX) for(;;) {
+    if(p & 1) r *= x;
+    if((p >>= 1) == 0)	return r;
+    x *= x;
+  }
+  return 0;
 }
 
 #endif

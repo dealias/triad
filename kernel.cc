@@ -79,275 +79,275 @@ static char *tmpdir=tempdir();
 
 VocabularyBase::VocabularyBase()
 {
-	Vocabulary=this;
+  Vocabulary=this;
 	
-	VOCAB(itmax,0,INT_MAX);
-	VOCAB(microsteps,1,INT_MAX);
-	VOCAB(tmax,0.0,DBL_STD_MAX);
-	VOCAB(dt,0.0,DBL_STD_MAX);
-	VOCAB(dynamic,-INT_MAX,1);
-	VOCAB(tolmax,0.0,DBL_STD_MAX);
-	VOCAB(tolmin,0.0,DBL_STD_MAX);
-	VOCAB(stepfactor,1.0,DBL_STD_MAX);
-	VOCAB(stepnoninvert,1.0,DBL_STD_MAX);
-	VOCAB(dtmin,0.0,DBL_STD_MAX);
-	VOCAB(dtmax,0.0,DBL_STD_MAX);
-	VOCAB(tprecision,0.0,DBL_STD_MAX);
-	VOCAB(sample,0.0,DBL_STD_MAX);
-	VOCAB(polltime,0.0,DBL_STD_MAX);
-	VOCAB(hybrid,0,1);
-	VOCAB(digits,1,INT_MAX);
-	VOCAB_NODUMP(restart,0,1);
-	VOCAB_NODUMP(initialize,0,1);
-	VOCAB_NODUMP(clobber,0,1);
-	VOCAB_NODUMP(override,0,1);
-	VOCAB_NODUMP(verbose,0,4);
-	VOCAB_NODUMP(run,null,null);
-	VOCAB(checkpoint,0,INT_MAX);
-	VOCAB(output,0,1);
-	VOCAB(method,null,null);
-	VOCAB(integrator,null,null);
+  VOCAB(itmax,0,INT_MAX);
+  VOCAB(microsteps,1,INT_MAX);
+  VOCAB(tmax,0.0,DBL_STD_MAX);
+  VOCAB(dt,0.0,DBL_STD_MAX);
+  VOCAB(dynamic,-INT_MAX,1);
+  VOCAB(tolmax,0.0,DBL_STD_MAX);
+  VOCAB(tolmin,0.0,DBL_STD_MAX);
+  VOCAB(stepfactor,1.0,DBL_STD_MAX);
+  VOCAB(stepnoninvert,1.0,DBL_STD_MAX);
+  VOCAB(dtmin,0.0,DBL_STD_MAX);
+  VOCAB(dtmax,0.0,DBL_STD_MAX);
+  VOCAB(tprecision,0.0,DBL_STD_MAX);
+  VOCAB(sample,0.0,DBL_STD_MAX);
+  VOCAB(polltime,0.0,DBL_STD_MAX);
+  VOCAB(hybrid,0,1);
+  VOCAB(digits,1,INT_MAX);
+  VOCAB_NODUMP(restart,0,1);
+  VOCAB_NODUMP(initialize,0,1);
+  VOCAB_NODUMP(clobber,0,1);
+  VOCAB_NODUMP(override,0,1);
+  VOCAB_NODUMP(verbose,0,4);
+  VOCAB_NODUMP(run,null,null);
+  VOCAB(checkpoint,0,INT_MAX);
+  VOCAB(output,0,1);
+  VOCAB(method,null,null);
+  VOCAB(integrator,null,null);
 	
-	ProblemTable=new Table<ProblemBase>("method");
-	IntegratorTable=new Table<IntegratorBase>("integrator");
+  ProblemTable=new Table<ProblemBase>("method");
+  IntegratorTable=new Table<IntegratorBase>("integrator");
 	
-	INTEGRATOR(Exact);
-	INTEGRATOR(Euler);
-	INTEGRATOR(Midpoint);
-	INTEGRATOR(AdamsBashforth);
-	INTEGRATOR(PC);
-	INTEGRATOR(LeapFrog);
-	INTEGRATOR(RK2);
-	INTEGRATOR(RK4);
-	INTEGRATOR(RK5);
+  INTEGRATOR(Exact);
+  INTEGRATOR(Euler);
+  INTEGRATOR(Midpoint);
+  INTEGRATOR(AdamsBashforth);
+  INTEGRATOR(PC);
+  INTEGRATOR(LeapFrog);
+  INTEGRATOR(RK2);
+  INTEGRATOR(RK4);
+  INTEGRATOR(RK5);
 }
 
 void adjust_parameters(double& dt, double& dtmax, double& tmax, int& itmax)
 {
-	if(dt == 0.0) {
-		if(tmax == 0.0) tmax=1.0;
-		if(itmax == -1) itmax=100;
-		dt=abs(tmax/(itmax ? itmax : 1));
-	}
+  if(dt == 0.0) {
+    if(tmax == 0.0) tmax=1.0;
+    if(itmax == -1) itmax=100;
+    dt=abs(tmax/(itmax ? itmax : 1));
+  }
 	
-	if(tmax == 0.0) tmax=DBL_STD_MAX; 
-	else if(itmax == -1) itmax=INT_MAX;
+  if(tmax == 0.0) tmax=DBL_STD_MAX; 
+  else if(itmax == -1) itmax=INT_MAX;
 
-	if(dtmax == 0.0) dtmax=DBL_STD_MAX;
+  if(dtmax == 0.0) dtmax=DBL_STD_MAX;
 	
-	if(dt < dtmin) dt=dtmin;
-	if(dt > dtmax) dt=dtmax;
+  if(dt < dtmin) dt=dtmin;
+  if(dt > dtmax) dt=dtmax;
 }	
 
 int main(int argc, char *argv[])
 {
-	int i;
+  int i;
 	
-	inform=mailuser;
-	cout.precision(REAL_DIG);
+  inform=mailuser;
+  cout.precision(REAL_DIG);
 	
-	cout << newl << PROGRAM << " version " << VERSION
-		 << " [(C) John C. Bowman 2000]" << newl;
+  cout << newl << PROGRAM << " version " << VERSION
+       << " [(C) John C. Bowman 2000]" << newl;
 	
-	cout << newl << "MACHINE: " << machine() << " [" << date() << "]" << newl;
+  cout << newl << "MACHINE: " << machine() << " [" << date() << "]" << newl;
 	
-	cout << newl << "PROBLEM: " << Vocabulary->Name() << newl;
+  cout << newl << "PROBLEM: " << Vocabulary->Name() << newl;
 	
-	cout << newl << "COMMAND LINE: ";
-	for(i=1; i < argc; i++) cout << argv[i] << " ";
-	cout << endl;
+  cout << newl << "COMMAND LINE: ";
+  for(i=1; i < argc; i++) cout << argv[i] << " ";
+  cout << endl;
 	
-	Vocabulary->Sort();
+  Vocabulary->Sort();
 	
-	// Do a preliminary parse of command line to obtain parameter file name.
-	for(i=1; i < argc; i++) Vocabulary->Assign(argv[i],0);
-	msg_override=override;
+  // Do a preliminary parse of command line to obtain parameter file name.
+  for(i=1; i < argc; i++) Vocabulary->Assign(argv[i],0);
+  msg_override=override;
 	
-	// Allow time step to be overridden from command line (even on restarts).
-	if(dt) explicit_dt=1; 
+  // Allow time step to be overridden from command line (even on restarts).
+  if(dt) explicit_dt=1; 
 	
-	if(*run == 0) {run="test"; testing=1;}
+  if(*run == 0) {run="test"; testing=1;}
 	
-	lname=Vocabulary->FileName(dirsep,"LOCK");
-	rname=Vocabulary->FileName(dirsep,"restart");
-	rtemp=Vocabulary->FileName(dirsep,"restart=");
-	pname=Vocabulary->FileName(dirsep,"p");
-	ptemp=Vocabulary->FileName(dirsep,"p=");
+  lname=Vocabulary->FileName(dirsep,"LOCK");
+  rname=Vocabulary->FileName(dirsep,"restart");
+  rtemp=Vocabulary->FileName(dirsep,"restart=");
+  pname=Vocabulary->FileName(dirsep,"p");
+  ptemp=Vocabulary->FileName(dirsep,"p=");
 	
-	fparam.open(pname);
+  fparam.open(pname);
 	
-	if(fparam) {
-		const int blocksize=80;
-		char s[blocksize];
-		while(!fparam.eof()) {
-			strstream buf;
-			while(1) {
-				fparam.getline(s,blocksize);
-				buf << s;
-				if(fparam.eof() || !fparam.fail()) break;
-				fparam.clear();
-			}
-			buf << ends;
-			Vocabulary->Parse(buf.str());
-		}
-		fparam.close();
-	} else {
-		if(!testing)
-			msg(OVERRIDE_GLOBAL,"Parameter file %s could not be opened",
-				pname); 
-		errno=0;
-		mkdir(Vocabulary->FileName("",""),0xFFFF);
-	}
+  if(fparam) {
+    const int blocksize=80;
+    char s[blocksize];
+    while(!fparam.eof()) {
+      strstream buf;
+      while(1) {
+	fparam.getline(s,blocksize);
+	buf << s;
+	if(fparam.eof() || !fparam.fail()) break;
+	fparam.clear();
+      }
+      buf << ends;
+      Vocabulary->Parse(buf.str());
+    }
+    fparam.close();
+  } else {
+    if(!testing)
+      msg(OVERRIDE_GLOBAL,"Parameter file %s could not be opened",
+	  pname); 
+    errno=0;
+    mkdir(Vocabulary->FileName("",""),0xFFFF);
+  }
 	
-	for(i=1; i < argc; i++) Vocabulary->Assign(argv[i]);
-	adjust_parameters(dt,dtmax,tmax,itmax);
-	cout << newl << "PARAMETERS:" << newl << newl;
-	Vocabulary->List(cout);
+  for(i=1; i < argc; i++) Vocabulary->Assign(argv[i]);
+  adjust_parameters(dt,dtmax,tmax,itmax);
+  cout << newl << "PARAMETERS:" << newl << newl;
+  Vocabulary->List(cout);
 	
-	cout.precision(digits);
+  cout.precision(digits);
 	
-	Problem=Vocabulary->NewProblem(method);
-	Integrator=Vocabulary->NewIntegrator(integrator);
+  Problem=Vocabulary->NewProblem(method);
+  Integrator=Vocabulary->NewIntegrator(integrator);
 	
-	if(!(restart || initialize)) {
-		fin.open(rname);
-		if(fin && !clobber && !testing) 
-			msg(OVERRIDE_GLOBAL,"Restart file %s already exists",rname);
-		fin.close();	
-		errno=0;
-	}
+  if(!(restart || initialize)) {
+    fin.open(rname);
+    if(fin && !clobber && !testing) 
+      msg(OVERRIDE_GLOBAL,"Restart file %s already exists",rname);
+    fin.close();	
+    errno=0;
+  }
 	
-	if(restart) testlock();
+  if(restart) testlock();
 
-	if(!restart && initialize) {
-		const char *sname=Vocabulary->FileName(dirsep,"stat");
-		fin.open(sname);
-		if(fin && !clobber && !testing)
-			msg(OVERRIDE_GLOBAL,"Statistics file %s already exists",sname);
-		fin.close();
-		errno=0;
-	}
+  if(!restart && initialize) {
+    const char *sname=Vocabulary->FileName(dirsep,"stat");
+    fin.open(sname);
+    if(fin && !clobber && !testing)
+      msg(OVERRIDE_GLOBAL,"Statistics file %s already exists",sname);
+    fin.close();
+    errno=0;
+  }
 
-	if(checkpoint && tmpdir) {
-		strstream buf;
-		buf << tmpdir << dirsep << Vocabulary->FileName("","") << ends;
-		mkdir(buf.str(),0xFFFF);
-	}
+  if(checkpoint && tmpdir) {
+    strstream buf;
+    buf << tmpdir << dirsep << Vocabulary->FileName("","") << ends;
+    mkdir(buf.str(),0xFFFF);
+  }
 					
-	open_output(gparam,dirsep,"param",0);
-	Vocabulary->GraphicsDump(gparam);
-	gparam.close();
+  open_output(gparam,dirsep,"param",0);
+  Vocabulary->GraphicsDump(gparam);
+  gparam.close();
 	
-	fdump.open(ptemp);
-	Vocabulary->Dump(fdump);
-	fdump.close();
-	if(fdump) {
-		if(rename(ptemp,pname)) 
-			msg(WARNING,"Cannot rename parameter file %s",ptemp);
-	}	
-	else msg(WARNING,"Cannot write to parameter file %s",ptemp);
+  fdump.open(ptemp);
+  Vocabulary->Dump(fdump);
+  fdump.close();
+  if(fdump) {
+    if(rename(ptemp,pname)) 
+      msg(WARNING,"Cannot rename parameter file %s",ptemp);
+  }	
+  else msg(WARNING,"Cannot write to parameter file %s",ptemp);
 	
-	t=0.0;
-	Problem->InitialConditions();
-	y=Problem->Vector();
-	ny=Problem->Size();
-	if(restart || initialize) read_init();
-	if(restart && dynamic < 0) dynamic=1;
-	if(!restart) Problem->Initialize();
+  t=0.0;
+  Problem->InitialConditions();
+  y=Problem->Vector();
+  ny=Problem->Size();
+  if(restart || initialize) read_init();
+  if(restart && dynamic < 0) dynamic=1;
+  if(!restart) Problem->Initialize();
 	
-	Integrator->Allocate(ny);
+  Integrator->Allocate(ny);
 	
-	Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,dtmin,dtmax,
-						 itmax,microsteps,verbose,dynamic);
+  Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,dtmin,dtmax,
+		       itmax,microsteps,verbose,dynamic);
 	
-	cout << newl << "INTEGRATING:" << endl;
-	set_timer();
+  cout << newl << "INTEGRATING:" << endl;
+  set_timer();
 	
-	Integrator->Integrate(*Problem,y,t,tmax,dt,sample,iteration);
+  Integrator->Integrate(*Problem,y,t,tmax,dt,sample,iteration);
 	
-	Problem->FinalOutput();
+  Problem->FinalOutput();
 	
-	cout << newl;
-	cout << "COMPUTATION TERMINATED after " << iteration <<	" iteration" <<
-		PLURAL(iteration) << newl << "                       at t=" <<
-		t << " with dt=" << dt << "." << newl; 
-	if(total_invert_cnt)
-		cout << "NONINVERTIBILE TRANSFORMATION encountered " <<
-			total_invert_cnt << " time" << PLURAL(total_invert_cnt) <<
-		"." << newl;
+  cout << newl;
+  cout << "COMPUTATION TERMINATED after " << iteration <<	" iteration" <<
+    PLURAL(iteration) << newl << "                       at t=" <<
+    t << " with dt=" << dt << "." << newl; 
+  if(total_invert_cnt)
+    cout << "NONINVERTIBILE TRANSFORMATION encountered " <<
+      total_invert_cnt << " time" << PLURAL(total_invert_cnt) <<
+      "." << newl;
 	
-	cout << newl;
-	cout << "INTEGRATION TIMING STATISTICS:" << newl <<	"            CPU = "
-		 << cpu[0] << ", CHILD = " << cpu[1] <<  ", SYS = " << cpu[2] << newl;
+  cout << newl;
+  cout << "INTEGRATION TIMING STATISTICS:" << newl <<	"            CPU = "
+       << cpu[0] << ", CHILD = " << cpu[1] <<  ", SYS = " << cpu[2] << newl;
 	
-	cout << newl << "DYNAMIC MEMORY ALLOCATED: " << memory() << " bytes ["
-		 << date() << "]" << newl << endl; 
+  cout << newl << "DYNAMIC MEMORY ALLOCATED: " << memory() << " bytes ["
+       << date() << "]" << newl << endl; 
 	
-	if(!testing) mailuser("completed");
-	return exit_signal;
+  if(!testing) mailuser("completed");
+  return exit_signal;
 }
 
 void read_init()
 {
-	int i,ny0;
-	double t0,dt0;
-	const char *type=restart ? "restart" : "initialization";
-	char *ny_msg=
-		"Current value of ny (%d) disagrees with value (%d) in file\n%s";
+  int i,ny0;
+  double t0,dt0;
+  const char *type=restart ? "restart" : "initialization";
+  char *ny_msg=
+    "Current value of ny (%d) disagrees with value (%d) in file\n%s";
 	
-	ixstream finit(rname);
-	if(finit) {
-		cout << newl << "READING " << upcase(type) << " DATA FROM FILE "
-			 << rname << "." << endl; 
-		finit >> t0 >> dt0 >> final_iteration;
-		for(i=0; i < ncputime; i++) finit >> cpu_restart[i];
-		finit >> ny0;
-		if(ny0 != ny) msg(OVERRIDE_GLOBAL,ny_msg,ny,ny0,rname);
-		for(i=0; i < min(ny,ny0); i++) finit >> y[i];
-		if(!finit)	msg(ERROR,"Cannot read from %s file %s",type,rname);
-	} else msg(ERROR,"Could not open %s file %s",type,rname);
+  ixstream finit(rname);
+  if(finit) {
+    cout << newl << "READING " << upcase(type) << " DATA FROM FILE "
+	 << rname << "." << endl; 
+    finit >> t0 >> dt0 >> final_iteration;
+    for(i=0; i < ncputime; i++) finit >> cpu_restart[i];
+    finit >> ny0;
+    if(ny0 != ny) msg(OVERRIDE_GLOBAL,ny_msg,ny,ny0,rname);
+    for(i=0; i < min(ny,ny0); i++) finit >> y[i];
+    if(!finit)	msg(ERROR,"Cannot read from %s file %s",type,rname);
+  } else msg(ERROR,"Could not open %s file %s",type,rname);
 	
-	if(!explicit_dt) dt=dt0;
-	if(restart) {t=t0; last_dump=t;}
+  if(!explicit_dt) dt=dt0;
+  if(restart) {t=t0; last_dump=t;}
 }
 
 void lock()
 {
-	if(testing) return;
-	flock.open(lname);
-	if(!flock) msg(WARNING,"Could not create lock file %s",lname);
+  if(testing) return;
+  flock.open(lname);
+  if(!flock) msg(WARNING,"Could not create lock file %s",lname);
 }
 
 void unlock()
 {
-	if(testing) return;
-	if(flock) {
-		flock.close();
-		if(remove(lname) == -1) 
-			msg(WARNING,"Could not remove lock file %s",lname);
-	}
+  if(testing) return;
+  if(flock) {
+    flock.close();
+    if(remove(lname) == -1) 
+      msg(WARNING,"Could not remove lock file %s",lname);
+  }
 }
 
 void testlock()
 {
-	ifstream ftest;
-	ftest.open(lname);
-	if(ftest) {
-		msg(OVERRIDE_GLOBAL,
-			"Lock file %s exists.\nOutput files may be corrupted",lname);
-		if(remove(lname) == -1)
-			msg(WARNING,"Could not remove lock file %s",lname);
-	} else errno=0;
+  ifstream ftest;
+  ftest.open(lname);
+  if(ftest) {
+    msg(OVERRIDE_GLOBAL,
+	"Lock file %s exists.\nOutput files may be corrupted",lname);
+    if(remove(lname) == -1)
+      msg(WARNING,"Could not remove lock file %s",lname);
+  } else errno=0;
 }
 
 void dump(int it, int final, double tmax) 
 {
-	if((!restart || it > 0) && (tmax-t >= tprecision*tmax || final) &&
-	   t > last_dump) {
-		lock();
-		Problem->Output(it); last_dump=t;
-		unlock();
-	}
+  if((!restart || it > 0) && (tmax-t >= tprecision*tmax || final) &&
+     t > last_dump) {
+    lock();
+    Problem->Output(it); last_dump=t;
+    unlock();
+  }
 }
 
 static const int w=10;
@@ -355,82 +355,82 @@ static int e;
 
 void set_timer()
 {
-	e=digits+5;
-	open_output(fstats,dirsep,"stat");
-	cputime(cpu0);
-	if(!restart) {
-		for(int i=0; i < ncputime; i++) cpu_restart[i]=0.0;
-		fstats << setw(w) << "iteration"
-			   << " " << setw(e) << "t"
-			   << " " << setw(e) << "dt"
-			   << " " << setw(w) << "invert_cnt"
-			   << " " << setw(w) << "CPU"
-			   << " " << setw(w) << "CHILD"
-			   << " " << setw(w) << "SYS" << endl;
-	}
+  e=digits+5;
+  open_output(fstats,dirsep,"stat");
+  cputime(cpu0);
+  if(!restart) {
+    for(int i=0; i < ncputime; i++) cpu_restart[i]=0.0;
+    fstats << setw(w) << "iteration"
+	   << " " << setw(e) << "t"
+	   << " " << setw(e) << "dt"
+	   << " " << setw(w) << "invert_cnt"
+	   << " " << setw(w) << "CPU"
+	   << " " << setw(w) << "CHILD"
+	   << " " << setw(w) << "SYS" << endl;
+  }
 }
 
 void statistics(int it)
 {
-	int i;
-	if(restart && it == 0) return;
+  int i;
+  if(restart && it == 0) return;
 	
-	static int last_iter=0;
-	int iter=final_iteration+iteration;
+  static int last_iter=0;
+  int iter=final_iteration+iteration;
 
-	cputime(cpu);
-	for(i=0; i < ncputime; i++) cpu[i] -= cpu0[i];
+  cputime(cpu);
+  for(i=0; i < ncputime; i++) cpu[i] -= cpu0[i];
 	
-	oxstream frestart(rtemp);
-	if(frestart) {
-		int i;
-		frestart << t << newl << dt << newl << iter << newl;
-		for(i=0; i < ncputime; i++) frestart << cpu_restart[i]+cpu[i] << newl;
-		frestart << ny << newl;
-		for(i=0; i < ny; i++) frestart << y[i] << newl;
-		frestart.close();
-		if(frestart) {
-			if(checkpoint && it > 0 && (it-1) % checkpoint == 0) {
-				strstream rcheck;
-				if(tmpdir) rcheck << tmpdir << dirsep;
-				rcheck << rname << "." << last_iter << ends;
-				if(tmpdir ? copy(rname,rcheck.str()) : 
-				   rename(rname,rcheck.str()))
-					msg(WARNING,"Cannot copy %s to checkpoint file %s",
-						rname,rcheck.str());
-			}
-			last_iter=iter;
-			if(rename(rtemp,rname))
-				msg(ERROR,"Cannot rename restart file %s",rtemp);
-		} else {
-			errno=0;
-			frestart.open(rtemp);
-			frestart.close();
-			msg(SLEEP,"Cannot write to restart file %s",rtemp);
-			statistics(it); // Try again;
-			return;
-		}		  
-	} else if(it == 0) msg(ERROR,"Could not open restart file %s",rtemp);
+  oxstream frestart(rtemp);
+  if(frestart) {
+    int i;
+    frestart << t << newl << dt << newl << iter << newl;
+    for(i=0; i < ncputime; i++) frestart << cpu_restart[i]+cpu[i] << newl;
+    frestart << ny << newl;
+    for(i=0; i < ny; i++) frestart << y[i] << newl;
+    frestart.close();
+    if(frestart) {
+      if(checkpoint && it > 0 && (it-1) % checkpoint == 0) {
+	strstream rcheck;
+	if(tmpdir) rcheck << tmpdir << dirsep;
+	rcheck << rname << "." << last_iter << ends;
+	if(tmpdir ? copy(rname,rcheck.str()) : 
+	   rename(rname,rcheck.str()))
+	  msg(WARNING,"Cannot copy %s to checkpoint file %s",
+	      rname,rcheck.str());
+      }
+      last_iter=iter;
+      if(rename(rtemp,rname))
+	msg(ERROR,"Cannot rename restart file %s",rtemp);
+    } else {
+      errno=0;
+      frestart.open(rtemp);
+      frestart.close();
+      msg(SLEEP,"Cannot write to restart file %s",rtemp);
+      statistics(it); // Try again;
+      return;
+    }		  
+  } else if(it == 0) msg(ERROR,"Could not open restart file %s",rtemp);
 	
-	lock();
-	fstats << setw(w) << iter << " " << setw(e) << t << " " << setw(e) 
-		   << dt << " " << setw(w) << invert_cnt << " ";
+  lock();
+  fstats << setw(w) << iter << " " << setw(e) << t << " " << setw(e) 
+	 << dt << " " << setw(w) << invert_cnt << " ";
 
-	total_invert_cnt += invert_cnt;
-	invert_cnt=0;
+  total_invert_cnt += invert_cnt;
+  invert_cnt=0;
 	
-	for(i=0; i < ncputime; i++) {
-		fstats << setw(w) << cpu_restart[i]+cpu[i] << " ";
-	}
-	fstats << endl;
-	if(!fstats) msg(WARNING,"Cannot write to statistics file");
-	unlock();
+  for(i=0; i < ncputime; i++) {
+    fstats << setw(w) << cpu_restart[i]+cpu[i] << " ";
+  }
+  fstats << endl;
+  if(!fstats) msg(WARNING,"Cannot write to statistics file");
+  unlock();
 }
 
 const char *VocabularyBase::FileName(const char* delimiter, const char *suffix)
 {
-	strstream buf;
-	buf << Directory() << run << delimiter << suffix << ends;
-	buf.rdbuf()->freeze();
-	return buf.str();
+  strstream buf;
+  buf << Directory() << run << delimiter << suffix << ends;
+  buf.rdbuf()->freeze();
+  return buf.str();
 }

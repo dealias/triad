@@ -185,8 +185,8 @@ char *getenv ();
 
 static char *
 my_index (str, chr)
-     const char *str;
-     int chr;
+  const char *str;
+int chr;
 {
   while (*str)
     {
@@ -372,9 +372,9 @@ static const char *_getopt_initialize (const char *optstring)
    long-named options.  */
 
 int _getopt_long_only (int argc, char *const *argv,
-					   const char *optstring,
-					   const struct option *longopts, int *longind,
-					   int long_only)
+		       const char *optstring,
+		       const struct option *longopts, int *longind,
+		       int long_only)
 {
   optarg = NULL;
 
@@ -541,8 +541,8 @@ int _getopt_long_only (int argc, char *const *argv,
 		      else
 			/* +option or -option */
 			fprintf (stderr,
-			     "%s: option `%c%s' doesn't allow an argument\n",
-			     argv[0], argv[optind - 1][0], pfound->name);
+				 "%s: option `%c%s' doesn't allow an argument\n",
+				 argv[0], argv[optind - 1][0], pfound->name);
 		    }
 		  nextchar += strlen (nextchar);
 		  return '?';

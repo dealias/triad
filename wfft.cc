@@ -19,171 +19,171 @@ static unsigned int nrcplan=0;
 // Create plans for size n
 static int init_plan(unsigned int n, int inc1)
 {
-	nplan++;
-	plan=new(plan,nplan) fftw_plan;
-	planinv=new(planinv,nplan) fftw_plan;
+  nplan++;
+  plan=new(plan,nplan) fftw_plan;
+  planinv=new(planinv,nplan) fftw_plan;
 	
-	ifwisdom.open(wisdom_name);
-	fftw_import_wisdom(get_wisdom,ifwisdom);
-	ifwisdom.close();
+  ifwisdom.open(wisdom_name);
+  fftw_import_wisdom(get_wisdom,ifwisdom);
+  ifwisdom.close();
 	
-	int options=FFTW_MEASURE | FFTW_USE_WISDOM | FFTW_IN_PLACE;
-	plan[nplan-1]=fftw_create_plan(n, 1, options);
-	planinv[nplan-1]=fftw_create_plan(n, -1, options);
+  int options=FFTW_MEASURE | FFTW_USE_WISDOM | FFTW_IN_PLACE;
+  plan[nplan-1]=fftw_create_plan(n, 1, options);
+  planinv[nplan-1]=fftw_create_plan(n, -1, options);
 	
-	ofwisdom.open(wisdom_name);
-	fftw_export_wisdom(put_wisdom,ofwisdom);
-	ofwisdom.close();
+  ofwisdom.open(wisdom_name);
+  fftw_export_wisdom(put_wisdom,ofwisdom);
+  ofwisdom.close();
 	
-	return nplan;
+  return nplan;
 }
 
 // Create complex_to_real plans for size n
 static int init_crplan(unsigned int n)
 {
-	ncrplan++;
-	crplan=new(crplan,ncrplan) rfftwnd_plan;
+  ncrplan++;
+  crplan=new(crplan,ncrplan) rfftwnd_plan;
 	
-	ifwisdom.open(wisdom_name);
-	fftw_import_wisdom(get_wisdom,ifwisdom);
-	ifwisdom.close();
+  ifwisdom.open(wisdom_name);
+  fftw_import_wisdom(get_wisdom,ifwisdom);
+  ifwisdom.close();
 	
-	int options=FFTW_MEASURE | FFTW_USE_WISDOM | FFTW_IN_PLACE;
-	int size[1]={n};
-	crplan[ncrplan-1]=rfftwnd_create_plan(1,size,FFTW_COMPLEX_TO_REAL,options);
+  int options=FFTW_MEASURE | FFTW_USE_WISDOM | FFTW_IN_PLACE;
+  int size[1]={n};
+  crplan[ncrplan-1]=rfftwnd_create_plan(1,size,FFTW_COMPLEX_TO_REAL,options);
 	
-	ofwisdom.open(wisdom_name);
-	fftw_export_wisdom(put_wisdom,ofwisdom);
-	ofwisdom.close();
+  ofwisdom.open(wisdom_name);
+  fftw_export_wisdom(put_wisdom,ofwisdom);
+  ofwisdom.close();
 	
-	return ncrplan;
+  return ncrplan;
 }
 
 // Create real_to_complex plans for size n
 static int init_rcplan(unsigned int n)
 {
-	nrcplan++;
-	rcplan=new(rcplan,nrcplan) rfftwnd_plan;
+  nrcplan++;
+  rcplan=new(rcplan,nrcplan) rfftwnd_plan;
 	
-	ifwisdom.open(wisdom_name);
-	fftw_import_wisdom(get_wisdom,ifwisdom);
-	ifwisdom.close();
+  ifwisdom.open(wisdom_name);
+  fftw_import_wisdom(get_wisdom,ifwisdom);
+  ifwisdom.close();
 	
-	int options=FFTW_MEASURE | FFTW_USE_WISDOM | FFTW_IN_PLACE;
-	int size[1]={n};
-	rcplan[nrcplan-1]=rfftwnd_create_plan(1,size,FFTW_REAL_TO_COMPLEX,options);
+  int options=FFTW_MEASURE | FFTW_USE_WISDOM | FFTW_IN_PLACE;
+  int size[1]={n};
+  rcplan[nrcplan-1]=rfftwnd_create_plan(1,size,FFTW_REAL_TO_COMPLEX,options);
 	
-	ofwisdom.open(wisdom_name);
-	fftw_export_wisdom(put_wisdom,ofwisdom);
-	ofwisdom.close();
+  ofwisdom.open(wisdom_name);
+  fftw_export_wisdom(put_wisdom,ofwisdom);
+  ofwisdom.close();
 	
-	return nrcplan;
+  return nrcplan;
 }
 
 void scalefft(Complex *data, unsigned int n, unsigned int nk,
-			  unsigned int inc1, unsigned int inc2, Real scale)
+	      unsigned int inc1, unsigned int inc2, Real scale)
 {
-	unsigned int kstop=nk*inc2;
-	if(inc1 == 1) {
-		for(unsigned int k=0; k < kstop; k += inc2) {
-			Complex *p0=data+k, *pstop=p0+n;
-//#pragma ivdep			
-			for(Complex *p=p0; p < pstop; p++) {
-				p->re *= scale;
-				p->im *= scale;
-			}
-		}
-	} else {
-		Complex *pstop=data+n*inc1;
-		for(Complex *p=data; p < pstop; p += inc1) {
-//#pragma ivdep			
-			for(unsigned int k=0; k < kstop; k += inc2) {
-				p[k].re *= scale;
-				p[k].im *= scale;
-			}
-		}
-	}
+  unsigned int kstop=nk*inc2;
+  if(inc1 == 1) {
+    for(unsigned int k=0; k < kstop; k += inc2) {
+      Complex *p0=data+k, *pstop=p0+n;
+      //#pragma ivdep			
+      for(Complex *p=p0; p < pstop; p++) {
+	p->re *= scale;
+	p->im *= scale;
+      }
+    }
+  } else {
+    Complex *pstop=data+n*inc1;
+    for(Complex *p=data; p < pstop; p += inc1) {
+      //#pragma ivdep			
+      for(unsigned int k=0; k < kstop; k += inc2) {
+	p[k].re *= scale;
+	p[k].im *= scale;
+      }
+    }
+  }
 }
 
 void signscalefft(Complex *data, unsigned int n, int isign, unsigned int nk,
-				  unsigned int inc1, unsigned int inc2, Real scale)
+		  unsigned int inc1, unsigned int inc2, Real scale)
 {
-	if(scale == 1.0) {
-		if(isign != 1.0) {
-			unsigned int kstop=nk*inc2;
-			if(inc1 == 1) {
-				for(unsigned int k=0; k < kstop; k += inc2) {
-					Complex *p0=data+k, *pstop=p0+n;
-//#pragma ivdep			
-					for(Complex *p=p0; p < pstop; p++) {
-						p->im=-p->im;
-					}
-				}
-			} else {
-				Complex *pstop=data+n*inc1;
-				for(Complex *p=data; p < pstop; p += inc1) {
-//#pragma ivdep			
-					for(unsigned int k=0; k < kstop; k += inc2) {
-						p[k].im=-p[k].im;
-					}
-				}
-			}
-		}
-	} else {
-		if(isign == 1.0) scalefft(data,n,nk,inc1,inc2,scale);
-		else {
-			unsigned int kstop=nk*inc2;
-			if(inc1 == 1) {
-				for(unsigned int k=0; k < kstop; k += inc2) {
-					Complex *p0=data+k, *pstop=p0+n;
-//#pragma ivdep			
-					for(Complex *p=p0; p < pstop; p++) {
-						p->re *= scale;
-						p->im *= -scale;
-					}
-				}
-			} else {
-				Complex *pstop=data+n*inc1;
-				for(Complex *p=data; p < pstop; p += inc1) {
-//#pragma ivdep			
-					for(unsigned int k=0; k < kstop; k += inc2) {
-						p[k].re *= scale;
-						p[k].im *= -scale;
-					}
-				}
-			}
-		}
+  if(scale == 1.0) {
+    if(isign != 1.0) {
+      unsigned int kstop=nk*inc2;
+      if(inc1 == 1) {
+	for(unsigned int k=0; k < kstop; k += inc2) {
+	  Complex *p0=data+k, *pstop=p0+n;
+	  //#pragma ivdep			
+	  for(Complex *p=p0; p < pstop; p++) {
+	    p->im=-p->im;
+	  }
 	}
+      } else {
+	Complex *pstop=data+n*inc1;
+	for(Complex *p=data; p < pstop; p += inc1) {
+	  //#pragma ivdep			
+	  for(unsigned int k=0; k < kstop; k += inc2) {
+	    p[k].im=-p[k].im;
+	  }
+	}
+      }
+    }
+  } else {
+    if(isign == 1.0) scalefft(data,n,nk,inc1,inc2,scale);
+    else {
+      unsigned int kstop=nk*inc2;
+      if(inc1 == 1) {
+	for(unsigned int k=0; k < kstop; k += inc2) {
+	  Complex *p0=data+k, *pstop=p0+n;
+	  //#pragma ivdep			
+	  for(Complex *p=p0; p < pstop; p++) {
+	    p->re *= scale;
+	    p->im *= -scale;
+	  }
+	}
+      } else {
+	Complex *pstop=data+n*inc1;
+	for(Complex *p=data; p < pstop; p += inc1) {
+	  //#pragma ivdep			
+	  for(unsigned int k=0; k < kstop; k += inc2) {
+	    p[k].re *= scale;
+	    p[k].im *= -scale;
+	  }
+	}
+      }
+    }
+  }
 }
 
 void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
-		  unsigned int inc1, unsigned int inc2, Real scale, int)
+	  unsigned int inc1, unsigned int inc2, Real scale, int)
 {
-	static unsigned int TableSize=0;
-	static unsigned int *Table=NULL;
+  static unsigned int TableSize=0;
+  static unsigned int *Table=NULL;
 	
-	unsigned int n=1 << log2n;
+  unsigned int n=1 << log2n;
 	
-	if(inc1 == 0) inc1=nk;
+  if(inc1 == 0) inc1=nk;
 	
-	if(n > TableSize) {
-		unsigned int nold=TableSize;
-		TableSize=n;
-		Table=new(Table,TableSize) unsigned int;
-		for(unsigned int i=nold; i < TableSize; i++) Table[i]=0;
-	}
+  if(n > TableSize) {
+    unsigned int nold=TableSize;
+    TableSize=n;
+    Table=new(Table,TableSize) unsigned int;
+    for(unsigned int i=nold; i < TableSize; i++) Table[i]=0;
+  }
 	
-    if(Table[n-1] == 0) Table[n-1]=init_plan(n,inc1);
-	int j=Table[n-1]-1;
+  if(Table[n-1] == 0) Table[n-1]=init_plan(n,inc1);
+  int j=Table[n-1]-1;
 	
-	fftw((isign == 1) ? plan[j] : planinv[j],nk,data,inc1,inc2,NULL,1,1);
+  fftw((isign == 1) ? plan[j] : planinv[j],nk,data,inc1,inc2,NULL,1,1);
 	
-	if(scale != 1.0) scalefft(data,n,nk,inc1,inc2,scale);
+  if(scale != 1.0) scalefft(data,n,nk,inc1,inc2,scale);
 }
 
 void fft(Complex *data, unsigned int log2n, int isign, Real scale, int)
 {
-	mfft(data,log2n,isign,1,1,1,scale);
+  mfft(data,log2n,isign,1,1,1,scale);
 }
 
 // Return the real inverse Fourier transform of nk Complex vectors, of
@@ -206,29 +206,29 @@ void fft(Complex *data, unsigned int log2n, int isign, Real scale, int)
 // Note: To compute a true inverse transform, set scale=1.0/n.
 
 void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
-			unsigned int inc1, unsigned int inc2, Real scale, int)
+	    unsigned int inc1, unsigned int inc2, Real scale, int)
 {		 
-	static unsigned int TableSize=0;
-	static unsigned int *Table=NULL;
+  static unsigned int TableSize=0;
+  static unsigned int *Table=NULL;
 	
-	unsigned int n=1 << log2n;
-	if(log2n == 0) return;
-	if(inc1 == 0) inc1=nk;
+  unsigned int n=1 << log2n;
+  if(log2n == 0) return;
+  if(inc1 == 0) inc1=nk;
 	
-	signscalefft(data,n/2+1,isign,nk,inc1,inc2,scale);
+  signscalefft(data,n/2+1,isign,nk,inc1,inc2,scale);
 
-	if(n > TableSize) {
-		unsigned int nold=TableSize;
-		TableSize=n;
-		Table=new(Table,TableSize) unsigned int;
-		for(unsigned int i=nold; i < TableSize; i++) Table[i]=0;
-	}
+  if(n > TableSize) {
+    unsigned int nold=TableSize;
+    TableSize=n;
+    Table=new(Table,TableSize) unsigned int;
+    for(unsigned int i=nold; i < TableSize; i++) Table[i]=0;
+  }
 	
-    if(Table[n-1] == 0) Table[n-1]=init_crplan(n);
-	int j=Table[n-1]-1;
+  if(Table[n-1] == 0) Table[n-1]=init_crplan(n);
+  int j=Table[n-1]-1;
 	
-	rfftwnd_complex_to_real(crplan[j],nk,(fftw_complex *) data,inc1,inc2,
-							NULL,1,1);
+  rfftwnd_complex_to_real(crplan[j],nk,(fftw_complex *) data,inc1,inc2,
+			  NULL,1,1);
 }
 
 // Return the Fourier transform of nk real vectors, each of length n.
@@ -247,30 +247,30 @@ void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 // On exit:  data contains the nk*(n/2+1) Complex Fourier values.
 
 void mrcfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
-			unsigned int inc1, unsigned int inc2, Real scale, int)
+	    unsigned int inc1, unsigned int inc2, Real scale, int)
 {		 
-	static unsigned int TableSize=0;
-	static unsigned int *Table=NULL;
+  static unsigned int TableSize=0;
+  static unsigned int *Table=NULL;
 	
-	unsigned int n=1 << log2n;
-	if(log2n == 0) return;
-	if(inc1 == 0) inc1=nk;
+  unsigned int n=1 << log2n;
+  if(log2n == 0) return;
+  if(inc1 == 0) inc1=nk;
 	
-	if(n > TableSize) {
-		unsigned int nold=TableSize;
-		TableSize=n;
-		Table=new(Table,TableSize) unsigned int;
-		for(unsigned int i=nold; i < TableSize; i++) Table[i]=0;
-	}
+  if(n > TableSize) {
+    unsigned int nold=TableSize;
+    TableSize=n;
+    Table=new(Table,TableSize) unsigned int;
+    for(unsigned int i=nold; i < TableSize; i++) Table[i]=0;
+  }
 	
-    if(Table[n-1] == 0) Table[n-1]=init_rcplan(n);
-	int j=Table[n-1]-1;
+  if(Table[n-1] == 0) Table[n-1]=init_rcplan(n);
+  int j=Table[n-1]-1;
 	
-	int inc2real=((inc2 == 1) ? inc2 : 2*inc2);
+  int inc2real=((inc2 == 1) ? inc2 : 2*inc2);
 	
-	rfftwnd_real_to_complex(rcplan[j],nk,(fftw_real *) data,inc1,inc2real,
-							NULL,1,1);
+  rfftwnd_real_to_complex(rcplan[j],nk,(fftw_real *) data,inc1,inc2real,
+			  NULL,1,1);
 	
-	signscalefft(data,n/2+1,-isign,nk,inc1,inc2,scale);
+  signscalefft(data,n/2+1,-isign,nk,inc1,inc2,scale);
 }
 

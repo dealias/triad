@@ -24,82 +24,82 @@ void (*inform)(const char *)=NULL;
 #if __unix
 void wakeup(int)
 {
-cout << "waking up!" << endl;
+  cout << "waking up!" << endl;
 }
 #endif
 
 void msg(int severity, const char *file, int line, const char *format,...)
 {
-	int tty_override=0;
-	char c;
-	va_list vargs;
+  int tty_override=0;
+  char c;
+  va_list vargs;
 	
-	cout << endl;
-	if(beep_enabled) {
-		if(severity == WARNING_) beep_enabled=0;
-		cout << beep;
-	}
+  cout << endl;
+  if(beep_enabled) {
+    if(severity == WARNING_) beep_enabled=0;
+    cout << beep;
+  }
 	
-	if(severity == OVERRIDE_) {
-		if(msg_override) {severity=WARNING_; tty_override=0;}
-		else {
-			severity=ERROR_;
+  if(severity == OVERRIDE_) {
+    if(msg_override) {severity=WARNING_; tty_override=0;}
+    else {
+      severity=ERROR_;
 #if __unix
-			int errno_save=errno;
-			if(isatty(STDIN_FILENO)) {severity=WARNING_; tty_override=1;}
-			else errno=errno_save;
+      int errno_save=errno;
+      if(isatty(STDIN_FILENO)) {severity=WARNING_; tty_override=1;}
+      else errno=errno_save;
 #endif	
-		}
-	}
+    }
+  }
 
-	if(severity == ERROR_) cout << "ERROR: ";
-	else cout << "WARNING: ";
-	cout << flush;
+  if(severity == ERROR_) cout << "ERROR: ";
+  else cout << "WARNING: ";
+  cout << flush;
 	
-	va_start(vargs,format);
-	vform(format,vargs);
-	va_end(vargs);
+  va_start(vargs,format);
+  vform(format,vargs);
+  va_end(vargs);
 	
-	if(*file) cout << " (\"" << file << "\":" << line << ")";
-	cout << "." << endl;
+  if(*file) cout << " (\"" << file << "\":" << line << ")";
+  cout << "." << endl;
 	
-	if(errno && errno < sys_nerr) cout << sys_errlist[errno] << "." << endl;
+  if(errno && errno < sys_nerr) cout << sys_errlist[errno] << "." << endl;
 	
-	if(tty_override) {
-		cout << "Override (y/n)? ";
-		cin >> c;
-		if(c != 'Y' && c !='y') severity=ERROR_;
-	}
+  if(tty_override) {
+    cout << "Override (y/n)? ";
+    cin >> c;
+    if(c != 'Y' && c !='y') severity=ERROR_;
+  }
 
-	if((severity == ERROR_ && abort_flag) || severity == SLEEP_) {
-		if(inform) {
-			strstream buf,vbuf;
-			va_start(vargs,format);
-			vform(format,vargs,vbuf);
-			va_end(vargs);
-			vbuf << ends;
-			buf << ((severity == SLEEP_ && __unix) ? "paused" : "terminated")
-				<< " due to error";
-			if(*file) buf << " from \"" << file << "\":" << line;
-			buf << "." << newl << vbuf.str();
-			if(errno && errno < sys_nerr)
-				buf << " " << sys_errlist[errno] << ".";
-			buf << ends;
-			(*inform)(buf.str());
-		}
-		if(severity == SLEEP_ && __unix) {
+  if((severity == ERROR_ && abort_flag) || severity == SLEEP_) {
+    if(inform) {
+      strstream buf,vbuf;
+      va_start(vargs,format);
+      vform(format,vargs,vbuf);
+      va_end(vargs);
+      vbuf << ends;
+      buf << ((severity == SLEEP_ && __unix) ? "paused" : "terminated")
+	  << " due to error";
+      if(*file) buf << " from \"" << file << "\":" << line;
+      buf << "." << newl << vbuf.str();
+      if(errno && errno < sys_nerr)
+	buf << " " << sys_errlist[errno] << ".";
+      buf << ends;
+      (*inform)(buf.str());
+    }
+    if(severity == SLEEP_ && __unix) {
 #if __unix			
-			cout << "Going to sleep..." << flush;
-			signal(SIGCONT,wakeup);
-			pause();
-			signal(SIGCONT,SIG_DFL);
+      cout << "Going to sleep..." << flush;
+      signal(SIGCONT,wakeup);
+      pause();
+      signal(SIGCONT,SIG_DFL);
 #endif			
-		} else {
-			exit(FATAL);
-			cout << endl;
-		}
-	}
+    } else {
+      exit(FATAL);
+      cout << endl;
+    }
+  }
 	
-	cout << flush;
-	errno=0;
+  cout << flush;
+  errno=0;
 }

@@ -11,16 +11,16 @@ static double cpu[ncputime];
 
 int poll()
 {
-	double seconds=0.0;
-	if(!tlimit) TREMAIN(tlimit);
+  double seconds=0.0;
+  if(!tlimit) TREMAIN(tlimit);
 	
-	cputime(cpu);
-	for(int i=0; i < ncputime; i++) seconds += cpu[i];
+  cputime(cpu);
+  for(int i=0; i < ncputime; i++) seconds += cpu[i];
 
-	if(2.0*seconds-last_seconds < 0.95*tlimit) {
-		last_seconds=seconds;
-		return 0;
-	}
-	cout << endl << "CPU time limit is approaching; exit forced." << endl;
-	return 1;
+  if(2.0*seconds-last_seconds < 0.95*tlimit) {
+    last_seconds=seconds;
+    return 0;
+  }
+  cout << endl << "CPU time limit is approaching; exit forced." << endl;
+  return 1;
 }
