@@ -13,6 +13,7 @@ extern int gradient;
 extern int damp;
 extern double r1,g1,b1;
 extern double r2,g2,b2;
+extern int reverse;
 
 static int k,incr;
 
@@ -138,8 +139,8 @@ void MakePalette(int palette)
 		return;
 		
 	case GENERAL:
-		for(i=0; i <= n; i++) AddColor(1-r1-r2*i*ninv,1-g1-g2*i*ninv,
-									   1-b1-b2*i*ninv);
+		reverse=!reverse;
+		for(i=0; i <= n; i++) AddColor(r1-r2*i*ninv,g1-g2*i*ninv,b1-b2*i*ninv);
 		return;
 		
 	case YELLOW: 
