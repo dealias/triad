@@ -20,6 +20,7 @@ int main()
 	for(i=0; i < m; i++) f[i]=h[i];
 	for(i=0; i < m; i++) g[i]=h[i];
 	convolve(f,f,g,m,log2n);
+	
 	for(i=0; i < m; i++) cout << f[i] << endl;
 	cout << endl;
 	

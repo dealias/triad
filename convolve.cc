@@ -1,6 +1,8 @@
 #include "options.h"
 #include "fft.h"
 
+const int bitreverse=1; // Use faster bit-reversed FFT's if available
+
 // Compute H = F (*) G, where F and G contain the non-negative Fourier
 // components of real functions f and g, respectively. Dealiasing via
 // zero-padding is implemented automatically.
@@ -16,22 +18,20 @@
 void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
 			   int log2n)
 {
-	unsigned int n=1 << log2n, n2=n/2;
+	const unsigned int n=1 << log2n, n2=n/2;
 	unsigned int i;
 
 #pragma ivdep	
 	for(i=m; i < n2+1; i++) F[i]=0.0;
-	crfft(F,log2n,-1,1);
+	crfft(F,log2n,-1,1.0,-bitreverse);
 	
-	Real ninv=1.0/n;
 #pragma ivdep	
 	for(i=0; i < n2; i++) {
-		H[i].re=F[i].re*g[i].re*ninv;
-		H[i].im=F[i].im*g[i].im*ninv;
+		H[i].re=F[i].re*g[i].re;
+		H[i].im=F[i].im*g[i].im;
 	}
 	
-	rcfft(H,log2n,1,1);
-//	H[0].im=0.0;
+	rcfft(H,log2n,1,1.0/n,bitreverse);
 }
 
 // Compute H = F (*) G, where F and G contain the non-negative Fourier
@@ -54,7 +54,7 @@ void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
 
 #pragma ivdep	
 	for(i=m; i < n/2+1; i++) G[i]=0.0;
-	crfft(G,log2n,-1,1);
+	crfft(G,log2n,-1,1.0,-bitreverse);
 	
 	convolve0(H,F,G,m,log2n);
 }	

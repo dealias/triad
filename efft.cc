@@ -9,10 +9,9 @@ extern "C" void dcft(const int& init,
 					 double *aux2, const int& naux2); 
 
 static int zero=0, one=1;
-static double scale=1.0;
 
 void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
-		  unsigned int inc1, unsigned int inc2, int)
+		  unsigned int inc1, unsigned int inc2, Real scale, int)
 {
 	static int TableSize=0;
 	static unsigned int *nTable=NULL, *nkTable=NULL, *nauxTable=NULL;
@@ -64,27 +63,3 @@ void fft(Complex *data, unsigned int log2n, int isign, int)
 {
 	mfft(data,log2n,isign,1,1,1,1);
 }
-
-
-#if 0
-void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
-			unsigned int inc1, unsigned int inc2, int bitreverse)
-{		 
-	dcrft(zero,data,inc2,data,inc2,n,nk,isign,scale,
-		  aux1[i][j],naux,aux2[i][j],naux);
-}
-
-void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
-			  int isign)
-{
-	
-	unsigned int nx=1 << log2nx;
-	unsigned int ny=1 << log2ny;
-	const unsigned int nyp=ny/2+1;
-	isign = -isign;
-
-	dcft(zero,data,nyp,data,nyp+2,ny,nx,isign,scale,
-		 aux1,naux1,aux2,naux2,aux3,naux3);
-}
-#endif
-

@@ -47,17 +47,16 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 }
 
 extern "C" void CCFFT(const int& isign, const int& n, const Real& scale,
-					 Complex *x, Complex *y, Real *table, Real *work, 
-					 const int& isys);
+					  Complex *x, Complex *y, Real *table, Real *work, 
+					  const int& isys);
 		 
-void fft(Complex *data, unsigned int log2n, int isign, int)
+void fft(Complex *data, unsigned int log2n, int isign, Real scale, int)
 {
 	static int TableSize=0;
 	static unsigned int *nTable=NULL;
 	static Real **table=NULL,**work=NULL;
 	const int isys=0;
 	const int zero=0;
-	const Real scale=1.0;
 	int j;
 	
 	unsigned int n=1 << log2n;
@@ -77,6 +76,3 @@ void fft(Complex *data, unsigned int log2n, int isign, int)
 	
 	CCFFT(isign,n,scale,data,data,table[j],work[j],isys);
 }
-
-
-
