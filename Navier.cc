@@ -6,18 +6,23 @@
 
 #include <sys/stat.h>
 
+LinearityBase *Linearity;
+
 char *NWaveVocabulary::Name() {return "N-Wave";}
 char *NWaveVocabulary::Abbrev() {return "nw";}
 
 char *method="PS";
 char *geometry="Cartesian";
 char *integrator="PC";
+char *linearity="BandLimited";
 
 // Global variables
 Real alpha=1.0;
 Real beta=1.0;
 Real E0=1.0;
 Real U0=1.0;
+
+Real krmin=1.0;
 
 Real kforce=0.0;
 Real deltaf=1.0;
@@ -51,6 +56,7 @@ NWaveVocabulary::NWaveVocabulary()
 	
 	VOCAB(reality,0,1);
 	VOCAB(geometry,"","");
+	VOCAB(linearity,"","");
 	
 	VOCAB(alpha,0.0,0.0);
 	VOCAB(beta,0.0,0.0);
@@ -94,6 +100,7 @@ NWaveVocabulary::NWaveVocabulary()
 	VOCAB(weiss,0,1);
 	
 	GeometryTable=new Table<GeometryBase>("Geometry");
+	LinearityTable=new Table<LinearityBase>("Linearity");
 
 	METHOD(SR);
 	METHOD(Convolution);
@@ -113,6 +120,9 @@ NWaveVocabulary::NWaveVocabulary()
 	
 	PARTITION(Polar,Cartesian);
 	BASIS(Cartesian);
+	
+	LINEARITY(BandLimited);
+	LINEARITY(Waltz);
 }
 
 NWaveVocabulary NWave_Vocabulary;
@@ -124,7 +134,7 @@ Real force_re(const Polar& v)
 	else return 0.0;
 }
 
-inline Real growth(const Polar& v) 
+inline Real BandLimited::Growth(const Polar& v) 
 {
 	Real k=v.K();
 	Real gamma=0.0;
@@ -134,19 +144,21 @@ inline Real growth(const Polar& v)
 	return gamma;
 }
 
-inline Real frequency(const Polar& v)
+inline Real BandLimited::Frequency(const Polar& v)
 {
 	return vd*v.Y()/v.K2();
 }
 
-Real linearity_re(const Polar& v)
+inline Real Waltz::Growth(const Polar& v) 
 {
-	return -growth(v);
+	Real tempx=abs(v.X())/0.5-1.0;
+	Real tempy=abs(v.Y())/0.5-1.0;
+	return 0.06*(1.0-0.5*(tempx*tempx+tempy*tempy))-0.05;
 }
 
-Real linearity_im(const Polar& v)
+inline Real Waltz::Frequency(const Polar& v)
 {
-	return frequency(v);
+	return vd*v.Y()/v.K2();
 }
 
 static Real equilibrium(int i)
@@ -174,6 +186,7 @@ void NWave::InitialConditions()
 	if(!Geometry->Valid(Problem->Abbrev()))
 		msg(ERROR,"Geometry \"%s\" is incompatible with method \"%s\"",
 			Geometry->Name(),Problem->Abbrev());
+	Linearity=NWave_Vocabulary.NewLinearity(linearity);
 	Npsi=Geometry->Create();
 	ny=Npsi*(1+Nmoment);
 	Ntotal=Geometry->TotalNumber();
@@ -441,14 +454,14 @@ void NWave::Output(int)
 void LinearityAt(int i,Real& nu)
 {
 	Polar v=Polar(Geometry->K(i),Geometry->Th(i));
-	nu=linearity_re(v);
+	nu=Linearity->LinearityReal(v);
 	return;
 }
 
 void LinearityAt(int i, Complex& nu)
 {
 	Polar v=Polar(Geometry->K(i),Geometry->Th(i));
-	nu=linearity_re(v)+I*linearity_im(v);
+	nu=Linearity->LinearityReal(v)+I*Linearity->LinearityImag(v);
 	return;
 }
 

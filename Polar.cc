@@ -1,13 +1,13 @@
 #include "options.h"
 #include "kernel.h"
 #include "Polar.h"
+#include "Linearity.h"
 
 #include <iomanip.h>
 
 // Polar vocabulary
 int Nr=3;
 int Nth=6;
-Real krmin=1.0;
 Real krmax=2.0;
 Real kthmin=0.0;
 
@@ -142,8 +142,6 @@ void Bin<Polar,Cartesian>::MakeModes()
 static const Real linacc=1.0E-5;
 static const Real dxmax=REAL_MAX;
 
-Real linearity_re(const Polar& v);
-Real linearity_im(const Polar& v);
 Real force_re(const Polar& v);
 
 static Real k0;
@@ -151,12 +149,12 @@ static Bin<Polar,Cartesian> b;
 
 static Real linearity_re(Real th)
 {
-	return linearity_re(Polar(k0,th));
+	return Linearity->LinearityReal(Polar(k0,th));
 }
 
 static Real linearity_im(Real th)
 {
-	return linearity_im(Polar(k0,th));
+	return Linearity->LinearityImag(Polar(k0,th));
 }
 
 static Real force_re(Real th)

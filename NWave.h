@@ -5,6 +5,7 @@
 #include "Geometry.h"
 #include "Partition.h"
 #include "Basis.h"
+#include "Linearity.h"
 
 extern int Npsi;   // number of explictly evolved modes
 extern int NpsiR;  // number of reflected modes
@@ -24,7 +25,13 @@ public:
 	char *Abbrev();
 	NWaveVocabulary();
 	Table<GeometryBase> *GeometryTable;
-	GeometryBase *NewGeometry(char *key) {return GeometryTable->Locate(key);}
+	Table<LinearityBase> *LinearityTable;
+	GeometryBase *NewGeometry(char *key) {
+		return GeometryTable->Locate(key);
+	}
+	LinearityBase *NewLinearity(char *key) {
+		return LinearityTable->Locate(key);
+	}
 };
 
 class NWave : public ProblemBase {
