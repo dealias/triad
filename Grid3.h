@@ -95,14 +95,14 @@ class Grid3 : public Grid<Array3<T>,T> {
       ZDirichlet(r,u,1);
     }
     for(int i=i1; i <= i2p; i++) {
-      int i2=rx*i+offx;
-      Array2<T> ri=r[i], um=u[i2-1], uz=u[i2], up=u[i2+1];
+      int i0=rx*i+offx;
+      Array2<T> ri=r[i], um=u[i0-1], uz=u[i0], up=u[i0+1];
       for(int j=j1; j <= j2p; j++) {
-	int j2=ry*j+offy;
+	int j0=ry*j+offy;
 	Array1<T>::opt rij=ri[j];
-	Array1<T>::opt umm=um[j2-1]+offz, umz=um[j2]+offz, ump=um[j2+1]+offz;
-	Array1<T>::opt uzm=uz[j2-1]+offz, uzz=uz[j2]+offz, uzp=uz[j2+1]+offz;
-	Array1<T>::opt upm=up[j2-1]+offz, upz=up[j2]+offz, upp=up[j2+1]+offz;
+	Array1<T>::opt umm=um[j0-1]+offz, umz=um[j0]+offz, ump=um[j0+1]+offz;
+	Array1<T>::opt uzm=uz[j0-1]+offz, uzz=uz[j0]+offz, uzp=uz[j0+1]+offz;
+	Array1<T>::opt upm=up[j0-1]+offz, upz=up[j0]+offz, upp=up[j0+1]+offz;
 	for(int k=k1; k <= k2p; k++) {
 	  rij[k]=0.125*(0.5*(0.5*(0.5*(
 				       umm[rz*k-1]+umm[rz*k+1]+ump[rz*k-1]+
@@ -123,12 +123,12 @@ class Grid3 : public Grid<Array3<T>,T> {
   virtual void SubtractProlongation(const Array3<T>& u,
 				    const Array3<T>& v0) {
     for(int i=i1p; i <= i2p; i++) {
-      int i2=rx*i+offx;
-      Array2<T> uz=u[i2], up=u[i2+1], vz=v0[i], vp=v0[i+1];
+      int i0=rx*i+offx;
+      Array2<T> uz=u[i0], up=u[i0+1], vz=v0[i], vp=v0[i+1];
       for(int j=j1p; j <= j2p; j++) {
-	int j2=ry*j+offy;
-	Array1<T>::opt uzz=uz[j2]+offz, uzp=uz[j2+1]+offz, upz=up[j2]+offz;
-	Array1<T>::opt upp=up[j2+1]+offz;
+	int j0=ry*j+offy;
+	Array1<T>::opt uzz=uz[j0]+offz, uzp=uz[j0+1]+offz, upz=up[j0]+offz;
+	Array1<T>::opt upp=up[j0+1]+offz;
 	Array1<T>::opt vzz=vz[j], vzp=vz[j+1], vpz=vp[j], vpp=vp[j+1];
 	for(int k=k1p; k <= k2p; k++) {
 	  uzz[rz*k] -= vzz[k];
