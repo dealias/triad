@@ -27,9 +27,10 @@ extern Real tauforce;
 
 void ComputeMoments(Var *source, Var *psi) {
 	Var *k, *q=source+Npsi, *kstop=psi+Npsi;
-	for(k=psi; k < kstop; k++, q++) *q=product(*(q-Npsi),*k); // S_k*psi_k
 #pragma ivdep
+	for(k=psi; k < kstop; k++, q++) *q=product(*(q-Npsi),*k); // S_k*psi_k
 	if(Nmoment > 1) {
+#pragma ivdep
 		for(k=psi; k < kstop; k++, q++) *q=*k; // psi_k
 		for(int n=2; n < Nmoment; n++) { // psi_k^n
 #pragma ivdep

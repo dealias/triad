@@ -22,8 +22,7 @@ static int testing=0;
 static double cpu[ncputime],cpu0[ncputime];
 static final_iteration=0;
 static int total_invert_cnt=0;
-void Integrand(Var *, Var *, double);
-Source_t *LinearSrc=NULL,*NonlinearSrc=NULL,*ConstantSrc=NULL;
+static Source_t *LinearSrc=NULL,*NonlinearSrc=NULL,*ConstantSrc=NULL;
 
 static char *pname,*rname,*iname,*ptemp,*rtemp,*lname;
 static ifstream fparam,fin;
@@ -50,10 +49,12 @@ int verbose=1;
 int discrete=0;
 
 // Local vocabulary declarations and default values
-int microsteps=1;
-double sample=0.0;
-int initialize=0;
-int clobber=0;
+static int microsteps=1;
+static double sample=0.0;
+static int initialize=0;
+static int clobber=0;
+
+static int average=0; // Obsolete
 
 ProblemBase::ProblemBase()
 {
@@ -84,6 +85,8 @@ ProblemBase::ProblemBase()
 	VOCAB(approximation,"","");
 	VOCAB(integrator,"","");
 	
+	VOCAB_NODUMP(average,0,1) // Obsolete
+		
 	ApproximationTable=new Table<ApproximationBase>("approximation",
 													ApproximationCompare,
 													ApproximationKeyCompare);
@@ -239,7 +242,7 @@ void read_init()
 	ifstream finit;
 	double t0,dt0;
 	int ny0,formatted=0;
-	char ny_msg[]=
+	char *ny_msg=
 		"Current value of ny (%d) disagrees with value (%d) in file\n%s";
 	
 	iname=rname;
