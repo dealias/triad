@@ -401,6 +401,32 @@ void out_real(S& os, Real *f, const char *textre, const char *, unsigned int n)
 	out_curve(os,f,textre,n,default_nperline);
 }
 
+template<class S>
+inline void out_function(S& os, Real (*f)(unsigned int), const char *text,
+						 int n)
+{
+	if(n >= 0) out_function(os,f,text,(unsigned int) n,default_nperline);
+}
+	
+template<class S, class T>
+inline void out_curve(S& os, T *f, const char *text, int n)
+{
+	if(n >= 0) out_curve(os,f,text,(unsigned int) n,default_nperline);
+}
+
+template<class S>
+void out_real(S& os, Real *f, const char *textre, const char *,
+			  int n, int nperline) 
+{
+	if(n >= 0) out_curve(os,f,textre,(unsigned int) n,nperline);
+}
+
+template<class S>
+void out_real(S& os, Real *f, const char *textre, const char *, int n)
+{
+	if(n >= 0) out_curve(os,f,textre,(unsigned int) n,default_nperline);
+}
+
 extern Complex *out_base;
 Real out_re(unsigned int i);
 Real out_im(unsigned int i);
