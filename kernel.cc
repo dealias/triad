@@ -20,6 +20,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "options.h"
 #include "kernel.h"
 
+#include <sys/stat.h> // On the sun this must come after xstream.h
 #include <iomanip.h>
 
 const char PROGRAM[]="TRIAD";
