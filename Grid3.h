@@ -40,6 +40,12 @@ class Grid3 : public Grid<Array3<T>,T> {
   int Nx1bc() {return nx1bc;}
   int Ny1bc() {return ny1bc;}
   int Nz1bc() {return nz1bc;}
+  int I1() {return i1;}
+  int I2() {return i2;}
+  int J1() {return j1;}
+  int J2() {return j2;}
+  int K1() {return k1;}
+  int K2() {return k2;}
   int Ox() {return ox;}
   int Oy() {return oy;}
   int Oz() {return oz;}
@@ -155,79 +161,79 @@ class Grid3 : public Grid<Array3<T>,T> {
   }
 	
   void Lexicographical(const Array3<T>& u, const Array3<T>& f) {
-    GaussSeidel(u,f,1,1,1,1,1,1);
+    GaussSeidel(u,f,0,0,0,1,1,1);
   }
 	
   void XLexicographical(const Array3<T>& u, const Array3<T>& f) {
-    XGaussSeidel(u,f,1,1,1,1);
+    XGaussSeidel(u,f,0,0,1,1);
   }
 	
   void YLexicographical(const Array3<T>& u, const Array3<T>& f) {
-    YGaussSeidel(u,f,1,1,1,1);
+    YGaussSeidel(u,f,0,0,1,1);
   }
 	
   void ZLexicographical(const Array3<T>& u, const Array3<T>& f) {
-    ZGaussSeidel(u,f,1,1,1,1);
+    ZGaussSeidel(u,f,0,0,1,1);
   }
 	
   void XYLexicographical(const Array3<T>& u, const Array3<T>& f) {
-    XYGaussSeidel(u,f,1,1);
+    XYGaussSeidel(u,f,0,1);
   }
 	
   void XZLexicographical(const Array3<T>& u, const Array3<T>& f) {
-    XZGaussSeidel(u,f,1,1);
+    XZGaussSeidel(u,f,0,1);
   }
 	
   void YZLexicographical(const Array3<T>& u, const Array3<T>& f) {
-    YZGaussSeidel(u,f,1,1);
+    YZGaussSeidel(u,f,0,1);
   }
 	
   void RedBlack(const Array3<T>& u, const Array3<T>& f) {
-    GaussSeidel(u,f,1,1,1,2,2,2);
-    GaussSeidel(u,f,1,2,2,2,2,2);
-    GaussSeidel(u,f,2,1,2,2,2,2);
-    GaussSeidel(u,f,2,2,1,2,2,2);
+    GaussSeidel(u,f,0,0,0,2,2,2);
+    GaussSeidel(u,f,0,1,1,2,2,2);
+    GaussSeidel(u,f,1,0,1,2,2,2);
+    GaussSeidel(u,f,1,1,0,2,2,2);
 		
-    GaussSeidel(u,f,1,1,2,2,2,2);
-    GaussSeidel(u,f,1,2,1,2,2,2);
-    GaussSeidel(u,f,2,1,1,2,2,2);
-    GaussSeidel(u,f,2,2,2,2,2,2);
+    GaussSeidel(u,f,0,0,1,2,2,2);
+    GaussSeidel(u,f,0,1,0,2,2,2);
+    GaussSeidel(u,f,1,0,0,2,2,2);
+    GaussSeidel(u,f,1,1,1,2,2,2);
   }
 	
   void XZebra(const Array3<T>& u, const Array3<T>& f) {
+    XGaussSeidel(u,f,0,0,2,2);
     XGaussSeidel(u,f,1,1,2,2);
-    XGaussSeidel(u,f,2,2,2,2);
-    XGaussSeidel(u,f,1,2,2,2);
-    XGaussSeidel(u,f,2,1,2,2);
+    XGaussSeidel(u,f,0,1,2,2);
+    XGaussSeidel(u,f,1,0,2,2);
   }
 	
   void YZebra(const Array3<T>& u, const Array3<T>& f) {
+    YGaussSeidel(u,f,0,0,2,2);
     YGaussSeidel(u,f,1,1,2,2);
-    YGaussSeidel(u,f,2,2,2,2);
-    YGaussSeidel(u,f,1,2,2,2);
-    YGaussSeidel(u,f,2,1,2,2);
+    YGaussSeidel(u,f,0,1,2,2);
+    YGaussSeidel(u,f,1,0,2,2);
   }
 	
   void ZZebra(const Array3<T>& u, const Array3<T>& f) {
+    ZGaussSeidel(u,f,0,0,2,2);
     ZGaussSeidel(u,f,1,1,2,2);
-    ZGaussSeidel(u,f,2,2,2,2);
-    ZGaussSeidel(u,f,1,2,2,2);
-    ZGaussSeidel(u,f,2,1,2,2);
+    ZGaussSeidel(u,f,0,1,2,2);
+    ZGaussSeidel(u,f,1,0,2,2);
   }
 	
   void XYZebra(const Array3<T>& u, const Array3<T>& f) {
+    XYGaussSeidel(u,f,0,2);
     XYGaussSeidel(u,f,1,2);
-    XYGaussSeidel(u,f,2,2);
   }
 	
   void XZZebra(const Array3<T>& u, const Array3<T>& f) {
+    XZGaussSeidel(u,f,0,2);
     XZGaussSeidel(u,f,1,2);
-    XZGaussSeidel(u,f,2,2);
   }
 	
   void YZZebra(const Array3<T>& u, const Array3<T>& f) {
+    YZGaussSeidel(u,f,0,2);
     YZGaussSeidel(u,f,1,2);
-    YZGaussSeidel(u,f,2,2);
   }
 	
   void Sum2(const Array3<T>& u, T& s) {
@@ -258,9 +264,9 @@ class Grid3 : public Grid<Array3<T>,T> {
 	
   void XDirichlet(const Array3<T>& u, const Array3<T>& b, int contract=0) {
     if(homogeneous) return;
-    int nx0,ny0bc,nz0bc;
-    if(contract) {I2=nx1; ny0bc=ny1bc; nz0bc=nz1bc;}
-    else {I2=nx; ny0bc=nybc; nz0bc=nzbc;} 
+    int I2,ny0bc,nz0bc;
+    if(contract) {I2=i2p; ny0bc=ny1bc; nz0bc=nz1bc;}
+    else {I2=i2; ny0bc=nybc; nz0bc=nzbc;} 
     Array2<T> u0=u[i1-1], unx1=u[I2+1];
     Array2<T> b0=b[i1-1], bnx1=b[i2+1];
     for(int j=0; j < ny0bc; j++) {
@@ -344,8 +350,8 @@ class Grid3 : public Grid<Array3<T>,T> {
   void YDirichlet(const Array3<T>& u, const Array3<T>& b, int contract=0) {
     if(homogeneous) return;
     int nx0bc,J2,nz0bc;
-    if(contract) {nx0bc=nx1bc; J2=ny1; nz0bc=nz1bc;} 
-    else {nx0bc=nxbc; J2=ny; nz0bc=nzbc;} 
+    if(contract) {nx0bc=nx1bc; J2=j2p; nz0bc=nz1bc;} 
+    else {nx0bc=nxbc; J2=j2; nz0bc=nzbc;} 
     for(int i=0; i < nx0bc; i++) {
       Array2<T> ui=u[i], bi=b[i];
       Array1<T>::opt ui0=ui[j1-1], uiny1=ui[J2+1];
@@ -407,7 +413,7 @@ class Grid3 : public Grid<Array3<T>,T> {
 	
   void ZDirichlet(const Array3<T>& u, const Array3<T>& b, int contract=0) {
     if(homogeneous) return;
-    int nx0bc,ny0bc,nz0;
+    int nx0bc,ny0bc,K2;
     if(contract) {nx0bc=nx1bc; ny0bc=ny1bc; K2=k2p;}
     else {nx0bc=nxbc; ny0bc=nybc; K2=k2;} 
     for(int i=0; i < nx0bc; i++) {

@@ -108,33 +108,33 @@ class Grid2 : public Grid<Array2<T>,T> {
   }
 	
   void Lexicographical(const Array2<T>& u, const Array2<T>& f) {
-    GaussSeidel(u,f,1,1,1,1);
+    GaussSeidel(u,f,0,0,1,1);
   }
 	
   void XLexicographical(const Array2<T>& u, const Array2<T>& f) {
-    XGaussSeidel(u,f,1,1);
+    XGaussSeidel(u,f,0,1);
   }
 	
   void YLexicographical(const Array2<T>& u, const Array2<T>& f) {
-    YGaussSeidel(u,f,1,1);
+    YGaussSeidel(u,f,0,1);
   }
 	
   void RedBlack(const Array2<T>& u, const Array2<T>& f) {
+    GaussSeidel(u,f,0,0,2,2);
     GaussSeidel(u,f,1,1,2,2);
-    GaussSeidel(u,f,2,2,2,2);
 		
-    GaussSeidel(u,f,1,2,2,2);
-    GaussSeidel(u,f,2,1,2,2);
+    GaussSeidel(u,f,0,1,2,2);
+    GaussSeidel(u,f,1,0,2,2);
   }
 	
   void XZebra(const Array2<T>& u, const Array2<T>& f) {
+    XGaussSeidel(u,f,0,2);
     XGaussSeidel(u,f,1,2);
-    XGaussSeidel(u,f,2,2);
   }
 	
   void YZebra(const Array2<T>& u, const Array2<T>& f) {
+    YGaussSeidel(u,f,0,2);
     YGaussSeidel(u,f,1,2);
-    YGaussSeidel(u,f,2,2);
   }
 	
   void Sum2(const Array2<T>& u, T& s) {

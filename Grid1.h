@@ -72,12 +72,12 @@ class Grid1 : public Grid<Array1<T>,T> {
   }
 	
   void Lexicographical(const Array1<T>& u, const Array1<T>& f) {
-    GaussSeidel(u,f,1,1);
+    GaussSeidel(u,f,0,1);
   }
 	
   void RedBlack(const Array1<T>& u, const Array1<T>& f) {
+    GaussSeidel(u,f,0,2);
     GaussSeidel(u,f,1,2);
-    GaussSeidel(u,f,2,2);
   }
 	
   void Sum2(const Array1<T>& u, T& s) {
