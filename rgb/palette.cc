@@ -95,8 +95,9 @@ void MakePalette(int palette)
 	if(palette == BWRAINBOW) {
 		int n3=n/3;
 		int n23=2*n3;
-		for(i=0; i < n3; i++) AddColor(1.0,(n23-i)*1.5*ninv,(n-i)*ninv);
-		for(i=0; i < n3; i++) AddColor(1.0,(n3-i)*1.5*ninv,(n23-i)*ninv);
+		for(i=0; i < n3; i++) AddColor((n-i)*ninv,(n23-i)*1.5*ninv,(n-i)*ninv);
+		for(i=0; i < n3; i++) AddColor((n23+i)*ninv,(n3-i)*1.5*ninv,
+									   (n23-i)*ninv);
 		for(i=0; i < n3; i++) AddColor(1.0,0.0,(n3-i)*ninv);
 	}
 	
