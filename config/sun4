@@ -1,4 +1,4 @@
-C++ = CC -D_POSIX_SOURCE
+C++ = CC -D_POSIX_SOURCE -xtarget native
 OPT = $(CFLAGS)
 MAKEDEPEND = $(C++) -xM
 INCL = -I$(TRI)
