@@ -1105,6 +1105,10 @@ void identify(int, int n, const char *type, int& xsize, int& ysize)
 	char c='x';
 	while(fin && c != ' ') fin.get(c);
 	fin >> xsize;
+#define WORKAROUND_YUV_BUG	
+#ifdef WORKAROUND_YUV_BUG	
+	xsize++;
+#endif	
 	fin.get(c);
 	if(c != 'x') {
 		cleanup();

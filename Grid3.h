@@ -298,7 +298,7 @@ public:
 		}
 	}
 	
-	void XDirichletInterpolate(const Array3<T>& u, T b0, T b1) {
+	void XDirichletInNeumann(const Array3<T>& u, T b0, T b1) {
 		if(homogeneous) {b0=b1=0.0;}
 		else {b0 *= 2.0; b1 *= 2.0;}
 		Array2<T> u0=u[0], u2=u[2], unxm1=u[nx-1], unx1=u[nx+1];
@@ -410,7 +410,7 @@ public:
 		}
 	}
 	
-	void YDirichletInterpolate(const Array3<T>& u, T b0, T b1) {
+	void YDirichletInNeumann(const Array3<T>& u, T b0, T b1) {
 		if(homogeneous) {b0=b1=0.0;}
 		else {b0 *= 2.0; b1 *= 2.0;}
 		for(int i=0; i < nxbc; i++) {
@@ -494,7 +494,7 @@ public:
 		}
 	}
 	
-	void ZDirichletInterpolate(const Array3<T>& u, T b0, T b1) {
+	void ZDirichletInNeumann(const Array3<T>& u, T b0, T b1) {
 		if(homogeneous) {b0=b1=0.0;}
 		else {b0 *= 2.0; b1 *= 2.0;}
 		for(int i=0; i < nxbc; i++) {

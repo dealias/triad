@@ -119,30 +119,34 @@ public:
 	}
 	
 	void XNeumann2(const Array1<T>& u) {
-		u[-2]=u[4];
-		
 		u[-1]=u[3];
 		u[0]=u[2];
 		u[nx+1]=u[nx-1];
 		u[nx+2]=u[nx-2];
-		
-		u[nx+3]=u[nx-3];
 	}
 	
-	void XDirichletInterpolate(const Array1<T>& u, T b0, T b1) {
+	void XDirichletInNeumann(const Array1<T>& u, T b0, T b1) {
 		if(homogeneous) {b0=b1=0.0;}
 		else {b0 *= 2.0; b1 *= 2.0;}
 		u[0]=b0-u[2];
 		u[nx+1]=b1-u[nx-1];
 	}
 	
-	void XDirichletInterpolate2(const Array1<T>& u, T b0, T b1) {
-		if(homogeneous) {b0=b1=0.0;}
-		else {b0 *= 2.0; b1 *= 2.0;}
-		u[-1]=b0-u[3];
-		u[0]=b0-u[2];
-		u[nx+1]=b1-u[nx-1];
-		u[nx+2]=b1-u[nx-2];
+	void XDirichletInNeumann2(const Array1<T>& u, T b0, T b1) {
+		if(homogeneous) {
+			u[-1]=b0-u[3];
+			u[0]=b0-u[2];
+			u[1]=b0;
+			u[nx]=b1;
+			u[nx+1]=b1-u[nx-1];
+			u[nx+2]=b1-u[nx-2];
+		} else {
+			b0 *= 2.0; b1 *= 2.0;
+			u[-1]=b0-u[3];
+			u[0]=b0-u[2];
+			u[nx+1]=b1-u[nx-1];
+			u[nx+2]=b1-u[nx-2];
+		}
 	}
 	
 	void XConstant(const Array1<T>& u) {
@@ -151,6 +155,11 @@ public:
 	}
 	
 	void XConstant2(const Array1<T>& u) {
+		u[0]=u[-1]=u[1];
+		u[nx+2]=u[nx+1]=u[nx];
+	}
+	
+	void XConstant3(const Array1<T>& u) {
 		u[0]=u[-1]=u[-2]=u[1];
 		u[nx+3]=u[nx+2]=u[nx+1]=u[nx];
 	}
@@ -179,14 +188,10 @@ public:
 	}
 	
 	void XPeriodic2(const Array1<T>& u) {
-		u[-2]=u[nx-2];
-		
 		u[-1]=u[nx-1];
 		u[0]=u[nx];
 		u[nx+1]=u[1];
 		u[nx+2]=u[2];
-		
-		u[nx+3]=u[3];
 	}
 };
 

@@ -238,7 +238,7 @@ public:
 		}
 	}
 	
-	void XDirichletInterpolate(const Array2<T>& u, T b0, T b1) {
+	void XDirichletInNeumann(const Array2<T>& u, T b0, T b1) {
 		if(homogeneous) {b0=b1=0.0;}
 		else {b0 *= 2.0; b1 *= 2.0;}
 		Array1(T) u0=u[0];
@@ -251,9 +251,7 @@ public:
 		}
 	}
 	
-	void XDirichletInterpolate2(const Array2<T>& u, T b0, T b1) {
-		if(homogeneous) {b0=b1=0.0;}
-		else {b0 *= 2.0; b1 *= 2.0;}
+	void XDirichletInNeumann2(const Array2<T>& u, T b0, T b1) {
 		Array1(T) um1=u[-1];
 		Array1(T) u0=u[0];
 		Array1(T) u2=u[2];
@@ -263,11 +261,26 @@ public:
 		Array1(T) unx1=u[nx+1];
 		Array1(T) unx2=u[nx+2];
 		int nybco=nybc+oy;
-		for(int j=oy; j < nybco; j++) {
-			um1[j]=b0-u3[j];
-			u0[j]=b0-u2[j];
-			unx1[j]=b1-unxm1[j];
-			unx2[j]=b1-unxm2[j];
+		
+		if(homogeneous) {
+			Array1(T) u1=u[1];
+			Array1(T) unx=u[nx];
+			for(int j=oy; j < nybco; j++) {
+				um1[j]=-u3[j];
+				u0[j]=-u2[j];
+				u1[j]=0.0;
+				unx[j]=0.0;
+				unx1[j]=-unxm1[j];
+				unx2[j]=-unxm2[j];
+			}
+		} else {
+			b0 *= 2.0; b1 *= 2.0;
+			for(int j=oy; j < nybco; j++) {
+				um1[j]=b0-u3[j];
+				u0[j]=b0-u2[j];
+				unx1[j]=b1-unxm1[j];
+				unx2[j]=b1-unxm2[j];
+			}
 		}
 	}
 	
@@ -436,7 +449,7 @@ public:
 		}
 	}
 	
-	void YDirichletInterpolate(const Array2<T>& u, T b0, T b1) {
+	void YDirichletInNeumann(const Array2<T>& u, T b0, T b1) {
 		if(homogeneous) {b0=b1=0.0;}
 		else {b0 *= 2.0; b1 *= 2.0;}
 		for(int i=0; i < nxbc; i++) {
@@ -446,16 +459,27 @@ public:
 		}
 	}
 	
-	void YDirichletInterpolate2(const Array2<T>& u, T b0, T b1) {
-		if(homogeneous) {b0=b1=0.0;}
-		else {b0 *= 2.0; b1 *= 2.0;}
+	void YDirichletInNeumann2(const Array2<T>& u, T b0, T b1) {
 		int nxbco=nxbc+ox;
-		for(int i=ox; i < nxbco; i++) {
-			Array1(T) ui=u[i];
-			ui[-1]=b0-ui[3];
-			ui[0]=b0-ui[2];
-			ui[ny+1]=b1-ui[ny-1];
-			ui[ny+2]=b1-ui[ny-2];
+		if(homogeneous) {
+			for(int i=ox; i < nxbco; i++) {
+				Array1(T) ui=u[i];
+				ui[-1]=-ui[3];
+				ui[0]=-ui[2];
+				ui[1]=0.0;
+				ui[ny]=0.0;
+				ui[ny+1]=-ui[ny-1];
+				ui[ny+2]=-ui[ny-2];
+		   }
+		} else {
+			b0 *= 2.0; b1 *= 2.0;
+			for(int i=ox; i < nxbco; i++) {
+				Array1(T) ui=u[i];
+				ui[-1]=b0-ui[3];
+				ui[0]=b0-ui[2];
+				ui[ny+1]=b1-ui[ny-1];
+				ui[ny+2]=b1-ui[ny-2];
+			}
 		}
 	}
 	
