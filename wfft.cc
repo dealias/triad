@@ -1,7 +1,6 @@
 #include "options.h"
 #include <fstream>
-#include <fftw.h>
-#include <rfftw.h>
+#include <fftw3.h>
 #include "fft.h"
 
 inline void fftw_export_wisdom(void (*emitter)(char c, ofstream& s),

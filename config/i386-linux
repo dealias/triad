@@ -4,4 +4,4 @@ LIB = $(LFLAGS) -lm
 MAKEDEPEND = $(C++) -M -DDEPEND
 
 FFT = wfft
-LIBFFT = -lrfftw -lfftw 
+LIBFFT = -lrfftw -lfftw3 

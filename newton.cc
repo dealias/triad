@@ -31,7 +31,8 @@ bool newton(Real &x, Real (*f)(Real x), Real (*dfdx)(Real x),
       cerr << "WARNING: Newton-Raphson iteration did not converge." << endl;
       return false;
     }
-  } while(diff != 0.0 && diff < lastdiff);
+//    } while (diff != 0.0 && diff < lastdiff);
+  } while(diff > 1e-10*fabs(x));
 
   if(verbose) cerr << endl;
   return true;

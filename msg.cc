@@ -67,7 +67,10 @@ void msg(int severity, const char *file, int line, const char *format,...)
   if(*file) cout << " (\"" << file << "\":" << line << ")";
   cout << "." << endl;
 	
-  if(errno && errno < sys_nerr) cout << sys_errlist[errno] << "." << endl;
+  if(errno) {
+    char *text=strerror(errno);
+    if(text) cout << text << "." << endl;
+  }	
 	
   if(tty_override) {
     cout << "Override (y/n)? ";
@@ -86,8 +89,10 @@ void msg(int severity, const char *file, int line, const char *format,...)
 	  << " due to error";
       if(*file) buf << " from \"" << file << "\":" << line;
       buf << "." << newl << vbuf.str();
-      if(errno && errno < sys_nerr)
-	buf << " " << sys_errlist[errno] << ".";
+      if(errno) {
+	char *text=strerror(errno);
+	if(text) buf << " " << text << ".";
+      }
       buf << ends;
       (*inform)(buf.str().c_str());
     }
