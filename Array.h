@@ -37,15 +37,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #endif
 
 #include <iostream>
-#include <string>
 #include <sstream>
 #include <unistd.h>
 #include <climits>
 #include <cstdlib>
 
 using std::istream;
-using std::string;
-using std::istringstream;
 using std::ostringstream;
 using std::cout;
 
