@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.08";
+const char VERSION[]="1.09";
 
 #include "xstream.h"
 #include <iostream.h>
@@ -1067,7 +1067,7 @@ void montage(int nfiles, char *argf[], int n, const char *format,
 	
   buf << convertprog << " -size " << xsize << "x" << ysize
       << " -geometry " << xsize << "x" << ysize;
-  if(make_mpeg) buf << " -crop x2800+0+0"; // Workaround internal mpeg limit
+  if(make_mpeg) buf << " -crop 2800x2800+0+0"; // Workaround internal mpeg limit
   buf << option.str() << " -interlace none ";
   if(pointsize) buf << "-pointsize " << pointsize << " ";
   for(int f=0; f < nfiles; f++) {
