@@ -16,7 +16,7 @@ class DynVector
   enum alloc_state {unallocated=0, allocated=1, temporary=2};
   void Allocate(unsigned int s) {v=new T[alloc=s]; size=0; set(allocated);}
   void Deallocate() const {
-    if(test(allocated)) delete [] v;
+    if(test(allocated) && size) delete [] v;
     size=0; alloc=0; clear(allocated);
   }
 	
