@@ -43,11 +43,10 @@ NWave::NWave()
 	INTEGRATOR(C_RK5);
 }
 
-void Convolution::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
-								 Source_t **)
+void Convolution::SetSrcRoutines();
 {
-	*LinearSrc=StandardLinearity;
-	*NonlinearSrc=PrimitiveNonlinearitySR;
+	Problem->LinearSrc=NWave::StandardLinearity;
+	Problem->NonLinearSrc=NWave::PrimitiveNonLinearitySR;
 }
 
 NWave ThreeWaveProblem;

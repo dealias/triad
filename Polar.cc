@@ -17,9 +17,9 @@ Real kthneg;
 char *Partition<Polar,Cartesian>::Name() {return "Polar";}
 
 char *Partition<Polar,Cartesian>::WeightFileName(char *suffix) {
-	char *filename=new char[strlen(Problem->Abbrev())+strlen(Name())+
+	char *filename=new char[strlen(Vocabulary->Abbrev())+strlen(Name())+
 	strlen(suffix)+100];
-	sprintf(filename,"%s/%s/%dx%d_%g:%g_%g%s%s%s",Problem->Abbrev(),
+	sprintf(filename,"%s/%s/%dx%d_%g:%g_%g%s%s%s",Vocabulary->Abbrev(),
 			downcase(Name()),Nr,Nth,krmin,krmax,kthmin,reality ? "R" : "",
 			discrete ? "D" : "",suffix);
 	return filename;

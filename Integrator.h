@@ -5,9 +5,8 @@
 
 inline void IntegratorBase::Source(Var *src, Var *y, double t)
 {
-	if(NonlinearSrc) (*NonlinearSrc)(src,y,t);
-	if(LinearSrc) (*LinearSrc)(src,y,t);
-	if(ConstantSrc) (*ConstantSrc) (src,y,t);
+	Problem->NonLinearSrc(src,y,t);
+	Problem->LinearSrc(src,y,t);
 }
 
 inline void calc_error(const Var& initial, const Var& norm, const Var& pred,

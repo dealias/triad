@@ -4,13 +4,10 @@
 
 #include <sys/stat.h>
 
-char *NWave::Name() {return "N-Wave";}
-char *NWave::Abbrev() {return "nw";}
+char *NWaveVocabulary::Name() {return "N-Wave";}
+char *NWaveVocabulary::Abbrev() {return "nw";}
 
-//char *approximation="SR";
-//char *geometry="Polar";
-
-char *approximation="PS";
+char *problem="PS";
 char *geometry="Cartesian";
 char *integrator="PC";
 
@@ -38,10 +35,10 @@ int pH=1;
 
 int randomIC=1;
 
-NWave::NWave()
+NWaveVocabulary::NWaveVocabulary()
 {
-	Problem=this;
-	GeometryProblem=this;
+	Vocabulary=this;
+	NWave_Vocabulary=this;
 	
 	VOCAB(reality,0,1);
 	VOCAB(geometry,"","");
@@ -81,9 +78,9 @@ NWave::NWave()
 	
 	GeometryTable=new Table<GeometryBase>("Geometry",GeometryCompare,
 										  GeometryKeyCompare);
-	APPROXIMATION(SR);
-	APPROXIMATION(Convolution);
-	APPROXIMATION(PS);
+	PROBLEM(SR);
+	PROBLEM(Convolution);
+	PROBLEM(PS);
 	
 	INTEGRATOR(C_Euler);
 	INTEGRATOR(I_PC);
@@ -101,32 +98,8 @@ NWave::NWave()
 	BASIS(Cartesian);
 }
 
-void SR::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
-						Source_t **ConstantSrc)
-{
-	*LinearSrc=StandardLinearity;
-	*NonlinearSrc=PrimitiveNonlinearitySR;
-	*ConstantSrc=ConstantForcing;
-}
-
-void Convolution::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
-								 Source_t **ConstantSrc)
-{
-	*LinearSrc=StandardLinearity;
-	*NonlinearSrc=PrimitiveNonlinearity;
-	*ConstantSrc=ConstantForcing;
-}
-
-void PS::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
-						Source_t **ConstantSrc)
-{
-	if(!reality) msg(ERROR,"Pseudospectral approximation needs reality=1");
-	*LinearSrc=StandardLinearity;
-	*NonlinearSrc=PrimitiveNonlinearityFFT;
-	*ConstantSrc=ConstantForcing;
-}
-
-NWave NWaveProblem;
+NWaveVocabulary NWaveVocabulary0;
+NWaveVocabulary *NWave_Vocabulary;
 
 Real force_re(const Polar& v) 
 {
@@ -178,10 +151,10 @@ void NWave::InitialConditions()
 {
 	int i,n;
 	
-	Geometry=GeometryProblem->NewGeometry(geometry);
-	if(!Geometry->ValidApproximation(Approximation->Abbrev()))
-		msg(ERROR,"Geometry \"%s\" is incompatible with Approximation \"%s\"",
-			Geometry->Name(),Approximation->Name());
+	Geometry=NWave_Vocabulary->NewGeometry(geometry);
+	if(!Geometry->Valid(Problem->Abbrev()))
+		msg(ERROR,"Geometry \"%s\" is incompatible with Problem \"%s\"",
+			Geometry->Name(),Problem->Abbrev());
 	Npsi=Geometry->Create();
 	ny=Npsi*(1+Nmoment);
 	Ntotal=Geometry->TotalNumber();
@@ -213,7 +186,7 @@ void NWave::InitialConditions()
 	
 	if(restart) {
 		Real t0;
-		ftin.open(Problem->FileName(dirsep,"t"));
+		ftin.open(Vocabulary->FileName(dirsep,"t"));
 		while(ftin >> t0, ftin.good()) tcount++;
 		ftin.close();
 	}
@@ -228,13 +201,13 @@ void NWave::InitialConditions()
 	avgyim=new Avgylabel[Nmoment];
 	for(n=0; n < Nmoment; n++) {
 		sprintf(tempbuffer,"avgy%d",n);
-		mkdir(Problem->FileName(dirsep,tempbuffer),0xFFFF);
+		mkdir(Vocabulary->FileName(dirsep,tempbuffer),0xFFFF);
 		errno=0;
 		sprintf(avgyre[n],"y.re^%d",n);
 		sprintf(avgyim[n],"y.im^%d",n);
 	}
 	
-	Problem->GraphicsDump(fparam);
+	Vocabulary->GraphicsDump(fparam);
 	fparam.close();
 	
 }

@@ -11,8 +11,9 @@ double last_dump=-1.0;
 int iteration=0;
 int invert_cnt=0;
 
+VocabularyBase *Vocabulary;
+ProblemBase *Problem;
 IntegratorBase *Integrator;
-ApproximationBase *Approximation;
 
 // Kernel variables
 static Var *y;
@@ -22,7 +23,6 @@ static int testing=0;
 static double cpu[ncputime],cpu0[ncputime];
 static final_iteration=0;
 static int total_invert_cnt=0;
-static Source_t *LinearSrc=NULL,*NonlinearSrc=NULL,*ConstantSrc=NULL;
 
 static char *pname,*rname,*iname,*ptemp,*rtemp,*lname;
 static ifstream fparam,fin;
@@ -55,10 +55,11 @@ static int initialize=0;
 static int clobber=0;
 
 static int average=0; // Obsolete
+static char *approximation; // Obsolete
 
-ProblemBase::ProblemBase()
+VocabularyBase::VocabularyBase()
 {
-	Problem=this;
+	Vocabulary=this;
 	
 	VOCAB(itmax,0,INT_MAX);
 	VOCAB(microsteps,1,INT_MAX);
@@ -82,16 +83,15 @@ ProblemBase::ProblemBase()
 	VOCAB_NODUMP(run,"","");
 	VOCAB(output,0,1);
 	VOCAB(discrete,0,1);
-	VOCAB(approximation,"","");
+	VOCAB(problem,"","");
 	VOCAB(integrator,"","");
 	
 	VOCAB_NODUMP(average,0,1); // Obsolete
+	VOCAB_NODUMP(approximation,"",""); // Obsolete
 		
-	ApproximationTable=new Table<ApproximationBase>("approximation",
-													ApproximationCompare,
-													ApproximationKeyCompare);
-	IntegratorTable=new Table<IntegratorBase>("integrator",
-											  IntegratorCompare,
+	ProblemTable=new Table<ProblemBase>("problem",ProblemCompare,
+										ProblemKeyCompare);
+	IntegratorTable=new Table<IntegratorBase>("integrator",IntegratorCompare,
 											  IntegratorKeyCompare);
 	INTEGRATOR(Exact);
 	INTEGRATOR(Euler);
@@ -124,24 +124,24 @@ int main(int argc, char *argv[])
 	cout << newl << PROGRAM << " version " << VERSION << 
 		" [(C) John C. Bowman and B. A. Shadwick 1996]" << newl;
 	
-	cout << newl << "PROBLEM: " << Problem->Name() << newl;
+	cout << newl << "PROBLEM: " << Vocabulary->Name() << newl;
 	
 	cout << newl << "COMMAND LINE: ";
 	for(i=1; i < argc; i++) cout << argv[i] << " ";
 	cout << endl;
 	
-	for(i=1; i < argc; i++) Problem->Assign(argv[i]);
+	for(i=1; i < argc; i++) Vocabulary->Assign(argv[i]);
 	
 	// Allow time step to be overridden from command line (even on restarts).
 	if(dt) override_dt=1; 
 	
 	if(run == NULL) {run="test"; testing=1; clobber=1;}
 	
-	lname=Problem->FileName(dirsep,"LOCK");
-	rname=Problem->FileName(dirsep,"restart");
-	rtemp=Problem->FileName(dirsep,"restart=");
-	pname=Problem->FileName(dirsep,"p");
-	ptemp=Problem->FileName(dirsep,"p=");
+	lname=Vocabulary->FileName(dirsep,"LOCK");
+	rname=Vocabulary->FileName(dirsep,"restart");
+	rtemp=Vocabulary->FileName(dirsep,"restart=");
+	pname=Vocabulary->FileName(dirsep,"p");
+	ptemp=Vocabulary->FileName(dirsep,"p=");
 	
 	fparam.open(pname);
 	
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
 		while(1) {
 			fparam.get(s,size,'\n'); if(fparam.eof()) break;
 			if(fparam.get(c) && c != '\n') msg(ERROR,text,pname,size);
-			Problem->Parse(s);
+			Vocabulary->Parse(s);
 		}
 		fparam.close();
 	} else {
@@ -160,22 +160,22 @@ int main(int argc, char *argv[])
 		errno=0;
 	}
 	
-	for(i=1; i < argc; i++) Problem->Assign(argv[i]);
+	for(i=1; i < argc; i++) Vocabulary->Assign(argv[i]);
 	
 	cout << newl << "PARAMETERS:" << newl << newl;
-	Problem->List(cout);
+	Vocabulary->List(cout);
 	
 	
 	if(!testing) {
 		fdump.open(ptemp);
-		Problem->Dump(fdump);
+		Vocabulary->Dump(fdump);
 		fdump.close();
 		if(fdump.good()) rename(ptemp,pname);
 		else msg(ERROR,"Cannot write to parameter file %s",ptemp);
 	}
 	
-	Approximation=Problem->NewApproximation(approximation);
-	Integrator=Problem->NewIntegrator(integrator);
+	Problem=Vocabulary->NewProblem(problem);
+	Integrator=Vocabulary->NewIntegrator(integrator);
 	
 	if(!(restart || initialize)) {
 		fin.open(rname);
@@ -188,15 +188,13 @@ int main(int argc, char *argv[])
 	if(restart) testlock();
 
 	if(!restart && initialize) {
-		char *sname=Problem->FileName(dirsep,"stat");
+		char *sname=Vocabulary->FileName(dirsep,"stat");
 		fin.open(sname);
 		if(fin && !clobber)
 			msg(OVERRIDE,"Statistics file %s already exists",sname);
 		fin.close();
 	}
 
-	Approximation->SetSrcRoutines(&LinearSrc,&NonlinearSrc,&ConstantSrc);
-	
 	t=0.0;
 	Problem->InitialConditions();
 	y=Problem->Vector();
@@ -213,8 +211,7 @@ int main(int argc, char *argv[])
 	cout << newl << "INTEGRATING:" << endl;
 	set_timer();
 	
-	Integrator->Integrate(y,t,tmax,LinearSrc,NonlinearSrc,ConstantSrc,dt,
-						  sample);
+	Integrator->Integrate(y,t,tmax,dt,sample);
 	
 	cputime(cpu);
 	for(i=0; i < ncputime; i++) cpu[i] -= cpu0[i];
@@ -252,7 +249,7 @@ void read_init()
 	errno=0;
 	if(!finit) {
 		formatted=1;
-		iname=Problem->FileName(dirsep,"restartf");
+		iname=Vocabulary->FileName(dirsep,"restartf");
 		finit.open(iname);
 		if(!finit)
 			msg(ERROR,"Initialization file %s could not be opened",iname);
@@ -342,7 +339,7 @@ void dump(int it, int final, double tmax)
 	else if(it == 0) msg(ERROR,"Dump file %s could not be opened",rtemp);
 
 	if(output) {
-		char *oname=Problem->FileName(dirsep,"restartf");
+		char *oname=Vocabulary->FileName(dirsep,"restartf");
 		fout.open(oname);
 		fout.precision(REAL_DIG);
 		if(fout) {
@@ -388,7 +385,7 @@ void statistics()
 	fstat << endl;
 }
 
-char *ProblemBase::FileName(const char* delimiter, const char *suffix)
+char *VocabularyBase::FileName(const char* delimiter, const char *suffix)
 {
 	char *filename=new char[strlen(Abbrev())+strlen(run)+
 	strlen(delimiter)+strlen(suffix)+2];
@@ -399,7 +396,7 @@ char *ProblemBase::FileName(const char* delimiter, const char *suffix)
 void open_output(ofstream& fout, const char *delimiter, char *suffix,
 				 int append)
 {
-	char *filename=Problem->FileName(delimiter,suffix);
+	char *filename=Vocabulary->FileName(delimiter,suffix);
 	if(append) fout.open(filename,ios::app); // Append to end of output file.
 	else fout.open(filename);
 	

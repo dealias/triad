@@ -1,19 +1,18 @@
 #include "kernel.h"
 #include "Param.h"
 
-ProblemBase *Problem;
 int NParam=0;
 
 static int ParamCompare(const void *a, const void *b);
 static int ParamKeyCompare(const void*key, const void *p, const size_t n);
 
-void ProblemBase::Sort()
+void VocabularyBase::Sort()
 {
 	qsort(ParamList.Base(),NParam,sizeof(ParamBase *),
 		  ParamCompare);
 }
 
-ParamBase *ProblemBase::Locate(char *key, int *match_type) 
+ParamBase *VocabularyBase::Locate(char *key, int *match_type) 
 {
 	ParamBase **ptr;
 	ptr=(ParamBase **) bsearch2(key,ParamList.Base(),NParam,
@@ -23,22 +22,22 @@ ParamBase *ProblemBase::Locate(char *key, int *match_type)
 	else return NULL;
 }
 
-void ProblemBase::List(ostream& os)
+void VocabularyBase::List(ostream& os)
 {
 	for(int i=0; i < NParam; i++) ParamList[i]->Display(os);
 }
 
-void ProblemBase::Dump(ostream& os)
+void VocabularyBase::Dump(ostream& os)
 {
 	for(int i=0; i < NParam; i++) ParamList[i]->Output(os);
 }
 
-void ProblemBase::GraphicsDump(ostream& os)
+void VocabularyBase::GraphicsDump(ostream& os)
 {
 	for(int i=0; i < NParam; i++) ParamList[i]->GraphicsOutput(os);
 }
 
-void ProblemBase::Parse(char *s)
+void VocabularyBase::Parse(char *s)
 {
 	char *command=strtok(s," \n\t");
 	if(command)  {
@@ -50,7 +49,7 @@ void ProblemBase::Parse(char *s)
 	}
 }	
 
-void ProblemBase::Assign(const char *key)
+void VocabularyBase::Assign(const char *key)
 {
 	char *buffer=new char[strlen(key)+1];
 	char *ptr;

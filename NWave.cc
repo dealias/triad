@@ -27,6 +27,15 @@ extern Real tauforce;
 
 static Var random_factor=0.0;
 
+static Real last_t=-REAL_MAX;
+
+inline void ConstantForcing(Var *source, double t)
+{
+	if(t-last_t > tauforce) {last_t=t; crand_gauss(&random_factor);}
+#pragma ivdep
+	for(int k=0; k < Npsi; k++) source[k] += forcing[k]*random_factor;
+}
+
 void ComputeMoments(Var *source, Var *psi) {
 	Var *k, *q=source+Npsi, *kstop=psi+Npsi;
 #pragma ivdep
@@ -48,7 +57,7 @@ void ComputeMoments(Var *source, Var *psi) {
 	}
 }
 
-void PrimitiveNonlinearitySR(Var *source, Var *psi, double)
+void SR::NonLinearSrc(Var *source, Var *psi, double)
 {
 	set(psibuffer,psi,Npsi);
 	
@@ -100,11 +109,12 @@ void PrimitiveNonlinearitySR(Var *source, Var *psi, double)
 #endif		
 	}
 	if(Nmoment) ComputeMoments(source,psi);
+	ConstantForcing(source,t);
 }
 
 Cartesian *CartesianMode;
 
-void PrimitiveNonlinearity(Var *source, Var *psi, double)
+void Convolution::NonLinearSrc(Var *source, Var *psi, double)
 {
 	int i;
 	set(psibuffer,psi,Npsi);
@@ -133,12 +143,13 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 
 	for(i=0; i < Npsi; i++) source[i] *= kinv2[i];
 	if(Nmoment) ComputeMoments(source,psi);
+	ConstantForcing(source,t);
 }
 
 
-#if COMPLEX
-void PrimitiveNonlinearityFFT(Complex *source, Complex *psi, double)
+void PS::NonLinearSrc(Var *source, Var *psi, double)
 {
+#if COMPLEX
 	int i;
 	extern Cartesian *CartesianMode;
 	
@@ -173,33 +184,32 @@ void PrimitiveNonlinearityFFT(Complex *source, Complex *psi, double)
 								 CartesianMode[i].X()*psitemp[i].re);
 	}
 	if(Nmoment) ComputeMoments(source,psi);
-}
-#endif
-
-void PrimitiveNonlinearityFFT(Real *, Real *, double)
-{
+	ConstantForcing(source,t);
+#else	
 	msg(ERROR,"Pseudospectral approximation requires COMPLEX=1");
+#endif
 }
 	
-void StandardLinearity(Var *source, Var *psi, double)
+void NWave::StandardLinearity(Var *source, Var *psi, double)
 {
 #pragma ivdep
 	for(int k=0; k < Npsi; k++) source[k] -= nu[k]*psi[k];
 }
 
-void ExponentialLinearity(Var *source, Var *, double)
+void NWave::ExponentialLinearity(Var *source, Var *, double)
 {
 #pragma ivdep
 	for(int k=0; k < Npsi; k++) source[k] *= nu_inv[k];
 }
 
-void ConservativeExponentialLinearity(Real *source, Real *, double)
+void NWave::ConservativeExponentialLinearity(Real *source, Real *, double)
 {
 #pragma ivdep
 	for(int k=0; k < Npsi; k++) source[k] *= nuR_inv[k];
 }
 
-void ConservativeExponentialLinearity(Complex *source, Complex *psi, double)
+void NWave::ConservativeExponentialLinearity(Complex *source, Complex *psi,
+											 double)
 {
 #pragma ivdep
 	for(int k=0; k < Npsi; k++) {
@@ -207,15 +217,6 @@ void ConservativeExponentialLinearity(Complex *source, Complex *psi, double)
 		source[k].im -= imag(nu[k])*real(psi[k]);
 		source[k] *= nuR_inv[k];
 	}
-}
-
-static Real last_t=-REAL_MAX;
-
-void ConstantForcing(Var *source, Var *, double t)
-{
-	if(t-last_t > tauforce) {last_t=t; crand_gauss(&random_factor);}
-#pragma ivdep
-	for(int k=0; k < Npsi; k++) source[k] += forcing[k]*random_factor;
 }
 
 Solve_RC C_Euler::Solve(double t, double dt)
@@ -315,6 +316,7 @@ void E_PC::Allocate(int n)
 		if(nu[j] != 0.0) nu_inv[j]=1.0/nu[j];
 		else nu_inv[j]=1.0;
 	}
+//	NWave::LinearSrc=NWave::ExponentialLinearity;
 }
 
 void E_PC::TimestepDependence(double dt)
@@ -350,6 +352,7 @@ void I_PC::Allocate(int n)
 {
 	PC::Allocate(n);
 	expinv=new Nu[nyprimary];
+//	NWave::LinearSrc=NULL;
 }
 
 void I_PC::TimestepDependence(double dt)
@@ -390,6 +393,7 @@ void CE_PC::Allocate(int n)
 		if(real(nu[j]) != 0.0) nuR_inv[j]=1.0/real(nu[j]);
 		else nuR_inv[j]=1.0;
 	}
+//	NWave::LinearSrc=NWave::ConservativeExponentialLinearity;
 }
 
 void CE_PC::TimestepDependence(double dt)
@@ -426,6 +430,7 @@ void I_RK2::Allocate(int n)
 {
 	RK2::Allocate(n);
 	expinv=new Nu[nyprimary];
+//	NWave::LinearSrc=NULL;
 }
 
 void I_RK2::TimestepDependence(double dt)
@@ -486,6 +491,7 @@ void I_RK4::Allocate(int n)
 {
 	RK4::Allocate(n);
 	expinv=new Nu[nyprimary];
+//	NWave::LinearSrc=NULL;
 }
 
 void I_RK4::TimestepDependence(double dt)
@@ -571,6 +577,7 @@ void I_RK5::Allocate(int n)
 	RK5::Allocate(n);
 	expinv=new Nu[nyprimary];
 	expinv5=new Nu[nyprimary];
+//	NWave::LinearSrc=NULL;
 }
 
 void I_RK5::Predictor(double t, double, int start, int stop)

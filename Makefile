@@ -8,7 +8,7 @@ POLL = poll.o
 include config/$(HOSTTYPE)
 
 UTILS = utils.o strcasecmp.o new.o $(POLL) $(ARCH)
-CORE = kernel.o Approx.o Integrator.o Param.o $(UTILS)
+CORE = kernel.o Problem.o Integrator.o Param.o $(UTILS)
 POLAR = Polar.o PolarAverage.o simpfast.o
 NWAVE = NWave.o convolve.o Cartesian.o
 TRIAD = Geometry.o $(NWAVE) $(CORE) $(POLAR)
@@ -40,7 +40,7 @@ clean:
 
 depend:
 	$(MAKEDEPEND) -f .makedepend $(MDOPT) -I /usr/local/include \
-	kernel.cc Approx.cc Integrator.cc Param.cc ThreeWave.cc \
+	kernel.cc Problem.cc Integrator.cc Param.cc ThreeWave.cc \
 	Navier.cc NWave.cc Geometry.cc Cartesian.cc convolve.cc fft.cc \
 	Polar.cc PolarAverage.cc simpfast.cc \
 	Kepler.cc Lotka.cc utils.cc strcasecmp.cc new.cc \

@@ -14,37 +14,63 @@ extern Nu *nu,*nu_inv;
 extern Real *nuR_inv,*nuI;
 extern Real *forcing;
 
-Source_t PrimitiveNonlinearitySR;
-Source_t PrimitiveNonlinearity;
-Source_t PrimitiveNonlinearityFFT;
-Source_t StandardLinearity;
-Source_t ExponentialLinearity;
-void ConservativeExponentialLinearity(Real *source, Real *psi, double t);
-void ConservativeExponentialLinearity(Complex *source, Complex *psi, double t);
-Source_t ConstantForcing;
-
 extern Real continuum_factor;
 void compute_invariants(Var *y, int Npsi, Real& E, Real& Z, Real& P);
 void display_invariants(Real E, Real Z, Real P);
 
-class NWave : public ProblemBase {
-protected:
+class NWaveVocabulary : public VocabularyBase {
 public:
-	Table<GeometryBase> *GeometryTable;
-	
-	NWave();
 	char *Name();
 	char *Abbrev();
+	NWaveVocabulary();
+	Table<GeometryBase> *GeometryTable;
+	GeometryBase *NewGeometry(char *key) {return GeometryTable->Locate(key);}
+};
+
+extern NWaveVocabulary *NWave_Vocabulary;
+
+class NWave : public ProblemBase {
+public:
+	NWave() {}
+	virtual char *Name()=0;
 	void InitialConditions();
 	void Initialize();
 	void OpenOutput();
 	void Output(int it);
 	void FinalOutput();
 	
-	GeometryBase *NewGeometry(char *key) {return GeometryTable->Locate(key);}
+	Source_t StandardLinearity;
+	Source_t ExponentialLinearity;
+	void ConservativeExponentialLinearity(Real *source, Real *psi, double t);
+	void ConservativeExponentialLinearity(Complex *source, Complex *psi,
+										  double t);
+	void LinearSrc(Var *src, Var *y, double t) {
+		StandardLinearity(src,y,t);
+	}
 };
 
-extern NWave *GeometryProblem;
+class SR : public NWave {
+public:	
+	SR() {}
+	char *Name() {return "Spectral Reduction";}
+	Source_t NonLinearSrc;
+};
+
+class Convolution : public NWave {
+public:
+	Convolution() {}
+	char *Name() {return "Convolution";}
+	Source_t NonLinearSrc;
+};
+
+class PS : public NWave {
+public:
+	PS() {
+		if(!reality) msg(ERROR,"Pseudospectral approximation needs reality=1");
+	}
+	char *Name() {return "Pseudospectral";}
+	Source_t NonLinearSrc;
+};
 
 class C_Euler : public Euler {
 	Var *y,*lastdiff;
@@ -83,10 +109,6 @@ public:
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, double&, int, int);
-	void Source(Var *src, Var *var, double t) {
-		if(NonlinearSrc) (*NonlinearSrc)(src,var,t);
-		if(ConstantSrc) (*ConstantSrc) (src,y,t);
-	}
 };
 
 class E_PC : public PC {
@@ -99,11 +121,6 @@ public:
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, double&, int start, int stop);
-	void Source(Var *src, Var *var, double t) {
-		if(NonlinearSrc) (*NonlinearSrc)(src,var,t);
-		if(ConstantSrc) (*ConstantSrc) (src,y,t);
-		ExponentialLinearity(src,var,t);
-	}
 };
 
 
@@ -116,11 +133,6 @@ public:
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, double&, int, int);
-	void Source(Var *src, Var *var, double t) {
-		if(NonlinearSrc) (*NonlinearSrc)(src,var,t);
-		if(ConstantSrc) (*ConstantSrc) (src,y,t);
-		ConservativeExponentialLinearity(src,var,t);
-	}
 };
 
 class I_RK2 : public RK2 {
@@ -132,10 +144,6 @@ public:
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, double&, int, int);
-	void Source(Var *src, Var *var, double t) {
-		if(NonlinearSrc) (*NonlinearSrc)(src,var,t);
-		if(ConstantSrc) (*ConstantSrc) (src,y,t);
-	}
 };
 
 class C_RK2 : public RK2, public CorrectC_PC {
@@ -159,10 +167,6 @@ public:
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, double&, int, int);
-	void Source(Var *src, Var *var, double t) {
-		if(NonlinearSrc) (*NonlinearSrc)(src,var,t);
-		if(ConstantSrc) (*ConstantSrc) (src,y,t);
-	}
 };
 
 class C_RK4 : public RK4 {
@@ -188,10 +192,6 @@ public:
 	char *Name() {return "Fifth-Order Runge-Kutta w/Integrating Factor";}
 	void Predictor(double, double, int, int);
 	int Corrector(double, double&, int, int);
-	void Source(Var *src, Var *var, double t) {
-		if(NonlinearSrc) (*NonlinearSrc)(src,var,t);
-		if(ConstantSrc) (*ConstantSrc) (src,y,t);
-	}
 };
 
 class C_RK5 : public RK5 {

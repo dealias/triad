@@ -21,7 +21,7 @@ extern int iteration;
 extern int invert_cnt;
 
 extern char *run;
-extern char *approximation;
+extern char *problem;
 extern char *integrator;
 
 // Global vocabulary
@@ -54,6 +54,33 @@ enum Solve_RC {NONINVERTIBLE=-1,UNSUCCESSFUL,SUCCESSFUL,ADJUST};
 
 typedef void Source_t(Var *, Var *, double);
 
+class ProblemBase {
+protected:
+	Var *y;
+	int ny;
+	char *abbrev;
+public:	
+	void SetAbbrev(char *abbrev0) {abbrev=abbrev0;}
+	char *Abbrev() {return abbrev;}
+	Var *Vector() {return y;}
+	int Size() {return ny;}
+	
+	virtual char *Name()=0;
+	virtual void LinearSrc(Var *, Var *, double) {}
+	virtual void NonLinearSrc(Var *, Var *, double) {}
+	
+	virtual void InitialConditions()=0;
+	virtual void Initialize() {}
+	virtual void Output(int it)=0;
+	virtual void FinalOutput() {}
+	
+	virtual int Microprocess() {return 0;}
+};
+	
+Compare_t ProblemCompare;
+KeyCompare_t ProblemKeyCompare;
+extern ProblemBase *Problem;
+
 class IntegratorBase {
 protected:
 	char *abbrev;
@@ -65,9 +92,6 @@ protected:
 	int itmax,microsteps;
 	int microprocess;
 	int verbose;
-	typedef void Source_t(Var *, Var *, double);
-	Source_t *LinearSrc,*NonlinearSrc,*ConstantSrc;
-
 public:	
 	void SetAbbrev(char *abbrev0) {abbrev=abbrev0;}
 	char *Abbrev() {return abbrev;}
@@ -85,9 +109,7 @@ public:
 		microsteps=microsteps0*Microfactor();
 		verbose=verbose0;
 	}
-	void Integrate(Var *const y, double& t, double tmax,
-				   Source_t *const LinearSrc0, Source_t *const NonlinearSrc0,
-				   Source_t *const ConstantSrc, double& dt,
+	void Integrate(Var *const y, double& t, double tmax, double& dt, 
 				   const double sample);
 	void ChangeTimestep(double& dt, const double dtnew, const double t);
 	
@@ -104,31 +126,13 @@ Compare_t IntegratorCompare;
 KeyCompare_t IntegratorKeyCompare;
 extern IntegratorBase *Integrator;
 
-class ApproximationBase {
-protected:	
-	char *abbrev;
-public:	
-	void SetAbbrev(char *abbrev0) {abbrev=abbrev0;}
-	char *Abbrev() {return abbrev;}
-	virtual char *Name()=0;
-	virtual void SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
-								Source_t **ConstantSrc)=0;
-};
-
-Compare_t ApproximationCompare;
-KeyCompare_t ApproximationKeyCompare;
-extern ApproximationBase *Approximation;
-
-class ProblemBase {
+class VocabularyBase {
 protected:
-	Var *y;
 	DynVector<ParamBase *> ParamList;
-	int ny;
 public:	
+	VocabularyBase();
+	Table<ProblemBase> *ProblemTable;
 	Table<IntegratorBase> *IntegratorTable;
-	Table<ApproximationBase> *ApproximationTable;
-	
-	ProblemBase();
 	
 	ParamBase *Locate(char *key, int *match_type);
 	void ParamAdd(ParamBase *p);
@@ -138,7 +142,15 @@ public:
 	void List(ostream& os);
 	void Dump(ostream& os);
 	void GraphicsDump(ostream& os);
+	virtual char *Name()=0;
+	virtual char *Abbrev()=0;
 
+	ProblemBase *NewProblem(char *key) {
+		ProblemBase *p=ProblemTable->Locate(key);
+		p->SetAbbrev(upcase(key));
+		return p;
+	}
+	
 	IntegratorBase *NewIntegrator(char *key) {
 		char *abbrev=undashify(key);
 		IntegratorBase *p=IntegratorTable->Locate(abbrev);
@@ -146,29 +158,15 @@ public:
 		return p;
 	}
 	
-	ApproximationBase *NewApproximation(char *key) {
-		ApproximationBase *p=ApproximationTable->Locate(key);
-		p->SetAbbrev(upcase(key));
-		return p;
-	}
-	
-	Var *Vector() {return y;}
-	int Size() {return ny;}
-	virtual char *Name()=0;
-	virtual char *Abbrev()=0;
-	virtual void InitialConditions()=0;
-	virtual void Initialize() {};
-	virtual void Output(int it)=0;
-	virtual void FinalOutput() {}
 	virtual char *FileName(const char* delimiter="", const char *suffix="");
-	virtual int Microprocess() {return 0;}
 };
 
-extern ProblemBase *Problem;
+extern VocabularyBase *Vocabulary;
 
 #include "Param.h"
 #include "Integrator.h"
-#include "Approx.h"
+
+#define PROBLEM(key) {new Entry<key,ProblemBase> (#key,ProblemTable);}
 
 #define PLURAL(x) ((x)==1 ? "" : "s")
 

@@ -205,7 +205,7 @@ class Partition : public GeometryBase {
 	Bin<T,D> *bin; // pointer to table of bins
 public:
 	char *Name();
-	int ValidApproximation(char *s) {return strcmp(s,"SR")==0;}
+	int Valid(char *s) {return strcmp(s,"SR")==0;}
 	char *WeightFileName(char *suffix);
 	void MakeBins();
 	void List(ostream &os);

@@ -2,12 +2,12 @@
 
 int IntegratorCompare(const void *a, const void *b)
 {
-	return Problem->IntegratorTable->DefaultCompare(a,b);
+	return Vocabulary->IntegratorTable->DefaultCompare(a,b);
 }	
 
 int IntegratorKeyCompare(const void *key, const void *p, const size_t n)
 {
-	return Problem->IntegratorTable->DefaultKeyCompare(key,p,n);
+	return Vocabulary->IntegratorTable->DefaultKeyCompare(key,p,n);
 }
 
 inline void IntegratorBase::ChangeTimestep(double& dt, const double dtnew,
@@ -23,9 +23,6 @@ static clock_t realtime,lasttime=0;
 static const int nperline=10;
 
 void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
-							   Source_t *const LinearSrc0,
-							   Source_t *const NonlinearSrc0,
-							   Source_t *const ConstantSrc0,
 							   double& dt, const double sample)
 	// Don't dump or microprocess if sample is negative.
 {
@@ -42,10 +39,6 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 	dt *= sign;
 	if(dt == 0.0) msg(ERROR,"Zero time step encountered");
 	
-	LinearSrc=LinearSrc0;
-	NonlinearSrc=NonlinearSrc0;
-	ConstantSrc=ConstantSrc0;
-
 	TimestepDependence(dt);
 	microprocess=(sample >= 0.0) ? Problem->Microprocess() : 0;
 	

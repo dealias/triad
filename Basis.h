@@ -17,7 +17,7 @@ class Basis : public GeometryBase {
 	T high; // upper limits of grid
 public:
 	char *Name();
-	int ValidApproximation(char *s) {
+	int Valid(char *s) {
 		return (strcmp(s,"Convolution")==0 || strcmp(s,"PS")==0);
 	}
 

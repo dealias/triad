@@ -17,7 +17,7 @@ public:
 	int IndependentNumber() {return nindependent;}
 	
 	virtual char *Name()=0;
-	virtual int ValidApproximation(char *)=0;
+	virtual int Valid(char *)=0;
 	virtual void MakeBins()=0;
 	virtual void List(ostream &)=0;
 	virtual void ListTriads(ostream &) {}

@@ -9,16 +9,16 @@
 
 extern int NParam;
 
-inline void ProblemBase::ParamAdd(ParamBase *p)
+inline void VocabularyBase::ParamAdd(ParamBase *p)
 {
 	ParamList[NParam++]=p;
 }
 
-#define VOCAB(var,min,max) Vocabulary(&var, #var, min, max, 1, 1)
-#define VOCAB_NODUMP(var,min,max) Vocabulary(&var, #var, min, max, 1, 0)
+#define VOCAB(var,min,max) Vocab(&var, #var, min, max, 1, 1)
+#define VOCAB_NODUMP(var,min,max) Vocab(&var, #var, min, max, 1, 0)
 
 #define VOCAB_ARRAY(var) \
-Vocabulary(var, #var, *var-*var, *var-*var, (int) (sizeof(var)/sizeof(*var)),1)
+Vocab(var, #var, *var-*var, *var-*var, (int) (sizeof(var)/sizeof(*var)),1)
 	
 template<class T>
 class Param : public ParamBase {
@@ -33,15 +33,15 @@ public:
 		ParamBase *param;
 		int match_type;
 
-		param=Problem->Locate(s,&match_type);
+		param=Vocabulary->Locate(s,&match_type);
 		if(match_type==2) {
 			cout << beep << "Duplicate vocabulary entry: " << s << endl;
 			return;
 		}
 		
 		name=s; nvar=n; var=address; min=min0; max=max0; dump=dump0;
-		Problem->ParamAdd(this);
-		Problem->Sort();
+		Vocabulary->ParamAdd(this);
+		Vocabulary->Sort();
 	}
 
 	void Set(T x) {int i; for(i=0; i<nvar; i++) var[i]=x;}
@@ -109,7 +109,7 @@ public:
 };
 
 template<class T>
-inline void Vocabulary(T *var, char *s, T min, T max, int n, int dump)
+inline void Vocab(T *var, char *s, T min, T max, int n, int dump)
 {
 	new Param<T>(var,s,n,min,max,dump);
 }
