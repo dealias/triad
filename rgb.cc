@@ -33,10 +33,7 @@ char yuvinterlace[]="";
 #include <strstream.h>
 #include <iomanip.h>
 #include <unistd.h>
-
-#if sun
-extern int strcmp(const char *, const char *);
-#endif
+#include <string.h>
 
 #include "DynVector.h"
 #include "rgb.h"
@@ -49,9 +46,9 @@ static int xsize,ysize;
 static int verbose=0;
 static int floating_scale=0;
 static int floating_section=0;
-static int byte=0;
 static int preserve=0;
 
+int byte=0;
 int implicit=1;
 int zero=0;
 int invert=0;
