@@ -112,10 +112,10 @@ extern "C" int getopt(int argc, char *const argv[], const char *optstring);
 void usage(char *program)
 {
 	cerr << "Usage: " << program
-		 << " [-bfghlmtvz] [-x mag] [-H hmag] [-V vmag] [-B beg] [-E end]"
+		 << " [-bfghlmpvz] [-x mag] [-H hmag] [-V vmag] [-B beg] [-E end]"
 		 << endl 
 		 << "           [-X xsize -Y ysize [-Z zsize]] file1 [file2 ...]"
-		 << endl << endl;
+		 << endl;
 }
 
 void options()
@@ -175,6 +175,7 @@ int main(int argc, char *const argv[])
 		case 'h':
 			usage(argv[0]);
 			options();
+			cerr << endl;
 			exit(0);
 		case 'l':
 			label=1;
@@ -227,8 +228,8 @@ int main(int argc, char *const argv[])
 	int nfiles=argc-optind;
 	if(syntax || nfiles < 1) {
 		usage(argv[0]);
-		cerr << "Type '" << argv[0] << " -h' for a descriptions of options."
-			 << endl;
+		cerr << endl << "Type '" << argv[0]
+			 << " -h' for a descriptions of options." << endl;
 		exit(1);
 	}
 	if(nfiles > 1) label=1;
