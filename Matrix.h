@@ -220,8 +220,8 @@ inline void Mult(const array2<T>& A, const array2<U>& B, const array2<V>& C)
 {
   unsigned int n=C.Size();
   
-  static typename array1<V>::opt temp(n);
-  static unsigned int tempsize=n;
+  static typename array1<V>::opt temp;
+  static unsigned int tempsize=0;
   if(n > tempsize) {Reallocate(temp,n); tempsize=n;}
 	
   unsigned int bny=B.Ny();

@@ -592,13 +592,13 @@ inline void mtridiagonalp(int n, T *u, const T *f,
   mtridiagonalp(n,u,f,c,a,b,m,inc1,inc2,(Real *) NULL,(Real *) NULL);
 }
 
-#if 0
 class CubicSpline() {
 protected:
-  Array1<Real> D;
+  vector D;
 public:
   Calculate(Real t) {
     unsigned int n=C.Size();
+    
     static DynVector<V> temp(n);
     if(n > temp.Alloc()) temp.Realloc(n);
     static Array1<Real>::opt work0;
@@ -621,7 +621,6 @@ public:
   
   Interpolate()
 }
-#endif
 
 
 }
