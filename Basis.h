@@ -57,7 +57,7 @@ INLINE void Basis<T>::Initialize()
 	kfactor=new Real[Nmode];
 	
 	if(strcmp(Problem->Abbrev(),"PS") == 0) {
-		cout << endl << "ALLOCATING FFT BUFFERS (" << Nxb << "X" << Nyp << ")."
+		cout << endl << "ALLOCATING FFT BUFFERS (" << Nxb << " x " << Nyp << ")."
 			 << endl;
 		psix=new Var[nfft];
 		psiy=new Var[nfft];

@@ -9,25 +9,41 @@ extern "C" void CFFTMLT(Real *ar, Real *ai, Real *work, Real *trigs,
 						int *ifax , const int& inc, const int& jump,
 						const int& n, const int& lot, const int& isign);
 
+typedef int *pint;
+typedef Real *pReal;
+
 void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		  unsigned int inc1, unsigned int inc2, int)
 {
+	int j;
 	unsigned int n=1 << log2n;
-	static unsigned int nlast=0;
-	static Real *trigs;
-	static int ifax[19];
-	static Real *work;
+	static int TableSize=0;
+	static unsigned int *nTable=NULL, *nkTable=NULL, *nauxTable=NULL;
+	static int **ifax;
+	static Real **trigs,**work;
 	
-	if(n != nlast) {
-		nlast=n;
-		work=new(work,4*n*nk) Real;
-		trigs=new(trigs,2*n) Real;
-		CFTFAX(n,ifax,trigs);
+	for(j=0; j < TableSize; j++) if(n == nTable[j] && nk == nkTable[j]) break;
+	
+    if(j == TableSize) {
+		TableSize++;
+		nTable=new(nTable,TableSize) unsigned int;
+		nkTable=new(nkTable,TableSize) unsigned int;
+		ifax=new(ifax,TableSize) pint;
+		trigs=new(trigs,TableSize) pReal;
+		work=new(work,TableSize) pReal;
+		
+		nTable[j]=n;
+		nkTable[j]=nk;
+		ifax[j]=new int[19];
+		trigs[j]=new Real[2*n];
+		work[j]=new Real[4*n*nk];
+		CFTFAX(n,ifax[j],trigs[j]);
 	}
 	
 	int inc=2*inc1;
-	int jump=2*inc2; // Should be 2*odd. JCB
-	CFFTMLT(&data[0].re,&data[0].im,work,trigs,ifax,inc,jump,n,nk,isign);
+	int jump=2*inc2;
+	CFFTMLT(&data[0].re,&data[0].im,work[j],trigs[j],ifax[j],inc,jump,n,nk,
+			isign);
 }
 
 extern "C" void CCFFT(const int& isign, const int& n, Real& scale,

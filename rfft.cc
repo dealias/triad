@@ -281,31 +281,45 @@ void crfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	const int nx1=nx+offset;
 	Complex *p;
 
-	// Enforce reality condition
 	data[0]=0.0;
+	// Enforce reality condition
 #pragma ivdep
 	for(i=1; i < nx2; i++) data[i]=conj(data[nx-i]);
 	
 	Complex *pstop=data+nx1*nyp;
-	int pinc=2*nx1;
+	
+#if _CRAY
+	for(i=1; i < nx; i += 2) {
+#pragma ivdep
+		for(p=data+i; p < pstop; p += nx1) *p=-(*p);
+	}
+#else	
 	for(p=data; p < pstop; p += nx1) {
-#pragma ivdep
 		for(i=1; i < nx; i += 2) p[i]=-p[i];
 	}
-
+#endif
+	
 	mfft(data,log2nx,isign,nyp,1,nx1);
-	
-	for(p=data; p < pstop; p += pinc) {
-#pragma ivdep
-		for(i=1; i < nx; i += 2) p[i]=-p[i];
-	}
-	
-	for(p=data+nx1; p < pstop; p += pinc) {
-#pragma ivdep
-		for(i=0; i < nx; i += 2) p[i]=-p[i];
-	}
 
-	mcrfft(data,log2ny,isign,nx);
+#if _CRAY
+	Complex *data1=data+1;
+	Complex *datanx1=data+nx1;
+	int pinc=2*nx1;
+	for(i=0; i < nx; i += 2) {
+#pragma ivdep
+		for(p=data1+i; p < pstop; p += pinc) *p=-(*p);
+#pragma ivdep
+		for(p=datanx1+i; p < pstop; p += pinc) *p=-(*p);
+	}
+#else	
+	for(p=data; p < pstop; p += nx1) {
+		for(i=1; i < nx; i += 2) p[i]=-p[i];
+		p += nx1;
+		if(p < pstop) for(i=0; i < nx; i += 2) p[i]=-p[i];
+	}
+#endif	
+	
+	mcrfft(data,log2ny,isign,nx,nx1,1);
 }
 
 // Return the two-dimensional Fourier transform of nx*ny real values.
@@ -328,26 +342,40 @@ void rcfft2dT(Complex *data, unsigned int log2nx, unsigned int log2ny,
 	const int nx1=nx+offset;
 	Complex *p;
 
-	mrcfft(data,log2ny,isign,nx);
+	mrcfft(data,log2ny,isign,nx,nx1,1);
 	
 	Complex *pstop=data+nx1*nyp;
-	int pinc=2*nx1;
-	for(p=data; p < pstop; p += pinc) {
-#pragma ivdep
-		for(i=1; i < nx; i += 2) p[i]=-p[i];
-	}
 	
-	for(p=data+nx1; p < pstop; p += pinc) {
+#if _CRAY
+	Complex *data1=data+1;
+	Complex *datanx1=data+nx1;
+	int pinc=2*nx1;
+	for(i=0; i < nx; i += 2) {
 #pragma ivdep
-		for(i=0; i < nx; i += 2) p[i]=-p[i];
+		for(p=data1+i; p < pstop; p += pinc) *p=-(*p);
+#pragma ivdep
+		for(p=datanx1+i; p < pstop; p += pinc) *p=-(*p);
 	}
+#else	
+	for(p=data; p < pstop; p += nx1) {
+		for(i=1; i < nx; i += 2) p[i]=-p[i];
+		p += nx1;
+		if(p < pstop) for(i=0; i < nx; i += 2) p[i]=-p[i];
+	}
+#endif	
 	
 	mfft(data,log2nx,isign,nyp,1,nx1);
 	
-	for(p=data; p < pstop; p += nx1) {
+#if _CRAY
+	for(i=1; i < nx; i += 2) {
 #pragma ivdep
+		for(p=data+i; p < pstop; p += nx1) *p=-(*p);
+	}
+#else	
+	for(p=data; p < pstop; p += nx1) {
 		for(i=1; i < nx; i += 2) p[i]=-p[i];
 	}
+#endif
 }
 
 // Return the two-dimensional real inverse Fourier transform of the

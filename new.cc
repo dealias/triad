@@ -6,7 +6,7 @@ static size_t dynamic_memory=0;
 
 void my_new_handler()
 {
-	cout << "Memory limits exceeded" << endl;
+	cout << endl << "Memory limits exceeded" << endl;
 	exit(1);
 }
 

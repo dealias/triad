@@ -136,7 +136,7 @@ inline Real divide0(Real x, Real y)
 	return (y ? x/y : 0.0);
 }
 
-#if !_AIX
+#if !_AIX || __GNUC__
 inline Real abs(Real x)
 {
 	return fabs(x);
