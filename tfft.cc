@@ -68,9 +68,9 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	for(unsigned int k=0; k < nk; k++) {
 		Complex *p,*p0=data+inc2*k;
 		Complex *q,*qstop=data2+n;
-		for(p=p0, q=data2; q < qstop; q++, p += inc1) *q=*p;
+		for(p=p0, q=data2; q < qstop; p += inc1) *(q++)=*p;
 		fft(data2,log2n,isign,scale);
-		for(p=p0, q=data2; q < qstop; q++, p += inc1) *p=*q;
+		for(p=p0, q=data2; q < qstop; p += inc1) *p=*(q++);
 	}
 }
 

@@ -13,7 +13,7 @@ THREEWAVE = ThreeWave NWave $(CORE) $(UTILS)
 BURGER = Burger NWave Cartesian1 rfft $(FFT) $(CORE) $(UTILS)
 POLARAVG = PolarAverageTest PolarAverage simpfast
 
-TRIAD = $(NAVIER) $(THREEWAVE) $(BURGER) $(POLARAVG)
+DEPEND = $(NAVIER) $(THREEWAVE) $(BURGER) $(POLARAVG)
 
 nw: $(NAVIER:=.o)
 	$(C++) $(OPT) -o triad $(NAVIER:=.o) $(LIB) 

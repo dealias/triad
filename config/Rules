@@ -7,8 +7,8 @@ clean:
 %.$(D): %.cc
 	$(MAKEDEPEND) $(INCL) $(MDOPTS) $< > $@
 
-all: $(TRIAD:=.o)
-	$(C++) $(OPT) -o triad $(TRIAD:=.o) $(LIB)
+all: $(DEPEND:=.o)
+	$(C++) $(OPT) -o triad $(DEPEND:=.o) $(LIB)
 
 rgb: $(RGB:=.cc)
 	$(C++) $(OPT) -o $(HOME)/bin/rgb $(RGB:=.cc) $(LIB)
@@ -17,5 +17,5 @@ ifneq ($(wildcard $(TRI)/config/$(HOSTTYPE).rules),)
 include $(TRI)/config/$(HOSTTYPE).rules
 endif
 
-include $(TRIAD:=.$(D))
+include $(DEPEND:=.$(D))
 

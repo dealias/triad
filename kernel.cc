@@ -186,6 +186,8 @@ int main(int argc, char *argv[])
 	cout << newl << "PARAMETERS:" << newl << newl;
 	Vocabulary->List(cout);
 	
+	cout.precision(digits);
+	
 	Problem=Vocabulary->NewProblem(method);
 	Integrator=Vocabulary->NewIntegrator(integrator);
 	
