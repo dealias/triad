@@ -7,7 +7,17 @@
 #include <stdio.h>
 #include <pwd.h>
 #include <sys/times.h>
+
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE
+#endif
+#ifdef __STRICT_ANSI__
+#undef __STRICT_ANSI__
+#endif
 #include <time.h>
+#define __STRICT_ANSI__
+#undef _POSIX_C_SOURCE
+
 #include <string.h>
 #include <strstream.h>
 #include <malloc.h>
@@ -20,14 +30,24 @@
 
 extern char* run;
 static const double init_time=time(NULL);
-static int firstcall=1;
-static clock_t cpu0;
-static const double clockinv=1.0/CLOCKS_PER_SEC;
+static const double ticktime=1.0/CLK_TCK;
 
-double cputime()
+void cputime(double *cpu)
 {
-	if(firstcall) {cpu0=clock(); firstcall=0;}
-	return (clock()-cpu0)*clockinv;
+#if _CRAY && !_CRAYMPP
+	struct jtab jbuf;
+	getjtab(&jbuf);
+	
+	cpu[0] = ((double) jbuf.j_ucputime)*ticktime;
+	cpu[1] = 0.0;
+	cpu[2] = ((double) jbuf.j_scputime)*ticktime;
+#else
+	struct tms buf;
+	times(&buf);
+	cpu[0] = ((double) buf.tms_utime)*ticktime;
+	cpu[1] = ((double) buf.tms_cutime)*ticktime;
+	cpu[2] = ((double) (buf.tms_stime+buf.tms_cstime))*ticktime;
+#endif
 }
 
 // Don't notify user about runs shorter than this many seconds.
