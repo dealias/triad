@@ -28,6 +28,18 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 void cleanup();
 
+static double *vminf, *vmaxf;
+static char *rgbdir;
+static strstream rgbdirbuf;
+static int xsize,ysize;
+
+static int verbose=0;
+static int floating_scale=0;
+static int byte=0;
+static int implicit=1;
+static int zero=0;
+static int preserve=0;
+
 template<class T>
 void openfield(T& fin, char *fieldname, int& nx, int& ny, int& nz)
 {
@@ -104,18 +116,6 @@ void animate(int argc, char *const argf[], int n, char *const type,
 void manimate(int argc, char *const argf[], int n, char *const type,
 			  int xsize, int ysize);
 	
-static double *vminf, *vmaxf;
-static char *rgbdir;
-static strstream rgbdirbuf;
-static int xsize,ysize;
-
-static int verbose=0;
-static int floating_scale=0;
-static int byte=0;
-static int implicit=1;
-static int zero=0;
-static int preserve=0;
-
 extern "C" int getopt(int argc, char *const argv[], const char *optstring);
 
 void usage(char *program)
