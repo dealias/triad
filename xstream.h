@@ -44,9 +44,7 @@ public:
 	}
 	void close() {
 		if(buf) {
-#if _CRAY			
-			xdrs.x_ops->x_destroy();
-#else
+#if !_CRAY			
 			xdr_destroy(&xdrs);
 #endif			
 			fclose(buf);
