@@ -66,10 +66,7 @@ class Table {
 	if(cin.eof() || !cin.fail()) {errno=0; break;}
 	cin.clear();
       }
-      if(buf.str()) {
-	buf.freeze();
-	key=buf.str();
-      }
+      if(buf.str()) key=strdup(buf.str());
     }
     
     e=*(EntryBase<B> **) bsearch2(key,Base(),Size(),sizeof(*Base()),
