@@ -38,10 +38,8 @@ int main(int argc, char *const argv[])
 	int c;
 	int label=0;
 	int make_mpeg=0;
-#if _GNUC_	
 	extern int optind;
 	extern char *optarg;
-#endif	
 	
 	optind=0;
 	while (1) {
