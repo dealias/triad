@@ -1,4 +1,4 @@
-/* Base Fast Fourier Transform routines
+ /* Base Fast Fourier Transform routines
    Version 1.2 Copyright (C) 1997 John C. Bowman (bowman@math.ualberta.ca)
    
 This program is free software; you can redistribute it and/or modify
