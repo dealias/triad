@@ -72,7 +72,7 @@ void set_fft_parameters()
 	xoffset=Nxb/2;
 	Nxb1=Nxb;
 	
-#if _CRAY; // Avoid memory bank conflicts
+#if _CRAY // Avoid memory bank conflicts
 	Nxb1 += 1;
 #endif	
 	nfft=Nxb1*Nyp;
