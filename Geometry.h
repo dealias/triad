@@ -69,7 +69,7 @@ public:
 	void MakeBins();
 	void ListBins(ostream &os);
 	Mc ComputeBinAverage(Bin<T> *k, Bin<T> *p, Bin<T> *q);
-	Mc Ckpq(T, T, T);
+	inline Mc Ckpq(T, T, T);
 	Mc FindWeight(int k, int p, int q);
 	void GenerateWeights();
 	void ComputeTriads();
@@ -90,7 +90,6 @@ public:
 	}
 	
 	Mc Central(int k, int p, int q)	{
-		if(p == q) return 0.0;
 		int sign=1;
 		// Ensure that p < q
 		sort2(p,q,sign);
@@ -162,10 +161,12 @@ inline Mc Partition<T>::FindWeight(int k, int p, int q) {
 	// Exploit the full antisymmetry of the weight factors: reorder so that
 	// $k\prime\le p\prime\le q\prime$.
 	unsigned int kpq;
-	int l,u,i,cmp,sign,conjflag=0;
+	Weight *l,*u,*i;
+	int cmp,sign,conjflag=0;
 	
 	if(k==p || p==q || q==k) return 0.0;
 	sign=1;
+	int k0=k, p0=p, q0=q;
 	
 	// Ensure that k <= p <= q
 	sort2(p,q,sign);
@@ -175,18 +176,20 @@ inline Mc Partition<T>::FindWeight(int k, int p, int q) {
 	if(p >= Nmode) {int K=k; k=p-Nmode; p=q-Nmode; q=K+Nmode; conjflag=1;}
 	
 	kpq=WeightIndex(k,p,q);
-	l=0;
-	u=Nweight;
+	l=&weight[0];
+	u=&weight[Nweight-1]+1;
 	while(l < u) {
-		i=(l+u)/2;
-		cmp=kpq-weight[i].Index();
-		if(cmp == 0) {
-			Mc value=weight[i].Value();
-			if(conjflag) value=conj(value);
-			return sign*value;
-		}
+		i=l+((u-l)/(2*sizeof(Weight)));
+		cmp=kpq-i->Index();
 		if (cmp < 0) u=i;
-		else if (cmp > 0) l=i+1;
+		else {
+			if (cmp > 0) l=i+1;
+			else {
+				Mc value=i->Value();
+				if(conjflag) value=conj(value);
+				return sign*value*Central(k0,p0,q0);
+			}
+		}
 	}
 	return 0.0;	// no match found.
 }
@@ -195,7 +198,7 @@ template<class T>
 void Partition<T>::ComputeTriads() {
 	Mc nkpq;
 	Var **pqindex,**index;
-	Real sym,denom;
+	Real norm;
 	int k,p,q;
 	ifstream fin;
 	ofstream fout;
@@ -257,22 +260,16 @@ void Partition<T>::ComputeTriads() {
 	Triad *triadBase0=triad.Base();
 	
 	for(k=0; k < Nmode; k++) {
-		denom=twopi2*Area(k);
+		norm=1.0/(twopi2*Area(k));
 		for(p=0; p < n; p++) {
 			for(q=p; q < n; q++) {
 				nkpq=FindWeight(k,p,q);
-				nkpq *= Central(k,p,q);
 				
 				if(nkpq != 0.0)	{
 					index=pqindex+pq(p,q);
 					if(!*index) *index=pair[Npair++].Store(&psibuffer[p],
 														   &psibuffer[q]);
-					sym=(p==q) ? 0.5 : 1.0;
-					if(verbose > 3) cout << denom << endl;
-
-					nkpq *= sym/denom;
-					
-					if(verbose > 3) cout << *index << ": " << nkpq << endl;
+					nkpq *= ((p==q) ? 0.5 : 1.0) * norm;
 					triad[Ntriad++].Store(*index,nkpq);
 				}
 			}
