@@ -103,7 +103,7 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 	
 	// Compute reflected psi's
 #pragma ivdep		
-	for(Var *k=psibuffer; k < psibufferR; k++) conjugate(*(k+Npsi),*k);
+	for(Var *p=psibuffer; p < psibufferR; p++) conjugate(*(p+Npsi),*p);
 	
 	for(i=0; i < Npsi; i++) source[i]=0.0;
 		
@@ -182,6 +182,7 @@ void PrimitiveNonlinearityFFT(Var *source, Var *psi, double)
 	int Npsibuffer=CartesianPad(psibuffer,psi);
 	
 	set(psitemp,psi,Npsi);
+#pragma ivdep		
 	for(i=0; i < Npsi; i++)
 		psitemp[i] *= I*CartesianMode[i].K2()*CartesianMode[i].Ky();
 	*convolution0=0.0;
@@ -191,6 +192,7 @@ void PrimitiveNonlinearityFFT(Var *source, Var *psi, double)
 	CartesianUnPad(source,convolution);
 							
 	set(psitemp,psi,Npsi);
+#pragma ivdep		
 	for(i=0; i < Npsi; i++)
 		psitemp[i] *= I*CartesianMode[i].K2()*CartesianMode[i].Kx();
 	*convolution0=0.0;
@@ -200,6 +202,7 @@ void PrimitiveNonlinearityFFT(Var *source, Var *psi, double)
 	convolve0(convolution0,convolution0,psibuffer0,Npsibuffer+1,log2n);
 	CartesianUnPad(psibuffer,convolution);
 	
+#pragma ivdep		
 	for(i=0; i < Npsi; i++)
 		source[i] = I*kinv2[i]*(CartesianMode[i].Ky()*psibuffer[i]-
 								CartesianMode[i].Kx()*source[i]);
