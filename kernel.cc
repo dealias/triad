@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
 	
   if(!(restart || initialize)) {
     fin.open(rname);
-    if(fin && !clobber && !testing) 
+    if(fin && !clobber && !testing)
       msg(OVERRIDE_GLOBAL,"Restart file %s already exists",rname);
     fin.close();	
     errno=0;
