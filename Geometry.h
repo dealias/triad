@@ -13,10 +13,12 @@
 
 class GeometryBase {
 protected:	
-	int Nmode;	// number of unreflected (explicitly evolved) bins
+	int Nmode; // number of unreflected (explicitly evolved) bins
+	int n; // total number of bins, including reflected bins
 public:	
 	virtual char *Name()=0;
 	virtual int Create()=0;
+	int TotalNumber() {return n;}
 	virtual Nu BinAveragedLinearity(int)=0;
 	
 	virtual Real Area(int)=0;
@@ -60,7 +62,6 @@ class Partition : public GeometryBase {
 	DynVector<Weight> weight;
 	int Nweight;
 	Bin<T> *bin; // pointer to table of bins
-	int n; // total number of bins, including reflected bins
 public:
 	Partition() {}
 	char *Name();
@@ -245,9 +246,10 @@ void Partition<T>::ComputeTriads() {
 	}
 	
 	pqbuffer=new Var[pq(n,n)];
-	triadStop=new Triad*[Nmode];
+	triadLimits=new TriadLimits[Nmode];
 	int *ntriad=new int[Nmode];
 	
+	triad.Resize(Nmode*n);
 	for(k=0; k < Nmode; k++) {
 		norm=1.0/(twopi2*Area(k));
 		Var *pq=pqbuffer;
@@ -256,16 +258,21 @@ void Partition<T>::ComputeTriads() {
 				nkpq=FindWeight(k,p,q);
 				
 				if(nkpq != 0.0)	{
-					nkpq *= ((p==q) ? 0.5 : 1.0) * norm;
-					triad[Ntriad++].Store(pq,nkpq);
+					if(p==q) nkpq *= 0.5;
+					triad[Ntriad++].Store(pq,nkpq*norm);
 				}
 			}
 		}
 		ntriad[k]=Ntriad;
 	}
+	triad.Resize(Ntriad);
 	
 	triadBase=triad.Base();
-	for(k=0; k < Nmode; k++) triadStop[k] = triadBase+ntriad[k];
+	triadLimits[0].start=triadBase;
+	for(k=0; k < Nmode-1; k++) {
+		triadLimits[k+1].start=triadLimits[k].stop=triadBase+ntriad[k];
+	}
+	triadLimits[Nmode-1].stop=triadBase+Ntriad;
 
 	delete [] ntriad;
 	weight.~DynVector();

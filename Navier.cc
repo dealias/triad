@@ -152,6 +152,7 @@ void NWave::InitialConditions()
 	
 	Geometry=GeometryProblem->NewGeometry(geometry);
 	nyconserve=Npsi=Geometry->Create();
+	NpsiR=Geometry->TotalNumber();
 	ny=(average ? Nmoment+1 : 1)*Npsi;
 	y=new Var[ny];
 	moment=new Var[Npsi];

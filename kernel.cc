@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
 	
 	cout << endl;
 	cout << "INTEGRATION TIMING STATISTICS:" << endl <<	"            CPU = "
-		 << cpu[0] << ", IO/MP = " << cpu[1] <<  ", SYS = " << cpu[2] << endl;
+		 << cpu[0] << ", CHILD = " << cpu[1] <<  ", SYS = " << cpu[2] << endl;
 	cout << endl;
 	
 	if(!testing) mailuser("completed");
@@ -327,7 +327,7 @@ void set_timer()
 	if(restart) for(int i=0; i < ncputime; i++) cpu0[i] -= cpu[i];
 	else fstat << setw(w) << "iteration" << " " << setw(e) << "t" << " " <<
 		setw(e) << "dt" << " " << setw(w) << "invert_cnt" << " " <<
-		setw(w) << "CPU" << " " << setw(w) << "IO/MP" << " " <<
+		setw(w) << "CPU" << " " << setw(w) << "CHILD" << " " <<
 		setw(w) << "SYS" <<	endl;
 }
 

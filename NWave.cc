@@ -1,6 +1,7 @@
 #include "NWave.h"
 
 int Npsi;
+int NpsiR;
 int Ntriad;
 
 // Reality condition flag 
@@ -10,37 +11,11 @@ int reality=1;
 Var *psibuffer,*psibufferStop,*pqbuffer;
 DynVector<Triad> triad;
 Triad *triadBase;
-Triad **triadStop;
+TriadLimits *triadLimits;
 
 Nu *nu,*nu_inv;
 Real *nuR_inv,*nuI;
 Real *forcing;
-
-#if _AIX && COMPLEX
-// Special case to help xlC with optimization:
-
-inline Complex spdot(Triad *tstart, const Triad *tstop)
-{
-	Triad *t=tstart;
-	Real sumre, sumim;
-	for(sumre=sumim=0.0; t < tstop; t++) {
-		sumre += t->Mkpq * (*t->pq).re;
-		sumim -= t->Mkpq * (*t->pq).im;
-	}
-	return sumre+I*sumim;
-}
-
-#else
-
-inline Var spdot(Triad *tstart, const Triad *tstop)
-{
-	Triad *t=tstart;
-	Var sum;
-	for(sum=0.0; t < tstop; t++) sum += t->Mkpq * conj(*(t->pq));
-	return sum;
-}
-
-#endif
 
 void PrimitiveNonlinearity(Var *source, Var *psi, double)
 {
@@ -53,27 +28,40 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 		for(Var *k=psibuffer; k < kstop; k++) conjugate(*(k+Npsi),*k);
 	}
 	
+#if (_AIX || __GNUC__) && COMPLEX
 	Var *pq=pqbuffer;
 	for(Var *p=psibuffer; p < psibufferStop; p++) {
-#if _AIX && COMPLEX
 		Real psipre=p->re, psipim=p->im;
 		for(Var *q=p; q < psibufferStop; q++, pq++) {
 			pq->re=psipre*q->re-psipim*q->im;
 			pq->im=psipre*q->im+psipim*q->re;
 		}
-#else
-		Var psip=*p;
-#pragma ivdep		
-		for(Var *q=p; q < psibufferStop; q++, pq++) *pq=psip*(*q);
-#endif		
 	}
+#else
+#pragma _CRI taskloop private(ip) value(psibuffer,NpsiR,pqbuffer)
+	for(int ip=0; ip < NpsiR; ip++) {
+		Var *pq=pqbuffer+ip*(NpsiR+NpsiR-1-ip)/2, psip=psibuffer[ip];
+#pragma ivdep		
+		for(int iq=ip; iq < NpsiR; iq++) pq[iq]=psip*psibuffer[iq];
+	}
+#endif		
 	
-	Triad *t=triadBase,**tstop=triadStop;
-	Var *kstop=source+Npsi;
-	
-	for(Var *k=source; k < kstop; k++,tstop++) {
-		*k=spdot(t,*tstop);
-		t=*tstop;
+#pragma _CRI taskloop private(i) value(source,triadLimits,Npsi)
+	for(int i=0; i < Npsi; i++) {
+		Triad *t=triadLimits[i].start, *tstop=triadLimits[i].stop;
+#if (_AIX || __GNUC__) && COMPLEX
+		Real sumre, sumim;
+		for(sumre=sumim=0.0; t < tstop; t++) {
+			sumre += t->Mkpq * (*t->pq).re;
+			sumim -= t->Mkpq * (*t->pq).im;
+		}
+		source[i].re=sumre;
+		source[i].im=sumim;
+#else		
+		Var sum;
+		for(sum=0.0; t < tstop; t++) sum += t->Mkpq * conj(*(t->pq));
+		source[i]=sum;
+#endif		
 	}
 	
 	// Compute moments

@@ -17,9 +17,10 @@ public:
 	int Size() const {return sz;}
 	T *Base() const {return v;}
 	T& operator [] (int i) {
-		if (i >= sz) {v=new(v,sz=max(i+1,2*sz)) (T);}
+		if (i >= sz) v=new(v,sz=max(i+1,2*sz)) (T);
 		return v[i];
 	}
+	void Resize(int i) {v=new(v,sz=i) (T);}
 
 	DynVector<T> operator = (const T *A) {
 		memcpy(v,A,sz*sizeof(T));

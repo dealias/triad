@@ -50,7 +50,7 @@ void NWave::InitialConditions()
 {
 	int k;
 
-	nyconserve=Npsi=3; 
+	nyconserve=Npsi=NpsiTotal=3; 
 	psibuffer=new Var[Npsi];
 	psibufferStop=psibuffer+Npsi;
 	ny=(average ? Nmoment+1 : 1)*Npsi;
