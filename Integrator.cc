@@ -145,7 +145,7 @@ Solve_RC PC::Solve(double t, double dt)
 void PC::Predictor(double t, double dt, int start, int stop)
 {
 	for(int j=start; j < stop; j++) y1[j]=y0[j]+dt*source0[j];
-	Problem->BackTransform(y1,t+dt,dt,y0);
+	Problem->BackTransform(y1,t+dt,dt,yi);
 	Source(source,y1,t+dt);
 }
 
@@ -189,7 +189,7 @@ void RK2::TimestepDependence(double dt)
 void RK2::Predictor(double t, double, int start, int stop)
 {
 	for(int j=start; j < stop; j++) y1[j]=y0[j]+halfdt*source0[j];
-	Problem->BackTransform(y1,t+halfdt,halfdt,y0);
+	Problem->BackTransform(y1,t+halfdt,halfdt,yi);
 	Source(source,y1,t+halfdt);
 }
 
@@ -212,13 +212,13 @@ void RK4::Predictor(double t, double dt, int start, int stop)
 {
 	int j;
 	for(j=start; j < stop; j++) y[j]=y0[j]+halfdt*source0[j];
-	Problem->BackTransform(y,t+halfdt,halfdt,y0);
+	Problem->BackTransform(y,t+halfdt,halfdt,yi);
 	Source(source1,y,t+halfdt);
 	for(j=start; j < stop; j++) y[j]=y0[j]+halfdt*source1[j];
-	Problem->BackTransform(y,t+halfdt,halfdt,y0);
+	Problem->BackTransform(y,t+halfdt,halfdt,yi);
 	Source(source2,y,t+halfdt);
 	for(j=start; j < stop; j++) y[j]=y0[j]+dt*source2[j];
-	Problem->BackTransform(y,t+dt,dt,y0);
+	Problem->BackTransform(y,t+dt,dt,yi);
 	Source(source,y,t+dt);
 }
 
@@ -256,14 +256,14 @@ void RK5::Predictor(double t, double, int start, int stop)
 		y[j].re=y0[j].re+b10*source0[j].re;
 		y[j].im=y0[j].im+b10*source0[j].im;
 	}
-	Problem->BackTransform(y,t+a1,a1,y0);
+	Problem->BackTransform(y,t+a1,a1,yi);
 	Source(source,y,t+a1);
 #pragma ivdep		
 	for(j=start; j < stop; j++) {
 		y2[j].re=y0[j].re+b20*source0[j].re+b21*source[j].re;
 		y2[j].im=y0[j].im+b20*source0[j].im+b21*source[j].im;
 	}
-	Problem->BackTransform(y2,t+a2,a2,y0);
+	Problem->BackTransform(y2,t+a2,a2,yi);
 	Source(source2,y2,t+a2);
 #pragma ivdep		
 	for(j=start; j < stop; j++) {
@@ -272,7 +272,7 @@ void RK5::Predictor(double t, double, int start, int stop)
 		y3[j].im=y0[j].im+b30*source0[j].im+b31*source[j].im+
 			b32*source2[j].im;
 	}
-	Problem->BackTransform(y3,t+a3,a3,y0);
+	Problem->BackTransform(y3,t+a3,a3,yi);
 	Source(source3,y3,t+a3);
 #pragma ivdep		
 	for(j=start; j < stop; j++) {
@@ -281,7 +281,7 @@ void RK5::Predictor(double t, double, int start, int stop)
 		y4[j].im=y0[j].im+b40*source0[j].im+b41*source[j].im+
 			b42*source2[j].im+b43*source3[j].im;
 	}
-	Problem->BackTransform(y4,t+a4,a4,y0);
+	Problem->BackTransform(y4,t+a4,a4,yi);
 	Source(source4,y4,t+a4);
 #pragma ivdep		
 	for(j=start; j < stop; j++) {
@@ -290,7 +290,7 @@ void RK5::Predictor(double t, double, int start, int stop)
 		y[j].im=y0[j].im+b50*source0[j].im+b51*source[j].im+
 			b52*source2[j].im+b53*source3[j].im+b54*source4[j].im;
 	}
-	Problem->BackTransform(y,t+a5,a5,y0);
+	Problem->BackTransform(y,t+a5,a5,yi);
 	Source(source,y,t+a5);
 }
 	
@@ -301,27 +301,27 @@ void RK5::Predictor(double t, double, int start, int stop)
 	int j;
 #pragma ivdep		
 	for(j=start; j < stop; j++) y[j]=y0[j]+b10*source0[j];
-	Problem->BackTransform(y,t+a1,a1,y0);
+	Problem->BackTransform(y,t+a1,a1,yi);
 	Source(source,y,t+a1);
 #pragma ivdep		
 	for(j=start; j < stop; j++) y2[j]=y0[j]+b20*source0[j]+b21*source[j];
-	Problem->BackTransform(y2,t+a2,a2,y0);
+	Problem->BackTransform(y2,t+a2,a2,yi);
 	Source(source2,y2,t+a2);
 #pragma ivdep		
 	for(j=start; j < stop; j++) y3[j]=y0[j]+b30*source0[j]+b31*source[j]+
 									b32*source2[j];
-	Problem->BackTransform(y3,t+a3,a3,y0);
+	Problem->BackTransform(y3,t+a3,a3,yi);
 	Source(source3,y3,t+a3);
 #pragma ivdep		
 	for(j=start; j < stop; j++) y4[j]=y0[j]+b40*source0[j]+b41*source[j]+
 									b42*source2[j]+b43*source3[j];
-	Problem->BackTransform(y4,t+a4,a4,y0);
+	Problem->BackTransform(y4,t+a4,a4,yi);
 	Source(source4,y4,t+a4);
 #pragma ivdep		
 	for(j=start; j < stop; j++) y[j]=y0[j]+b50*source0[j]+b51*source[j]+
 									b52*source2[j]+b53*source3[j]+
 									b54*source4[j];
-	Problem->BackTransform(y,t+a5,a5,y0);
+	Problem->BackTransform(y,t+a5,a5,yi);
 	Source(source,y,t+a5);
 }
 

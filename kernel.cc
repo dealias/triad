@@ -191,6 +191,7 @@ int main(int argc, char *argv[])
 		if(fin && !clobber)
 			msg(OVERRIDE,"Statistics file %s already exists",sname);
 		fin.close();
+		errno=0;
 	}
 
 	t=0.0;
