@@ -325,7 +325,7 @@ void testlock()
   ftest.open(lname);
   if(ftest) {
     msg(OVERRIDE_GLOBAL,
-	"Lock file %s exists.\nOutput files may be corrupted",lname);
+	"Lock file %s exists.\nCheck output files",lname);
     if(remove(lname) == -1)
       msg(WARNING,"Could not remove lock file %s",lname);
   } else errno=0;

@@ -58,7 +58,7 @@ class Table {
     while(1) {
 	e=*(EntryBase<B> **) bsearch2(key,Base(),Size(),sizeof(*Base()),
 				      KeyCompare,&match_type);
-	if(check_match(match_type,name,key)) break;
+	if(check_match(match_type,name,key,2)) break;
 	
 	cout << "Recognized " << name << " values:" << endl << endl;
 	List(cout);

@@ -38,8 +38,9 @@ void msg(int severity, const char *file, int line, const char *format,...)
   }
 	
   if(severity == OVERRIDE_ || severity == RETRY_) {
-    if(msg_override) {severity=WARNING_; tty_override=0;}
-    else {
+    if(msg_override) {
+      severity=WARNING_; tty_override=0;
+    } else {
 #if __unix
       int errno_save=errno;
       if(isatty(STDIN_FILENO)) {

@@ -65,12 +65,13 @@ void VocabularyBase::Assign(const char *key, int warn)
   param_warn=warn;
 	
   ptr=strchr(buffer,'=');
-//  if(!ptr) msg(ERROR_GLOBAL,"Invalid assignment: %s",buffer);
   if(ptr) *ptr=0;
   param=Locate(buffer,&match_type);
-  if(!ptr) {param->Help(cout); exit(1);}
   
-  if(check_match(match_type,"command",buffer,warn)) param->SetStr(++ptr);
+  if(check_match(match_type,"command",buffer,warn)) {
+    if(ptr) param->SetStr(++ptr);
+    else {param->Help(cout); exit(1);}
+  }
   delete [] buffer;
 }
 
