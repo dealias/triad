@@ -44,7 +44,7 @@ class Grid2 : public Grid<Array2<T>,T> {
     Mesh(x,XMeshRange(),nx,nx1bc,nxbc,hx,hxinv,hx2,hx2inv,rx,
 	 offx,ox,i1,i1p,i2,i2p);
     Mesh(y,YMeshRange(),ny,ny1bc,nybc,hy,hyinv,hy2,hy2inv,ry,
-	 offy,oy,j1,j2p,j2,j2p);
+	 offy,oy,j1,j1p,j2,j2p);
     hxyinv=1.0/(hx*hy);
     if(!allocate) return;
     d.Allocate(nxbc,nybc,ox,oy);
