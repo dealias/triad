@@ -313,8 +313,7 @@ int main(int argc, char *const argv[])
 		nset=nset ? min(nset,n) : n;
 	}
 	
-	if(!label) animate(nfiles,argf,nset-1,format,xsize,ysize);
-	else {
+	if(label || make_mpeg) { 
 		if(make_mpeg) montage(nfiles,argf,0,format,"miff");
 		for(int n=0; n < nset; n++) 
 			montage(nfiles,argf,n,format,make_mpeg ? "yuv3" : "miff");
@@ -322,7 +321,8 @@ int main(int argc, char *const argv[])
 		
 		if(make_mpeg) mpeg(nfiles,argf,nset-1,"mpg",xsize,ysize);
 		else manimate(nfiles,argf,nset-1,"miff",xsize,ysize);
-	}
+	} else
+		animate(nfiles,argf,nset-1,format,xsize,ysize);
 }
 
 void cleanup(char *fieldname, char *type)
