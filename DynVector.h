@@ -4,13 +4,6 @@
 #include <stdlib.h>
 #include <iostream.h>
 
-#if __AIX
-#define CONST const
-#else
-#define mutable
-#define CONST
-#endif
-
 template<class T>
 class DynVector
 {
@@ -28,8 +21,8 @@ class DynVector
   }
 	
   int test(int flag) const {return state & flag;}
-  void clear(int flag) CONST {state &= ~flag;}
-  void set(int flag) CONST {state |= flag;}
+  void clear(int flag) const {state &= ~flag;}
+  void set(int flag) const {state |= flag;}
 	
   DynVector() : v(NULL), size(0), alloc(0), state(unallocated) {}
   DynVector(const DynVector<T>& A) : v(A.v), size(A.size),
@@ -39,7 +32,7 @@ class DynVector
 
   void Freeze() {state=unallocated;}
   void Hold() {if(test(allocated)) {state=temporary;}}
-  void Purge() CONST {if(test(temporary)) {Deallocate(); state=unallocated;}}
+  void Purge() const {if(test(temporary)) {Deallocate(); state=unallocated;}}
 #ifdef mutable
   void Purge() const {((DynVector<T> *) this)->Purge();}
 #endif
@@ -106,5 +99,4 @@ class DynVector
   }
 };
 
-#undef CONST
 #endif
