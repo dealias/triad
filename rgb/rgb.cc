@@ -1,5 +1,5 @@
 /* RGB:  A movie production utility
-Copyright (C) 1999 John C. Bowman (bowman@math.ualberta.ca)
+Copyright (C) 2000 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.06J";
+const char VERSION[]="1.07";
 
 #include "xstream.h"
 #include <iostream.h>
@@ -837,7 +837,7 @@ int main(int argc, char *argv[])
 				if(vmin < gmin) gmin=vmin;
 				if(vmax > gmax) gmax=vmax;
 				set++;
-			} while (n++ < end && rc == 0);
+			} while ((n++ < end || end < 0) && rc == 0);
 			nset=nset ? min(nset,set) : set;
 			
 			if(!floating_scale) {
@@ -975,6 +975,7 @@ int main(int argc, char *argv[])
 				msg(ERROR,"Cannot write to output file %s",oname);
 			}
 			set++;
+			if(nset && set >= nset) break;
 		} while (n++ < end && rc == 0);
 		nset=nset ? min(nset,set) : set;
 		if(nset == 1 && !extract && !display) {
