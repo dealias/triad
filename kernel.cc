@@ -25,8 +25,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 using namespace Array;
 
 const char PROGRAM[]="TRIAD";
-const char VERSION[]="1.40";
-int restart_version=1;
+const char VERSION[]="1.41";
+const int restart_version=2;
+extern const Real problem_version;
+Real restart_problem_version=0;
 
 // Global variables
 unsigned long nout;
@@ -158,7 +160,8 @@ int main(int argc, char *argv[])
 	
   cout << newl << "MACHINE: " << machine() << " [" << date() << "]" << newl;
 	
-  cout << newl << "PROBLEM: " << Vocabulary->Name() << newl;
+  cout << newl << "PROBLEM: " << Vocabulary->Name() << "(version "
+       << problem_version << ")" << newl;
 	
   cout << newl << "COMMAND LINE: ";
   for(i=1; i < argc; i++) cout << argv[i] << " ";
@@ -292,13 +295,18 @@ void read_init()
   const char *type=restart ? "restart" : "initialization";
   const char *ny_msg=
     "Current value of ny (%d) disagrees with value (%d) in file\n%s. Perhaps you need to specify oldversion=%d";
-  int init_version;
+  int init_version=0;
 	
   ixstream finit(rname);
   if(finit) {
     cout << newl << "READING " << upcase(type) << " DATA FROM FILE "
-	 << rname << "." << endl; 
+	 << rname 
     if(!oldversion) finit >> init_version >> nout0;
+    if(init_version > 1) {
+      finit >> restart_problem_version;
+      cout << "(version " << restart_problem_version << ")";
+    }
+    cout << "." << endl; 
     finit >> t0 >> dt0 >> final_iteration;
     for(i=0; i < ncputime; i++) finit >> cpu_restart[i];
     finit >> ny0;
@@ -402,6 +410,7 @@ void statistics(double t, double dt, int it)
   if(frestart) {
     int i;
     frestart << restart_version << newl << nout << newl
+	     << problem_version << newl
 	     << t << newl << dt << newl << iter << newl;
     for(i=0; i < ncputime; i++) frestart << cpu_restart[i]+cpu[i] << newl;
     frestart << ny << newl;
