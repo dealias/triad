@@ -329,16 +329,16 @@ void E_PC::TimestepDependence(double dt)
 	dtinv=1.0/dt;
 }
 
-#if _CRAY
-NWave NWaveProblem;
-#endif	
-
 void E_PC::Predictor(double t, double, int start, int stop)
 {
 	for(int j=start; j < stop; j++)	
 		y1[j]=expinv[j]*y0[j]+onemexpinv[j]*source0[j];
 	Source(source,y1,t+dt);
 }
+
+#if _CRAY
+NWave NWaveProblem;
+#endif
 
 int E_PC::Corrector(double, double& errmax, int start, int stop)
 {

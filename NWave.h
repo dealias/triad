@@ -107,7 +107,7 @@ public:
 
 #if _CRAY
 extern NWave NWaveProblem;
-#endif	
+#endif
 
 class E_PC : public PC {
 protected:
@@ -121,11 +121,7 @@ public:
 	int Corrector(double, double&, int start, int stop);
 	void Source(Var *src, Var *y, double t) {
 		Problem->NonLinearSrc(src,y,t);
-#if _CRAY		
-		NWaveProblem.NWave::ExponentialLinearity(src,y,t);
-#else
 		NWave::ExponentialLinearity(src,y,t);
-#endif		
 	}
 };
 
@@ -140,9 +136,6 @@ public:
 	int Corrector(double, double&, int, int);
 	void Source(Var *src, Var *y, double t) {
 		Problem->NonLinearSrc(src,y,t);
-#if _CRAY		
-		NWaveProblem.NWave::ConservativeExponentialLinearity(src,y,t);
-#endif			
 		NWave::ConservativeExponentialLinearity(src,y,t);
 	}
 };
