@@ -30,7 +30,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 #include "iostream.h"
 
-#ifdef _AIX
+#if __AIX
 #define CONST const
 #else
 #define mutable
