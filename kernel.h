@@ -171,6 +171,8 @@ void poll();
 void read_init();
 void set_timer();
 void statistics();
+void lock();
+void unlock();
 void dump(int it, int final, double tmax);
 void open_output(ofstream& fout, const char *delimiter, char *suffix,
 				 int append=restart);

@@ -79,8 +79,8 @@ ProblemBase::ProblemBase()
 	VOCAB_NODUMP(initialize,0,1);
 	VOCAB_NODUMP(input,0,1);
 	VOCAB_NODUMP(clobber,0,1);
+	VOCAB_NODUMP(run,"","");
 	VOCAB(output,0,1);
-	VOCAB(run,"","");
 	VOCAB(approximation,"","");
 	VOCAB(integrator,"","");
 	
@@ -160,9 +160,11 @@ int main(int argc, char *argv[])
 	Problem->List(cout);
 	
 	if(!testing) {
+		lock();
 		fdump.open(pname);
 		Problem->Dump(fdump);
 		fdump.close();
+		unlock();
 	}
 	
 	Approximation=Problem->NewApproximation(approximation);
@@ -274,8 +276,7 @@ void read_init()
 	if(restart) {t=t0; last_dump=t;}
 }
 
-
-inline void lock()
+void lock()
 {
 	flock.open(lname);
 	if(!flock) {
@@ -284,7 +285,7 @@ inline void lock()
 	} 
 }
 
-inline void unlock()
+void unlock()
 {
 	if(flock) {
 		flock.close();
