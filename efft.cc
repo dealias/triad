@@ -23,6 +23,8 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	unsigned int n=1 << log2n;
 	isign = -isign;
 	
+	if(inc1 == 0) inc1=nk;
+	
 	for(j=0; j < TableSize; j++) if(n == nTable[j] && nk == nkTable[j]) break;
 	
     if(j == TableSize) {

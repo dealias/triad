@@ -294,13 +294,13 @@ void NWave::Initialize()
 	for(i=Nmode; i < ny; i++) y[i]=0.0;
 }
 
-void NWave::ComputeInvariants(Var *y, int Nmode, Real& E, Real& Z, Real& P)
+void NWave::ComputeInvariants(Var *u, int Nmode, Real& E, Real& Z, Real& P)
 {
 	Real Ek,Zk,Pk,k2;
 	E=Z=P=0.0;
 	for(int i=0; i < Nmode; i++) {
 		k2=Geometry->K2(i);
-		Ek=Geometry->Normalization(i)*abs2(y[i])*Geometry->Area(i);
+		Ek=Geometry->Normalization(i)*abs2(u[i])*Geometry->Area(i);
 		Zk=k2*Ek;
 		Pk=k2*Zk;
 		E += Ek;
