@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.08
+#define __ARRAY_H_VERSION__ 1.09
 
 // Defining NDEBUG improves optimization but disables argument checking.
 
@@ -292,7 +292,7 @@ istream& operator >> (istream& s, const array2<T>& A)
 template<class T>
 class array3 : public array2<T> {
 protected:
-	unsigned int nyz;
+	int nyz;
 	int nz;
 public:
 	unsigned int Size() const {return nx*nyz;}
@@ -388,8 +388,8 @@ istream& operator >> (istream& s, const array3<T>& A)
 template<class T>
 class array4 : public array3<T> {
 protected:
-	unsigned int nyzw;
-	unsigned int nzw;
+	int nyzw;
+	int nzw;
 	int nw;
 public:
 	unsigned int Size() const {return nx*nyzw;}

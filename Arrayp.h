@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Arrayp_h__
 #define __Arrayp_h__ 1
 
-#define __ARRAYP_H_VERSION__ 1.08
+#define __ARRAYP_H_VERSION__ 1.09
 
 // Defining NDEBUG improves optimization.
 
@@ -38,7 +38,7 @@ public:
 };
 
 template<class T>
-class Array1p : public Array1<T>, public ArrayMod {
+class Array1p : public array1<T>, public ArrayMod {
 public:
 	Array1p() {}
 	Array1p(unsigned int nx0) {Allocate(nx0);}
@@ -50,7 +50,7 @@ public:
 };
 
 template<class T>
-class Array2p : public Array2<T>, public ArrayMod {
+class Array2p : public array2<T>, public ArrayMod {
 public:
 	Array2p() {}
 	Array2p(unsigned int nx0, unsigned int ny0) {Allocate(nx0,ny0);}
@@ -72,7 +72,7 @@ public:
 };
 
 template<class T>
-class Array3p : public Array3<T>, public ArrayMod {
+class Array3p : public array3<T>, public ArrayMod {
 public:	
 	Array3p() {}
 	Array3p(unsigned int nx0, unsigned int ny0, unsigned int nz0) {Allocate(nx0,ny0,nz0);}
@@ -94,7 +94,7 @@ public:
 };
 
 template<class T>
-class Array4p : public Array4<T>, public ArrayMod {
+class Array4p : public array4<T>, public ArrayMod {
 public:	
 	Array4p() {}
 	Array4p(unsigned int nx0, unsigned int ny0, unsigned int nz0, unsigned int nw0) {Allocate(nx0,ny0,nz0,nw0);}
@@ -125,4 +125,3 @@ public:
 #endif
 
 #endif
-
