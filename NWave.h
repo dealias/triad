@@ -30,7 +30,7 @@ public:
 enum Linearity {STANDARD,EXPONENTIAL,CONSERVATIVE_EXPONENTIAL};
 
 class NWave : public ProblemBase {
-	Source_t (NWave::*Linearity);
+	Source_t *Linearity;
 public:
 	void InitialConditions();
 	void Initialize();
@@ -40,28 +40,13 @@ public:
 	
 	void LinearSrc(Var *src, Var *y, double t);
 	
-	Source_t StandardLinearity;
-	Source_t ExponentialLinearity;
-	void ConservativeExponentialLinearity(Real *source, Real *psi, double t);
-	void ConservativeExponentialLinearity(Complex *source, Complex *psi,
-										  double t);
-	void SetLinearity(int type) {
-		switch(type) {
-		case STANDARD:
-			Linearity=StandardLinearity;
-			break;
-		case EXPONENTIAL:
-			Linearity=ExponentialLinearity;
-			break;
-		case CONSERVATIVE_EXPONENTIAL:
-			Linearity=ConservativeExponentialLinearity;
-			break;
-		}
-	}
-	NWave();
+	static Source_t StandardLinearity;
+	static Source_t ExponentialLinearity;
+	static void ConservativeExponentialLinearity(Real *, Real *, double );
+	static void ConservativeExponentialLinearity(Complex *, Complex *, double);
+	void SetLinearity(Source_t *Linearity0) {Linearity=Linearity0;}
+	NWave() {Linearity=StandardLinearity;}
 };
-
-NWave *NWaveProblem;
 
 class SR : public NWave {
 public:	

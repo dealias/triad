@@ -63,7 +63,7 @@ public:
 	int Size() {return ny;}
 	
 	virtual char *Name() {return "";}
-	virtual void SetLinearity(int) {}
+	virtual void SetLinearity(Source_t *);
 	virtual void LinearSrc(Var *, Var *, double) {}
 	virtual void NonLinearSrc(Var *, Var *, double) {}
 	virtual void Transform(Var *, double, double) {}
