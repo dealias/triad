@@ -629,7 +629,7 @@ extern char **environ;
 
 int system (char *command) {
 	int pid, status;
-	static cleaning=0;
+	static int cleaning=0;
 
 	if (command == 0) return 1;
 	pid = fork();
