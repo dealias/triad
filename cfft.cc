@@ -57,7 +57,7 @@ lot,isign,last)
 		for(int j=0; j < P; j++) {
 			int off=j*lot;
 			CFFTMLT(&data[off].re,&data[off].im,&work[2*off].re,trigs,ifax,
-					inc,jump,m,(j == P-1) ? lot : last,isign);
+					inc,jump,m,(j == P-1) ? last : lot,isign);
 		}
 	}
 	
@@ -102,7 +102,7 @@ lot,isign,last)
 		for(int j=0; j < P; j++) {
 			int off=j*lot;
 			CFFTMLT(&data[off].re,&data[off].im,&work[2*off].re,trigs,ifax,
-					inc,jump,m,(j == P-1) ? lot : last,isign);
+					inc,jump,m,(j == P-1) ? last : lot,isign);
 		}
 	}
 }
