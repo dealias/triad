@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.19";
+const char VERSION[]="1.20";
 
 #include "xstream.h"
 #include <iostream>
@@ -36,9 +36,6 @@ using namespace Array;
 
 const double pi=PI;
 const double twopi=2.0*PI;
-
-// Number of digits used to index intermediate files.
-const int NDIGITS=4;
 
 static double *vminf, *vmaxf;
 static double *vminf2, *vmaxf2;
@@ -61,6 +58,12 @@ static int remote=0;
 static int label=0;
 static int pointsize=0;
 static int grey=0;
+
+// Flag to produce scaled YUV (CCIR-601 YCbCr 4:2:0) instead of RGB output
+static int yuv=0;   
+static unsigned char YBlack=YByte(0.0);
+static unsigned char BW=UVByte(0.0);
+
 static const char *convertprog;
 static ostringstream option;
 static int Nx,Ny;
@@ -130,6 +133,7 @@ unsigned int labelcnt=0;
 DynVector<char *> Label;
 
 const char *outname=NULL;
+ofstream fout,uout,vout;
 
 void MakePalette(int palette);
 void cleanup();
@@ -409,6 +413,53 @@ void options()
        << "]" << endl;
 }
 
+void openfile(ofstream& f, const std::string& name)
+{
+  f.open(name.c_str());
+  if(!f) {
+    cleanup();
+    msg(ERROR,"Cannot open output file %s",name.c_str());
+  }
+}
+
+bool htoggle,vtoggle;
+      
+void outrgb(unsigned char r, unsigned char g, unsigned char b)
+{
+  if(yuv) {
+    double red=r/255.0;
+    double green=g/255.0;
+    double blue=b/255.0;
+    double y=cr*red+cg*green+cb*blue;
+    fout << YByte(y);
+    if(htoggle && vtoggle) {
+      uout << UVByte(cu*(blue-y));
+      vout << UVByte(cv*(red-y));
+    }
+    htoggle=!htoggle;
+  } else fout << r << g << b;
+}
+
+void outpixel(int index) 
+{
+  if(yuv) {
+    if(grey) fout << (unsigned char) index;
+    else fout << Y[index];
+    
+    if(htoggle && vtoggle) {
+      if(grey) {
+	uout << BW;
+	vout << BW;
+      } else {
+	uout << U[index];
+	vout << V[index];
+      }
+    }
+    htoggle=!htoggle;
+  } else if(grey) fout << (unsigned char) index;
+  else fout << Red[index] << Green[index] << Blue[index];
+}
+
 int main(int argc, char *argv[])
 {
   int nset=0, mx=1, my=1;
@@ -532,6 +583,7 @@ int main(int argc, char *argv[])
       break;
     case 'm':
       make_mpeg=1;
+      yuv=1;
       break;
     case 'o':
       outname=strdup(optarg);
@@ -760,16 +812,20 @@ int main(int argc, char *argv[])
   rgbdir=strdup(rgbdirbuf.str().c_str());
 	
   if(palette == -1) palette=vector ? RAINBOW : BWRAINBOW; //Default palette
-  if(!grey) MakePalette(palette);
 	
   if(vector3) vector2=1;
   if(vector2) vector=1;
+  if(vector) grey=0;
+  
+  if(!grey && !vector3) MakePalette(palette);
+  
+  if(nfiles > (vector ? (vector3 ? 3 : 2) : 1)) yuv=0;
   
   const char *format=grey ? "gray" : "rgb";
-  int PaletteMin=(grey || vector2) ? 0 : FirstColor;
-  int PaletteRange=(grey || vector2) ? 255 : NColors-1;
+  int PaletteMin=(grey || vector2) ? ((yuv && grey) ? 16 : 0) : FirstColor;
+  int PaletteRange=(grey || vector2) ? ((yuv && grey) ? 219 : 255) : NColors-1;
   int PaletteMax=PaletteMin+PaletteRange;
-  if(background == Undefined) background=grey ? 255 : BLACK;
+  if(background == Undefined) background=grey ? PaletteMax : BLACK;
 	
   int sign,offset;
   
@@ -895,6 +951,12 @@ int main(int argc, char *argv[])
     
     xsize=mx*(istop-istart);
     ysize=my*(jstop-jstart)*nz0+msep*nz0+mpalsize;
+    
+    if(yuv) {
+// YUV 4:2:0 requires even dimensions (due to downsampling of UV channels)
+      if(xsize % 2) xsize++;
+      if(ysize % 2) ysize++;
+    }
 		
     Array3<float> value,value2,value3;
     value.Allocate(nz,ny,nx);
@@ -1013,16 +1075,16 @@ int main(int argc, char *argv[])
       if(!floating_scale) {vmin2=gmin2; vmax2=gmax2;}
       if(!floating_scale) {vmin3=gmin3; vmax3=gmax3;}
 			
-      ostringstream buf;
-      buf << rgbdir << fieldname.str() << setfill('0') << setw(NDIGITS)
-	  << set << "." << format;
-      char *oname=strdup(buf.str().c_str());
-      ofstream fout(oname);
-      if(!fout) {
-	cleanup();
-	msg(ERROR,"Cannot open output file %s",oname);
-      }
-			
+      ostringstream prefix;
+      prefix << rgbdir << fieldname.str() << set << ".";
+
+      if(yuv) {
+	openfile(fout,prefix.str()+"Y");
+	openfile(uout,prefix.str()+"U");
+	openfile(vout,prefix.str()+"V");
+      } else openfile(fout,prefix.str()+format);
+      
+      htoggle=vtoggle=true;
       for(int k=kmin; k <= kmax; k++) {
 	if(floating_section) {
 	  vmin=vmink[k]; vmax=vmaxk[k];
@@ -1037,7 +1099,8 @@ int main(int argc, char *argv[])
 	step=(vmax == vmin) ? 0.0 : PaletteRange/(vmax-vmin);
 	if(vector) step2=(vmax2 == vmin2) ? 0.0 : PaletteRange/(vmax2-vmin2);
 	if(vector3) step3=(vmax3 == vmin3) ? 0.0 : PaletteRange/(vmax3-vmin3);
-	for(int j=jstart; j < jstop; j++)  {
+
+	for(int j=jstart; j < jstop; j++) {
 	  for(int j2=0; j2 < my; j2++) {
 	    for(int i=istart; i < istop; i++)  {
 	      Ivec x;
@@ -1105,46 +1168,41 @@ int main(int argc, char *argv[])
 		  indexb=((int)((value3(k,j,i)-vmin3)*step3+0.5))*sign+offset;
 		}
 	      }
-							
-	      if(grey) {
-		for(int i2=0; i2 < mx; i2++)
-		  fout << (unsigned char) index;
-	      } else {
-		unsigned char r,g,b;
+
+	      for(int i2=0; i2 < mx; i2++) {
 		if(vector3) {
-		  r=(unsigned char) index;
-		  g=(unsigned char) indexg;
-		  b=(unsigned char) indexb;
+		  outrgb(index,indexg,indexb);
 		} else if(vector2) {
-		  r=(unsigned char) index;
-		  g=0; 
-		  b=(unsigned char) indexb;
+		  outrgb(index,0,indexb);
 		} else if(vector) {
+		  unsigned char r,g,b;
 		  ramp(index,factor,r,g,b);
-		} else {
-		  r=Red[index]; g=Green[index]; b=Blue[index];
-		}
-		for(int i2=0; i2 < mx; i2++)
-		  fout << r << g << b;
+		  outrgb(r,g,b);
+		} else outpixel(index);
 	      }
 	    }
+	    if(!htoggle) fout << YBlack;
+	    vtoggle=!vtoggle;
 	  }
 	}
-	int xmsep=xsize*msep;
-	for(int i=0; i < xmsep; i++) // Output separator
-	  if(grey) fout << bandcolor;
-	  else fout << Red[bandcolor] << Green[bandcolor] << Blue[bandcolor];
+
+	// Output separator
+	for(int j=0; j < msep; j++) {
+	    for(int i=0; i < xsize; i++) {
+	      outpixel(bandcolor);
+	    }
+	  vtoggle=!vtoggle;
+	}
       }
 			
-      int Nxmx=(istop-istart)*mx;
-      double step=((double) PaletteRange)/Nxmx;
+      double step=((double) PaletteRange)/xsize;
       
       if(!vector3) {
 	if(vector && mpalsize) {
 	  double step2=((double) PaletteRange)/mpalsize;
 	  for(int j=mpalsize-1; j >= 0; j--)  {
 	    int indexb=((int) (j*step2+0.5))*sign+offset;
-	    for(int i=0; i < Nxmx; i++)  {
+	    for(int i=0; i < xsize; i++)  {
 	      int index=((int) (i*step+0.5))*sign+offset;
 	      unsigned char r,g,b;
 	      if(vector2) {
@@ -1155,25 +1213,28 @@ int main(int argc, char *argv[])
 		Real factor=((Real) j)/(mpalsize-1);
 		ramp(index,factor,r,g,b);
 	      }
-	      fout << r << g << b;
+	      outrgb(r,g,b);
 	    }
 	  }
 	} else {
 	  for(int j2=0; j2 < mpal; j2++) { // Output palette
-	    for(int i=0; i < Nxmx; i++)  {
+	    for(int i=0; i < xsize; i++)  {
 	      int index=((int) (i*step+0.5))*sign+offset;
-	      if(grey) fout << (unsigned char) index;
-	      else fout << Red[index] << Green[index] << Blue[index];
+	      outpixel(index);
 	    }
+	    vtoggle=!vtoggle;
 	  }
 	}
       }
 	  
+      if(yuv && !vtoggle) for(int i=0; i < xsize; i++)  fout << 16;
+      
       fout.close();
-      if(!fout) {
-	cleanup();
-	msg(ERROR,"Cannot write to output file %s",oname);
+      if(yuv) {
+	uout.close();
+	vout.close();
       }
+      
       set++;
       if(nset && set >= nset) break;
     } while (n++ < end && rc == 0);
@@ -1212,18 +1273,20 @@ int main(int argc, char *argv[])
 	  montage(mfiles,files,n,format,extract);
       }
     } else {
-      if(mfiles > 1 || label || make_mpeg) { 
+      if(mfiles > 1 || label) { 
 	if(make_mpeg) montage(mfiles,files,0,format,"miff");
 	for(n=0; n < nset; n++) 
 	  montage(mfiles,files,n,format,make_mpeg ? "yuv" : "miff");
 	identify(mfiles,0,"miff",xsize,ysize);
-	if(make_mpeg) mpeg(mfiles,nset-1,"mpg",xsize,ysize);
+	if(make_mpeg) {
+	  if(xsize % 2) xsize++;
+	  if(ysize % 2) ysize++;
+	  mpeg(mfiles,nset,"mpg",xsize,ysize);
+	}
 	else animate(mfiles,outname,nset-1,"miff","%d",xsize,ysize);
       } else {
-	ostringstream buf;
-	buf << "%0" << NDIGITS << "d";
-	animate(mfiles,files[0],nset-1,format,strdup(buf.str().c_str()),
-		xsize,ysize); 
+	if(make_mpeg) mpeg(mfiles,nset,"mpg",xsize,ysize);
+	else animate(mfiles,files[0],nset-1,format,"%d",xsize,ysize); 
       }
     }
   }
@@ -1286,14 +1349,16 @@ void montage(unsigned int nfiles, char *argf[], int n, const char *format,
       buf << text << "\" ";
     }
     buf << format << ":" << rgbdir << fieldname
-	<< setfill('0') << setw(NDIGITS) << n << "." << format << " ";
+	<< n << "." << format << " ";
   }
+  if(make_mpeg) buf << " -interlace partition ";
   buf << type << ":";
   if(extract || display) frame=begin+n*skip;
   else {					
     frame=n;
     buf << rgbdir;
   }
+  
   buf << outname << frame << "." << type;
   if(!verbose) buf << ">& /dev/null";
   char *cmd=strdup(buf.str().c_str());
@@ -1305,8 +1370,7 @@ void montage(unsigned int nfiles, char *argf[], int n, const char *format,
     buf << "rm ";
     for(unsigned int f=0; f < nfiles; f++) {
       const char *fieldname=argf[f];
-      buf << rgbdir << fieldname << setfill('0') << setw(NDIGITS)
-	  << n << "." << format << " ";
+      buf << rgbdir << fieldname << n << "." << format << " ";
     }
     if(!verbose) buf << " >& /dev/null";
     cmd=strdup(buf.str().c_str());
@@ -1344,9 +1408,6 @@ void identify(int, int n, const char *type, int& xsize, int& ysize)
 void mpeg(int, int n, const char *type, int xsize, int ysize)
 {
   ostringstream paramname;
-// Workaround for bug in convert:
-  if(xsize % 2) xsize++;
-  if(ysize % 2) ysize++;
   
   paramname << rgbdir << outname << ".param";
   ofstream fout(paramname.str().c_str());
@@ -1357,7 +1418,7 @@ void mpeg(int, int n, const char *type, int xsize, int ysize)
        << "-" << newl
        << "-" << newl
        << "/dev/null" << newl
-       << 1 << newl
+       << 0 << newl
        << n << newl
        << 0 << newl
        << "00:00:00:00" << newl

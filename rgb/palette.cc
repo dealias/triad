@@ -5,9 +5,8 @@ using namespace Array;
 
 int NColors=65536;
 
-Array1<u_char> Red;
-Array1<u_char> Blue;
-Array1<u_char> Green;
+Array1<u_char> Red, Blue, Green;
+Array1<u_char> Y, U, V;
 
 extern int verbose;
 extern int two;
@@ -19,14 +18,8 @@ extern int reverse;
 
 static int k,incr;
 
-unsigned char ColorByte(double r) {
-  int a=(int)(256.0*r);
-  if(a == 256) a=255;
-  if(a < 0 || a > 255) msg(ERROR,"Invalid color: %d",a);
-  return (unsigned char) a;
-}
-
-void AddColor(double r, double g, double b) {
+void AddColor(double r, double g, double b) 
+{
   if(damp) {
     Real factor=sqrt(r*r+g*g+b*b);
     if(factor != 0.0) factor=1.0/factor;
@@ -42,10 +35,16 @@ void AddColor(double r, double g, double b) {
     b *= factor;
   }
 
-  Red[k]=ColorByte(r);
-  Green[k]=ColorByte(g);
-  Blue[k]=ColorByte(b);
+  Red[k]=RGBByte(r);
+  Green[k]=RGBByte(g);
+  Blue[k]=RGBByte(b);
 	
+  double y=cr*r+cg*g+cb*b;
+
+  Y[k]=YByte(y);
+  U[k]=UVByte(cu*(b-y));
+  V[k]=UVByte(cv*(r-y));
+  
   k += incr;
 }
 
@@ -108,11 +107,18 @@ void MakePalette(int palette)
   Red.Allocate(allcolors);
   Blue.Allocate(allcolors);
   Green.Allocate(allcolors);
+  
+  Y.Allocate(allcolors);
+  U.Allocate(allcolors);
+  V.Allocate(allcolors);
 
   // Define extra colors;
-  Red[0]=Blue[0]=Green[0]=0; // BLACK
-  Red[1]=Blue[1]=Green[1]=255; // WHITE
+  Red[0]=Blue[0]=Green[0]=RGBByte(0.0); // BLACK
+  Red[1]=Blue[1]=Green[1]=RGBByte(1.0); // WHITE
 	
+  Y[0]=YByte(0.0); U[0]=V[0]=UVByte(0.0); // BLACK
+  Y[1]=YByte(1.0); U[0]=V[0]=UVByte(0.0);  // WHITE
+  
   double ninv=1.0/n;
 
   incr=-1;
