@@ -63,4 +63,6 @@ class Array2n : public array1<T>, public ArrayMod {
   Array2n<T>& operator = (T a) {Load(a); return *this;}
 };
 
+#undef __check
+
 #endif

@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.12J
+#define __ARRAY_H_VERSION__ 1.13
 
 // Defining NDEBUG improves optimization but disables argument checking.
 
@@ -35,13 +35,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #include <iostream.h>
 #include <strstream.h>
 #include <unistd.h>
-
-#if __AIX
-#define CONST const
-#else
-#define mutable
-#define CONST
-#endif
 
 inline ostream& _newl(ostream& s) {s << '\n'; return s;}
 
@@ -69,8 +62,8 @@ class array1 {
   }
 	
   int test(int flag) const {return state & flag;}
-  void clear(int flag) CONST {state &= ~flag;}
-  void set(int flag) CONST {state |= flag;}
+  void clear(int flag) const {state &= ~flag;}
+  void set(int flag) const {state |= flag;}
   void Activate() {
     v=new T[size];
     set(allocated);
@@ -88,7 +81,7 @@ class array1 {
     Dimension(nx0);
     __checkActivate(1);
   }
-  void Deallocate() CONST {delete [] v; clear(allocated);}
+  void Deallocate() const {delete [] v; clear(allocated);}
   virtual void Dimension(unsigned int nx0) {size=nx0;}
   void Dimension(unsigned int nx0, T *v0) {
     Dimension(nx0); v=v0; clear(allocated);
@@ -103,10 +96,7 @@ class array1 {
 	
   void Freeze() {state=unallocated;}
   void Hold() {if(test(allocated)) {state=temporary;}}
-  void Purge() CONST {if(test(temporary)) {Deallocate(); state=unallocated;}}
-#ifdef mutable
-  void Purge() const {((array1<T> *) this)->Purge();}
-#endif
+  void Purge() const {if(test(temporary)) {Deallocate(); state=unallocated;}}
 	
   virtual void Check(int i, int n, unsigned int dim, unsigned int m,
 		     int o=0) const {
@@ -570,7 +560,6 @@ istream& operator >> (istream& s, const array4<T>& A)
 }
 
 #undef __check
-#undef CONST
 
 #ifdef NDEBUG
 #define __check(i,n,o,dim,m)
@@ -674,6 +663,7 @@ class Array2 : public array2<T> {
     return Array1<T>(ny,vtemp+ix*ny,oy);
   }
   T& operator () (int ix, int iy) const {
+    cout << nx << endl;
     __check(ix,nx,ox,2,1);
     __check(iy,ny,oy,2,2);
     return voff[ix*ny+iy];
