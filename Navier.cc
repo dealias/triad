@@ -241,11 +241,17 @@ void NWave::InitialConditions()
 		} else {
 			int m;
 			Real k0=REAL_MAX;
-			for(i=0; i < Npsi; i++) k0=min(k0,Geometry->K(i));
-	
+			Real Dk0=REAL_MAX;
+			for(i=0; i < Npsi; i++) {
+				Real k=Geometry->K(i);
+				if(k < k0) {
+					k0=k;
+					Dk0=Geometry->Area(i);
+				}
+			}
 			if(!ngridx) ngridx=Nx;
 			if(!ngridy) ngridy=Ny;
-			Real L=twopi/k0;
+			Real L=twopi/(k0*Dk0);
 			
 			xcoeff=new Complex [ngridx*Npsi];
 			for(m=0; m < Npsi; m++) {
