@@ -114,14 +114,14 @@ void adjust_parameters(double& dt, double& dtmax, double& tmax, int& itmax)
 	if(dtmax == 0.0) dtmax=DBL_MAX;
 }	
 
-void main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	int i;
 
 	cout.precision(REAL_DIG);
 	
 	cout << endl << PROGRAM << " version " << VERSION << 
-		" [(C) John C. Bowman 1995]" << endl;
+		" [(C) John C. Bowman and B. A. Shadwick 1995]" << endl;
 	
 	cout << endl << "PROBLEM: " << Problem->Name() << endl;
 	
@@ -228,6 +228,7 @@ void main(int argc, char *argv[])
 	cout << endl;
 	
 	if(!testing) mailuser("completed");
+	return 1;
 }
 
 void read_init()

@@ -8,19 +8,20 @@
 #define __MATH_EXTENSIONS
 #include <math.h>
 
+#if(!defined(__i386__)||defined(__NO_MATH_INLINES)||defined(__STRICT_ANSI__))
+#define PI M_PI
+#define hypot(x,y) sqrt((x)*(x)+(y)*(y))
+#define sincos(x,sinx,cosx) (*sinx=sin(x), *cosx=cos(x))
+#define sgn(x) ((x) == 0.0 ? 0.0 : ((x) > 0.0 ? 1.0 : -1.0))
+#define sgn1(x) ((x) >= 0.0 ? 1.0 : -1.0)
+#endif
+
 #include "new.h"
 #include "precision.h"
 #include "minmax.h"
 #include "Complex.h"
 #include "pow.h"
 #include "dirsep.h"
-
-#if(!defined(__i386__)||defined(__NO_MATH_INLINES)||defined(__STRICT_ANSI__))
-#define PI M_PI
-#define sincos(x,sinx,cosx) (*sinx=sin(x), *cosx=cos(x))
-#define sgn(x) ((x) == 0.0 ? 0.0 : ((x) > 0.0 ? 1.0 : -1.0))
-#define sgn1(x) ((x) >= 0.0 ? 1.0 : -1.0)
-#endif
 
 inline int isgn(Real x)
 {
