@@ -143,11 +143,11 @@ int main(int argc, char *const argv[])
 			cerr << "-v\t\t verbose output" << endl;
 			cerr << "-z\t\t make color palette symmetric about zero" <<
 				" (if possible)" << endl;
-			cerr << "-x mag\t overall magnification factor" << endl;
-			cerr << "-H hmag\t horizontal magnification factor" << endl;
-			cerr << "-V vmag\t vertical magnification factor" << endl;
-			cerr << "-B beg\t first frame to process" << endl;
-			cerr << "-E end\t last frame to process" << endl;
+			cerr << "-x mag\t\t overall magnification factor" << endl;
+			cerr << "-H hmag\t\t horizontal magnification factor" << endl;
+			cerr << "-V vmag\t\t vertical magnification factor" << endl;
+			cerr << "-B beg\t\t first frame to process" << endl;
+			cerr << "-E end\t\t last frame to process" << endl;
 			cerr << "-X xsize\t explicit horizontal size" << endl;
 			cerr << "-Y ysize\t explicit vertical size" << endl;
 			cerr << "-Z zsize\t explicit number of cross-sections/frame"
