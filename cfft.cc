@@ -51,7 +51,7 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 	if(P < 1) P=1;
 	int lot=m/P;
 	int last=lot+m-P*lot;
-	{
+	if(P > 1) {
 #pragma _CRI taskloop private(j) value(P,data,work,trigs,ifax,inc,jump,m, \
 lot,isign,last)
 		for(int j=0; j < P; j++) {
@@ -59,7 +59,9 @@ lot,isign,last)
 			CFFTMLT(&data[off].re,&data[off].im,&work[2*off].re,trigs,ifax,
 					inc,jump,m,(j == P-1) ? last : lot,isign);
 		}
-	}
+	} else CFFTMLT(&data[0].re,&data[0].im,&work[0].re,trigs,ifax,
+					inc,jump,m,last,isign);
+
 	
 	int m1=m+1;
 	if(isign == 1) {
@@ -96,7 +98,7 @@ lot,isign,last)
 		for(i=0; i < m*m; i += m1) data[i] *= conj(phase[i]);
 	}
 	
-	{
+	if(P > 1) {
 #pragma _CRI taskloop private(j) value(P,data,work,trigs,ifax,inc,jump,m, \
 lot,isign,last)
 		for(int j=0; j < P; j++) {
@@ -104,7 +106,8 @@ lot,isign,last)
 			CFFTMLT(&data[off].re,&data[off].im,&work[2*off].re,trigs,ifax,
 					inc,jump,m,(j == P-1) ? last : lot,isign);
 		}
-	}
+	} else CFFTMLT(&data[0].re,&data[0].im,&work[0].re,trigs,ifax,
+					inc,jump,m,last,isign);
 }
 
 extern "C" void CCFFT(const int& isign, const int& n, double& scale,
