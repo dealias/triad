@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.21";
+const char VERSION[]="1.22";
 
 #include "xstream.h"
 #include <iostream>
@@ -1411,9 +1411,6 @@ void mpeg(int, int n, const char *type, int xsize, int ysize)
 {
 #if 1  
   ostringstream buf;
-// Workaround for bug in convert:
-  if(xsize % 2) xsize++;
-  if(ysize % 2) ysize++;
   
   buf << "mpeg -a 0 -b " << n-1 << " -h " << xsize << " -v " << ysize
       << " -PF " << rgbdir << outname << " -s " << outname
