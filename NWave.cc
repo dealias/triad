@@ -30,7 +30,7 @@ static Var random_factor=0.0;
 
 static Real last_t=-REAL_MAX;
 
-static Source_T *NWave::Linearity=StandardLinearity;
+static Source_t *NWave::Linearity=StandardLinearity;
 
 inline void ConstantForcing(Var *source, double t)
 {
