@@ -145,37 +145,6 @@ void *bsearch2(register const void *key,
   return (void *) base;
 }
 
-// Like bsearch but search an ordered array for an interval containing key.
-// The compar routine is expected to have three arguments, which point to
-// the key object and to the previous and next array members, in that order.
-void *bintsearch(register const void *key,
-		 register const void *base,
-		 size_t nmemb,
-		 register size_t size,
-		 int (*compar)(const void *, const void *, const void *))
-{
-  register size_t l, u, idx;
-  register const void *p, *n;
-  register int comparison;
-
-  l = 0;
-  u = nmemb;
-	
-  while (l < u) {
-    idx=(l + u) / 2;
-    p=(void *) (((const char *) base) + (idx * size));
-    n=(idx < nmemb-1) ? p+size : p;
-    comparison = (*compar)((char *) key,p,n);
-    if(comparison == 0) 
-      return (void *) p;
-    if(comparison < 0) u=idx;
-    else l=idx+1;
-  }
-
-  // No match found.
-  return NULL;
-}
-
 int check_match(int match_type, const char *object, const char *key, int warn)
 {
   switch(match_type) {

@@ -1375,10 +1375,6 @@ inline void CheckReallocate(T& A, unsigned int n, int o, unsigned int& old)
 
 }
 
-// Abbreviated form for optimized 1D arrays:
-#define array1(T) array1<T>::opt
-#define Array1(T) Array1<T>::opt
-
 #undef __check
 #undef __checkSize
 #undef __checkActivate
