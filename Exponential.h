@@ -115,7 +115,7 @@ public:
       coeffA[j]=((x*x-3.0*x+4.0)*temp3+0.5*(x-1))*dt;
       coeffB[j]=2.0*((x-2)*temp3+0.5)*dt;
       coeffC[j]=(-(x-4)*temp3-0.5)*dt;
-      if(Active(coeff2)) coeff2[j]=(x*temp3+0.5)*dt;
+      if(Array::Active(coeff2)) coeff2[j]=(x*temp3+0.5)*dt;
     }
   }
   void Predictor();
