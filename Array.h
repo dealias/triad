@@ -107,7 +107,7 @@ public:
 		unsigned int size=Size0();
 		for(unsigned int i=0; i < size; i++) v[i]=a;
 	}
-	void Load(T *a) const {memcpy(v,a,sizeof(T)*Size0());}
+	void Load(const T *a) const {memcpy(v,a,sizeof(T)*Size0());}
 	void Store(T *a) const {memcpy(a,v,sizeof(T)*Size0());}
 	void Set(T *a) {v=a; clear(allocated);}
 	istream& Input (istream &s) const {

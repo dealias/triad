@@ -76,7 +76,7 @@ public:
 	void XDirichlet(const Array1<T>&) {}
 	
 	void XDirichlet(const Array1<T>& u, T b0, T b1) {
-		if(homogenous) return;
+		if(homogeneous) return;
 		u[0]=b0;
 		u[nx+1]=b1;
 	}

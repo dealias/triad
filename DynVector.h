@@ -82,7 +82,7 @@ public:
 	void Expand(unsigned int i) {if (i > alloc) Resize(i);}
 
 	void Load(T a) const {for(unsigned int i=0; i < size; i++) v[i]=a;}
-	void Load(T *a) const {memcpy(v,a,size*sizeof(T));}
+	void Load(const T *a) const {memcpy(v,a,size*sizeof(T));}
 	void Store(T *a) const {memcpy(a,v,size*sizeof(T));}
 	void Set(T *a) {v=a; clear(allocated);}
 	

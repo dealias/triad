@@ -248,7 +248,7 @@ public:
 	void XDirichlet(const Array3<T>&) {}
 	
 	void XDirichlet(const Array3<T>& u, T b0, T b1) {
-		if(homogenous) return;
+		if(homogeneous) return;
 		Array2<T> u0=u[0], unx1=u[nx+1];
 		for(int j=0; j < nybc; j++) {
 			Array1(T) u0j=u0[j];
@@ -361,7 +361,7 @@ public:
 	void YDirichlet(const Array3<T>&) {}
 	
 	void YDirichlet(const Array3<T>& u, T b0, T b1) {
-		if(homogenous) return;
+		if(homogeneous) return;
 		for(int i=0; i < nxbc; i++) {
 			Array2<T> ui=u[i];
 			Array1(T) ui0=ui[0];
@@ -451,7 +451,7 @@ public:
 	void ZDirichlet(const Array3<T>&) {}
 		
 	void ZDirichlet(const Array3<T>& u, T b0, T b1) {
-		if(homogenous) return;
+		if(homogeneous) return;
 		for(int i=0; i < nxbc; i++) {
 			Array2<T> ui=u[i];
 			for(int j=0; j < nybc; j++) {

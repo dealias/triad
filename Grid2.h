@@ -143,7 +143,7 @@ public:
 	void XDirichlet(const Array2<T>&) {}
 		
 	void XDirichlet(const Array2<T>& u, T b0, T b1) {
-		if(homogenous) return;
+		if(homogeneous) return;
 		Array1(T) u0=u[0];
 		Array1(T) unx1=u[nx+1];
 		for(int j=0; j < nybc; j++) {
@@ -231,7 +231,7 @@ public:
 	void YDirichlet(const Array2<T>&) {}
 	
 	void YDirichlet(const Array2<T>& u, T b0, T b1) {
-		if(homogenous) return;
+		if(homogeneous) return;
 		for(int i=0; i < nxbc; i++) {
 			Array1(T) ui=u[i];
 			ui[0]=b0;
