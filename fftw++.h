@@ -75,7 +75,7 @@ inline void FFTWdelete(T *p)
     (sizeof(size_t) % sizeof(Complex) > 0);
   void *alloc=(Complex *)p-offset;
   size_t size=*(size_t *) alloc;
-  for(size_t i=size-1; i >= 1; i--) ((T *) p)[i].~T();
+  for(size_t i=size-1; i > 0; i--) ((T *) p)[i].~T();
   ((T *) p)[0].~T();
   fftw_free(alloc);
 }

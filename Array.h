@@ -85,27 +85,32 @@ extern "C" int posix_memalign(void **memptr, size_t alignment, size_t size);
 #include <malloc.h>
 #endif
 
-inline void *operator new (size_t size, int len, size_t align)
+template<class T>
+inline void newAlign(T *&v, size_t len, size_t align)
 {
   void *mem;
   const char *invalid="Invalid alignment requested";
   const char *nomem="Memory limits exceeded";
 #if HAVE_POSIX_MEMALIGN
-  int rc=posix_memalign(&mem,align,len*size);
+  int rc=posix_memalign(&mem,align,len*sizeof(T));
   if(rc == EINVAL) Array::ArrayExit(invalid);
   if(rc == ENOMEM) Array::ArrayExit(nomem);
 #else
   if (align % sizeof (void *) != 0 || (align & (align - 1)) != 0)
     Array::ArrayExit(invalid);
-  mem=memalign(align,len*size);
+  mem=memalign(align,len*sizeof(T));
   if(len && !mem) Array::ArrayExit(nomem);
 #endif  
-  return mem;
+  v=(T *) mem;
+  for(size_t i=0; i < len; i++) new(v+i) T;
 }
 
-inline void operator delete (void *ptr, bool)
+template<class T>
+inline void deleteAlign(T *v, size_t len)
 {
-  free(ptr);
+  for(size_t i=len-1; i > 0; i--) v[i].~T();
+  v[0].~T();
+  free(v);
 }
 
 namespace Array {
@@ -114,12 +119,12 @@ template<class T>
 class array1 {
  protected:
   T *v;
-  unsigned int size;
+  size_t size;
   mutable int state;
  public:
   enum alloc_state {unallocated=0, allocated=1, temporary=2, aligned=4};
-  virtual unsigned int Size() const {return size;}
-  unsigned int CheckSize() const {
+  virtual size_t Size() const {return size;}
+  size_t CheckSize() const {
     if(!test(allocated) && size == 0)
       ArrayExit("Operation attempted on unallocated array"); 
     return size;
@@ -130,8 +135,7 @@ class array1 {
   void set(int flag) const {state |= flag;}
   void Activate(size_t align=0) {
     if(align) {
-      v=new(size,align) T;
-      for(size_t i=1; i < size; i++) new(v+i) T;
+      newAlign(v,size,align);
       set(allocated | aligned);
     } else {
       v=new T[size];
@@ -149,37 +153,35 @@ class array1 {
   }
   void Deallocate() const {
     if(test(allocated)) {
-      if(test(aligned)) {
-	for(unsigned int i=size-1; i != UINT_MAX; i--) v[i].~T();
-	operator delete (v,true);
-      } else delete [] v;
+      if(test(aligned)) deleteAlign(v,size);
+      else delete [] v;
       state=unallocated;
     }
   }
-  void Dimension(unsigned int nx0) {size=nx0;}
-  void Dimension(unsigned int nx0, T *v0) {
+  void Dimension(size_t nx0) {size=nx0;}
+  void Dimension(size_t nx0, T *v0) {
     Dimension(nx0); v=v0; clear(allocated);
   }
   void Dimension(const array1<T>& A) {
     Dimension(A.size,A.v); state=A.test(temporary);
   }
 
-  void Allocate(unsigned int nx0, size_t align=0) {
+  void Allocate(size_t nx0, size_t align=0) {
     Dimension(nx0);
     __checkActivate(1,align);
   }
   
-  void Reallocate(unsigned int nx0, size_t align=0) {
+  void Reallocate(size_t nx0, size_t align=0) {
     Deallocate();
     Allocate(nx0,align);
   }
   
   array1() : size(0), state(unallocated) {}
   array1(const void *) : size(0), state(unallocated) {}
-  array1(unsigned int nx0, size_t align=0) : state(unallocated) {
+  array1(size_t nx0, size_t align=0) : state(unallocated) {
     Allocate(nx0,align);
   }
-  array1(unsigned int nx0, T *v0) : state(unallocated) {Dimension(nx0,v0);}
+  array1(size_t nx0, T *v0) : state(unallocated) {Dimension(nx0,v0);}
   array1(T *v0) : state(unallocated) {Dimension(INT_MAX,v0);}
   array1(const array1<T>& A) : v(A.v), size(A.size),
     state(A.test(temporary)) {}
@@ -190,7 +192,7 @@ class array1 {
   void Hold() {if(test(allocated)) {state=temporary;}}
   void Purge() const {if(test(temporary)) {Deallocate(); state=unallocated;}}
 	
-  virtual void Check(int i, int n, unsigned int dim, unsigned int m,
+  virtual void Check(int i, int n, size_t dim, size_t m,
 		     int o=0) const {
     if(i < 0 || i >= n) {
       ostringstream buf;
@@ -204,7 +206,7 @@ class array1 {
     }
   }
 	
-  unsigned int Nx() const {return size;}
+  size_t Nx() const {return size;}
   
 #ifdef NDEBUG
   typedef T *opt;
@@ -221,7 +223,7 @@ class array1 {
 	
   void Load(T a) const {
     __checkSize();
-    for(unsigned int i=0; i < size; i++) v[i]=a;
+    for(size_t i=0; i < size; i++) v[i]=a;
   }
   void Load(const T *a) const {memcpy(v,a,sizeof(T)*size);}
   void Store(T *a) const {memcpy(a,v,sizeof(T)*size);}
@@ -229,7 +231,7 @@ class array1 {
 
   istream& Input (istream &s) const {
     __checkSize();
-    for(unsigned int i=0; i < size; i++) s >> v[i];
+    for(size_t i=0; i < size; i++) s >> v[i];
     return s;
   }
 	
@@ -243,58 +245,58 @@ class array1 {
 	
   array1<T>& operator += (const array1<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < size; i++) v[i] += A(i);
+    for(size_t i=0; i < size; i++) v[i] += A(i);
     return *this;
   }
   array1<T>& operator -= (const array1<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < size; i++) v[i] -= A(i);
+    for(size_t i=0; i < size; i++) v[i] -= A(i);
     return *this;
   }
   array1<T>& operator *= (const array1<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < size; i++) v[i] *= A(i);
+    for(size_t i=0; i < size; i++) v[i] *= A(i);
     return *this;
   }
   array1<T>& operator /= (const array1<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < size; i++) v[i] /= A(i);
+    for(size_t i=0; i < size; i++) v[i] /= A(i);
     return *this;
   }
 	
   array1<T>& operator += (T a) {
     __checkSize();
-    for(unsigned int i=0; i < size; i++) v[i] += a;
+    for(size_t i=0; i < size; i++) v[i] += a;
     return *this;
   }
   array1<T>& operator -= (T a) {
     __checkSize();
-    for(unsigned int i=0; i < size; i++) v[i] -= a;
+    for(size_t i=0; i < size; i++) v[i] -= a;
     return *this;
   }
   array1<T>& operator *= (T a) {
     __checkSize();
-    for(unsigned int i=0; i < size; i++) v[i] *= a;
+    for(size_t i=0; i < size; i++) v[i] *= a;
     return *this;
   }
   array1<T>& operator /= (T a) {
     __checkSize();
     T ainv=1.0/a;
-    for(unsigned int i=0; i < size; i++) v[i] *= ainv;
+    for(size_t i=0; i < size; i++) v[i] *= ainv;
     return *this;
   }
 	
   double L1() const {
     __checkSize();
     double norm=0.0;
-    for(unsigned int i=0; i < size; i++) norm += abs(v[i]);
+    for(size_t i=0; i < size; i++) norm += abs(v[i]);
     return norm/size;
   }
 #ifdef __ArrayExtensions
   double Abs2() const {
     __checkSize();
     double norm=0.0;
-    for(unsigned int i=0; i < size; i++) norm += abs2(v[i]);
+    for(size_t i=0; i < size; i++) norm += abs2(v[i]);
     return norm;
   }
   double L2() const {
@@ -303,13 +305,13 @@ class array1 {
   double LInfinity() const {
     __checkSize();
     double norm=0.0;
-    for(unsigned int i=0; i < size; i++) norm=max(norm,abs(v[i]));
+    for(size_t i=0; i < size; i++) norm=max(norm,abs(v[i]));
     return norm;
   }
   double LMinusInfinity() const {
     __checkSize();
     double norm=DBL_MAX;
-    for(unsigned int i=0; i < size; i++) norm=min(norm,abs(v[i]));
+    for(size_t i=0; i < size; i++) norm=min(norm,abs(v[i]));
     return norm;
   }
 #endif	
@@ -348,7 +350,7 @@ template<class T>
 ostream& operator << (ostream& s, const array1<T>& A)
 {
   T *p=A();
-  for(unsigned int i=0; i < A.Nx(); i++) {
+  for(size_t i=0; i < A.Nx(); i++) {
     s << *(p++) << " ";
   }
   return s;
@@ -363,33 +365,33 @@ istream& operator >> (istream& s, const array1<T>& A)
 template<class T>
 class array2 : public array1<T> {
  protected:
-  unsigned int nx;
-  unsigned int ny;
+  size_t nx;
+  size_t ny;
  public:
-  void Dimension(unsigned int nx0, unsigned int ny0) {
+  void Dimension(size_t nx0, size_t ny0) {
     nx=nx0; ny=ny0;
     this->size=nx*ny;
   }
-  void Dimension(unsigned int nx0, unsigned int ny0, T *v0) {
+  void Dimension(size_t nx0, size_t ny0, T *v0) {
     Dimension(nx0,ny0);
     this->v=v0;
     clear(this->allocated);
   }
   void Dimension(const array1<T> &A) {ArrayExit("Operation not implemented");} 
   
-  void Allocate(unsigned int nx0, unsigned int ny0, size_t align=0) {
+  void Allocate(size_t nx0, size_t ny0, size_t align=0) {
     Dimension(nx0,ny0);
     __checkActivate(2,align);
   }
 	
   array2() : nx(0), ny(0) {}
-  array2(unsigned int nx0, unsigned int ny0, size_t align=0) {
+  array2(size_t nx0, size_t ny0, size_t align=0) {
     Allocate(nx0,ny0,align);
   }
-  array2(unsigned int nx0, unsigned int ny0, T *v0) {Dimension(nx0,ny0,v0);}
+  array2(size_t nx0, size_t ny0, T *v0) {Dimension(nx0,ny0,v0);}
 	
-  unsigned int Nx() const {return nx;}
-  unsigned int Ny() const {return ny;}
+  size_t Nx() const {return nx;}
+  size_t Ny() const {return ny;}
 
 #ifndef __NOARRAY2OPT
   T *operator [] (int ix) const {
@@ -422,39 +424,39 @@ class array2 : public array1<T> {
 	
   array2<T>& operator += (const array2<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < this->size; i++) this->v[i] += A(i);
+    for(size_t i=0; i < this->size; i++) this->v[i] += A(i);
     return *this;
   }
   array2<T>& operator -= (const array2<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < this->size; i++) this->v[i] -= A(i);
+    for(size_t i=0; i < this->size; i++) this->v[i] -= A(i);
     return *this;
   }
   array2<T>& operator *= (const array2<T>& A);
 	
   array2<T>& operator += (T a) {
     __checkSize();
-    unsigned int inc=ny+1;
-    for(unsigned int i=0; i < this->size; i += inc) this->v[i] += a;
+    size_t inc=ny+1;
+    for(size_t i=0; i < this->size; i += inc) this->v[i] += a;
     return *this;
   }
   array2<T>& operator -= (T a) {
     __checkSize();
-    unsigned int inc=ny+1;
-    for(unsigned int i=0; i < this->size; i += inc) this->v[i] -= a;
+    size_t inc=ny+1;
+    for(size_t i=0; i < this->size; i += inc) this->v[i] -= a;
     return *this;
   }
   array2<T>& operator *= (T a) {
     __checkSize();
-    for(unsigned int i=0; i < this->size; i++) this->v[i] *= a;
+    for(size_t i=0; i < this->size; i++) this->v[i] *= a;
     return *this;
   }
   
   void Identity() {
     Load((T) 0);
     __checkSize();
-    unsigned int inc=ny+1;
-    for(unsigned int i=0; i < this->size; i += inc) this->v[i]=(T) 1;
+    size_t inc=ny+1;
+    for(size_t i=0; i < this->size; i += inc) this->v[i]=(T) 1;
   }
 };
 
@@ -462,8 +464,8 @@ template<class T>
 ostream& operator << (ostream& s, const array2<T>& A)
 {
   T *p=A();
-  for(unsigned int i=0; i < A.Nx(); i++) {
-    for(unsigned int j=0; j < A.Ny(); j++) {
+  for(size_t i=0; i < A.Nx(); i++) {
+    for(size_t j=0; j < A.Ny(); j++) {
       s << *(p++) << " ";
     }
     s << _newl;
@@ -481,39 +483,39 @@ istream& operator >> (istream& s, const array2<T>& A)
 template<class T>
 class array3 : public array1<T> {
  protected:
-  unsigned int nx;
-  unsigned int ny;
-  unsigned int nz;
-  unsigned int nyz;
+  size_t nx;
+  size_t ny;
+  size_t nz;
+  size_t nyz;
  public:
-  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0) {
+  void Dimension(size_t nx0, size_t ny0, size_t nz0) {
     nx=nx0; ny=ny0; nz=nz0; nyz=ny*nz;
     this->size=nx*nyz;
   }
-  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0, T *v0) {
+  void Dimension(size_t nx0, size_t ny0, size_t nz0, T *v0) {
     Dimension(nx0,ny0,nz0);
     this->v=v0;
     clear(this->allocated);
   }
 	
-  void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+  void Allocate(size_t nx0, size_t ny0, size_t nz0,
 		size_t align=0) {
     Dimension(nx0,ny0,nz0);
     __checkActivate(3,align);
   }
   
   array3() : nx(0), ny(0), nz(0), nyz(0) {}
-  array3(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+  array3(size_t nx0, size_t ny0, size_t nz0,
 	 size_t align=0) {
     Allocate(nx0,ny0,nz0,align);
   }
-  array3(unsigned int nx0, unsigned int ny0, unsigned int nz0, T *v0) {
+  array3(size_t nx0, size_t ny0, size_t nz0, T *v0) {
     Dimension(nx0,ny0,nz0,v0);
   }
 	
-  unsigned int Nx() const {return nx;}
-  unsigned int Ny() const {return ny;}
-  unsigned int Nz() const {return nz;}
+  size_t Nx() const {return nx;}
+  size_t Ny() const {return ny;}
+  size_t Nz() const {return nz;}
 
   array2<T> operator [] (int ix) const {
     __check(ix,nx,3,1);
@@ -541,25 +543,25 @@ class array3 : public array1<T> {
 	
   array3<T>& operator += (array3<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < this->size; i++) this->v[i] += A(i);
+    for(size_t i=0; i < this->size; i++) this->v[i] += A(i);
     return *this;
   }
   array3<T>& operator -= (array3<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < this->size; i++) this->v[i] -= A(i);
+    for(size_t i=0; i < this->size; i++) this->v[i] -= A(i);
     return *this;
   }
 	
   array3<T>& operator += (T a) {
     __checkSize();
-    unsigned int inc=nyz+nz+1;
-    for(unsigned int i=0; i < this->size; i += inc) this->v[i] += a;
+    size_t inc=nyz+nz+1;
+    for(size_t i=0; i < this->size; i += inc) this->v[i] += a;
     return *this;
   }
   array3<T>& operator -= (T a) {
     __checkSize();
-    unsigned int inc=nyz+nz+1;
-    for(unsigned int i=0; i < this->size; i += inc) this->v[i] -= a;
+    size_t inc=nyz+nz+1;
+    for(size_t i=0; i < this->size; i += inc) this->v[i] -= a;
     return *this;
   }
 };
@@ -568,9 +570,9 @@ template<class T>
 ostream& operator << (ostream& s, const array3<T>& A)
 {
   T *p=A();
-  for(unsigned int i=0; i < A.Nx(); i++) {
-    for(unsigned int j=0; j < A.Ny(); j++) {
-      for(unsigned int k=0; k < A.Nz(); k++) {
+  for(size_t i=0; i < A.Nx(); i++) {
+    for(size_t j=0; j < A.Ny(); j++) {
+      for(size_t k=0; k < A.Nz(); k++) {
 	s << *(p++) << " ";
       }
       s << _newl;
@@ -590,44 +592,44 @@ istream& operator >> (istream& s, const array3<T>& A)
 template<class T>
 class array4 : public array1<T> {
  protected:
-  unsigned int nx;
-  unsigned int ny;
-  unsigned int nz;
-  unsigned int nw;
-  unsigned int nyz;
-  unsigned int nzw;
-  unsigned int nyzw;
+  size_t nx;
+  size_t ny;
+  size_t nz;
+  size_t nw;
+  size_t nyz;
+  size_t nzw;
+  size_t nyzw;
  public:
-  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-		 unsigned int nw0) {
+  void Dimension(size_t nx0, size_t ny0, size_t nz0,
+		 size_t nw0) {
     nx=nx0; ny=ny0; nz=nz0; nw=nw0; nzw=nz*nw; nyzw=ny*nzw;
     this->size=nx*nyzw;
   }
-  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-		 unsigned int nw0, T *v0) {
+  void Dimension(size_t nx0, size_t ny0, size_t nz0,
+		 size_t nw0, T *v0) {
     Dimension(nx0,ny0,nz0,nw0);
     this->v=v0;
     clear(this->allocated);
   }
 	
-  void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-		unsigned int nw0, size_t align=0) {
+  void Allocate(size_t nx0, size_t ny0, size_t nz0,
+		size_t nw0, size_t align=0) {
     Dimension(nx0,ny0,nz0,nw0);
     __checkActivate(4,align);
   }
   
   array4() : nx(0), ny(0), nz(0), nw(0), nyz(0), nzw(0), nyzw(0) {}
-  array4(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-	 unsigned int nw0, size_t align=0) {Allocate(nx0,ny0,nz0,nw0,align);}
-  array4(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-	 unsigned int nw0, T *v0) {
+  array4(size_t nx0, size_t ny0, size_t nz0,
+	 size_t nw0, size_t align=0) {Allocate(nx0,ny0,nz0,nw0,align);}
+  array4(size_t nx0, size_t ny0, size_t nz0,
+	 size_t nw0, T *v0) {
     Dimension(nx0,ny0,nz0,nw0,v0);
   }
 
-  unsigned int Nx() const {return nx;}
-  unsigned int Ny() const {return ny;}
-  unsigned int Nz() const {return ny;}
-  unsigned int N4() const {return nw;}
+  size_t Nx() const {return nx;}
+  size_t Ny() const {return ny;}
+  size_t Nz() const {return ny;}
+  size_t N4() const {return nw;}
 
   array3<T> operator [] (int ix) const {
     __check(ix,nx,3,1);
@@ -656,25 +658,25 @@ class array4 : public array1<T> {
 	
   array4<T>& operator += (array4<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < this->size; i++) this->v[i] += A(i);
+    for(size_t i=0; i < this->size; i++) this->v[i] += A(i);
     return *this;
   }
   array4<T>& operator -= (array4<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < this->size; i++) this->v[i] -= A(i);
+    for(size_t i=0; i < this->size; i++) this->v[i] -= A(i);
     return *this;
   }
 	
   array4<T>& operator += (T a) {
     __checkSize();
-    unsigned int inc=nyzw+nzw+nw+1;
-    for(unsigned int i=0; i < this->size; i += inc) this->v[i] += a;
+    size_t inc=nyzw+nzw+nw+1;
+    for(size_t i=0; i < this->size; i += inc) this->v[i] += a;
     return *this;
   }
   array4<T>& operator -= (T a) {
     __checkSize();
-    unsigned int inc=nyzw+nzw+nw+1;
-    for(unsigned int i=0; i < this->size; i += inc) this->v[i] -= a;
+    size_t inc=nyzw+nzw+nw+1;
+    for(size_t i=0; i < this->size; i += inc) this->v[i] -= a;
     return *this;
   }
 };
@@ -683,10 +685,10 @@ template<class T>
 ostream& operator << (ostream& s, const array4<T>& A)
 {
   T *p=A;
-  for(unsigned int i=0; i < A.Nx(); i++) {
-    for(unsigned int j=0; j < A.Ny(); j++) {
-      for(unsigned int k=0; k < A.Nz(); k++) {
-	for(unsigned int l=0; l < A.N4(); l++) {
+  for(size_t i=0; i < A.Nx(); i++) {
+    for(size_t j=0; j < A.Ny(); j++) {
+      for(size_t k=0; k < A.Nz(); k++) {
+	for(size_t l=0; l < A.N4(); l++) {
 	  s << *(p++) << " ";
 	}
 	s << _newl;
@@ -708,49 +710,49 @@ istream& operator >> (istream& s, const array4<T>& A)
 template<class T>
 class array5 : public array1<T> {
  protected:
-  unsigned int nx;
-  unsigned int ny;
-  unsigned int nz;
-  unsigned int nw;
-  unsigned int nv;
-  unsigned int nwv;
-  unsigned int nzwv;
-  unsigned int nyzwv;
+  size_t nx;
+  size_t ny;
+  size_t nz;
+  size_t nw;
+  size_t nv;
+  size_t nwv;
+  size_t nzwv;
+  size_t nyzwv;
  public:
-  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-		 unsigned int nw0, unsigned int nv0) {
+  void Dimension(size_t nx0, size_t ny0, size_t nz0,
+		 size_t nw0, size_t nv0) {
     nx=nx0; ny=ny0; nz=nz0; nw=nw0; nv=nv0; nwv=nw*nv; nzwv=nz*nwv;
     nyzwv=ny*nzwv;
     this->size=nx*nyzwv;
   }
-  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-		 unsigned int nw0, unsigned int nv0, T *v0) {
+  void Dimension(size_t nx0, size_t ny0, size_t nz0,
+		 size_t nw0, size_t nv0, T *v0) {
     Dimension(nx0,ny0,nz0,nw0,nv0);
     this->v=v0;
     clear(this->allocated);
   }
 	
-  void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-		unsigned int nw0, unsigned int nv0, size_t align=0) {
+  void Allocate(size_t nx0, size_t ny0, size_t nz0,
+		size_t nw0, size_t nv0, size_t align=0) {
     Dimension(nx0,ny0,nz0,nw0,nv0);
     __checkActivate(5,align);
   }
   
   array5() : nx(0), ny(0), nz(0), nw(0), nv(0), nwv(0), nzwv(0), nyzwv(0) {}
-  array5(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-	 unsigned int nw0, unsigned int nv0, size_t align=0) {
+  array5(size_t nx0, size_t ny0, size_t nz0,
+	 size_t nw0, size_t nv0, size_t align=0) {
     Allocate(nx0,ny0,nz0,nw0,nv0,align);
   }
-  array5(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-	 unsigned int nw0, unsigned int nv0, T *v0) {
+  array5(size_t nx0, size_t ny0, size_t nz0,
+	 size_t nw0, size_t nv0, T *v0) {
     Dimension(nx0,ny0,nz0,nw0,nv0,nv0);
   }
 
-  unsigned int Nx() const {return nx;}
-  unsigned int Ny() const {return ny;}
-  unsigned int Nz() const {return ny;}
-  unsigned int N4() const {return nw;}
-  unsigned int N5() const {return nv;}
+  size_t Nx() const {return nx;}
+  size_t Ny() const {return ny;}
+  size_t Nz() const {return ny;}
+  size_t N4() const {return nw;}
+  size_t N5() const {return nv;}
 
   array4<T> operator [] (int ix) const {
     __check(ix,nx,4,1);
@@ -780,25 +782,25 @@ class array5 : public array1<T> {
 	
   array5<T>& operator += (array5<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < this->size; i++) this->v[i] += A(i);
+    for(size_t i=0; i < this->size; i++) this->v[i] += A(i);
     return *this;
   }
   array5<T>& operator -= (array5<T>& A) {
     __checkSize();
-    for(unsigned int i=0; i < this->size; i++) this->v[i] -= A(i);
+    for(size_t i=0; i < this->size; i++) this->v[i] -= A(i);
     return *this;
   }
 	
   array5<T>& operator += (T a) {
     __checkSize();
-    unsigned int inc=nyzwv+nzwv+nwv+nv+1;
-    for(unsigned int i=0; i < this->size; i += inc) this->v[i] += a;
+    size_t inc=nyzwv+nzwv+nwv+nv+1;
+    for(size_t i=0; i < this->size; i += inc) this->v[i] += a;
     return *this;
   }
   array5<T>& operator -= (T a) {
     __checkSize();
-    unsigned int inc=nyzwv+nzwv+nwv+nv+1;
-    for(unsigned int i=0; i < this->size; i += inc) this->v[i] -= a;
+    size_t inc=nyzwv+nzwv+nwv+nv+1;
+    for(size_t i=0; i < this->size; i += inc) this->v[i] -= a;
     return *this;
   }
 };
@@ -807,11 +809,11 @@ template<class T>
 ostream& operator << (ostream& s, const array5<T>& A)
 {
   T *p=A;
-  for(unsigned int i=0; i < A.Nx(); i++) {
-    for(unsigned int j=0; j < A.Ny(); j++) {
-      for(unsigned int k=0; k < A.Nz(); k++) {
-	for(unsigned int l=0; l < A.N4(); l++) {
-	  for(unsigned int l=0; l < A.N5(); l++) {
+  for(size_t i=0; i < A.Nx(); i++) {
+    for(size_t j=0; j < A.Ny(); j++) {
+      for(size_t k=0; k < A.Nz(); k++) {
+	for(size_t l=0; l < A.N4(); l++) {
+	  for(size_t l=0; l < A.N5(); l++) {
 	    s << *(p++) << " ";
 	  }
 	  s << _newl;
@@ -849,12 +851,12 @@ class Array1 : public array1<T> {
   void Offsets() {
     voff=this->v-ox;
   }
-  void Dimension(unsigned int nx0, int ox0=0) {
+  void Dimension(size_t nx0, int ox0=0) {
     this->size=nx0;
     ox=ox0;
     Offsets();
   }
-  void Dimension(unsigned int nx0, T *v0, int ox0=0) {
+  void Dimension(size_t nx0, T *v0, int ox0=0) {
     this->v=v0;
     Dimension(nx0,ox0);
     clear(this->allocated);
@@ -863,23 +865,23 @@ class Array1 : public array1<T> {
     Dimension(A.size,A.v,A.ox); this->state=A.test(this->temporary);
   }
 
-  void Allocate(unsigned int nx0, int ox0=0, size_t align=0) {
+  void Allocate(size_t nx0, int ox0=0, size_t align=0) {
     Dimension(nx0,ox0);
     __checkActivate(1,align);
     Offsets();
   }
 	
   void Deallocate();
-  void Reallocate(unsigned int nx0, int ox0=0, size_t align=0) {
+  void Reallocate(size_t nx0, int ox0=0, size_t align=0) {
     Deallocate();
     Allocate(nx0,ox0,align);
   }
 
   Array1() : ox(0) {}
-  Array1(unsigned int nx0, int ox0=0, size_t align=0) {
+  Array1(size_t nx0, int ox0=0, size_t align=0) {
     Allocate(nx0,ox0,align);
   }
-  Array1(unsigned int nx0, T *v0, int ox0=0) {
+  Array1(size_t nx0, T *v0, int ox0=0) {
     Dimension(nx0,v0,ox0);
   }
   Array1(T *v0) {
@@ -926,20 +928,20 @@ class Array2 : public array2<T> {
     vtemp=this->v-ox*(int) this->ny;
     voff=vtemp-oy;
   }
-  void Dimension(unsigned int nx0, unsigned int ny0, int ox0=0, int oy0=0) {
+  void Dimension(size_t nx0, size_t ny0, int ox0=0, int oy0=0) {
     this->nx=nx0; this->ny=ny0;
     this->size=this->nx*this->ny;
     ox=ox0; oy=oy0;
     Offsets();
   }
-  void Dimension(unsigned int nx0, unsigned int ny0, T *v0, int ox0=0,
+  void Dimension(size_t nx0, size_t ny0, T *v0, int ox0=0,
 		 int oy0=0) {
     this->v=v0;
     Dimension(nx0,ny0,ox0,oy0);
     clear(this->allocated);
   }
   
-  void Allocate(unsigned int nx0, unsigned int ny0, int ox0=0, int oy0=0,
+  void Allocate(size_t nx0, size_t ny0, int ox0=0, int oy0=0,
 		size_t align=0) {
     Dimension(nx0,ny0,ox0,oy0);
     __checkActivate(2,align);
@@ -947,11 +949,11 @@ class Array2 : public array2<T> {
   }
 
   Array2() : ox(0), oy(0) {}
-  Array2(unsigned int nx0, unsigned int ny0, int ox0=0, int oy0=0,
+  Array2(size_t nx0, size_t ny0, int ox0=0, int oy0=0,
 	 size_t align=0) {
     Allocate(nx0,ny0,ox0,oy0,align);
   }
-  Array2(unsigned int nx0, unsigned int ny0, T *v0, int ox0=0, int oy0=0) {
+  Array2(size_t nx0, size_t ny0, T *v0, int ox0=0, int oy0=0) {
     Dimension(nx0,ny0,v0,ox0,oy0);
   }
 
@@ -1006,21 +1008,21 @@ class Array3 : public array3<T> {
     vtemp=this->v-ox*(int) this->nyz;
     voff=vtemp-oy*(int) this->nz-oz;
   }
-  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+  void Dimension(size_t nx0, size_t ny0, size_t nz0,
 		 int ox0=0, int oy0=0, int oz0=0) {
     this->nx=nx0; this->ny=ny0; this->nz=nz0; this->nyz=this->ny*this->nz;
     this->size=this->nx*this->nyz;
     ox=ox0; oy=oy0; oz=oz0;
     Offsets();
   }
-  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+  void Dimension(size_t nx0, size_t ny0, size_t nz0,
 		 T *v0, int ox0=0, int oy0=0, int oz0=0) {
     this->v=v0;
     Dimension(nx0,ny0,nz0,ox0,oy0,oz0);
     clear(this->allocated);
   }
   
-  void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+  void Allocate(size_t nx0, size_t ny0, size_t nz0,
 		int ox0=0, int oy0=0, int oz0=0, size_t align=0) {
     Dimension(nx0,ny0,nz0,ox0,oy0,oz0);
     __checkActivate(3,align);
@@ -1028,11 +1030,11 @@ class Array3 : public array3<T> {
   }
 	
   Array3() : ox(0), oy(0), oz(0) {}
-  Array3(unsigned int nx0, unsigned int ny0, unsigned int nz0,
+  Array3(size_t nx0, size_t ny0, size_t nz0,
 	 int ox0=0, int oy0=0, int oz0=0, size_t align=0) {
     Allocate(nx0,ny0,nz0,ox0,oy0,oz0,align);
   }
-  Array3(unsigned int nx0, unsigned int ny0, unsigned int nz0, T *v0,
+  Array3(size_t nx0, size_t ny0, size_t nz0, T *v0,
 	 int ox0=0, int oy0=0, int oz0=0) {
     Dimension(nx0,ny0,nz0,v0,ox0,oy0,oz0);
   }
@@ -1083,8 +1085,8 @@ class Array4 : public array4<T> {
     vtemp=this->v-ox*(int) this->nyzw;
     voff=vtemp-oy*(int) this->nzw-oz*(int) this->nw-ow;
   }
-  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-		 unsigned int nw0, 
+  void Dimension(size_t nx0, size_t ny0, size_t nz0,
+		 size_t nw0, 
 		 int ox0=0, int oy0=0, int oz0=0, int ow0=0) {
     this->nx=nx0; this->ny=ny0; this->nz=nz0; this->nw=nw0;
     this->nzw=this->nz*this->nw; this->nyzw=this->ny*this->nzw;
@@ -1092,16 +1094,16 @@ class Array4 : public array4<T> {
     ox=ox0; oy=oy0; oz=oz0; ow=ow0;
     Offsets();
   }
-  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-		 unsigned int nw0, T *v0,
+  void Dimension(size_t nx0, size_t ny0, size_t nz0,
+		 size_t nw0, T *v0,
 		 int ox0=0, int oy0=0, int oz0=0, int ow0=0) {
     this->v=v0;
     Dimension(nx0,ny0,nz0,nw0,ox0,oy0,oz0,ow0);
     clear(this->allocated);
   }
   
-  void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-		unsigned int nw0,
+  void Allocate(size_t nx0, size_t ny0, size_t nz0,
+		size_t nw0,
 		int ox0=0, int oy0=0, int oz0=0, int ow0=0, size_t align=0) {
     Dimension(nx0,ny0,nz0,nw0,ox0,oy0,oz0,ow0);
     __checkActivate(4,align); 
@@ -1109,13 +1111,13 @@ class Array4 : public array4<T> {
   }
 	
   Array4() : ox(0), oy(0), oz(0), ow(0) {}
-  Array4(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-	 unsigned int nw0,
+  Array4(size_t nx0, size_t ny0, size_t nz0,
+	 size_t nw0,
 	 int ox0=0, int oy0=0, int oz0=0, int ow0=0, size_t align=0) {
     Allocate(nx0,ny0,nz0,nw0,ox0,oy0,oz0,ow0,align);
   }
-  Array4(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-	 unsigned int nw0, T *v0,
+  Array4(size_t nx0, size_t ny0, size_t nz0,
+	 size_t nw0, T *v0,
 	 int ox0=0, int oy0=0, int oz0=0, int ow0=0) {
     Dimension(nx0,ny0,nz0,nw0,v0,ox0,oy0,oz0,ow0);
   }
@@ -1168,8 +1170,8 @@ class Array5 : public array5<T> {
     vtemp=this->v-ox*(int) this->nyzwv;
     voff=vtemp-oy*(int) this->nzwv-oz*(int) this->nwv-ow*(int) this->nv-ov;
   }
-  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-		 unsigned int nw0,  unsigned int nv0,
+  void Dimension(size_t nx0, size_t ny0, size_t nz0,
+		 size_t nw0,  size_t nv0,
 		 int ox0=0, int oy0=0, int oz0=0, int ow0=0, int ov0=0) {
     this->nx=nx0; this->ny=ny0; this->nz=nz0; this->nw=nw0; this->nv=nv0;
     this->nwv=this->nw*this->nv; this->nzwv=this->nz*this->nwv;
@@ -1178,16 +1180,16 @@ class Array5 : public array5<T> {
     ox=ox0; oy=oy0; oz=oz0; ow=ow0; ov=ov0;
     Offsets();
   }
-  void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-		 unsigned int nw0, unsigned int nv0, T *v0,
+  void Dimension(size_t nx0, size_t ny0, size_t nz0,
+		 size_t nw0, size_t nv0, T *v0,
 		 int ox0=0, int oy0=0, int oz0=0, int ow0=0, int ov0=0) {
     this->v=v0;
     Dimension(nx0,ny0,nz0,nw0,nv0,ox0,oy0,oz0,ow0,ov0);
     clear(this->allocated);
   }
   
-  void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-		unsigned int nw0, unsigned int nv0,
+  void Allocate(size_t nx0, size_t ny0, size_t nz0,
+		size_t nw0, size_t nv0,
 		int ox0=0, int oy0=0, int oz0=0, int ow0=0, int ov0=0,
 		size_t align=0) {
     Dimension(nx0,ny0,nz0,nw0,nv0,ox0,oy0,oz0,ow0,ov0);
@@ -1196,13 +1198,13 @@ class Array5 : public array5<T> {
   }
 	
   Array5() : ox(0), oy(0), oz(0), ow(0), ov(0) {}
-  Array5(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-	 unsigned int nw0, unsigned int nv0, int ox0=0, int oy0=0,
+  Array5(size_t nx0, size_t ny0, size_t nz0,
+	 size_t nw0, size_t nv0, int ox0=0, int oy0=0,
 	 int oz0=0, int ow0=0, int ov0=0, size_t align=0) {
     Allocate(nx0,ny0,nz0,nw0,nv0,ox0,oy0,oz0,ow0,ov0,align);
   }
-  Array5(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-	 unsigned int nw0, unsigned int nv0, T *v0,
+  Array5(size_t nx0, size_t ny0, size_t nz0,
+	 size_t nw0, size_t nv0, T *v0,
 	 int ox0=0, int oy0=0, int oz0=0, int ow0=0, int ov0=0) {
     Dimension(nx0,ny0,nz0,nw0,nv0,v0,ox0,oy0,oz0,ow0,ov0);
   }
@@ -1290,19 +1292,19 @@ inline void Set(Array1<T>& A, const array1<T>& B)
 }
 
 template<class T>
-inline void Dimension(T *&A, unsigned int, T *v)
+inline void Dimension(T *&A, size_t, T *v)
 {
   A=v;
 }
 
 template<class T>
-inline void Dimension(array1<T>& A, unsigned int n, T *v)
+inline void Dimension(array1<T>& A, size_t n, T *v)
 {
   A.Dimension(n,v);
 }
 
 template<class T>
-inline void Dimension(Array1<T>& A, unsigned int n, T *v)
+inline void Dimension(Array1<T>& A, size_t n, T *v)
 {
   A.Dimension(n,v);
 }
@@ -1332,51 +1334,51 @@ inline void Dimension(Array1<T>& A, const array1<T>& B)
 }
 
 template<class T>
-inline void Dimension(Array1<T>& A, unsigned int n, const array1<T>& B, int o)
+inline void Dimension(Array1<T>& A, size_t n, const array1<T>& B, int o)
 {
   A.Dimension(n,B,o);
 }
 
 template<class T>
-inline void Dimension(Array1<T>& A, unsigned int n, T *v, int o)
+inline void Dimension(Array1<T>& A, size_t n, T *v, int o)
 {
   A.Dimension(n,v,o);
 }
 
 template<class T>
-inline void Dimension(T *&A, unsigned int, T *v, int o)
+inline void Dimension(T *&A, size_t, T *v, int o)
 {
   A=v-o;
 }
 
 template<class T>
-inline void Allocate(T *&A, unsigned int n, size_t align=0)
+inline void Allocate(T *&A, size_t n, size_t align=0)
 {
   if(align) A=new(n,align) T;
   else A=new T[n];
 }
 
 template<class T>
-inline void Allocate(array1<T>& A, unsigned int n, size_t align=0)
+inline void Allocate(array1<T>& A, size_t n, size_t align=0)
 {  
   A.Allocate(n,align);
 }
 
 template<class T>
-inline void Allocate(Array1<T>& A, unsigned int n, size_t align=0)
+inline void Allocate(Array1<T>& A, size_t n, size_t align=0)
 {  
   A.Allocate(n,align);
 }
 
 template<class T>
-inline void Allocate(T *&A, unsigned int n, int o, size_t align=0)
+inline void Allocate(T *&A, size_t n, int o, size_t align=0)
 {
   Allocate(A,n,align);
   A -= o;
 }
 
 template<class T>
-inline void Allocate(Array1<T>& A, unsigned int n, int o, size_t align=0)
+inline void Allocate(Array1<T>& A, size_t n, int o, size_t align=0)
 {  
   A.Allocate(n,o,align);
 }
@@ -1412,26 +1414,26 @@ inline void Deallocate(Array1<T>& A, int)
 }
 
 template<class T>
-inline void Reallocate(T *&A, unsigned int n, size_t align=0)
+inline void Reallocate(T *&A, size_t n, size_t align=0)
 {  
   if(A) delete [] A;
   Allocate(A,n,align);
 }
 
 template<class T>
-inline void Reallocate(array1<T>& A, unsigned int n)
+inline void Reallocate(array1<T>& A, size_t n)
 {  
   A.Reallocate(n);
 }
 
 template<class T>
-inline void Reallocate(Array1<T>& A, unsigned int n)
+inline void Reallocate(Array1<T>& A, size_t n)
 {  
   A.Reallocate(n);
 }
 
 template<class T>
-inline void Reallocate(T *&A, unsigned int n, int o, size_t align=0)
+inline void Reallocate(T *&A, size_t n, int o, size_t align=0)
 {  
   if(A) delete [] A;
   Allocate(A,n,align);
@@ -1439,20 +1441,20 @@ inline void Reallocate(T *&A, unsigned int n, int o, size_t align=0)
 }
 
 template<class T>
-inline void Reallocate(Array1<T>& A, unsigned int n, int o, size_t align=0)
+inline void Reallocate(Array1<T>& A, size_t n, int o, size_t align=0)
 {  
   A.Reallocate(n,o,align);
 }
 
 template<class T>
-inline void CheckReallocate(T& A, unsigned int n, unsigned int& old,
+inline void CheckReallocate(T& A, size_t n, size_t& old,
 			    size_t align=0)
 {
   if(n > old) {Reallocate(A,n,align); old=n;}
 }
 
 template<class T>
-inline void CheckReallocate(T& A, unsigned int n, int o, unsigned int& old,
+inline void CheckReallocate(T& A, size_t n, int o, size_t& old,
 			    size_t align=0)
 {
   if(n > old) {Reallocate(A,n,o,align); old=n;}
