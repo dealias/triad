@@ -88,7 +88,8 @@ NWaveVocabulary::NWaveVocabulary()
 	VOCAB(ngridy,0,INT_MAX);
 	VOCAB(movie,0,1);
 	VOCAB(truefield,0,1);
-	VOCAB(Dx,0,REAL_MAX);
+	
+	VOCAB(Dx,0.0,REAL_MAX);
 	
 	GeometryTable=new Table<GeometryBase>("Geometry");
 
