@@ -1213,6 +1213,12 @@ inline void Dimension1(Array1<T>& A, unsigned int n, T *v, int o)
 }
 
 template<class T>
+inline void Dimension1(T *&A, unsigned int, T *v, int o)
+{
+  A=v-o;
+}
+
+template<class T>
 inline void Allocate1(T *&A, unsigned int n)
 {
   A=new T[n];
