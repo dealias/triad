@@ -303,8 +303,6 @@ void options()
   cerr << "Options: " << endl;
   cerr << "-b\t\t single-byte (unsigned char instead of float) input"
        << endl;
-  cerr << "-2\t\t double spectral palettes and apply intensity gradient" 
-       << endl; 
   cerr << "-f\t\t use a floating scale for each frame" << endl;
   cerr << "-g\t\t produce grey-scale output" << endl;
   cerr << "-h\t\t help" << endl;
@@ -355,6 +353,8 @@ void options()
   cerr << "-gradient\t apply intensity gradient to spectral palettes" 
        << endl; 
   cerr << "-damp\t\t apply color intensity damping" << endl; 
+  cerr << "-2\t\t double spectral palettes and apply intensity gradient" 
+       << endl; 
   cerr << endl;
   cerr << "Standard Color Palettes:" << endl;
   cerr << "-bwrainbow\t black+rainbow+white spectrum [default]"
