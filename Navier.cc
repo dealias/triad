@@ -239,13 +239,13 @@ void NWave::InitialConditions()
 			Real ky=Geometry->Y(m);
 			for(i=0; i < ngridx; i++) {
 				Complex *p=xcoeff+i*Npsi;
-				Real x=i*L/ngridx;
-				p[m]=expi(kx*x);
+				Real X=i*L/ngridx;
+				p[m]=expi(kx*X);
 			}				
 			for(int j=0; j < ngridy; j++) {
 				Complex *q=ycoeff+j*Npsi;
-				Real y=j*L/ngridy;
-				q[m]=expi(ky*y);
+				Real Y=j*L/ngridy;
+				q[m]=expi(ky*Y);
 			}
 		}
 	}
