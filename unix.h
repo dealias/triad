@@ -22,11 +22,11 @@ extern const char *const sys_errlist[];
 #if defined __i386__ && defined __GNUC__ && defined __inline_mathop
 #define log2 __log2
 #define pow2 __pow2
-#define expm1 __expm1
+//#define expm1 __expm1
 #define log1p __log1p
 #define sincos __sincos
 #define sgn __sgn
-#define hypot __hypot
+//#define hypot __hypot
 #else
 #include "extensions.h"
 extern "C" double expm1(double);

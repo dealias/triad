@@ -22,6 +22,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 #include "Array.h"
 #include <cassert>
+#include "pow.h"
+
+inline double pow2(int n)
+{
+  return pow(2,n);
+}
 
 namespace Array {
   
