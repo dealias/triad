@@ -13,7 +13,7 @@
 
 char beep='\a';
 
-// extern const int sys_nerr;
+extern const int sys_nerr;
 extern const char *const sys_errlist[];
 
 int abort_flag=1; 	// If nonzero, abort program after a fatal error.
