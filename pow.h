@@ -19,9 +19,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __pow_h__
 #define __pow_h__ 1
 
-#include <math.h>
-#include <limits.h>
-#include <assert.h>
+#include <cmath>
+#include <climits>
+#include <cassert>
 
 inline double pow(double x, int p)
 {

@@ -1,7 +1,7 @@
 #ifndef __precision_h__
 #define __precision_h__ 1
 
-#include <float.h>
+#include <cfloat>
 
 #ifndef DOUBLE_PRECISION
 #define DOUBLE_PRECISION 1
