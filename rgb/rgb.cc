@@ -829,7 +829,7 @@ void ProjectedTorus(Array3<Ivec> Index)
 						Real cosphi,sinphi;
 						sincos(phi,&sinphi,&cosphi);
 						for(int i=0; i < nx; i++)  {
-							Real a0i=a0+i+0.5;
+							Real a0i=a0+i+Nxfine*xfinestep;
 							for(int i2=-Nxfine; i2 <= Nxfine; i2++)  {
 								Real r=a0i+i2*xfinestep;
 								Real rperp=R0+r*costheta;
