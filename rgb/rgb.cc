@@ -621,7 +621,6 @@ int main(int argc, char *argv[])
       break;
     case BAR:
       bar=atoi(optarg);
-      if(bar == 0) band=0;
       if(bar < 0) msg(ERROR,"Invalid number of pixels: %s", optarg);
       break;
     case BAND:
@@ -751,6 +750,8 @@ int main(int argc, char *argv[])
     offset=PaletteMin;
   }
 	
+  if(lower == upper && bar=0) band=0;
+  
   for(unsigned int f=0; f < nfiles; f++) {
     const char *fieldname=argf[f];
     ixstream xin;
