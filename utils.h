@@ -9,10 +9,9 @@
 
 #if __i386__
 #include "arch/i386.h"
-#endif
-
-#if _AIX
-#include "arch/aix.h"
+#else
+#if unix
+#include "arch/unix.h"
 #endif
 
 #if __MAC
