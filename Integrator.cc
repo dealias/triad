@@ -24,6 +24,7 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 	double dtold=0.0, dtorig=0.0;
 	int it,itx,cont;
 	int nout=0;
+	const double tstart=t;
 	const int forwards=(tmax >= t);
 	const double sign=(forwards ? 1.0 : -1.0);
 	
@@ -47,7 +48,8 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 		
 		if(sample > 0.0 && (forwards ? t >= tstop : t <= tstop)) {
 			dump(it,0,tmax);
-			tstop=sign*min(++nout*sample,sign*tmax);
+			nout++;
+			tstop=sign*min(tstart+nout*sample,sign*tmax);
 			if(dtorig) {ChangeTimestep(dt,dtorig,t,sample); dtorig=0.0;}
 		}
 		else if(sample == 0.0) dump(it,0,tmax);

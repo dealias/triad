@@ -65,7 +65,7 @@ static char rmrf_cmd[]="rm -rf";
 void remove_dir(char *text)
 {
 	char *buf=new char[25+strlen(rmrf_cmd)+strlen(text)];
-	sprintf(buf,"%s %s > /dev/null",rmrf_cmd,text);
+	sprintf(buf,"%s %s",rmrf_cmd,text);
 	system(buf);
 }
 
