@@ -25,8 +25,8 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		CFTFAX(n,ifax,trigs);
 	}
 	
-	int inc=2*inc1;
-	int jump=2*inc2; // Should be odd. JCB
+	int inc=inc1;
+	int jump=inc2; // Should be odd. JCB
 	CFFTMLT(&data[0].re,&data[0].im,work,trigs,ifax,inc,jump,n,nk,isign);
 }
 
@@ -39,7 +39,7 @@ void fft(Complex *data, unsigned int log2n, int isign, int)
 	static double *table,*work;
 	unsigned int n=1 << log2n;
 	static int nlast=0, isys[1]={0};
-	int zero=0;
+	const int zero=0;
 
 	Real scale=1.0;
 	if(n != nlast) {
