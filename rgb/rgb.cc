@@ -760,7 +760,7 @@ int main(int argc, char *argv[])
 	
   if(lower == upper && bar == 0) band=0;
   
-  char *files[nfiles];
+  char **files=new char*[nfiles];
   int mfiles=0;
   for(unsigned int f=0; f < nfiles; f++) {
     const char *fieldname=argf[f];
