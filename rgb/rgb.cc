@@ -752,15 +752,15 @@ int main(int argc, char *argv[])
 		}
 		
 		switch(trans) {
-		case 0: 
+		case IDENTITY: 
 			Nx=nx; Ny=ny;
 			break;
-		case 1: 
+		case CIRCLE: 
 			a0=(int) (ceil(ny/twopi)+0.5);
 			a=a0+nx;
 			Nx=Ny=2*a+1;
 			break;
-		case 2:
+		case TORUS:
 			kmin=kmax=0;
 			lower=0; upper=INT_MAX;
 			a0=(int) (ceil(ny/twopi)+0.5);
@@ -800,6 +800,8 @@ int main(int argc, char *argv[])
 		if(jstop > ystop) jstop=ystop;
 						
 		if(rescale) {
+			if(trans != NULL) 
+				msg(ERROR, "Rescale for transforms not yet implemented");
 			xstart=istart;
 			xstop=istop;
 			ystart=jstart;
