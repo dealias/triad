@@ -85,6 +85,16 @@ inline Real max(Real a, Real b)
 	return (a > b) ? a : b;
 }
 
+inline int min(int a, int b)
+{
+	return (a < b) ? a : b;
+}
+
+inline int max(int a, int b)
+{
+	return (a > b) ? a : b;
+}
+
 char *upcase(const char *s, char *s2=NULL);
 char *downcase(const char *s, char *s2=NULL);
 char *dashify(const char *s, char *s2=NULL);
