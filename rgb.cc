@@ -262,7 +262,7 @@ void mpeg(int, char *const argf[], int n, char *const type,
 	buf << "mpeg -a 0 -b " << n << " -h " << xsize << " -v " << ysize
 		<< " -PF " << rgbdir << "/" << argf[0] << "." << " -s " << argf[0]
 		<< "." << type;
-	if(!verbose) cout << "> /dev/null 2>&1";
+	if(!verbose) buf << " > /dev/null";
 	buf << ends;
 	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;
