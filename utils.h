@@ -321,12 +321,14 @@ Complex atoc(const char *s);
 	
 const int default_nperline=4;
 
+static const char *outerror="Cannot write %s to output stream";
+
 template<class T>	
 inline void out_curve(oxstream& os, T *f, char *text, int n, int)
 {
 	os << n;
 	for(int i=0; i < n; i++) os << f[i];
-	if(!os) msg(WARNING,"Cannot write %s to output stream",text);
+	if(!os) msg(WARNING,outerror,text);
 }
 
 template<class T>
@@ -334,7 +336,7 @@ inline void out_function(oxstream& os, T (*f)(int), char *text, int n, int)
 {
 	os << n;
 	for(int i=0; i < n; i++) os << (*f)(i);
-	if(!os) msg(WARNING,"Cannot write %s to output stream",text);
+	if(!os) msg(WARNING,outerror,text);
 }
 
 template<class T>
@@ -348,7 +350,7 @@ inline void out_function(ostream& os, T (*f)(int), char *text, int n,
 		if(++i % nperline) os << "\t"; else os << " \\\n";
 	}
 	os << (*f)(n-1) << newl;
-	if(!os) msg(WARNING,"Cannot write %s to output stream",text);
+	if(!os) msg(WARNING,outerror,text);
 }
 
 template<class T>	
@@ -361,7 +363,7 @@ inline void out_curve(ostream& os, T *f, char *text, int n, int nperline)
 		if(++i % nperline) os << "\t"; else os << " \\\n";
 	}
 	os << f[n-1] << newl;
-	if(!os) msg(WARNING,"Cannot write %s to output stream",text);
+	if(!os) msg(WARNING,outerror,text);
 }
 
 template<class S>
