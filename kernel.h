@@ -165,8 +165,7 @@ public:
 	IntegratorBase *NewIntegrator(const char *& key) {
 		char *key2=strdup(key);
 		undashify(key,key2);
-		const char *key0=strdup(key2);
-		IntegratorBase *p=IntegratorTable->Locate(key0);
+		IntegratorBase *p=IntegratorTable->Locate((const char *) key2);
 		p->SetAbbrev(key2);
 		return p;
 	}
