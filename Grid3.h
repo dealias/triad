@@ -22,7 +22,10 @@ public:
 	Grid3() {radix=2; dimension=3;}
 	virtual ~Grid3() {};
 
-	virtual Limits XMeshRange(), YMeshRange(), ZMeshRange();
+	virtual Limits XMeshRange()=0;
+	virtual Limits YMeshRange()=0;
+	virtual Limits ZMeshRange()=0;
+	
 	Real X(int i) {return x[i];}
 	Real Y(int i) {return y[i];}
 	Real Z(int i) {return z[i];}
@@ -55,16 +58,24 @@ public:
 		}
 	}
 
-	void Defect(const Array3<T>& d0, const Array3<T>& u, const Array3<T>& f);
-	void Smooth(const Array3<T>& u, const Array3<T>& f);
-	void GaussSeidel(const Array3<T>&, const Array3<T>&, int, int, int, int, int, int);
+	virtual void Defect(const Array3<T>& d0, const Array3<T>& u,
+						const Array3<T>& f)=0;
+	virtual void Smooth(const Array3<T>& u, const Array3<T>& f)=0;
+	virtual void GaussSeidel(const Array3<T>&, const Array3<T>&, int, int, int,
+							 int, int, int) {};
 	
-	void XGaussSeidel(const Array3<T>&, const Array3<T>&, int, int, int, int);
-	void YGaussSeidel(const Array3<T>&, const Array3<T>&, int, int, int, int);
-	void ZGaussSeidel(const Array3<T>&, const Array3<T>&, int, int, int, int);
-	void XYGaussSeidel(const Array3<T>&, const Array3<T>&, int, int);
-	void XZGaussSeidel(const Array3<T>&, const Array3<T>&, int, int);
-	void YZGaussSeidel(const Array3<T>&, const Array3<T>&, int, int);
+	virtual void XGaussSeidel(const Array3<T>&, const Array3<T>&, int, int,
+							  int, int) {}; 
+	virtual void YGaussSeidel(const Array3<T>&, const Array3<T>&, int, int,
+							  int, int) {} ; 
+	virtual void ZGaussSeidel(const Array3<T>&, const Array3<T>&, int, int,
+							  int, int) {};
+	virtual void XYGaussSeidel(const Array3<T>&, const Array3<T>&,
+							   int, int) {};
+	virtual void XZGaussSeidel(const Array3<T>&, const Array3<T>&,
+							   int, int) {};
+	virtual void YZGaussSeidel(const Array3<T>&, const Array3<T>&,
+							   int, int) {};
 
 	void Restrict(const Array3<T>& r, const Array3<T>& u) {
 		if(&r != &u) {
@@ -233,20 +244,19 @@ public:
 		}
 	}
 	
-	inline void BoundaryConditions(const Array3<T>& u, int homogenous);
-	inline void BoundaryConditions(const Array3<T>& u) {
-		BoundaryConditions(u,0);
-	}
+	inline virtual void BoundaryConditions(const Array3<T>& u)=0;
 	
 	void XDirichlet(const Array3<T>&) {}
 	
-	void XDirichlet0(const Array3<T>& u) {
+	void XDirichlet(const Array3<T>& u, T b0, T b1) {
+		if(homogenous) return;
 		Array2<T> u0=u[0], unx1=u[nx+1];
 		for(int j=0; j < nybc; j++) {
 			Array1(T) u0j=u0[j];
 			Array1(T) unx1j=unx1[j];
 			for(int k=0; k < nzbc; k++) {
-				u0j[k]=unx1j[k]=0.0;
+				u0j[k]=b0;
+				unx1j[k]=b1;
 			}
 		}
 	}
@@ -279,6 +289,22 @@ public:
 			for(int k=0; k < nzbc; k++) {
 				u0j[k]=u2j[k];
 				unx1j[k]=unxm1j[k];
+			}
+		}
+	}
+	
+	void XDirichletInterpolate(const Array3<T>& u, T b0, T b1) {
+		if(homogeneous) {b0=b1=0.0;}
+		else {b0 *= 2.0; b1 *= 2.0;}
+		Array2<T> u0=u[0], u2=u[2], unxm1=u[nx-1], unx1=u[nx+1];
+		for(int j=0; j < nybc; j++) {
+			Array1(T) u0j=u0[j];
+			Array1(T) u2j=u2[j];
+			Array1(T) unxm1j=unxm1[j];
+			Array1(T) unx1j=unx1[j];
+			for(int k=0; k < nzbc; k++) {
+				u0j[k]=b0-u2j[k];
+				unx1j[k]=b1-unxm1j[k];
 			}
 		}
 	}
@@ -335,13 +361,15 @@ public:
 	
 	void YDirichlet(const Array3<T>&) {}
 	
-	void YDirichlet0(const Array3<T>& u) {
+	void YDirichlet(const Array3<T>& u, T b0, T b1) {
+		if(homogenous) return;
 		for(int i=0; i < nxbc; i++) {
 			Array2<T> ui=u[i];
 			Array1(T) ui0=ui[0];
 			Array1(T) uiny1=ui[ny+1];
 			for(int k=0; k < nzbc; k++) {
-				ui0[k]=uiny1[k]=0.0;
+				ui0[k]=b0;
+				uiny1[k]=b1;
 			}
 		}
 	}
@@ -377,6 +405,22 @@ public:
 		}
 	}
 	
+	void YDirichletInterpolate(const Array3<T>& u, T b0, T b1) {
+		if(homogeneous) {b0=b1=0.0;}
+		else {b0 *= 2.0; b1 *= 2.0;}
+		for(int i=0; i < nxbc; i++) {
+			Array2<T> ui=u[i];
+			Array1(T) ui0=ui[0];
+			Array1(T) ui2=ui[2];
+			Array1(T) uinym1=ui[ny-1];
+			Array1(T) uiny1=ui[ny+1];
+			for(int k=0; k < nzbc; k++) {
+				ui0[k]=b0-ui2[k];
+				uiny1[k]=b1-uinym1[k];
+			}
+		}
+	}
+	
 	void YConstant(const Array3<T>& u) {
 		for(int i=0; i < nxbc; i++) {
 			Array2<T> ui=u[i];
@@ -407,12 +451,14 @@ public:
 	
 	void ZDirichlet(const Array3<T>&) {}
 		
-	void ZDirichlet0(const Array3<T>& u) {
+	void ZDirichlet(const Array3<T>& u, T b0, T b1) {
+		if(homogenous) return;
 		for(int i=0; i < nxbc; i++) {
 			Array2<T> ui=u[i];
 			for(int j=0; j < nybc; j++) {
 				Array1(T) uij=ui[j];
-				uij[0]=uij[nz+1]=0.0;
+				uij[0]=b0;
+				uij[nz+1]=b1;
 			}
 		}
 	}
@@ -443,6 +489,19 @@ public:
 		}
 	}
 	
+	void ZDirichletInterpolate(const Array3<T>& u, T b0, T b1) {
+		if(homogeneous) {b0=b1=0.0;}
+		else {b0 *= 2.0; b1 *= 2.0;}
+		for(int i=0; i < nxbc; i++) {
+			Array2<T> ui=u[i];
+			for(int j=0; j < nybc; j++) {
+				Array1(T) uij=ui[j];
+				uij[0]=b0-uij[2];
+				uij[nz+1]=b1-uij[nz-1];
+			}
+		}
+	}
+	
 	void ZConstant(const Array3<T>& u) {
 		for(int i=0; i < nxbc; i++) {
 			Array2<T> ui=u[i];
@@ -464,12 +523,6 @@ public:
 			}
 		}
 	}
-};
-
-template<class T>
-class Grid3p : public Grid3<T> {
-public:	
-	void SubtractKernel(const Array3<T>&, const Array3<T>&);
 };
 
 #endif

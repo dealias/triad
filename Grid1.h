@@ -14,7 +14,7 @@ public:
 	Grid1() {radix=2; dimension=1;}
 	virtual ~Grid1() {};
 
-	virtual Limits XMeshRange();
+	virtual Limits XMeshRange()=0;
 	Real X(int i) {return x[i];}
 	Real *X() {return x;}
 	int Nx() {return nx;}
@@ -32,10 +32,11 @@ public:
 		}
 	}
 
-	void Defect(const Array1<T>& d0, const Array1<T>& u, const Array1<T>& f);
-	void Smooth(const Array1<T>& u, const Array1<T>& f);
+	virtual void Defect(const Array1<T>& d0, const Array1<T>& u, const
+						Array1<T>& f)=0; 
+	virtual void Smooth(const Array1<T>& u, const Array1<T>& f)=0;
 	
-	void GaussSeidel(const Array1<T>&, const Array1<T>&, int, int);
+	virtual void GaussSeidel(const Array1<T>&, const Array1<T>&, int, int) {};
 	
 	void Restrict(const Array1<T>& r, const Array1<T>& u) {
 		if(&r != &u) XDirichlet(r,u,1);
@@ -70,15 +71,14 @@ public:
 		for(int i=1; i <= nx; i++) s += abs2(u[i]);
 	}
 
-	inline void BoundaryConditions(const Array1<T>& u, int homogeneous);
-	inline void BoundaryConditions(const Array1<T>& u) {
-		BoundaryConditions(u,0);
-	}
+	inline virtual void BoundaryConditions(const Array1<T>& u)=0;
 	
 	void XDirichlet(const Array1<T>&) {}
 	
-	void XDirichlet0(const Array1<T>& u) {
-		u[0]=u[nx+1]=0.0;
+	void XDirichlet(const Array1<T>& u, T b0, T b1) {
+		if(homogenous) return;
+		u[0]=b0;
+		u[nx+1]=b1;
 	}
 	
 	void XDirichlet(const Array1<T>& u, const Array1<T>& b, int contract=0) {
@@ -92,6 +92,13 @@ public:
 	void XNeumann(const Array1<T>& u) {
 		u[0]=u[2];
 		u[nx+1]=u[nx-1];
+	}
+	
+	void XDirichletInterpolate(const Array1<T>& u, T b0, T b1) {
+		if(homogeneous) {b0=b1=0.0;}
+		else {b0 *= 2.0; b1 *= 2.0;}
+		u[0]=b0-u[2];
+		u[nx+1]=b1-u[nx-1];
 	}
 	
 	void XConstant(const Array1<T>& u) {
@@ -111,12 +118,6 @@ public:
 		u[0]=u[nx];
 		u[nx+1]=u[1];
 	}
-};
-
-template<class T>
-class Grid1p : public Grid1<T> {
-public:	
-	void SubtractKernel(const Array1<T>&, const Array1<T>&);	
 };
 
 #endif

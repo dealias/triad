@@ -57,6 +57,7 @@ template<class T, class V>
 class Grid {
 protected:
 	int level;
+	int homogeneous;
 	Grid<T,V> *parent;
 	int nonlinear;
 	int radix;
@@ -68,9 +69,11 @@ public:
 	int AllPoints() {return allpoints;}
 	virtual void Allocate(int allocate=1)=0;
 	
-	virtual void Initialize(int level0, Grid<T,V> *parent0=NULL,
+	virtual void Initialize(int level0, int homogeneous0=0,
+							Grid<T,V> *parent0=NULL,
 							int nonlinear0=0, int allocate=1) {
-		level=level0; nonlinear=nonlinear0; parent=parent0;
+		level=level0; homogeneous=homogeneous0;
+		nonlinear=nonlinear0; parent=parent0;
 		allpoints=1;
 		Allocate(allocate);
 		if(!allocate) return;
@@ -109,7 +112,7 @@ public:
 	virtual void Smooth(const T& u, const T& f)=0;
 	virtual void Restrict(const T& r, const T& u)=0;
 	virtual void SubtractProlongation(const T& u, const T& v0)=0;
-	virtual inline void BoundaryConditions(const T&, int homogeneous)=0;
+	virtual inline void BoundaryConditions(const T&)=0;
 
 	virtual inline void L0inv(const T&, const T&) {};
 	virtual inline void SubtractKernel(const T&, const T&) {};
@@ -132,17 +135,20 @@ public:
 		}
 		
 		while(1) {
-			for(i=0; i < nu1; i++) {Smooth(u,f); BoundaryConditions(u,0);}
+			for(i=0; i < nu1; i++) {Smooth(u,f); BoundaryConditions(u);}
 			
 			if(!statistics || nu1) Defect(d,u,f);
 
-			BoundaryConditions(d,1); // Required for periodic and Neumann BC's
+			int homogeneous0=homogeneous;
+			homogeneous=1;
+			BoundaryConditions(d);
+			homogeneous=homogeneous0;
 
 			Restrict(d,d);
 		
 			if(nonlinear) {
 				Restrict(v,u);
-				parent->BoundaryConditions(v,0);
+				parent->BoundaryConditions(v);
 				parent->Defect(d,v,d);
 				v2=v;
 				for(i=0; i < gamma; i++) parent->Solve(v2,d,nu1,gamma,nu2);
@@ -153,8 +159,8 @@ public:
 			}		
 		
 			SubtractProlongation(u,v);
-			BoundaryConditions(u,0);
-			for(i=0; i < nu2; i++) {Smooth(u,f); BoundaryConditions(u,0);}
+			BoundaryConditions(u);
+			for(i=0; i < nu2; i++) {Smooth(u,f); BoundaryConditions(u);}
 			
 			it++;
 			
@@ -174,7 +180,7 @@ public:
 		if(singular) {
 			if(!statistics) Defect(d,u,f);
 			SubtractKernel(u,d);
-			BoundaryConditions(u,0);
+			BoundaryConditions(u);
 			if(statistics) defect=Norm(d);
 		}
 		
@@ -192,7 +198,7 @@ public:
 	}
 	
 	void ComputeForce(const T& u, const T& f) {
-		BoundaryConditions(u,0);
+		BoundaryConditions(u);
 		Lu(u,f);
 	}
 	
@@ -263,7 +269,8 @@ public:
 	MultiGrid(int nlevel0, int nonlinear=0) : nlevel(nlevel0) {
 		grid=new G[nlevel];
 		for(int i=0; i < nlevel; i++) 
-			grid[i].Initialize(i,(i==0 ? NULL : grid+i-1),nonlinear);
+			grid[i].Initialize(i,i < nlevel-1,
+							   (i == 0 ? NULL : grid+i-1),nonlinear);
 	}
 	
 	G& Grid(int i) {return grid[i];}
