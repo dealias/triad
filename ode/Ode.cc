@@ -160,9 +160,9 @@ OdeVocabulary::OdeVocabulary()
 {
   Vocabulary=this;
 	
-  VOCAB(nu0,(Var) 0.0,(Var) 0.0);
-  VOCAB(A,(Var) 0.0,(Var) 0.0);
-  VOCAB(B,(Var) 0.0,(Var) 0.0);
+  VOCAB(nu0,(Var) 0.0,(Var) 0.0,"");
+  VOCAB(A,(Var) 0.0,(Var) 0.0,"");
+  VOCAB(B,(Var) 0.0,(Var) 0.0,"");
 	
   METHOD(Ode);
 	
