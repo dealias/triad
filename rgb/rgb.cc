@@ -93,8 +93,7 @@ char *extract=NULL;
 
 enum Parameters {RFACTOR=256,THETA,PHI,YXASPECT,ZXASPECT,POINTSIZE,AVGX,AVGY,\
 				 EXTRACT,NCOLORS,BACKGROUND,XMIN,XMAX,YMIN,YMAX,ZMIN,ZMAX,
-				 LABEL,ALPHA,CROP,XRANGE,YRANGE,ZRANGE,NXFINE,NYFINE,NZFINE,
-				 CONST,RATE};
+				 LABEL,ALPHA,CROP,XRANGE,YRANGE,ZRANGE,NSLICE,CONST,RATE};
 
 Real Rfactor=2.0;
 Real Theta=0.9;
@@ -113,9 +112,7 @@ Real zmax=1.0;
 int begin=0;
 int skip=1; 
 	
-int Nxfine=4;
-int Nyfine=5;
-int Nzfine=10;
+int nslice=20;
 
 const int Undefined=-2;
 int background=Undefined;
@@ -130,9 +127,9 @@ int system (char *command);
 
 class Ivec {
 public:
-	float i;
-	float j;
-	float k;
+	Real i;
+	Real j;
+	Real k;
 	Ivec() {}
 	Ivec(Real i0, Real j0, Real k0) : i(i0), j(j0), k(k0) {}
 };
@@ -452,9 +449,7 @@ int main(int argc, char *const argv[])
                {"zmax", 1, 0, ZMAX},
                {"avgx", 1, 0, AVGX},
                {"avgy", 1, 0, AVGY},
-               {"Nxfine", 1, 0, NXFINE},
-               {"Nyfine", 1, 0, NYFINE},
-               {"Nzfine", 1, 0, NZFINE},
+               {"nslice", 1, 0, NSLICE},
                {"const", 1, 0, CONST},
                {"rate", 1, 0, RATE},
                {"pointsize", 1, 0, POINTSIZE},
@@ -641,14 +636,8 @@ int main(int argc, char *const argv[])
 		case AVGY:
 			sy=atoi(optarg);
 			break;
-		case NXFINE:
-			Nxfine=atoi(optarg);
-			break;
-		case NYFINE:
-			Nyfine=atoi(optarg);
-			break;
-		case NZFINE:
-			Nzfine=atoi(optarg);
+		case NSLICE:
+			nslice=atoi(optarg);
 			break;
 		case POINTSIZE:
 			pointsize=atoi(optarg);
@@ -898,7 +887,9 @@ int main(int argc, char *const argv[])
 								if(ci < -1 || ci >= nx ||
 								   cj < -1 || cj >= ny ||
 								   ck < -1 || ck >= nz)
-									msg(ERROR,"Index out of range");
+									msg(ERROR,"%s: %g,%g,%g (%d,%d,%d)",
+										"Index out of range",
+										x.i,x.j,x.k,nx,ny,nz);
 								
 								int x1,x2,y1,y2,z1,z2;
 								
@@ -1192,26 +1183,54 @@ void Circle(Array2<Ivec>& Index)
 	
 Real deltax,deltaz;
 Real yfactor;
-Real xoffset,yoffset;
+Real uoffset,voffset;
 Real cutoff;
-Real Axx,Axy,Axz;
-Real Ayx,Ayy,Ayz;
-Real Azx,Azy,Azz;
-Real twopibyny,twopibynz;
-Array2<Real> maxz;
-Array3<int> active;
-Array2<Ivec> index0;
 
 int Project(double xi, double xj, double xk);
-void Refine(double x1, double y1, double z1, double x2, double y2, double z2);
+
+class Cartesian {
+public:
+	Real x;
+	Real y;
+	Real z;
+	Cartesian() {}
+	Cartesian(Real x_, Real y_, Real z_) : x(x_), y(y_), z(z_) {}
+};
+
+class Toroidal {
+public:
+	Real r;
+	Real phi;
+	Real theta;
+	Toroidal() {}
+	Toroidal(Real r_, Real phi_, Real theta_) : r(r_), phi(phi_), theta(theta_)
+		{}
 	
-inline int visible(int i, int j, int k)
-{
-	return (active(i,j,k) || active(i,j,k+1) || 
-			active(i,j+1,k) || active(i,j+1,k+1) ||
-			active(i+1,j,k) || active(i+1,j,k+1) || 
-			active(i+1,j+1,k) || active(i+1,j+1,k+1));
-}
+	void SetCartesian(Real x, Real y, Real z) {
+		Real rp=sqrt(x*x+y*y)-R0;
+		r=sqrt(rp*rp+z*z);
+		phi=atan2(y,x);
+		if(phi < 0) phi += twopi;
+		theta=atan2(z,rp);
+		if(theta < 0) theta += twopi;
+	}
+	
+	void Map() {
+		r -= a0;
+		if(alpha) theta -= (zmin+phi*deltaz)*alpha*yfactor*(xmin+r*deltax);
+	}
+	
+	int InRange() {
+		return (0 <= r && r <= nx-1 && phi >= 0 && phi <= cutoff);
+	}
+	
+	Toroidal(Cartesian P) {SetCartesian(P.x,P.y,P.z);}
+	operator Cartesian() const {
+		Real rp=R0+r*cos(theta);
+		return Cartesian(rp*cos(phi),rp*sin(phi),r*sin(theta));
+	}
+};
+
 
 void Torus(Array2<Ivec>& Index)
 {
@@ -1221,139 +1240,96 @@ void Torus(Array2<Ivec>& Index)
 		}
 	}
 	
-	index0.Dimension(Nx,Ny);
-	index0.Set(Index());
+	Real nybytwopi=ny/twopi;
+	Real nzbytwopi=nz/twopi;
 	
-	twopibyny=twopi/ny;
-	twopibynz=twopi/nz;
-	
-	maxz.Allocate(Nx,Ny);
-	maxz=-REAL_MAX;
-									
 	Real cosPhi,sinPhi;
 	Real cosTheta,sinTheta;
-	sincos(-Phi,&sinPhi,&cosPhi);
-	sincos(-Theta,&sinTheta,&cosTheta);
-	
-	// Rotate about z axis by -Phi, then about new x axis by -Theta.
-	
-	Axx=cosPhi;          Axy=-sinPhi;         Axz=0.0;
-	Ayx=cosTheta*sinPhi; Ayy=cosTheta*cosPhi; Ayz=-sinTheta;
-	Azx=sinTheta*sinPhi; Azy=sinTheta*cosPhi; Azz=cosPhi;
+	sincos(Phi,&sinPhi,&cosPhi);
+	sincos(Theta,&sinTheta,&cosTheta);
 	
 	cutoff=1.75*pi;
 	
-	xoffset=0.5+Rp*1.2;
-	yoffset=0.5+Rp*1.5;
+	uoffset=0.5+Rp*1.2;
+	voffset=0.5+Rp*1.5;
 	
 	deltax=(xmax-xmin)/nx;
 	deltaz=(zmax-zmin)/nz;
 	
 	yfactor=twopi/(ymax-ymin);
 	
-	for(int k=0; k < nz; k++)  {
-		for(int j=0; j < ny; j++)  {
-			for(int i=0; i < nx; i++)  {
-				Project(i,j,k);
-			}	
-		}
-	}
-		
-	active.Allocate(nx,ny,nz);
-	active=0;
-					
+	Real Axx,Axy,Axz;
+	Real Ayx,Ayy,Ayz;
+	Real Azx,Azy,Azz;
+
+	// Rotate about x axis by -Theta, then about new z axis by -Phi.
+	
+	Axx=cosPhi;			Axy=-sinPhi*cosTheta;	Axz=sinPhi*sinTheta;
+	Ayx=sinPhi; 		Ayy=cosPhi*cosTheta;	Ayz=-cosPhi*sinTheta;
+	Azx=0.0;			Azy=sinTheta;			Azz=cosTheta;
+	
+	Real Pzinv=1.0/Pz;
+	Real projection0=1.0-Pzinv*Pz;
+	unsigned int last=0;
 	for(int u=0; u < Nx; u++) {
 		for(int v=0; v < Ny; v++) {
-			Ivec x=Index(u,v);
-			if(x.i != Undefined) {
-				int i0=(int) (x.i+0.5);
-				int j0=(int) (x.j+0.5);
-				int k0=(int) (x.k+0.5);
-				active(i0,j0,k0)=1;
+			unsigned int detected=0;
+			int nsearch=nslice;
+			Real u0=u-uoffset;
+			Real v0=(Ny-v)-voffset;
+			Toroidal T;
+			Real maxz=0;
+			Real minz=0;
+			for(int pass=0; pass < 2; pass++) {
+				minz=-Pz;
+				Real z=maxz=Pz;
+				Real deltaz=(maxz-minz)/nsearch;
+				Real deltazPzinv=Pzinv*deltaz;
+				Real projection=projection0;
+				for(int n=0; n < nsearch; n++) {
+					Real x=u0*projection;
+					Real y=v0*projection;
+					Real xp=Axx*x+Axy*y+Axz*z;
+					Real yp=Ayx*x+Ayy*y+Ayz*z;
+					Real zp=Azx*x+Azy*y+Azz*z;
+					T.SetCartesian(xp,yp,zp);
+					T.Map();
+					if(T.InRange()) {
+						minz=z;
+						last=detected=1;
+						break;
+					}
+					maxz=z;
+					z -= deltaz;
+					projection += deltazPzinv;
+				}
+				if(detected) break;
+				else nsearch *= nslice;
 			}
+			
+			if(detected) {
+				Toroidal T0;
+				for(int n=0; n < 25; n++) {
+					Real z=0.5*(maxz+minz);
+					Real projection=1.0-Pzinv*z;
+					Real x=u0*projection;
+					Real y=v0*projection;
+					Real xp=Axx*x+Axy*y+Axz*z;
+					Real yp=Ayx*x+Ayy*y+Ayz*z;
+					Real zp=Azx*x+Azy*y+Azz*z;
+				
+					T0.SetCartesian(xp,yp,zp);
+					T0.Map();
+					if(T0.InRange()) {
+						minz=z;
+						T=T0;
+					} else maxz=z;
+				}
+			}
+			
+			Index(u,v)=detected ?
+				Ivec(T.r,T.theta*nybytwopi,T.phi*nzbytwopi) :
+				Ivec(Undefined,Undefined,Undefined);
 		}
 	}
-		
-	// Loop over boxes
-	for(int k=0; k < nz-1; k++)  {
-		for(int j=0; j < ny-1; j++)  {
-			for(int i=0; i < nx-1; i++)  {
-				if(visible(i,j,k)) Refine(i,j,k,i+1,j+1,k+1);
-			}
-		}
-	}
-	return;
-}
-
-void Refine(double x1, double y1, double z1, double x2, double y2, double z2)
-{
-	Real xp=0.5*(x1+x2);
-	Real yp=0.5*(y1+y2);
-	Real zp=0.5*(z1+z2);
-	int a1,a2,a3,a4,a5,a6,a7,a8,a9,a11,a12,a13,a14,a15,a16,a17,a18,a19;
-	
-	a1=Project(xp,y1,z1);
-	a2=Project(x1,yp,z1);
-	a3=Project(xp,yp,z1);
-	a4=Project(x2,yp,z1);
-	a5=Project(xp,y2,z1);
-	
-	a6=Project(x1,y1,zp);
-	a7=Project(xp,y1,zp);
-	a8=Project(x2,y1,zp);
-	a9=Project(x1,yp,zp);
-	a11=Project(x2,yp,zp);
-	a12=Project(x1,y2,zp);
-	a13=Project(xp,y2,zp);
-	a14=Project(x2,y2,zp);
-	
-	a15=Project(xp,y1,z2);
-	a16=Project(x1,yp,z2);
-	a17=Project(xp,yp,z2);
-	a18=Project(x2,yp,z2);
-	a19=Project(xp,y2,z2);
-	
-	if(a1 || a2 || a3 || a6 || a7 || a9) Refine(x1,y1,z1,xp,yp,zp);
-	if(a1 || a3 || a4 || a7 || a8 || a11) Refine(xp,y1,z1,x2,yp,zp);
-	if(a2 || a3 || a5 || a9 || a12 || a13) Refine(x1,yp,z1,xp,y2,zp);
-	if(a3 || a4 || a5 || a11 || a13 || a14) Refine(xp,yp,z1,x2,y2,zp);
-
-	if(a6 || a7 || a9 || a15 || a16 || a17) Refine(x1,y1,zp,xp,yp,z2);
-	if(a7 || a8 || a11 || a15 || a17 || a18) Refine(xp,y1,zp,x2,yp,z2);
-	if(a9 || a12 || a13 || a16 || a17 || a19) Refine(x1,yp,zp,xp,y2,z2);
-	if(a11 || a13 || a14 || a17 || a18 || a19) Refine(xp,yp,zp,x2,y2,z2);
-}
-
-
-int Project(double xi, double xj, double xk)
-{
-	Real phi=xk*twopibynz;
-	if(phi >= 0 && phi <= cutoff) {
-		Real sinphi,cosphi;
-		sincos(phi,&sinphi,&cosphi);
-		Real theta=xj*twopibyny;
-		if(alpha) theta += (zmin+xk*deltaz)*alpha*yfactor*(xmin+xi*deltax);
-		Real sintheta,costheta;
-		sincos(theta,&sintheta,&costheta);
-		Real r=a0+xi;
-		Real rperp=R0+r*costheta;
-		Real x=rperp*cosphi;
-		Real y=rperp*sinphi;
-		Real z=r*sintheta;
-							
-		Real xp=Axx*x+Axy*y+Axz*z;
-		Real yp=Ayx*x+Ayy*y+Ayz*z;
-		Real zp=Azx*x+Azy*y+Azz*z;
-							
-		Real projection=Pz/(Pz-zp);
-		int u=(int)(xp*projection+xoffset);
-		int v=Ny-((int)(yp*projection+yoffset));
-		if(u >= 0 && u < Nx && v >=0 && v < Ny
-		   && zp > maxz(u,v)) {
-			maxz(u,v)=zp;
-			index0(u,v)=Ivec(xi,xj,xk);
-			return 1;
-		}	
-	}
-	return 0;
 }
