@@ -751,7 +751,7 @@ int main(int argc, char *argv[])
 			msep=max(2,my);
 		}
 		
-		if(rescale && trans != NULL) 
+		if(rescale && trans != IDENTITY) 
 				msg(ERROR, "Rescale for transforms not yet implemented");
 			
 		switch(trans) {
