@@ -26,8 +26,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #include "DynVector.h"
 #include "rgb.h"
 
-void cleanup();
-
 static double *vminf, *vmaxf;
 static char *rgbdir;
 static strstream rgbdirbuf;
@@ -39,6 +37,8 @@ static int byte=0;
 static int implicit=1;
 static int zero=0;
 static int preserve=0;
+
+void cleanup();
 
 template<class T>
 void openfield(T& fin, char *fieldname, int& nx, int& ny, int& nz)
