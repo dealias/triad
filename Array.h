@@ -49,8 +49,8 @@ template<class T>
 class Array1 {
 protected:
 	T *v; // Pointer to first element of contiguous memory block
-	T *voff; // Offset pointer to memory block
 	unsigned int nx;
+	T *voff; // Offset pointer to memory block
 	int ox;
 	mutable int state;
 public:
@@ -94,7 +94,7 @@ public:
 	Array1(unsigned int nx0, T *v0, int ox0=0) : state(unallocated) {
 		Dimension(nx0,v0,ox0);
 	}
-	Array1(const Array1<T>& A) : v(A.v), voff(A.voff), nx(A.nx), ox(A.ox),
+	Array1(const Array1<T>& A) : v(A.v), nx(A.nx), voff(A.voff), ox(A.ox),
 		state(A.test(temporary)) {}
 	virtual ~Array1() {if(test(allocated)) Deallocate();}
 	
