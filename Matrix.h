@@ -138,6 +138,24 @@ inline Array1<T> conj(const Array1<T>& B)
 }
 
 template<class T>
+inline Array2<T> conj(const Array2<T>& B)
+{
+	Array1<T> A(B.Nx(),B.Ny());
+	Conj(A,B);
+	A.Hold();
+	return A;
+}
+
+template<class T>
+inline Array2<T> trans(const Array2<T>& B)
+{
+	Array2<T> A(B.Nx(),B.Ny());
+	Trans(A,B);
+	A.Hold();
+	return A;
+}
+
+template<class T>
 inline Array2<T> operator ~ (const Array2<T>& B)
 {
 	Array2<T> A(B.Ny(),B.Nx());
