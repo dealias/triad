@@ -12,10 +12,7 @@
 
 #if _CRAY
 #include <sys/types.h>
-#include <sys/mtimes.h>
-#include <sys/machd.h>
-static struct mtms mbuf;
-static int parallel=-1;
+#include <sys/jtab.h>
 #endif
 
 extern char* run;
@@ -24,23 +21,12 @@ static const double init_time=time(NULL);
 void cputime(double *cpu)
 {
 #if _CRAY
-	if(parallel == -1) parallel=strcmp(getenv("NCPUS"),"1");
-	if(parallel) {
-		time_t task=0,child=0;
+		struct jtab jbuf;
+		getjtab(&jbuf);
 		
-		mtimes(&mbuf);
-		double update=0;
-		while(update != mbuf.mtms_update) {
-			update=mbuf.mtms_update;
-			for(int i=0; i < NCPU; i++) {
-				task += mbuf.mtms_mutime[i];
-				child += i*mbuf.mtms_mutime[i];
-			}
-		}
-		
-		cpu[0] = ((double) task)/CLK_TCK;
-		cpu[1] = ((double) child)/CLK_TCK;
-		cpu[2] = 0.0;
+		cpu[0] = ((double) jbuf.j_ucputime)/CLK_TCK;
+		cpu[1] = 0.0;
+		cpu[2] = ((double) jbuf.j_scputime)/CLK_TCK;
 		return;
 	}
 #endif		

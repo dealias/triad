@@ -310,7 +310,3 @@ void out_real(ostream& os, Complex *f, char *format, int n, int nperline)
 	sprintf(text,format,".im");
 	out_function(os,out_im,text,n,nperline);
 }
-
-#if _CRAY
-#include "out_curve.h"
-#endif

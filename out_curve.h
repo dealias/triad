@@ -20,7 +20,7 @@ inline void out_function(ostream& os, Real (*f)(int), char *text, int n,
 }
 
 template<class T>
-inline void out_curve(ostream& os, T *f, char *text, int n, int nperline)
+void out_curve(ostream& os, T *f, char *text, int n, int nperline)
 {
 	int i;
 	os << "# " << text << endl;

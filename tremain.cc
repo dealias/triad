@@ -21,7 +21,7 @@ int poll()
 	cputime(cpu);
 	for(int i=0; i < ncputime; i++) seconds += cpu[i];
 
-	if(2.0*seconds-last_seconds < (restart ? 0.7 : 0.8)*tlimit) {
+	if(2.0*seconds-last_seconds < (restart ? 0.90 : 0.95)*tlimit) {
 		last_seconds=seconds;
 		return 0;
 	}
