@@ -25,14 +25,18 @@ Real *nuR_inv,*nuI;
 Real *forcing;
 extern Real tauforce;
 
-static Complex random_factor=0.0;
+static Var random_factor=0.0;
 
 void ComputeMoments(Var *source, Var *psi) {
 	Var *k, *q=source+Npsi, *kstop=psi+Npsi;
 #pragma ivdep
 	for(k=psi; k < kstop; k++, q++) {
+#if COMPLEX		
 		(*q).re=realproduct(*(q-Npsi),*k); // S_k*psi_k
 		(*q).im=realproduct(random_factor,*k); // w_k*psi_k
+#else
+		*q=realproduct(*(q-Npsi),*k); // S_k*psi_k
+#endif		
 	}
 	if(Nmoment > 1) {
 #pragma ivdep
@@ -132,6 +136,7 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 }
 
 
+#if COMPLEX
 void PrimitiveNonlinearityFFT(Complex *source, Complex *psi, double)
 {
 	int i;
@@ -169,6 +174,7 @@ void PrimitiveNonlinearityFFT(Complex *source, Complex *psi, double)
 	}
 	if(Nmoment) ComputeMoments(source,psi);
 }
+#endif
 
 void PrimitiveNonlinearityFFT(Real *, Real *, double)
 {
@@ -212,62 +218,61 @@ void ConstantForcing(Var *source, Var *, double t)
 	for(int k=0; k < Npsi; k++) source[k] += forcing[k]*random_factor;
 }
 
-#if COMPLEX	
-Solve_RC C_Euler::Solve(double, double)
-{
-	msg(ERROR,"Complex C_Euler has not been implemented");
-	return UNSUCCESSFUL;
-}
-#else
 Solve_RC C_Euler::Solve(double t, double dt)
 {
 	int j,iter,cont,jfix=-1;
-	Real yj;
+	Real *ry0=(Real *) y0, *ry=(Real *) y;
+	Real *rsource=(Real *)source, *rlastdiff=(Real *)lastdiff;
 	double tau,mu,temp;
+	int ny0=nyprimary*sizeof(Var)/sizeof(Real);
 	
 	tau=dt;
 	Source(source,y0,t);
 	
 	mu=temp=0.0;
-	for(j=0; j < nyprimary; j++) {
-		if(y0[j] != 0.0) temp=tau*source[j]/y0[j];
-		else jfix=j;
-		if(fabs(temp) > fabs(mu)) {mu=temp;	if(fabs(mu) >= 0.5) jfix=j;}
+	for(j=0; j < ny0; j++) {
+		if(ry0[j]) {
+			temp=tau*rsource[j]/ry0[j];
+			if(fabs(temp) > fabs(mu)) {mu=temp;	if(fabs(mu) >= 0.5) jfix=j;}
+		}
+		else if(rsource[j]) jfix=j;
 	}
 	mu += 2.0;
 	
 	if(jfix == -1)	// Evolve forwards.
-		for(j=0; j < nyprimary; j++)
-			y0[j]=sgn(y0[j])*sqrt(y0[j]*(y0[j]+mu*tau*source[j]));
+		for(j=0; j < ny0; j++)
+			ry0[j]=sgn(ry0[j])*sqrt(ry0[j]*(ry0[j]+mu*tau*rsource[j]));
 	else {			// Iterate backwards.
-		set(y,y0,nyprimary);
+		set(y,y0,ny);
 		iter=0;
-		for(j=0; j < nyprimary; j++) lastdiff[j]=0.0;
-		y0[jfix]=y[jfix]+tau*source[jfix];
-		temp=(y[jfix]/y0[jfix]+1.0)*source[jfix];
+		for(j=0; j < ny0; j++) rlastdiff[j]=0.0;
+		ry0[jfix]=ry[jfix]+tau*rsource[jfix];
+		temp=(ry[jfix]/ry0[jfix]+1.0)*rsource[jfix];
 		do {
 			cont=0;
 			Source(source,y0,t);
-			mu=temp/source[jfix];
-			for(j=0; j < nyprimary; j++) {
-				yj=y0[j];
+			mu=temp/rsource[jfix];
+			for(j=0; j < ny0; j++) {
+				Real yj=ry0[j];
 				if(j !=jfix) {
-					Real discr=y[j]*y[j]+mu*tau*source[j]*y0[j];
-					if(discr >= 0.0) y0[j]=sgn(y[j])*sqrt(discr);
-					else msg(ERROR,"Negative discriminant encountered");
+					Real discr=ry[j]*ry[j]+mu*tau*rsource[j]*ry0[j];
+					if(discr >= 0.0) ry0[j]=sgn(ry[j])*sqrt(discr);
+					else {
+						set(y0,y,ny);
+						return NONINVERTIBLE;
+					}
 				}
-				Real diff=abs(y0[j]-yj);
+				Real diff=abs(ry0[j]-yj);
 				if(diff != 0.0 && 
-				   (diff < lastdiff[j] || lastdiff[j] == 0.0)) cont=1;
-				lastdiff[j]=diff;
+				   (diff < rlastdiff[j] || rlastdiff[j] == 0.0)) cont=1;
+				rlastdiff[j]=diff;
 			}
-			if(++iter == 100) msg(ERROR,"Iteration did not converge");
+			if(++iter == 1000) msg(ERROR,"Iteration did not converge");
 		} while (cont);
 	}
 	for(j=nyprimary; j < ny; j++) y0[j] += dt*source[j];
 	return SUCCESSFUL;
 }
-#endif	
 
 inline int CorrectC_PC::Correct(const Real y0, const Real y1, Real& y,
 								const Real source0, const Real source,
@@ -706,13 +711,13 @@ void NWave::FinalOutput()
 		
 		if(Npsi <= Nlimit || verbose > 1) {
 			for(i=0; i < Npsi; i++) {
-				Real y2avg=y2[i].re;
+				Real y2avg=real(y2[i]);
 				cout << "|psi|^2 [" << i << "] = " << y2avg << newl;
 			}
 			cout << endl;
 		}
 		
-		for(i=0; i < Npsi; i++) y2[i] = sqrt(y2[i].re);
+		for(i=0; i < Npsi; i++) y2[i] = sqrt(real(y2[i]));
 		compute_invariants(y2,Npsi,E,Z,P);
 		display_invariants(E,Z,P);
 	}

@@ -47,11 +47,11 @@ public:
 extern NWave *GeometryProblem;
 
 class C_Euler : public Euler {
-	Var *y;
-	Real *lastdiff;
+	Var *y,*lastdiff;
 public:
 	void Allocate(int n) {
-		ny=n; source=new Var[n]; y=new Var[n]; lastdiff=new Real[n];
+		IntegratorBase::Allocate(n);
+		ny=n; source=new Var[n]; y=new Var[n]; lastdiff=new Var[n];
 	}
 	char *Name() {return "Conservative Euler";}
 	Solve_RC Solve(double, double);
