@@ -24,7 +24,7 @@ void (*inform)(char *)=NULL;
 #if __unix
 void wakeup(int)
 {
-cout << "...woke up" << endl;
+cout << "waking up!" << endl;
 }
 #endif
 
@@ -84,7 +84,7 @@ void msg(int severity, char *file, int line, char *format,...)
 		}
 		if(severity == SLEEP_ && __unix) {
 #if __unix			
-			cout << "Going to sleep..." << endl;
+			cout << "Going to sleep..." << flush;
 			signal(SIGCONT,wakeup);
 			pause();
 			signal(SIGCONT,SIG_DFL);
