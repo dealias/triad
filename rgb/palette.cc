@@ -3,6 +3,10 @@
 
 int NColors=256;
 
+Array1<u_char> Red;
+Array1<u_char> Blue;
+Array1<u_char> Green;
+
 extern int verbose;
 static int k,incr;
 
@@ -20,7 +24,7 @@ void AddColor(double r, double g, double b) {
 void MakePalette(int palette)
 {
 	int i;
-	int num,nintervals,offset;
+	int num,nintervals=1,offset=0;
 	int divisor=1;
 		
 	switch(palette) {
@@ -63,7 +67,7 @@ void MakePalette(int palette)
 	Red.Allocate(allcolors);
 	Blue.Allocate(allcolors);
 	Green.Allocate(allcolors);
-		
+
 	// Define extra colors;
 	Red[0]=Blue[0]=Green[0]=0; // BLACK
 	Red[1]=Blue[1]=Green[1]=255; // WHITE

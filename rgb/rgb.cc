@@ -81,10 +81,6 @@ int implicit=1;
 int symmetric=0;
 int invert=0;
 
-Array1(u_char) Red;
-Array1(u_char) Blue;
-Array1(u_char) Green;
-
 char *extract=NULL;
 
 enum Parameters {RFACTOR=256,THETA,PHI,YXASPECT,ZXASPECT,POINTSIZE,AVGX,AVGY,\
