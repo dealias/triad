@@ -329,6 +329,10 @@ void E_PC::TimestepDependence(double dt)
 	dtinv=1.0/dt;
 }
 
+#if _CRAY
+extern NWave NWaveProblem;
+#endif	
+
 void E_PC::Predictor(double t, double, int start, int stop)
 {
 	for(int j=start; j < stop; j++)	

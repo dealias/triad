@@ -105,13 +105,14 @@ public:
 	void Source(Var *src, Var *y, double t) {Problem->NonLinearSrc(src,y,t);}
 };
 
+#if _CRAY
+extern NWave NWaveProblem;
+#endif	
+
 class E_PC : public PC {
 protected:
 	Nu *expinv,*onemexpinv;
 	double dtinv;
-#if _CRAY
-	NWave NWaveProblem;
-#endif	
 public:
 	void Allocate(int);
 	char *Name() {return "Exponential Predictor-Corrector";}
