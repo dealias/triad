@@ -2,7 +2,7 @@
 #define __DynVector_h__ 1
 
 #include <stdlib.h>
-#include <iostream>
+#include <iostream.h>
 
 #if __AIX
 #define CONST const
