@@ -803,7 +803,9 @@ int main(int argc, char *const argv[])
 		Array3<float> value(nz,ny,nx);
 		double gmin=DBL_MAX, gmax=-DBL_MAX; // Global min and max
 		
-		if(!floating_scale)	{
+		if(display) floating_scale=1;
+		
+		if(!floating_scale || begin < 0 || end < 0)	{
 			n=0;
 			int rc;
 			int s=1;
@@ -821,14 +823,14 @@ int main(int argc, char *const argv[])
 			} while (n++ < end && rc == 0);
 			nset=nset ? min(nset,set) : set;
 			
-			if(symmetric && gmin < 0 && gmax > 0) {
-				gmax=max(-gmin,gmax);
-				gmin=-gmax;
+			if(!floating_scale) {
+				if(symmetric && gmin < 0 && gmax > 0) {
+					gmax=max(-gmin,gmax);
+					gmin=-gmax;
+				}
+				vminf[f]=gmin;
+				vmaxf[f]=gmax;
 			}
-			vminf[f]=gmin;
-			vmaxf[f]=gmax;
-			
-			if(verbose && f==0) cout << nset << " frames found." << endl;
 		}
 		
 		xin.close();
@@ -836,7 +838,7 @@ int main(int argc, char *const argv[])
 		
 		if(begin < 0) begin += nset;
 		if(end < 0) end += nset;
-		if(display) {end=begin; floating_scale=1;}
+		if(display) {end=begin;}
 		
 		n=0;
 		int rc;
@@ -960,7 +962,7 @@ int main(int argc, char *const argv[])
 		nset=nset ? min(nset,set) : set;
 		if(nset == 1 && !extract && !display) 
 			msg(ERROR, "More than one frame required");
-		if(verbose && f==0 && floating_scale) {
+		if(verbose && f==0) {
 			cout << nset << " frame";
 			if(nset != 1) cout << "s";
 			cout << " found." << endl;
