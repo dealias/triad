@@ -20,10 +20,8 @@
 
 #define __ATT_complex__
 
-#include "xstream.h"
 #include <iostream.h>
 #include <math.h>
-
 #include "precision.h"
 
 class Complex
@@ -302,18 +300,6 @@ inline istream& operator >> (istream& s, Complex& y)
 inline ostream& operator << (ostream& s, const Complex& y)
 {
 	s << "(" << y.re << ", " << y.im << ")";
-	return s;
-}
-
-inline ixstream& operator >> (ixstream& s, Complex& y)
-{
-	s >> y.re >> y.im;
-	return s;
-}
-
-inline oxstream& operator << (oxstream& s, const Complex& y)
-{
-	s << y.re << y.im;
 	return s;
 }
 
