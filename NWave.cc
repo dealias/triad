@@ -317,7 +317,7 @@ void E_PC::Allocate(int n)
 		if(nu[j] != 0.0) nu_inv[j]=1.0/nu[j];
 		else nu_inv[j]=1.0;
 	}
-	Problem->SetLinearity(NWave::ExponentialLinearity);
+	NWave::SetLinearity(NWave::ExponentialLinearity);
 }
 
 void E_PC::TimestepDependence(double dt)

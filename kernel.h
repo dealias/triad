@@ -58,6 +58,7 @@ protected:
 	Var *y;
 	int ny;
 	char *abbrev;
+	Source_t *Linearity;
 public:	
 	void SetAbbrev(char *abbrev0) {abbrev=abbrev0;}
 	char *Abbrev() {return abbrev;}
