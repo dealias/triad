@@ -1,10 +1,7 @@
 #include <ctype.h>
 #include <iostream.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <errno.h>
-#include <sys/times.h>
-#include <time.h>
 #include <string.h>
 
 #include "utils.h"
@@ -166,6 +163,10 @@ int beep_enabled=1; // If nonzero, enable terminal beeping during errors.
 {os.flush(); vprintf(format,vargs); fflush(stdout);}
 #endif			
 
+#if(__unix)
+#include <unistd.h>
+#endif
+
 void msg(int fatal, char *file, int line, char *format,...)
 {
 	int override=0;
@@ -174,7 +175,8 @@ void msg(int fatal, char *file, int line, char *format,...)
 
 	cout << endl;
 	if(beep_enabled) {beep_enabled=0; cout << beep;}
-#if(unix)
+	
+#if(__unix)
 	if(fatal == -1 && isatty(STDIN_FILENO)) {fatal=0; override=1;}
 #endif	
 
@@ -205,36 +207,6 @@ void msg(int fatal, char *file, int line, char *format,...)
 		exit(1);
 	}
 	cout << flush;
-}
-
-#if(__unix)
-#include <pwd.h>
-#endif
-
-static const double init_time=time(NULL);
-
-// Don't notify user about runs shorter than this many seconds.
-static const double longrun=500.0;
-
-void mailuser(char *text)
-{
-	if(time(NULL)-init_time < longrun) return;
-#if(__unix)
-	char *user=getpwuid(getuid())->pw_name;
-	char *buf=new char[50+strlen(run),strlen(text)+strlen(user)];
-	sprintf(buf,"mail -s 'Run %s %s.' %s < /dev/null > /dev/null",
-			run,text,user);
-	system(buf);
-#endif
-}
-
-void cputime(double *cpu)
-{
-	struct tms buf;
-	times(&buf);
-	cpu[0] = ((double) buf.tms_utime)/CLK_TCK;
-	cpu[1] = ((double) buf.tms_cutime)/CLK_TCK;
-	cpu[2] = ((double) (buf.tms_stime+buf.tms_cstime))/CLK_TCK;
 }
 
 char *output_filename(char *basename, char *suffix)
