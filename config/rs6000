@@ -5,6 +5,6 @@ LIB = $(LFLAGS) -lm
 MAKEDEPEND = $(C++) -M -P -DDEPEND
 D = u
 
-#FFT = efft
-FFT = fft
+FFT = efft
+#FFT = fft
 #POLL = idle

@@ -801,3 +801,17 @@ static void mfft_br(Complex *data, unsigned int log2n, int isign,
 		wp++;
 	}
 }
+
+void mrcfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
+			unsigned int inc1, unsigned int inc2, Real scale, int bitreverse)
+{		 
+	if(inc1 == 1) mrcfft0(data,log2n,isign,nk,inc1,inc2,scale,bitreverse);
+	else exit(1); // Not implemented.
+}
+
+void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
+			unsigned int inc1, unsigned int inc2, Real scale, int bitreverse)
+{		 
+	if(inc1 == 1) mcrfft0(data,log2n,isign,nk,inc1,inc2,scale,bitreverse);
+	else exit(1); // Not implemented.
+}
