@@ -231,21 +231,28 @@ void NWave::InitialConditions()
 	
 		if(!ngridx) ngridx=Nx;
 		if(!ngridy) ngridy=Ny;
-		xcoeff=new Complex [ngridx*Npsi];
-		ycoeff=new Complex [ngridy*Npsi];
 		Real L=twopi/k0;
+		xcoeff=new Complex [ngridx*Npsi];
 		for(int m=0; m < Npsi; m++) {
 			Real kx=Geometry->X(m);
-			Real ky=Geometry->Y(m);
 			for(i=0; i < ngridx; i++) {
 				Complex *p=xcoeff+i*Npsi;
 				Real X=i*L/ngridx;
 				p[m]=expi(kx*X);
+
 			}				
-			for(int j=0; j < ngridy; j++) {
-				Complex *q=ycoeff+j*Npsi;
-				Real Y=j*L/ngridy;
-				q[m]=expi(ky*Y);
+		}
+		
+		if(ngridy == ngridx) ycoeff=xcoeff;
+		else {
+			ycoeff=new Complex [ngridy*Npsi];
+			for(int m=0; m < Npsi; m++) {
+				Real ky=Geometry->Y(m);
+				for(int j=0; j < ngridy; j++) {
+					Complex *q=ycoeff+j*Npsi;
+					Real Y=j*L/ngridy;
+					q[m]=expi(ky*Y);
+				}
 			}
 		}
 	}
