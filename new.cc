@@ -17,10 +17,10 @@ void *operator new(size_t size)
 	return mem;
 }
 
-void *operator new(size_t size, int new_len)
+void *operator new(size_t size, int len)
 {
-	void *mem=calloc(size,1);
-	if(size && !mem) (my_new_handler)();
+	void *mem=calloc(len,size);
+	if(len && !mem) (my_new_handler)();
 	return mem;
 }
 
@@ -33,10 +33,8 @@ void operator delete(void *ptr)
 void *operator new(size_t size, void *ptr, int new_len)
 {
 	size_t new_size=new_len*size;
-	
 	void *mem=realloc(ptr, new_size);
 	if(new_size && !mem) (my_new_handler)();
 	return mem;
 }
-
 
