@@ -517,6 +517,7 @@ int main(int argc, char *const argv[])
 	char *const format=grey ? "gray" : "rgb";
 	int PaletteMin=grey ? 0 : ColorPaletteMin[palette];
 	int PaletteRange=grey ? 255 : (ColorPaletteMax[palette]-PaletteMin);
+	int background=PaletteMin+PaletteRange/2; 
 	
 	red=Red[palette];
 	green=Green[palette];
@@ -690,7 +691,7 @@ int main(int argc, char *const argv[])
 							}
 							
 							if(grey) {
-								if(index == -1) index=PaletteMin;
+								if(index == -1) index=background;
 								for(int i2=0; i2 < mx; i2++)
 									fout << (unsigned char) index;
 							} else {
