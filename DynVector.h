@@ -93,7 +93,7 @@ public:
   }
   
   // Pop v[i], close up, and return v[i].
-  int Pop(unsigned int i, T& value) {
+  int Pop(T& value, unsigned int i) {
     if(size) {
       value=v[i];
      for (unsigned int j=i+1; j < size; j++) v[j-1]=v[j];
@@ -102,14 +102,6 @@ public:
     } else return 0;
   }
   
-  int Pop(unsigned int i) {
-    if(size) {
-     for (unsigned int j=i+1; j < size; j++) v[j-1]=v[j];
-      size--;
-      return 1;
-    } else return 0;
-  }
-    
   void Expand(unsigned int i) {if (i > alloc) Realloc(i);}
 
   void Load(T a) const {for(unsigned int i=0; i < size; i++) v[i]=a;}
