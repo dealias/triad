@@ -353,11 +353,13 @@ void dump(int it, int final, double tmax)
 					buf << tmpdir << dirsep << Vocabulary->FileName("","")
 						<< ends;
 					mkdir(buf.str(),0xFFFF);
+					copy(rname,rcheck.str());
+				} else {
 					rename(rname,rcheck.str());
 					msg(WARNING,"Cannot rename %s to checkpoint file %s",rname,
 						rcheck.str());
-				} else copy(rname,rcheck.str());
-			}  
+				}
+			}
 			if(rename(rtemp,rname))
 				msg(WARNING,"Cannot rename restart file %s",rtemp);
 		}
