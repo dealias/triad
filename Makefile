@@ -44,7 +44,7 @@ depend:
 	Navier.cc NWave.cc Geometry.cc Cartesian.cc convolve.cc fft.cc \
 	Polar.cc PolarAverage.cc simpfast.cc \
 	Kepler.cc Lotka.cc utils.cc strcasecmp.cc new.cc \
-	poll.cc idle.cc tremain.cc unix.cc cfft.cc
+	poll.cc idle.cc tremain.cc unix.cc cfft.cc efft.cc
 
 include .makedepend
 

@@ -1,5 +1,6 @@
 C++ = xlC -+ -D_ANSI_C_SOURCE
 OPT = $(CFLAGS)
 MDOPT = -I /usr/lpp/xlC/include -I /
+ARCH = unix.o efft.o
 POLL = idle.o
 
