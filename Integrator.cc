@@ -96,7 +96,7 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 
 void IntegratorBase::Allocate(int n)
 {
-	ny=n; yi=NULL; source=new(0) Var[n];
+	ny=n; yi=NULL; source=new(n) (Var);
 	nyprimary=ny/(Nmoment+1);
 	if(nyprimary*(Nmoment+1) != ny) 
 		msg(ERROR, "ny=%d is incompatible with Nmoment=%d",ny,Nmoment);

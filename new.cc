@@ -17,7 +17,7 @@ void *operator new(size_t size)
 	return mem;
 }
 
-void *operator new(size_t size, int)
+void *operator new(size_t size, int new_len)
 {
 	void *mem=calloc(size,1);
 	if(size && !mem) (my_new_handler)();
@@ -38,3 +38,5 @@ void *operator new(size_t size, void *ptr, int new_len)
 	if(new_size && !mem) (my_new_handler)();
 	return mem;
 }
+
+
