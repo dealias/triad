@@ -78,6 +78,12 @@ inline void sort2(T& p, T& q, int& sign)
   if(p > q) {swap(p,q); sign *= -1;}
 }
 
+template<class T, class S>
+inline void sort2x2(T& p, T& q, S& a, S& b, int& sign)
+{
+  if(p > q || (p == q && a > b)) {swap(p,q); swap(a,b); sign *= -1;}
+}
+
 inline Real min(Real a, Real b)
 {
   return (a < b) ? a : b;
