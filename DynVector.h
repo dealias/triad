@@ -15,7 +15,7 @@ class DynVector
  public:
   enum alloc_state {unallocated=0, allocated=1, temporary=2};
   void Allocate(unsigned int s) {v=new T[alloc=s]; size=0; set(allocated);}
-  void Deallocate() {
+  void Deallocate() const {
     if(test(allocated)) delete [] v;
     size=0; alloc=0; clear(allocated);
   }
@@ -33,9 +33,6 @@ class DynVector
   void Freeze() {state=unallocated;}
   void Hold() {if(test(allocated)) {state=temporary;}}
   void Purge() const {if(test(temporary)) {Deallocate(); state=unallocated;}}
-#ifdef mutable
-  void Purge() const {((DynVector<T> *) this)->Purge();}
-#endif
 	
   unsigned int Alloc() const {return alloc;}
   unsigned int Size() const {return size;}
