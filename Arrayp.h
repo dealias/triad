@@ -29,7 +29,7 @@ namespace Array {
 class ArrayMod {
  public:	
   inline void Mod(int& i, unsigned int n) const {
-    if(i >= 0 && i < n) return;
+    if(i >= 0 && i < (int) n) return;
     i %= n;
     if(i < 0) i += n;
   }
