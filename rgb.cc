@@ -103,22 +103,7 @@ void openfield(T& fin, char *fieldname, int& nx, int& ny, int& nz)
 	}
 }
 
-inline float get_value(ifstream& fin)
-{
-	unsigned char c;
-	fin.get(c);
-	return (float) c;
-}
-
-inline float get_value(ixstream& fin)
-{
-	float v;
-	fin >> v;
-	return v;
-}
-
-template<class T>
-int readframe(T& fin, int nx, int ny, int nz, float **value,
+int readframe(ixstream& xin, int nx, int ny, int nz, float **value,
 			  double& gmin, double& gmax, double *vmink, double *vmaxk)
 {
 	gmin=DBL_MAX; gmax=-DBL_MAX;
@@ -141,8 +126,15 @@ int readframe(T& fin, int nx, int ny, int nz, float **value,
 		for(int j=start; j != stop; j += incr) {
 			int nxj=nx*j;
 			for(int i=0; i < nx; i++) {
-				float v=get_value(fin);
-				if(fin.eof()) {
+				float v;
+				if(byte) {
+					xbyte x;
+					xin >> x;
+					v=x;
+				}
+				else xin >> v;
+				
+				if(xin.eof()) {
 					if(implicit || i > 0)
 						msg(WARNING,"End of file during processing");
 					return EOF;
@@ -168,13 +160,9 @@ int readframe(T& fin, int nx, int ny, int nz, float **value,
 	}
 	
 	if(implicit) {
-		if(byte) {
-			char c;
-			fin >> c;
-		}
 		int nx0,ny0,nz0;
-		fin >> nx0 >> ny0 >> nz0;
-		if(fin.eof()) return 1;
+		xin >> nx0 >> ny0 >> nz0;
+		if(xin.eof()) return 1;
 		if(nx0 != nx || ny0 != ny || nz0 != nz) {
 			cleanup();
 			msg(ERROR,"Inconsistent image size");
@@ -405,11 +393,9 @@ int main(int argc, char *const argv[])
 	
 	for(int f=0; f < nfiles; f++) {
 		char *fieldname=argf[f];
-		ifstream fin;
 		ixstream xin;
 		
-		if(byte) openfield(fin,fieldname,nx,ny,nz);
-		else openfield(xin,fieldname,nx,ny,nz);
+		openfield(xin,fieldname,nx,ny,nz);
 	
 		double *vmink=new double [nz], *vmaxk=new double [nz];
 		
@@ -463,8 +449,7 @@ int main(int argc, char *const argv[])
 			int set=0;
 			do {
 				double vmin,vmax;
-				rc=byte ? readframe(fin,nx,ny,nz,value,vmin,vmax,vmink,vmaxk) :
-					readframe(xin,nx,ny,nz,value,vmin,vmax,vmink,vmaxk);
+				rc=readframe(xin,nx,ny,nz,value,vmin,vmax,vmink,vmaxk);
 				if(rc == EOF) break;
 				if(n < begin) continue;
 				if(--s) continue;
@@ -485,8 +470,7 @@ int main(int argc, char *const argv[])
 			if(verbose && f==0) cout << nset << " frames found." << endl;
 		}
 		
-		if(byte) {fin.close(); openfield(fin,fieldname,nx,ny,nz);}
-		else {xin.close(); openfield(xin,fieldname,nx,ny,nz);}
+		xin.close(); openfield(xin,fieldname,nx,ny,nz);
 		
 		n=0;
 		int rc;
@@ -494,8 +478,7 @@ int main(int argc, char *const argv[])
 		int set=0;
 		do {
 			double vmin,vmax;
-			rc=byte ? readframe(fin,nx,ny,nz,value,vmin,vmax,vmink,vmaxk) :
-				readframe(xin,nx,ny,nz,value,vmin,vmax,vmink,vmaxk);
+			rc=readframe(xin,nx,ny,nz,value,vmin,vmax,vmink,vmaxk);
 			if(rc == EOF) break;
 			if(n < begin) continue;
 			if(--s) continue;
@@ -638,7 +621,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 	if(verbose) cout << cmd << endl;
 	system(cmd);
 	
-	if(n > 0) {
+	if(n > 0 && !preserve) {
 		strstream buf;
 		buf << "rm ";
 		for(int f=0; f < nfiles; f++) {

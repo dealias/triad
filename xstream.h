@@ -1,5 +1,5 @@
 /* C++ interface to the XDR External Data Representation I/O routines
-   Version 1.2
+   Version 1.3J
    Copyright (C) 1997 John C. Bowman <bowman@math.ualberta.ca>
 
 This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,15 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #endif
 
 #include <stdio.h>
+
+class xbyte {
+	unsigned char c;
+public:
+	xbyte() {};
+	xbyte(unsigned char c0) : c(c0) {};
+	int byte() const {return c;}
+	operator unsigned char () const {return c;}
+};
 
 class xios {
 public:
@@ -110,6 +119,12 @@ public:
 #endif		
 	IXSTREAM(float,float);
 	IXSTREAM(double,double);
+	
+	ixstream& operator >> (xbyte& x) {
+		x=fgetc(buf);
+		if(x.byte() == EOF) set(eofbit);
+		return *this;
+	}
 };
 
 class oxstream : public xstream {
@@ -140,6 +155,11 @@ public:
 #endif		
 	OXSTREAM(float,float);
 	OXSTREAM(double,double);
+	
+	oxstream& operator << (xbyte x) {
+		if(fputc(x.byte(),buf) == EOF) set(badbit);
+		return *this;
+	}
 };
 
 inline oxstream& endl(oxstream& s) {s.flush(); return s;}
