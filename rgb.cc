@@ -317,17 +317,17 @@ int main(int argc, char *const argv[])
 		vmaxf=new double[nfiles];
 	}
 	
-	strstream dirbuf;
 	rgbdir=getenv("RGB_DIR");
-	if(rgbdir) dirbuf << rgbdir;
-	else dirbuf << "/tmp/" << getenv("USER");
+	if(rgbdir) rgbdirbuf << rgbdir;
+	else rgbdirbuf << "/tmp/" << getenv("USER");
 	unsigned int process=getpid();
-	dirbuf << "/rgb." << process << ends;
-	rgbdirbuf << "mkdirhier " << dirbuf.str() << ends;
-	char *cmd=rgbdirbuf.str();
+	rgbdirbuf << "/rgb." << process << ends;
+	strstream buf;
+	buf << "mkdirhier " << rgbdirbuf.str() << ends;
+	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;
 	system(cmd);
-	rgbdirbuf << dirbuf.str() << "/" << ends;
+	rgbdirbuf << "/" << ends;
 	rgbdir=rgbdirbuf.str();
 	
 	char *const format=gray ? "gray" : "rgb";
