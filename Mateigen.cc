@@ -1,4 +1,5 @@
-#include "options.h"
+#include "precision.h"
+#include "Complex.h"
 #include "Matrix.h"
 
 extern "C" void zgees_(const char& jobvs, const char& sort, void *select,
@@ -6,6 +7,8 @@ extern "C" void zgees_(const char& jobvs, const char& sort, void *select,
 		       Complex *vs, const int& ldvs, Complex *work, const int& lwork, 
 		       Real *rwork, char *bwork, int *info);
 
+namespace Array {
+  
 // Compute the eigenvalues of a square complex matrix
 const Array1<Complex> eigen(const Array2<Complex>& A)
 {
@@ -44,6 +47,10 @@ const Array1<Complex> eigen(const Array2<Complex>& A)
   return E;
 }	
 
+}
+
+using namespace Array;
+
 #if 0
 int main()
 {
@@ -51,8 +58,8 @@ int main()
   Array2<Complex> A(n,n);
   cin >> A;
   cout << endl;
-  cout << eigen(A) << endl;
-  cout << endl;
   cout << A << endl;
+  cout << endl;
+  cout << eigen(A) << endl;
 }
 #endif
