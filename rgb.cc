@@ -560,8 +560,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 					<< separator << setprecision(2) << vmaxf[f] << "\\n";
 			buf << fieldname << "\" ";
 		}
-		buf << option.str();
-		buf << format << ":" << rgbdir << fieldname
+		buf << option.str() << " " << format << ":" << rgbdir << fieldname
 			<< setfill('0') << setw(4) << n << "." << format << " ";
 	}
 	buf << yuvinterlace << type << ":" << rgbdir << argf[0] << n;
