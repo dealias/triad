@@ -46,14 +46,36 @@ public:
 	void Store(T *a) {set(a,v,Size());}
 	void Set(T *a) {v=a;}
 	
-	Array1<T>& operator = (const T a) {Load(a); return *this;}
+	Array1<T>& operator = (T a) {Load(a); return *this;}
 	Array1<T>& operator = (T *a) {Load(a); return *this;}
 	Array1<T>& operator = (const Array1<T>& A) {Load(A.Base()); return *this;}
 	
+	Array1<T>& operator += (Array1<T>& A) {
+		int size=Size(); for(int i=0; i < size; i++) v[i] += A(i);
+		return *this;
+	}
 	Array1<T>& operator -= (Array1<T>& A) {
 		int size=Size(); for(int i=0; i < size; i++) v[i] -= A(i);
 		return *this;
 	}
+	
+	Array1<T>& operator += (T a) {
+		int size=Size(); for(int i=0; i < size; i++) v[i] += a;
+		return *this;
+	}
+	Array1<T>& operator -= (T a) {
+		int size=Size(); for(int i=0; i < size; i++) v[i] -= a;
+		return *this;
+	}
+	Array1<T>& operator *= (T a) {
+		int size=Size(); for(int i=0; i < size; i++) v[i] *= a;
+		return *this;
+	}
+	Array1<T>& operator /= (T a) {
+		int size=Size(); for(int i=0; i < size; i++) v[i] /= a;
+		return *this;
+	}
+	
 };
 
 template<class T>
@@ -62,6 +84,16 @@ ostream& operator << (ostream& s, Array1<T>& A)
 	T *p=A.Base();
 	for(int i=0; i < A.Nx(); i++) {
 		s << *(p++) << " ";
+	}
+	return s;
+}
+
+template<class T>
+istream& operator >> (istream& s, Array1<T>& A)
+{
+	T *p=A.Base();
+	for(int i=0; i < A.Nx(); i++) {
+		s >> *(p++);
 	}
 	return s;
 }
@@ -89,6 +121,15 @@ public:
 	Array2<T>& operator = (T a) {Load(a); return *this;}
 	Array2<T>& operator = (T *a) {Load(a); return *this;}
 	Array2<T>& operator = (const Array2<T>& A) {Load(A.Base()); return *this;}
+	
+	Array2<T>& operator += (T a) {
+		int ny1=ny+1, size=Size(); for(int i=0; i < size; i += ny1) v[i] += a;
+		return *this;
+	}
+	Array2<T>& operator -= (T a) {
+		int ny1=ny+1, size=Size(); for(int i=0; i < size; i += ny1) v[i] -= a;
+		return *this;
+	}
 };
 
 template<class T>
@@ -102,6 +143,18 @@ ostream& operator << (ostream& s, Array2<T>& A)
 		s << newl;
 	}
 	s << flush;
+	return s;
+}
+
+template<class T>
+istream& operator >> (istream& s, Array2<T>& A)
+{
+	T *p=A.Base();
+	for(int i=0; i < A.Nx(); i++) {
+		for(int j=0; j < A.Ny(); j++) {
+			s >> *(p++);
+		}
+	}
 	return s;
 }
 
@@ -128,7 +181,7 @@ public:
 	int Nz() const {return nz;}
 	Array2<T> operator [] (int ix) const {return Array2<T>(nz,v+ix*nyz);}
 	T& operator () (int i) {return v[i];}
-#if 1	
+#if 0	
 	T& operator () (int ix, int iy, int iz) const {return v[(ix*ny+iy)*nz+iz];}
 #else	
 	T& operator () (int ix, int iy, int iz) const {return v[ix*nyz+iy*nz+iz];}
@@ -145,13 +198,27 @@ ostream& operator << (ostream& s, Array3<T>& A)
 	for(int i=0; i < A.Nx(); i++) {
 		for(int j=0; j < A.Ny(); j++) {
 			for(int k=0; k < A.Nz(); k++) {
-				cout << *(p++) << " ";
+				s << *(p++) << " ";
 			}
 			s << newl;
 		}
 		s << newl;
 	}
 	s << flush;
+	return s;
+}
+
+template<class T>
+istream& operator >> (istream& s, Array3<T>& A)
+{
+	T *p=A.Base();
+	for(int i=0; i < A.Nx(); i++) {
+		for(int j=0; j < A.Ny(); j++) {
+			for(int k=0; k < A.Nz(); k++) {
+				s >> *(p++);
+			}
+		}
+	}
 	return s;
 }
 

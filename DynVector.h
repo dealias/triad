@@ -26,6 +26,8 @@ public:
 	T *operator + (int i) {return v+i;}
 	
 	void Resize(int i) {v=new(v,sz=i) (T);}
+	
+	void Expand(int i) {if (i > sz) Resize(i);}
 
 	DynVector<T> operator = (const T *A) {
 		memcpy(v,A,sz*sizeof(T));
