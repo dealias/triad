@@ -1,7 +1,6 @@
 #include <cstdlib>
 #include <iostream>
 #include <new>
-//#include <fftw3.h>
 
 // #include <mem_test_user>
 
