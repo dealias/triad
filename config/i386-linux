@@ -1,4 +1,5 @@
 C++ = g++ -Wall -ansi
+CC = gcc -Wall -ansi
 LIB = $(LFLAGS) -lm
 MAKEDEPEND = $(C++) -M -DDEPEND
 
