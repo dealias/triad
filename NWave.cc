@@ -58,8 +58,8 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 		for(Var *k=psibuffer; k < kstop; k++) conjugate(*(k+Npsi),*k);
 	}
 	
-	Pair *pstop=pairBase+Npair;
 	Var *pq=pqbuffer;
+	Pair *pstop=pairBase+Npair;
 #pragma ivdep		
 	for(Pair *p=pairBase; p < pstop; p++) *(pq++)=(*p->p)*(*p->q);
 	
@@ -73,9 +73,9 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 	
 	// Compute moments
 	if(average && Nmoment > 0) {
-		Var *k,*kstop,*q;
-		q=source+Npsi;
-		kstop=psi+Npsi;
+		Var *k;
+		Var *q=source+Npsi;
+		Var *kstop=psi+Npsi;
 #if 1
 #pragma ivdep
 		for(k=psi; k < kstop; k++,q++) *q=product(*k,*k);   // psi^2
