@@ -102,9 +102,6 @@ void MakePalette(int palette)
   int n=(num/(nintervals*divisor))*divisor;
   NColors=n*nintervals+offset;
 		
-  if(verbose) cout << "Constructing color palette with " << NColors 
-		   << " colors." << endl;
-	
   int allcolors=NColors+FirstColor;
 
   Red.Allocate(allcolors);
@@ -217,6 +214,9 @@ void MakePalette(int palette)
     for(i=0; i < n; i++) AddColor(0.0,(n-i)*ninv,1.0);
     for(i=0; i <= n; i++) AddColor(i*ninv,0.0,1.0);
   }
+  
+  if(verbose) cout << "Constructed color palette with " << NColors 
+		   << " colors." << endl;
 }
 
 

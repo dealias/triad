@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.13";
+const char VERSION[]="1.14";
 
 #include "xstream.h"
 #include <iostream>
@@ -767,7 +767,6 @@ int main(int argc, char *argv[])
     ixstream xin,xin2,xin3;
     openfield(xin,fieldname,nx,ny,nz);
     files[mfiles]=argf[f];
-    mfiles++;
     
     int nx2,ny2,nz2;
     if(vector) {
@@ -1109,11 +1108,10 @@ int main(int argc, char *argv[])
       double step=((double) PaletteRange)/Nxmx;
       
       if(!vector3) {
-	if(vector) {
+	if(vector && mpalsize) {
 	  int uzero=(unsigned char) 0;
-	  int Nymy=(jstop-jstart)*my;
-	  double step2=((double) PaletteRange)/Nymy;
-	  for(int j=Nymy-1; j >= 0; j--)  {
+	  double step2=((double) PaletteRange)/mpalsize;
+	  for(int j=mpalsize-1; j >= 0; j--)  {
 	    unsigned char indexb=((int) (j*step2+0.5))*sign+offset;
 	    for(int i=0; i < Nxmx; i++)  {
 	      unsigned char index=((int) (i*step+0.5))*sign+offset;
@@ -1151,6 +1149,7 @@ int main(int argc, char *argv[])
     }
     if(vector) f++;
     if(vector3) f++;
+    mfiles++;
   }
 	
   convertprog=(mfiles > 1 || label) ? "montage" : "convert";
@@ -1172,7 +1171,7 @@ int main(int argc, char *argv[])
 	  montage(mfiles,files,n,format,extract);
       }
     } else {
-      if(nfiles > 1 || label || make_mpeg) { 
+      if(mfiles > 1 || label || make_mpeg) { 
 	if(make_mpeg) montage(mfiles,files,0,format,"miff");
 	for(n=0; n < nset; n++) 
 	  montage(mfiles,files,n,format,make_mpeg ? "yuv" : "miff");
