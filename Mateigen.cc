@@ -51,7 +51,7 @@ const Array1<Complex> eigen(const Array2<Complex>& A)
 
 using namespace Array;
 
-#if 0
+#if 1
 int main()
 {
   int n=3;
