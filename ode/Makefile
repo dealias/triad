@@ -1,4 +1,4 @@
-TRI = /u/bowman/tri
+TRI = $(HOME)/tri
 ARCH = unix
 POLL = poll
 
