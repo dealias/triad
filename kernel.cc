@@ -27,7 +27,6 @@ using namespace Array;
 const char PROGRAM[]="TRIAD";
 const char VERSION[]="1.41";
 const int restart_version=2;
-extern const double problem_version;
 Real restart_problem_version=0;
 
 // Global variables
