@@ -84,7 +84,7 @@ int main(int argc, char *const argv[])
 	int nfiles=argc-optind;
 	if(syntax || nfiles < 1) {
 		cerr << "Usage: " << argv[0]
-			 << "[-hlmv -x <mag> -H <hmag> -V <vmag>] file1 file2 ..." << endl
+			 << " [-hlmv -x <mag> -H <hmag> -V <vmag>] file1 file2 ..." << endl
 			 << endl << "Use '" << argv[0]
 			 << " -h' for a descriptions of options." << endl;
 		exit(1);
