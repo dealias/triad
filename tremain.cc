@@ -4,7 +4,6 @@
 #endif
 
 extern "C" TREMAIN(const double& seconds);
-extern "C" SECOND(const double& seconds);
 
 extern double polltime;
 

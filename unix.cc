@@ -28,7 +28,7 @@ void cputime(double *cpu)
 #if _CRAY
 	if(parallel == -1) 	parallel=strcmp(getenv("NCPUS"),"1");
 	if(parallel) {
-		time_t task=0.0,child=0.0;
+		time_t task=0,child=0;
 		
 		mtimes(&mbuf);
 		double update=0;
