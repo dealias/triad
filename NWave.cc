@@ -317,7 +317,7 @@ void E_PC::Allocate(int n)
 		if(nu[j] != 0.0) nu_inv[j]=1.0/nu[j];
 		else nu_inv[j]=1.0;
 	}
-	Problem->SetLinearity(ExponentialLinearity);
+	Problem->SetLinearity(NWave::ExponentialLinearity);
 }
 
 void E_PC::TimestepDependence(double dt)
@@ -393,7 +393,7 @@ void CE_PC::Allocate(int n)
 		if(real(nu[j]) != 0.0) nuR_inv[j]=1.0/real(nu[j]);
 		else nuR_inv[j]=1.0;
 	}
-	Problem->SetLinearity(ConservativeExponentialLinearity);
+	Problem->SetLinearity(NWave::ConservativeExponentialLinearity);
 }
 
 void CE_PC::TimestepDependence(double dt)

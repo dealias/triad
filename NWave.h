@@ -44,7 +44,7 @@ public:
 	static Source_t ExponentialLinearity;
 	static void ConservativeExponentialLinearity(Real *, Real *, double );
 	static void ConservativeExponentialLinearity(Complex *, Complex *, double);
-	static void SetLinearity(Source_t *Linearity0) {Linearity=Linearity0;}
+	static void SetLinearity(Source_t *Linearity0) {Problem->Linearity=Linearity0;}
 	NWave() {Linearity=StandardLinearity;}
 };
 
