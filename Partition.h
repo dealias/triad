@@ -430,7 +430,7 @@ INLINE void Partition<T,D>::Initialize() {
 		save_weights();
 	}
 	
-	if(discrete) {
+	if(discrete && movie && truefield) {
 		int i;
 		Nevolved=(Ny-1)/2*Nx+(Nx-1)/2;
 		int Ndiscrete=Nx*Ny-1;

@@ -40,6 +40,7 @@ int randomIC=1;
 int ngridx=0;
 int ngridy=0;
 int movie=0;
+int truefield=0;
 
 NWaveVocabulary::NWaveVocabulary()
 {
@@ -84,6 +85,7 @@ NWaveVocabulary::NWaveVocabulary()
 	VOCAB(ngridx,0,INT_MAX);
 	VOCAB(ngridy,0,INT_MAX);
 	VOCAB(movie,0,1);
+	VOCAB(truefield,0,1);
 	
 	GeometryTable=new Table<GeometryBase>("Geometry");
 
@@ -226,10 +228,11 @@ void NWave::InitialConditions()
 	fparam.close();
 	
 	if(movie && strcmp(method,"SR") == 0) {
-		if(discrete) {
+		if(truefield) {
 			set_fft_parameters();
 			psix=new Var[nfft];
 		} else {
+			int m;
 			Real k0=FLT_MAX;
 			for(i=0; i < Npsi; i++) k0=min(k0,Geometry->K(i));
 	
@@ -238,7 +241,7 @@ void NWave::InitialConditions()
 			Real L=twopi/k0;
 			
 			xcoeff=new Complex [ngridx*Npsi];
-			for(int m=0; m < Npsi; m++) {
+			for(m=0; m < Npsi; m++) {
 				Real area_factor=sqrt(sqrt(Geometry->Area(m)));
 				Real kx=Geometry->X(m);
 				for(i=0; i < ngridx; i++) {
@@ -249,7 +252,7 @@ void NWave::InitialConditions()
 			}
 			
 			ycoeff=new Complex [ngridy*Npsi];
-			for(int m=0; m < Npsi; m++) {
+			for(m=0; m < Npsi; m++) {
 				Real area_factor=sqrt(sqrt(Geometry->Area(m)));
 				Real ky=Geometry->Y(m);
 				for(int j=0; j < ngridy; j++) {
@@ -332,7 +335,7 @@ void NWave::Output(int)
 	
 	if(movie) {
 		lock();
-		if(strcmp(method,"SR") == 0 && !discrete) {
+		if(strcmp(method,"SR") == 0 && !truefield) {
 			fpsi << ngridx << ngridy << 1;
 			for(int j=ngridy-1; j >= 0; j--) {
 				Complex *q=ycoeff+j*Npsi;
