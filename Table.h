@@ -55,7 +55,7 @@ public:
 									  KeyCompare,&match_type);
 		check_match(match_type,name,key);
 		p=e->New();
-		if(p->Name()) 
+		if(*p->Name()) 
 			cout << newl << upcase(name) << ": " << p->Name() << endl;
 		return p;
 	}
