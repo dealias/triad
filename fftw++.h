@@ -18,6 +18,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __fftwpp_h__
 #define __fftwpp_h__ 1
 
+#define __FFTWPP_H_VERSION__ 1.00
+
 #include <fstream>
 #include <iostream>
 #include <fftw3.h>
@@ -84,7 +86,8 @@ protected:
   }
   
   // Shift the Fourier origin to (nx/2,0)
-  void Shift(Complex *data, unsigned int nx, unsigned int nyp) {
+  void Shift(Complex *data, unsigned int nx, unsigned int ny) {
+    const unsigned int nyp=ny/2+1;
     Complex *pstop=data+nx*nyp;
     int pinc=2*nyp;
     for(Complex *p=data+nyp; p < pstop; p += pinc) {
@@ -520,7 +523,7 @@ public:
   }
     
   void Execute(Complex *in, Complex *out) {
-    if(shift) Shift(in,nx,ny/2+1);
+    if(shift) Shift(in,nx,ny);
     fftw_execute_dft_r2c(plan,(double *) in,(fftw_complex *) out);
   }
 };
@@ -572,7 +575,7 @@ public:
     
   void Execute(Complex *in, Complex *out) {
     fftw_execute_dft_c2r(plan,(fftw_complex *) in,(double *) out);
-    if(shift) Shift(out,nx,ny/2+1);
+    if(shift) Shift(out,nx,ny);
   }
 };
 
@@ -664,7 +667,7 @@ public:
   }
     
   void Execute(Complex *in, Complex *out) {
-    if(shift) Shift(in,nx,ny,nz/2+1);
+    if(shift) Shift(in,nx,ny,nz);
     fftw_execute_dft_r2c(plan,(double *) in,(fftw_complex *) out);
   }
 };
@@ -717,7 +720,7 @@ public:
     
   void Execute(Complex *in, Complex *out) {
     fftw_execute_dft_c2r(plan,(fftw_complex *) in,(double *) out);
-    if(shift) Shift(out,nx,ny,nz/2+1);
+    if(shift) Shift(out,nx,ny,nz);
   }
 };
   
