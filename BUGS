@@ -1,3 +1,6 @@
 1. sample && polltime (must save tstart and nout)
 
 2. add it to stat
+
+3. check dtmin\neq 0 & dynamic=1
+
