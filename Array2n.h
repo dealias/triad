@@ -27,6 +27,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #include "Array.h"
 #include "Arrayp.h"
 
+namespace Array {
+  
 #ifdef NDEBUG
 #define __check(i,n,dim,m)
 #else
@@ -62,6 +64,8 @@ class Array2n : public array1<T>, public ArrayMod {
 	
   Array2n<T>& operator = (T a) {Load(a); return *this;}
 };
+  
+}
 
 #undef __check
 

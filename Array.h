@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.15
+#define __ARRAY_H_VERSION__ 1.16J
 
 // Defining NDEBUG improves optimization but disables argument checking.
 
@@ -35,7 +35,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #include <iostream.h>
 #include <strstream.h>
 #include <unistd.h>
+#include <limits.h>
 
+namespace Array {
+  
 inline ostream& _newl(ostream& s) {s << '\n'; return s;}
 
 #ifndef __ExternalArrayExit
@@ -82,7 +85,7 @@ class array1 {
     __checkActivate(1);
   }
   void Deallocate() const {delete [] v; clear(allocated);}
-  virtual void Dimension(unsigned int nx0) {size=nx0;}
+  void Dimension(unsigned int nx0) {size=nx0;}
   void Dimension(unsigned int nx0, T *v0) {
     Dimension(nx0); v=v0; clear(allocated);
   }
@@ -92,6 +95,9 @@ class array1 {
   array1(unsigned int nx0, T *v0) : state(unallocated) {Dimension(nx0,v0);}
   array1(const array1<T>& A) : v(A.v), size(A.size),
     state(A.test(temporary)) {}
+  array1(T *v0) {
+    Dimension(INT_MAX,v0);
+  }
   virtual ~array1() {if(test(allocated)) Deallocate();}
 	
   void Freeze() {state=unallocated;}
@@ -114,6 +120,13 @@ class array1 {
 	
   unsigned int Nx() const {return size;}
   unsigned int N1() const {return size;}
+  
+#ifdef NDEBUG
+  typedef T *opt;
+#else
+  typedef array1<T> opt;
+#endif
+  
   T& operator [] (int ix) const {__check(ix,size,1,1); return v[ix];}
   T& operator () (int ix) const {__check(ix,size,1,1); return v[ix];}
   T* operator () () const {return v;}
@@ -192,29 +205,29 @@ class array1 {
     return *this;
   }
 	
-  double L1() {
+  double L1() const {
     __checkSize();
     double norm=0.0;
     for(unsigned int i=0; i < size; i++) norm += abs(v[i]);
     return norm/size;
   }
 #ifdef __ArrayExtensions
-  double Abs2() {
+  double Abs2() const {
     __checkSize();
     double norm=0.0;
     for(unsigned int i=0; i < size; i++) norm += abs2(v[i]);
     return norm;
   }
-  double L2() {
+  double L2() const {
     return sqrt(Abs2()/size);
   }
-  double LInfinity() {
+  double LInfinity() const {
     __checkSize();
     double norm=0.0;
     for(unsigned int i=0; i < size; i++) norm=max(norm,abs(v[i]));
     return norm;
   }
-  double LMinusInfinity() {
+  double LMinusInfinity() const {
     __checkSize();
     double norm=DBL_MAX;
     for(unsigned int i=0; i < size; i++) norm=min(norm,abs(v[i]));
@@ -254,6 +267,7 @@ class array2 : public array1<T> {
     v=v0;
     clear(allocated);
   }
+  
   void Allocate(unsigned int nx0, unsigned int ny0) {
     Dimension(nx0,ny0);
     __checkActivate(2);
@@ -266,10 +280,17 @@ class array2 : public array1<T> {
   unsigned int Nx() const {return nx;}
   unsigned int Ny() const {return ny;}
   unsigned int N2() const {return ny;}
+
+#ifdef NDEBUG
+  T *operator [] (int ix) const {
+    return v+ix*ny;
+  }
+#else
   array1<T> operator [] (int ix) const {
     __check(ix,nx,2,1);
     return array1<T>(ny,v+ix*ny);
   }
+#endif
   T& operator () (int ix, int iy) const {
     __check(ix,nx,2,1);
     __check(iy,ny,2,2);
@@ -348,10 +369,12 @@ istream& operator >> (istream& s, const array2<T>& A)
 }
 
 template<class T>
-class array3 : public array2<T> {
+class array3 : public array1<T> {
  protected:
-  unsigned int nyz;
+  unsigned int nx;
+  unsigned int ny;
   unsigned int nz;
+  unsigned int nyz;
  public:
   void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0) {
     Dimension(nx0,ny0,nz0);
@@ -367,7 +390,7 @@ class array3 : public array2<T> {
     clear(allocated);
   }
 	
-  array3() : nz(0) {}
+  array3() : nx(0), ny(0), nz(0), nyz(0) {}
   array3(unsigned int nx0, unsigned int ny0, unsigned int nz0) {
     Allocate(nx0,ny0,nz0);
   }
@@ -450,11 +473,15 @@ istream& operator >> (istream& s, const array3<T>& A)
 }
 
 template<class T>
-class array4 : public array3<T> {
+class array4 : public array1<T> {
  protected:
-  unsigned int nyzw;
-  unsigned int nzw;
+  unsigned int nx;
+  unsigned int ny;
+  unsigned int nz;
   unsigned int nw;
+  unsigned int nyz;
+  unsigned int nzw;
+  unsigned int nyzw;
  public:
   void Allocate(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		unsigned int nw0) {
@@ -473,7 +500,7 @@ class array4 : public array3<T> {
     clear(allocated);
   }
 	
-  array4() : nw(0) {}
+  array4() : nx(0), ny(0), nz(0), nw(0), nyz(0), nzw(0), nyzw(0) {}
   array4(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 	 unsigned int nw0) {Allocate(nx0,ny0,nz0,nw0);}
   array4(unsigned int nx0, unsigned int ny0, unsigned int nz0,
@@ -599,7 +626,16 @@ class Array1 : public array1<T> {
   Array1(unsigned int nx0, T *v0, int ox0=0) {
     Dimension(nx0,v0,ox0);
   }
+  Array1(T *v0) {
+    Dimension(INT_MAX,v0);
+  }
 
+#ifdef NDEBUG
+  typedef T *opt;
+#else
+  typedef Array1<T> opt;
+#endif  
+  
   T& operator [] (int ix) const {__check(ix,size,ox,1,1); return voff[ix];}
   T& operator () (int i) const {__check(i,size,0,1,1); return v[i];}
   T* operator () () const {return voff;}
@@ -658,10 +694,17 @@ class Array2 : public array2<T> {
     Dimension(nx0,ny0,v0,ox0,oy0);
   }
 
+#ifdef NDEBUG
+  T *operator [] (int ix) const {
+    return vtemp+ix*ny-oy;
+  }
+#else
   Array1<T> operator [] (int ix) const {
     __check(ix,nx,ox,2,1);
     return Array1<T>(ny,vtemp+ix*ny,oy);
   }
+#endif
+  
   T& operator () (int ix, int iy) const {
     __check(ix,nx,ox,2,1);
     __check(iy,ny,oy,2,2);
@@ -858,7 +901,10 @@ class Array4 : public array4<T> {
   }
 };
 
+}
+
 #ifdef NDEBUG
+// Obsolete: Array1(T) has been superceded by Array1<T>::opt
 #define array1(T) T*
 #define Array1(T) T*
 #else

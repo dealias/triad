@@ -3,6 +3,7 @@
 
 #include <new.h>
 #include "Array.h"
+using namespace Array;
 
 class BC {
  protected:

@@ -24,6 +24,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #include "Array.h"
 #include <assert.h>
 
+namespace Array {
+  
 template<class T>
 inline void MatrixSwap(T& p, T& q)
 {
@@ -979,6 +981,8 @@ const Array2<T> exp(const Array2<T>& A)
   Exp(B,A);
   B.Hold();
   return B;
+}
+
 }
 
 #endif
