@@ -88,7 +88,7 @@ extern int *RowBoundary;
 extern Var *ZeroBuffer; 
 
 #if _CRAY
-int CartesianPad(Var *to, Var *from);
+void CartesianPad(Var *to, Var *from);
 void CartesianUnPad(Var *to, Var *from);
 #else
 inline void CartesianPad(Var *to, const Var *from)
