@@ -44,9 +44,9 @@ public:
 			int n2=1;
 			for(log2n=1; Nmode+1 > 4*n2/9; log2n++, n2 *= 2);
 			cout << n2 << " FFT COMPONENTS ALLOCATED." << endl;
-			convolution0=new Var[n2];
+			convolution0=new Var[n2+1];
 			convolution=convolution0+1;
-			psibuffer0=new Var[n2];
+			psibuffer0=new Var[n2+1];
 			psibuffer=psibuffer0+1;
 			psitemp=new Var[Nmode];
 		} else {

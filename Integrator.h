@@ -30,7 +30,14 @@ inline Solve_RC IntegratorBase::CheckError(double errmax)
 
 template<class T> 
 inline void set(T *to, T *from, int n) {
+#if _CRAY	
+	T *kstop=to+n;
+#pragma ivdep
+	for(T *k=to; k < kstop; k++)
+	*k=*(from++);
+#else
 	memcpy(to,from,sizeof(*from)*n);
+#endif	
 }
 
 class Euler : public IntegratorBase {

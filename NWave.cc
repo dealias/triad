@@ -181,20 +181,22 @@ void PrimitiveNonlinearityFFT(Var *source, Var *psi, double)
 	*psibuffer0=0.0;
 	int Npsibuffer=CartesianPad(psibuffer,psi);
 	
-	set(psitemp,psi,Npsi);
 #pragma ivdep		
 	for(i=0; i < Npsi; i++)
-		psitemp[i] *= I*CartesianMode[i].K2()*CartesianMode[i].Ky();
+		psitemp[i]=psi[i]*CartesianMode[i].K2();
+	for(i=0; i < Npsi; i++)
+		psitemp[i] *= I*CartesianMode[i].Ky();
 	*convolution0=0.0;
 	CartesianPad(convolution,psitemp);
 	
 	convolve(convolution0,convolution0,psibuffer0,Npsibuffer+1,log2n);
 	CartesianUnPad(source,convolution);
 							
-	set(psitemp,psi,Npsi);
 #pragma ivdep		
 	for(i=0; i < Npsi; i++)
-		psitemp[i] *= I*CartesianMode[i].K2()*CartesianMode[i].Kx();
+		psitemp[i]=psi[i]*CartesianMode[i].K2();
+	for(i=0; i < Npsi; i++)
+		psitemp[i] *= I*CartesianMode[i].Kx();
 	*convolution0=0.0;
 	CartesianPad(convolution,psitemp);
 	
@@ -204,8 +206,9 @@ void PrimitiveNonlinearityFFT(Var *source, Var *psi, double)
 	
 #pragma ivdep		
 	for(i=0; i < Npsi; i++)
-		source[i] = I*kinv2[i]*(CartesianMode[i].Ky()*psibuffer[i]-
-								CartesianMode[i].Kx()*source[i]);
+		source[i] *= CartesianMode[i].Kx();
+	for(i=0; i < Npsi; i++)
+		source[i] = I*kinv2[i]*(CartesianMode[i].Ky()*psibuffer[i]-source[i]);
 	
 	// Compute moments
 	if(average && Nmoment > 0) {
@@ -688,24 +691,32 @@ void NWave::FinalOutput()
 {
 	Real E,Z,P;
 	int i;
+	const int Nlimit=128;
 	
 	cout << endl << "FINAL VALUES:" << endl << endl;
+	if(Npsi <= Nlimit || verbose > 1) {
 	for(i=0; i < Npsi; i++) cout << "psi[" << i << "] = " << y[i] << endl;
 	cout << endl;
+	}
 	
 	compute_invariants(y,Npsi,E,Z,P);
 	display_invariants(E,Z,P);
 	
 	if(average && t) {
 		cout << endl << "AVERAGED VALUES:" << endl << endl;
-// We overwrite part of y here, since it is no longer needed.
+// We overwrite y+Npsi here, since it is no longer needed.
 		Var *y2=y+Npsi;
-		for(i=0; i < Npsi; i++) {
-			Real y2avg = (real(y2[i])+imag(y2[i]))/t;
-			y2[i] = sqrt(y2avg);
-			cout << "|psi|^2 [" << i << "] = " << y2avg << endl;
-		}
+		for(i=0; i < Npsi; i++) y2[i] = (real(y2[i])+imag(y2[i]))/t;
+		
+		if(Npsi <= Nlimit || verbose > 1) {
+			for(i=0; i < Npsi; i++) {
+				Real y2avg=y2[i].re;
+				cout << "|psi|^2 [" << i << "] = " << y2avg << endl;
+			}
 		cout << endl;
+		}
+		
+		for(i=0; i < Npsi; i++) y2[i] = sqrt(y2[i]);
 		compute_invariants(y2,Npsi,E,Z,P);
 		display_invariants(E,Z,P);
 	}
