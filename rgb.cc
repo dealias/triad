@@ -160,7 +160,7 @@ int main(int argc, char *const argv[])
 	optind=0;
 #endif	
 	while (1) {
-		char c = getopt(argc,argv,"bcfghlmvzx:H:V:B:E:X:Y:Z:");
+		int c = getopt(argc,argv,"bcfghlmvzx:H:V:B:E:X:Y:Z:");
 		if (c == -1) break;
 		switch (c) {
 		case 'b':
