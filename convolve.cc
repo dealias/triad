@@ -31,7 +31,7 @@ void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
 	}
 	
 	rcfft(H,log2n,1,1);
-	H[0].im=0.0;
+//	H[0].im=0.0;
 }
 
 // Compute H = F (*) G, where F and G contain the non-negative Fourier

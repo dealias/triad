@@ -50,7 +50,7 @@ void Basis<Cartesian>::MakeBins()
 	Nyp=(Nyb/2+1);
 	nfft=Nxb*Nyp;
 	xoffset=Nxb/2;
-	Nx0=(Nx+1)/2-1;
+	Nx0=(Nx-1)/2;
 	NPad=Nxb-Nx;
 	NPadTop=(Nyp-(Ny+1)/2)*Nxb+Nxb-((Nx+1)/2+xoffset);
 	

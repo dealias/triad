@@ -63,7 +63,7 @@ INLINE void Basis<T>::Initialize()
 		psiy=new Var[nfft];
 		vort=new Var[nfft];
 		Real scale=Nxb*Nyb;
-		for(int k=0; k < Nmode; k++) kfactor[k]=-1.0/(scale*mode[k].K2());
+		for(int k=0; k < Nmode; k++) kfactor[k]=1.0/(scale*mode[k].K2());
 	} else {
 		psibuffer=new Var[n];
 		psibufferR=(reality ? psibuffer+Nmode : psibuffer);

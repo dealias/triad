@@ -164,7 +164,6 @@ void PS::NonLinearSrc(Var *source, Var *psi, double)
 
 #pragma ivdep	
 	for(i=0; i < Npsi; i++)	source[i] *= CartesianMode[i].K2();
-
 	CartesianPad(vort,source);
 	crfft2dT(vort,log2Nxb,log2Nyb,1);
 
@@ -194,7 +193,7 @@ void PS::NonLinearSrc(Var *source, Var *psi, double)
 		psiy[i].im -= psix[i].im*vort[i].im;
 	}
 
-	rcfft2dT(psiy,log2Nxb,log2Nyb,1);
+	rcfft2dT(psiy,log2Nxb,log2Nyb,-1);
 	CartesianUnPad(source,psiy);
 	
 #pragma ivdep	
