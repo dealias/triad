@@ -1,8 +1,37 @@
+/* Dynvector.h:  A simple dynamic vector class
+Copyright (C) 2001 John C. Bowman (bowman@math.ualberta.ca)
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
+
 #ifndef __DynVector_h__
 #define __DynVector_h__ 1
 
+#define __DYNVECTOR_H_VERSION__ 1.00
+
 #include <stdlib.h>
 #include <iostream.h>
+
+inline void ArrayExit(char *x);
+
+#ifndef __ExternalArrayExit
+inline void ArrayExit(char *x)
+{
+  cout << _newl << "ERROR: " << x << "." << endl;
+  exit(1);
+} 
+#endif
 
 template<class T>
 class DynVector
@@ -140,8 +169,7 @@ public:
   StackVector(unsigned int s) {Allocate(s);}
   
   T& operator [] (unsigned int i) {
-    if (i >= size) {cout << "Attempt to access past end of StackVector"
-			 << endl; exit(1);}
+    if (i >= size) ArrayExit("Attempt to access past end of StackVector");
     return v[i];
   }
 	
