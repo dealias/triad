@@ -7,13 +7,17 @@
 #define DOUBLE_PRECISION 1
 #endif
 
+#define DBL_STD_MAX 1.0e+308
+
 #if(DOUBLE_PRECISION)
 typedef double Real;
+#define STD_MAX 1.0e+308
 #define REAL_MIN DBL_MIN
 #define REAL_MAX DBL_MAX
 #define REAL_EPSILON DBL_EPSILON
 #define REAL_DIG DBL_DIG
 #else
+#define STD_MAX 1.0e+38
 typedef float Real;
 #define REAL_MIN FLT_MIN
 #define REAL_MAX FLT_MAX

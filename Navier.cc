@@ -27,7 +27,7 @@ Real nu0=0.0;
 Real force=0.0;
 Real tauforce=0.0;
 
-Real kL=0.9*DBL_MAX;
+Real kL=STD_MAX;
 Real kH=0.0;
 
 Real nuL=0.0;
@@ -56,18 +56,18 @@ NWaveVocabulary::NWaveVocabulary()
 	VOCAB(E0,0.0,0.0);
 	VOCAB(U0,0.0,0.0);
 	
-	VOCAB(kforce,0.0,REAL_MAX);
-	VOCAB(deltaf,0.0,REAL_MAX);
-	VOCAB(gammaf,0.0,REAL_MAX);
+	VOCAB(kforce,0.0,STD_MAX);
+	VOCAB(deltaf,0.0,STD_MAX);
+	VOCAB(gammaf,0.0,STD_MAX);
 	
-	VOCAB(force,0.0,REAL_MAX);
-	VOCAB(tauforce,0.0,REAL_MAX);
+	VOCAB(force,0.0,STD_MAX);
+	VOCAB(tauforce,0.0,STD_MAX);
 	
-	VOCAB(kL,0.0,REAL_MAX);
-	VOCAB(kH,0.0,REAL_MAX);
+	VOCAB(kL,0.0,STD_MAX);
+	VOCAB(kH,0.0,STD_MAX);
 	
-	VOCAB(nuL,0.0,REAL_MAX);
-	VOCAB(nuH,0.0,REAL_MAX);
+	VOCAB(nuL,0.0,STD_MAX);
+	VOCAB(nuH,0.0,STD_MAX);
 	
 	VOCAB(pL,0,0);
 	VOCAB(pH,0,0);
@@ -89,7 +89,7 @@ NWaveVocabulary::NWaveVocabulary()
 	VOCAB(movie,0,1);
 	VOCAB(truefield,0,1);
 	
-	VOCAB(Dx,0.0,REAL_MAX);
+	VOCAB(Dx,0.0,STD_MAX);
 	
 	GeometryTable=new Table<GeometryBase>("Geometry");
 
@@ -237,7 +237,7 @@ void NWave::InitialConditions()
 			psix=new Var[nfft];
 		} else {
 			int m;
-			Real k0=FLT_MAX;
+			Real k0=REAL_MAX;
 			for(i=0; i < Npsi; i++) k0=min(k0,Geometry->K(i));
 	
 			if(!ngridx) ngridx=Nx;

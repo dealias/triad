@@ -64,16 +64,16 @@ VocabularyBase::VocabularyBase()
 	
 	VOCAB(itmax,0,INT_MAX);
 	VOCAB(microsteps,1,INT_MAX);
-	VOCAB(tmax,0.0,DBL_MAX);
-	VOCAB(dt,0.0,DBL_MAX);
+	VOCAB(tmax,0.0,DBL_STD_MAX);
+	VOCAB(dt,0.0,DBL_STD_MAX);
 	VOCAB(dynamic,-INT_MAX,1);
-	VOCAB(tolmax,0.0,DBL_MAX);
-	VOCAB(tolmin,0.0,DBL_MAX);
-	VOCAB(stepfactor,1.0,DBL_MAX);
-	VOCAB(stepnoninvert,1.0,DBL_MAX);
-	VOCAB(dtmax,0.0,DBL_MAX);
-	VOCAB(sample,0.0,DBL_MAX);
-	VOCAB(polltime,0.0,DBL_MAX);
+	VOCAB(tolmax,0.0,DBL_STD_MAX);
+	VOCAB(tolmin,0.0,DBL_STD_MAX);
+	VOCAB(stepfactor,1.0,DBL_STD_MAX);
+	VOCAB(stepnoninvert,1.0,DBL_STD_MAX);
+	VOCAB(dtmax,0.0,DBL_STD_MAX);
+	VOCAB(sample,0.0,DBL_STD_MAX);
+	VOCAB(polltime,0.0,DBL_STD_MAX);
 	VOCAB(hybrid,0,1);
 	VOCAB(digits,1,INT_MAX);
 	VOCAB_NODUMP(restart,0,1);
@@ -107,10 +107,10 @@ void adjust_parameters(double& dt, double& dtmax, double& tmax, int& itmax)
 		dt=abs(tmax/(itmax ? itmax : 1));
 	}
 	
-	if(tmax == 0.0) tmax=DBL_MAX; 
+	if(tmax == 0.0) tmax=DBL_STD_MAX; 
 	else if(itmax == -1) itmax=INT_MAX;
 
-	if(dtmax == 0.0) dtmax=DBL_MAX;
+	if(dtmax == 0.0) dtmax=DBL_STD_MAX;
 }	
 
 int main(int argc, char *argv[])
