@@ -21,7 +21,6 @@
 
 #include "new.h"
 #include "precision.h"
-#include "minmax.h"
 #include "Complex.h"
 #include "pow.h"
 
@@ -57,6 +56,18 @@ template<class T>
 inline void sort2(T& p, T& q, int& sign)
 {
 	if(p > q) {swap(p,q); sign *= -1;}
+}
+
+template<class T>
+inline T min(const T& a, const T& b)
+{
+	return (a < b) ? a : b;
+}
+
+template<class T>
+inline T max(const T& a, const T& b)
+{
+	return (a > b) ? a : b;
 }
 
 char *upcase(const char *s, char *s2=NULL);
