@@ -28,7 +28,7 @@ int idletime()
 
 // Check whether load average is too high. If so, sleep for a while.
 
-int poll()
+void poll()
 {
   double avg=1.0;
   int newidle=0,idle=0;
@@ -38,7 +38,7 @@ int poll()
 	
   system("uptime > .loadavg");
   if(loadavg=fopen(".loadavg","r")) {
-    while(fscanf(loadavg,"%s",s) == 1) if(strcmp(s,"average:")==0) break;
+    while(fscanf(loadavg,"%s",s) == 1) if(strcmp(s,"average:") == 0) break;
     fscanf(loadavg,"%s",s);
     avg=atof(s);
     fclose(loadavg);
@@ -49,7 +49,7 @@ int poll()
     sleep(sleeptime);
     newidle=idletime();
   }
-  return 0;
+  return;
 }
 
 

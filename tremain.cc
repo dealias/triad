@@ -9,7 +9,7 @@ static double tlimit=0.0;
 static double last_seconds=0.0;
 static double cpu[ncputime];
 
-int poll()
+void poll()
 {
   double seconds=0.0;
   if(!tlimit) TREMAIN(tlimit);
@@ -21,6 +21,6 @@ int poll()
     last_seconds=seconds;
     return 0;
   }
-  cout << endl << "CPU time limit is approaching; exit forced." << endl;
-  return 1;
+  msg(WARNING_GLOBAL, "CPU time limit is approaching; exit forced");
+  exit(CONTINUE);
 }
