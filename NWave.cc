@@ -215,7 +215,7 @@ void PrimitiveNonlinearityFFT(Complex *source, Complex *psi, double)
 	}
 }
 
-void PrimitiveNonlinearityFFT(Real *source, Real *psi, double)
+void PrimitiveNonlinearityFFT(Real *, Real *, double)
 {
 	msg(ERROR,"Pseudospectral approximation requires COMPLEX=1");
 }
