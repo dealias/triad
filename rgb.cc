@@ -48,7 +48,8 @@ int main(int argc, char *argv[])
 		
 	char *buf=new char[200+2*strlen(argv[1])];
 // Delete old rgb files
-	sprintf(buf,"rm /tmp/$USER/%s*.rgb > /dev/null 2>&1",argv[1]); 
+	char *rgbdir=getenv("RGB_DIR");
+	sprintf(buf,"rm %s/%s*.rgb > /dev/null 2>&1",rgbdir,argv[1]);
 	system(buf);
 
 	char *oname=new char[20+strlen(argv[1])];
@@ -56,7 +57,7 @@ int main(int argc, char *argv[])
 	step *= PaletteMax;
 	l=0;
 	for(n=0; n < nset; n++) {
-		sprintf(oname,"/tmp/$USER/%s%04d.rgb",argv[1],n);
+		sprintf(oname,"%s/%s%04d.rgb",rgbdir,argv[1],n);
 		ofstream fout(oname);
 		if(!fout) msg(ERROR,"Cannot open output file %s",oname);
 		for(int k=0; k < nz; k++,l++) {
@@ -85,8 +86,8 @@ int main(int argc, char *argv[])
 	}
 	
 	if(argc == 5)
-		sprintf(buf,"convert -size %dx%d -interlace none /tmp/$USER/%s*.rgb %s.mpg",
-				xsize,ysize,argv[1],argv[1]);
+		sprintf(buf,"convert -size %dx%d -interlace none %s/%s*.rgb %s.mpg",
+				xsize,ysize,rgbdir,argv[1],argv[1]);
 	else
 		sprintf(buf,"animate -size %dx%d -interlace none %s*.rgb",
 				xsize,ysize,argv[1]);
