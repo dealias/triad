@@ -109,6 +109,9 @@ class E_PC : public PC {
 protected:
 	Nu *expinv,*onemexpinv;
 	double dtinv;
+#if _CRAY
+	NWave NWaveProblem;
+#endif	
 public:
 	void Allocate(int);
 	char *Name() {return "Exponential Predictor-Corrector";}
@@ -117,10 +120,13 @@ public:
 	int Corrector(double, double&, int start, int stop);
 	void Source(Var *src, Var *y, double t) {
 		Problem->NonLinearSrc(src,y,t);
+#if _CRAY		
+		NWaveProblem.NWave::ExponentialLinearity(src,y,t);
+#else
 		NWave::ExponentialLinearity(src,y,t);
+#endif		
 	}
 };
-
 
 class CE_PC : public E_PC, public CorrectC_PC {
 protected:
@@ -133,6 +139,9 @@ public:
 	int Corrector(double, double&, int, int);
 	void Source(Var *src, Var *y, double t) {
 		Problem->NonLinearSrc(src,y,t);
+#if _CRAY		
+		NWaveProblem.NWave::ConservativeExponentialLinearity(src,y,t);
+#endif			
 		NWave::ConservativeExponentialLinearity(src,y,t);
 	}
 };

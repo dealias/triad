@@ -8,6 +8,8 @@
 #include <math.h>
 #include <stdio.h>
 
+#define INLINE inline
+
 #if _MAC
 #include ":arch:mac.h"
 #else // !_MAC

@@ -22,8 +22,8 @@ public:
 	}
 
 	void MakeBins();
-	inline void List(ostream &);
-	inline void Initialize();
+	INLINE void List(ostream &);
+	INLINE void Initialize();
 	
 	int InGrid(T &);
 	Real Area(int) {return 1.0;}
@@ -42,7 +42,7 @@ public:
 };
 
 template<class T>
-inline void Basis<T>::List(ostream &os)
+INLINE void Basis<T>::List(ostream &os)
 {
 	os << "         " << Name() << " Mode Geometry:" << endl;
 	for(int i=0; i < n; i++) os << mode[i] << newl;
@@ -50,7 +50,7 @@ inline void Basis<T>::List(ostream &os)
 }
 
 template<class T>
-inline void Basis<T>::Initialize()
+INLINE void Basis<T>::Initialize()
 {
 	int n2=1 << (log2n-1);
 	cout << n2 << " FFT COMPONENTS ALLOCATED." << endl;
@@ -67,7 +67,7 @@ inline void Basis<T>::Initialize()
 void LinearityAt(int i, Nu& nu);
 
 template <class T>
-inline Nu Basis<T>::Linearity(int i)
+INLINE Nu Basis<T>::Linearity(int i)
 {
 	Nu nu;
 	LinearityAt(i,nu);
@@ -77,7 +77,7 @@ inline Nu Basis<T>::Linearity(int i)
 void ForcingAt(int i, Real &force);
 
 template <class T>
-inline Real Basis<T>::Forcing(int i)
+INLINE Real Basis<T>::Forcing(int i)
 {
 	Real force;
 	ForcingAt(i,force);

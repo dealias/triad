@@ -42,7 +42,7 @@ public:
 };
 
 template<class D>
-inline ostream& operator << (ostream& os, const Discrete<D>& y) {
+ostream& operator << (ostream& os, const Discrete<D>& y) {
 	os << y.value << ": " << y.weight;
 	return os;
 }
@@ -77,7 +77,7 @@ public:
 };
 
 template<class T, class D>
-inline ostream& operator << (ostream& os, const Bin<T,D>& y) {
+INLINE ostream& operator << (ostream& os, const Bin<T,D>& y) {
 	os << "[" << y.min << "\t" << y.cen << "\t" << y.max << "]";
 	if(discrete) os << ": " << y.area;
 	return os;
@@ -208,13 +208,13 @@ public:
 	int Valid(char *s) {return strcmp(s,"SR")==0;}
 	char *WeightFileName(char *suffix);
 	void MakeBins();
-	inline void List(ostream &os);
+	INLINE void List(ostream &os);
 	Mc ComputeBinAverage(Bin<T,D> *k, Bin<T,D> *p, Bin<T,D> *q);
 	Mc FindWeight(int k, int p, int q);
 
-	inline void GenerateWeights();
-	inline void Initialize();
-	inline void ListTriads(ostream &os);
+	INLINE void GenerateWeights();
+	INLINE void Initialize();
+	INLINE void ListTriads(ostream &os);
 	
 	Real Area(int k) {return bin[k].Area();}
 	Real K(int k) {return bin[k].K();}
@@ -238,7 +238,7 @@ public:
 int out_weights(ofstream& fout, Weight* w, int lastindex, int n);
 	
 template<class T, class D>
-inline void Partition<T,D>::GenerateWeights() {
+INLINE void Partition<T,D>::GenerateWeights() {
 	Mc binaverage;
 	int k,p,q,first;
 	int lastindex=0;
@@ -342,7 +342,7 @@ void save_weights(DynVector<Weight>& w, int n, char *filename);
 void save_formatted_weights(DynVector<Weight>& w, int n, char *filename);
 
 template<class T, class D>
-inline void Partition<T,D>::Initialize() {
+INLINE void Partition<T,D>::Initialize() {
 	Mc nkpq;
 	Real norm;
 	int k,p,q;
@@ -419,7 +419,7 @@ inline void Partition<T,D>::Initialize() {
 }
 
 template<class T, class D>
-inline void Partition<T,D>::ListTriads(ostream &os) {
+INLINE void Partition<T,D>::ListTriads(ostream &os) {
 	int j;
 	os << newl << Ntriad << " Triads:" << endl;
 	for(j=0; j < Ntriad; j++) {
@@ -429,7 +429,7 @@ inline void Partition<T,D>::ListTriads(ostream &os) {
 }
 
 template<class T, class D>
-inline void Partition<T,D>::List(ostream &os)
+INLINE void Partition<T,D>::List(ostream &os)
 {
 	os << "         " << Name() << " Bin Geometry:" << endl;
 	for(int i=0; i < n; i++) {
