@@ -149,12 +149,12 @@ static Bin<Polar,Cartesian> b;
 
 static Real linearity_re(Real th)
 {
-	return Linearity->LinearityReal(Polar(k0,th));
+	return Linearity->Re(Polar(k0,th));
 }
 
 static Real linearity_im(Real th)
 {
-	return Linearity->LinearityImag(Polar(k0,th));
+	return Linearity->Im(Polar(k0,th));
 }
 
 static Real force_re(Real th)
@@ -199,7 +199,7 @@ void BinAverage(Complex& nu, Real (*fcn_re)(Real), Real (*fcn_im)(Real))
 	nu += I*ans;
 }
 
-Nu Partition<Polar,Cartesian>::Linearity(int i)
+Nu Partition<Polar,Cartesian>::Linear(int i)
 {
 	Nu nu;
 	b=bin[i];

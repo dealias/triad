@@ -5,7 +5,6 @@
 
 #include "Geometry.h"
 #include "DynVector.h"
-#include "Cartesian.h"
 
 #define PARTITION(key,discrete) {\
 new Entry<Partition<key,discrete>,GeometryBase>(#key,GeometryTable);}

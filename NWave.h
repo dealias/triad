@@ -4,8 +4,8 @@
 #include "kernel.h"
 #include "Geometry.h"
 #include "Partition.h"
-#include "Basis.h"
 #include "Linearity.h"
+#include "Basis.h"
 
 extern int Npsi;   // number of explictly evolved modes
 extern int NpsiR;  // number of reflected modes

@@ -147,4 +147,3 @@ inline void CartesianUnPad(Var *to, const Var *from)
 inline Real Basis<Cartesian>::Normalization(int i) {return K2(i);}
 
 #endif
-

@@ -40,8 +40,8 @@ public:
 // Factor which converts |y|^2 to energy:
 	Real Normalization(int);
 	
-	inline Nu Linear(int);
-	inline Real Forcing(int);
+	INLINE Nu Linear(int);
+	INLINE Real Forcing(int);
 };
 
 template<class T>
@@ -81,8 +81,7 @@ template <class T>
 INLINE Nu Basis<T>::Linear(int i)
 {
 	Nu nu;
-	Polar v=Polar(Geometry->K(i),Geometry->Th(i));
-	Linearity->Evaluate(v,nu);
+	Linearity->Evaluate(Polar(Geometry->K(i),Geometry->Th(i)),nu);
 	return nu;
 }
 

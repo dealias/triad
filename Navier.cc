@@ -1,6 +1,7 @@
 #include "options.h"
 #include "NWave.h"
 #include "Polar.h"
+#include "PolarBin.h"
 #include "Cartesian.h"
 #include "fft.h"
 
@@ -52,11 +53,12 @@ int weiss=0;
 
 Real krmin2=0.0;
 
-class Diamagnetic {
+class Diamagnetic : public LinearityBase {
+public:
 	Real Frequency(const Polar& v) {return vd*v.Y()/Denominator(v.K2());}
-}
+};
 
-class BandLimited : public LinearityBase, public Diagmagnetic {
+class BandLimited : public Diamagnetic {
 public:
 	char *Name() {return "Band-Limited";}
 	
@@ -70,7 +72,7 @@ public:
 	}
 };
 
-class Waltz : public LinearityBase, public Diamagnetic {
+class Waltz : public Diamagnetic {
 public:
 	char *Name() {return "Waltz";}
 	

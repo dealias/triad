@@ -5,7 +5,7 @@
    which the integration is preformed. */
 
 #include "options.h"
-#include "Polar.h"
+#include "PolarBin.h"
 
 static int cnt; // Index to keep track of which variables have been swapped.
 
