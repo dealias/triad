@@ -2,7 +2,7 @@
 #include "fft.h"
 
 static double *table,*work;
-static int zero=0, one=1;
+static int zero=0, two=2;
 static int nlast=0, isys[1]={0};
 
 extern "C" void CFTFAX(const int& n, int* ifax, Real *trigs);
@@ -20,6 +20,7 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 	static int ifax[19];
 
 	m=1 << log4n;
+	int twom=2*m;
 	
 	if(m != lastsize) {
 		if(m > lastsize) {
@@ -39,7 +40,7 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 		CFTFAX(m,ifax,trigs);
 	}
 	
-	CFFTMLT(&data[0].re,&data[0].im,work,trigs,ifax,m,one,m,m,isign);
+	CFFTMLT(&data[0].re,&data[0].im,work,trigs,ifax,twom,two,m,m,isign);
 	
 	for(k=0; k < m; k++) {
 		Complex *p=data+m*k, *q=data+k;
@@ -63,7 +64,7 @@ void fft4(Complex *data, unsigned int log4n, int isign)
 		for(k=0; k < m; k++) p[k] *= conj(phasej[k]);
 	}
 	
-	CFFTMLT(&data[0].re,&data[0].im,work,trigs,ifax,m,one,m,m,isign);
+	CFFTMLT(&data[0].re,&data[0].im,work,trigs,ifax,twom,two,m,m,isign);
 }
 
 extern "C" void CCFFT(const int& isign, const int& n, double& scale,
