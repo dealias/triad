@@ -1314,29 +1314,36 @@ void Torus(Array2<Ivec>& Index)
 		for(int j=-1; j < ny; j++)  {
 			for(int k=cutoff ? 0 : -1; k < maxk; k++) {
 				Project(i,j,k);
-				int count1;
+				int define1,refine1;
 				int num1=1;
 				Real denom1=0.5;
 				while(1) {
-					count1=0;
+					define1=0; refine1=0;
 					for(int kp=0; kp < num1; kp++) {
 						Real k2=k+denom1*(2*kp+1);
 						Real denom2=0.5;
-						int count2;
+						int define2,refine2;
 						int num2=1;
 						while(1) {
-							count2=0;
+							define2=0; refine2=0;
 							for(int jp=0; jp < num2; jp++) {
 								Real j2=j+denom2*(2*jp+1);
-								count2 += Project(i,j2,k2);
+								switch(Project(i,j2,k2)) {
+								case 1:
+									define2++;
+								case 2:
+									refine2++;
+									break;
+								}
 							}
-							if(!count2 && num2 >= yslice) break;
+							if((!define2 || !refine2) && num2 >= yslice) break;
 							num2 *= 2;
 							denom2 *= 0.5;
 						}
-						count1 += count2;
+						define1 += define2;
+						refine1 += refine2;
 					}
-					if(!count1 && num1 >= zslice) break;
+					if((!define1 || !refine1) && num1 >= zslice) break;
 					num1 *= 2;
 					denom1 *= 0.5;
 				}
@@ -1348,29 +1355,36 @@ void Torus(Array2<Ivec>& Index)
 		for(int i=0; i < nx; i++)  {
 			for(int j=-1; j < ny; j++)  {
 				Project(i,j,k);
-				int count1;
+				int define1,refine1;
 				int num1=1;
 				Real denom1=0.5;
 				while(1) {
-					count1=0;
+					define1=0; refine1=0;
 					for(int ip=0; ip < num1; ip++) {
 						Real i2=i+denom1*(2*ip+1);
 						Real denom2=0.5;
-						int count2;
+						int define2,refine2;
 						int num2=1;
 						while(1) {
-							count2=0;
+							define2=0; refine2=0;
 							for(int jp=0; jp < num2; jp++) {
 								Real j2=j+denom2*(2*jp+1);
-								count2 += Project(i2,j2,k);
+								switch(Project(i2,j2,k)) {
+								case 1:
+									define2++;
+								case 2:
+									refine2++;
+									break;
+								}
 							}
-							if(!count2 && num2 >= xslice) break;
+							if((!define2 || !refine2) && num2 >= xslice) break;
 							num2 *= 2;
 							denom2 *= 0.5;
 						}
-						count1 += count2;
+						define1 += define2;
+						refine1 += refine2;
 					}
-					if(!count1 && num1 >= yslice) break;
+					if((!define1 || !refine1) && num1 >= yslice) break;
 					num1 *= 2;
 					denom1 *= 0.5;
 				}
@@ -1402,11 +1416,12 @@ int Project(double xi, double xj, double xk)
 		Real projection=Pz/(Pz-zp);
 		int u=(int)(xp*projection+uoffset);
 		int v=Ny-((int)(yp*projection+voffset));
+		Real Maxz=maxz(u,v);
 		if(u >= 0 && u < Nx && v >=0 && v < Ny
-		   && zp > maxz(u,v)) {
+		   && zp > Maxz) {
 			maxz(u,v)=zp;
 			index0(u,v)=Ivec(xi,xj,xk);
-			return 1;
+			return (Maxz == -REAL_MAX) ? 1 : 2;
 		}	
 	}
 	return 0;
