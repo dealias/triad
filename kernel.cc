@@ -345,12 +345,32 @@ void testlock()
 
 void dump(int it, int final, double tmax) 
 {
-	if((!restart || it > 0) && (tmax-t >= 1.0E-6*tmax || final) &&
+	if((!restart || it > 0) && (tmax-t >= tprecision*tmax || final) &&
 	   t > last_dump) {
 		lock();
 		Problem->Output(it); last_dump=t;
 		unlock();
 	}
+}
+
+static const int w=10;
+static int e;
+
+void set_timer()
+{
+	e=digits+5;
+	open_output(fstats,dirsep,"stat");
+	cputime(cpu0);
+	if(restart) for(int i=0; i < ncputime; i++) cpu0[i] -= cpu[i];
+	else fstats << setw(w) << "iteration" << " " << setw(e) << "t" << " " <<
+		setw(e) << "dt" << " " << setw(w) << "invert_cnt" << " " <<
+		setw(w) << "CPU" << " " << setw(w) << "CHILD" << " " <<
+		setw(w) << "SYS" <<	endl;
+}
+
+void statistics(int it)
+{
+	if(restart && it == 0) return;
 	
 	static int last_iter=0;
 	int iter=final_iteration+iteration;
@@ -382,30 +402,10 @@ void dump(int it, int final, double tmax)
 			msg(WARNING,"Cannot write to restart file %s",rtemp);
 		}		  
 	} else if(it == 0) msg(ERROR,"Could not open restart file %s",rtemp);
-}
-
-static int w,e;
-
-void set_timer()
-{
-	w=10;
-	e=digits+5;
-	open_output(fstats,dirsep,"stat");
-	cputime(cpu0);
-	if(restart) for(int i=0; i < ncputime; i++) cpu0[i] -= cpu[i];
-	else fstats << setw(w) << "iteration" << " " << setw(e) << "t" << " " <<
-		setw(e) << "dt" << " " << setw(w) << "invert_cnt" << " " <<
-		setw(w) << "CPU" << " " << setw(w) << "CHILD" << " " <<
-		setw(w) << "SYS" <<	endl;
-}
-
-void statistics(int it)
-{
-	if(restart && it == 0) return;
+	
 	lock();
-	fstats << setw(w) << final_iteration+iteration << " " <<
-		setw(e) << t << " " << setw(e) << dt << " " << setw(w) << 
-		invert_cnt << " ";
+	fstats << setw(w) << iter << " " << setw(e) << t << " " << setw(e) 
+		   << dt << " " << setw(w) << invert_cnt << " ";
 	total_invert_cnt += invert_cnt;
 	invert_cnt=0;
 	cputime(cpu);
