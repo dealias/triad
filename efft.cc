@@ -14,7 +14,7 @@ static double scale=1.0;
 void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		  unsigned int inc1, unsigned int inc2, int)
 {
-	int i,naux;
+	int i,j,naux;
 	static int TableSize=0;
 	static int *nTable,nkTable,*nauxTable;
 	static double **aux1[2],**aux2[2];
@@ -23,6 +23,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	
 	for(j=0; j < TableSize; j++) 
 		if(n == nTable[j] && nk == nkTable[j]) break;
+	
     if(j == TableSize) {
 		TableSize++;
 		nTable=new(nTable,TableSize);
@@ -45,6 +46,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 				 aux1[j][i],naux,aux2[j][i],naux);
 		}
 	}
+	
 	int i=(isign == -1);
 	naux=nauxTable[j];
 	dcft(zero,data,inc1,inc2,data,inc1,inc2,n,nk,isign,scale,
