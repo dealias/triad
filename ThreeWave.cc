@@ -83,8 +83,8 @@ void NWave::InitialConditions()
 	
 	Var *pq=pqbuffer;
 	for(p=0; p < Nmode; p++) {
-			pqIndex[p]=pq-p;
-			pq += Nmode-p;
+		pqIndex[p]=pq-p;
+		pq += Nmode-p;
 	}
 	for(p=0; p < Nmode; p++) qStart[p]=p;
 	
