@@ -1409,6 +1409,20 @@ void identify(int, int n, const char *type, int& xsize, int& ysize)
 
 void mpeg(int, int n, const char *type, int xsize, int ysize)
 {
+#if 1  
+  ostringstream buf;
+// Workaround for bug in convert:
+  if(xsize % 2) xsize++;
+  if(ysize % 2) ysize++;
+  
+  buf << "mpeg -a 0 -b " << n-1 << " -h " << xsize << " -v " << ysize
+      << " -PF " << rgbdir << outname << " -s " << outname
+      << "." << type;
+  if(!verbose) buf << " > /dev/null";
+  char *cmd=strdup(buf.str().c_str());
+  if(verbose) cout << cmd << endl;
+  System(cmd);
+#else
   ostringstream paramname;
   
   paramname << rgbdir << outname << ".param";
@@ -1479,6 +1493,7 @@ void mpeg(int, int n, const char *type, int xsize, int ysize)
   char *cmd=strdup(buf.str().c_str());
   if(verbose) cout << cmd << endl;
   System(cmd);
+#endif  
 }
 
 void animate(int, const char *filename, int n, const char *type, 
