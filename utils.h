@@ -48,6 +48,12 @@ inline Real dmod(Real x, Real n) {
 	return x < 0 ? x-floor(x/n)*n : fmod(x,n);
 }
 
+template<class T> 
+inline void set(T *to, const T * from, int n)
+{
+	memcpy(to,from,sizeof(*from)*n);
+}
+
 template<class T>
 inline void swap(T& p, T& q)
 {

@@ -27,13 +27,7 @@ inline Solve_RC IntegratorBase::CheckError(double errmax)
 	return SUCCESSFUL;
 }
 
-template<class T> 
-inline void set(T *to, const T * from, int n) {
-	memcpy(to,from,sizeof(*from)*n);
-}
-
 class Euler : public IntegratorBase {
-protected:	
 public:
 	char *Name() {return "Euler";}
 	Solve_RC Solve(double, double);

@@ -27,9 +27,11 @@ public:
 	GeometryBase *NewGeometry(char *key) {return GeometryTable->Locate(key);}
 };
 
+enum Linearity {STANDARD,EXPONENTIAL,CONSERVATIVE_EXPONENTIAL};
+
 class NWave : public ProblemBase {
+	Source_t (NWave::*Linearity);
 public:
-	NWave() {}
 	virtual char *Name()=0;
 	void InitialConditions();
 	void Initialize();
@@ -37,14 +39,28 @@ public:
 	void Output(int it);
 	void FinalOutput();
 	
+	void LinearSrc(Var *src, Var *y, double t) {Linearity(src,y,t);}
+	
 	Source_t StandardLinearity;
 	Source_t ExponentialLinearity;
 	void ConservativeExponentialLinearity(Real *source, Real *psi, double t);
 	void ConservativeExponentialLinearity(Complex *source, Complex *psi,
 										  double t);
-	void LinearSrc(Var *src, Var *y, double t) {
-		StandardLinearity(src,y,t);
+	void SetLinearity(int type) {
+		switch(type) {
+		case STANDARD:
+			Linearity=StandardLinearity;
+			break;
+		case EXPONENTIAL:
+			Linearity=ExponentialLinearity;
+			break;
+		case CONSERVATIVE_EXPONENTIAL:
+			Linearity=ConservativeExponentialLinearity;
+			break;
+		}
 	}
+		
+	NWave() {SetLinearity(STANDARD);}
 };
 
 class SR : public NWave {
@@ -107,6 +123,7 @@ public:
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, double&, int, int);
+	void Source(Var *src, Var *y, double t) {Problem->NonLinearSrc(src,y,t);}
 };
 
 class E_PC : public PC {
@@ -142,6 +159,7 @@ public:
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, double&, int, int);
+	void Source(Var *src, Var *y, double t) {Problem->NonLinearSrc(src,y,t);}
 };
 
 class C_RK2 : public RK2, public CorrectC_PC {
@@ -165,6 +183,7 @@ public:
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, double&, int, int);
+	void Source(Var *src, Var *y, double t) {Problem->NonLinearSrc(src,y,t);}
 };
 
 class C_RK4 : public RK4 {
@@ -190,6 +209,7 @@ public:
 	char *Name() {return "Fifth-Order Runge-Kutta w/Integrating Factor";}
 	void Predictor(double, double, int, int);
 	int Corrector(double, double&, int, int);
+	void Source(Var *src, Var *y, double t) {Problem->NonLinearSrc(src,y,t);}
 };
 
 class C_RK5 : public RK5 {

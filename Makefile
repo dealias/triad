@@ -33,18 +33,17 @@ polaraverage: PolarAverageTest.o PolarAverage.o simpfast.o $(UTILS)
 		$(UTILS) $(LIB)
 
 .cc.o:
-	$(C++) $(OPT) -o $*.o -c $*.cc
+	$(C++) $(OPT) -o $@ -c $<
 
 clean:
 	rm -f *.o *mon.out $(ALL)
 
-depend:
-	$(MAKEDEPEND) -f .makedepend $(MDOPT) -I /usr/local/include \
-	kernel.cc Integrator.cc Param.cc ThreeWave.cc \
-	Navier.cc NWave.cc Geometry.cc Cartesian.cc convolve.cc fft.cc \
-	Polar.cc PolarAverage.cc simpfast.cc \
-	Kepler.cc Lotka.cc utils.cc strcasecmp.cc new.cc \
-	poll.cc idle.cc tremain.cc unix.cc cfft.cc efft.cc
+depend:	kernel.cc Integrator.cc Param.cc ThreeWave.cc \
+		Navier.cc NWave.cc Geometry.cc Cartesian.cc convolve.cc fft.cc \
+		Polar.cc PolarAverage.cc simpfast.cc \
+		Kepler.cc Lotka.cc utils.cc strcasecmp.cc new.cc \
+		poll.cc idle.cc tremain.cc unix.cc cfft.cc efft.cc
+	$(MAKEDEPEND) -f .makedepend $(MDOPT) -I /usr/local/include $^
 
 include .makedepend
 

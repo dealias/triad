@@ -316,7 +316,7 @@ void E_PC::Allocate(int n)
 		if(nu[j] != 0.0) nu_inv[j]=1.0/nu[j];
 		else nu_inv[j]=1.0;
 	}
-//	NWave::LinearSrc=NWave::ExponentialLinearity;
+	Problem->SetLinearity(EXPONENTIAL);
 }
 
 void E_PC::TimestepDependence(double dt)
@@ -352,7 +352,6 @@ void I_PC::Allocate(int n)
 {
 	PC::Allocate(n);
 	expinv=new Nu[nyprimary];
-//	NWave::LinearSrc=NULL;
 }
 
 void I_PC::TimestepDependence(double dt)
@@ -393,7 +392,7 @@ void CE_PC::Allocate(int n)
 		if(real(nu[j]) != 0.0) nuR_inv[j]=1.0/real(nu[j]);
 		else nuR_inv[j]=1.0;
 	}
-//	NWave::LinearSrc=NWave::ConservativeExponentialLinearity;
+	Problem->SetLinearity(CONSERVATIVE_EXPONENTIAL);
 }
 
 void CE_PC::TimestepDependence(double dt)
@@ -430,7 +429,6 @@ void I_RK2::Allocate(int n)
 {
 	RK2::Allocate(n);
 	expinv=new Nu[nyprimary];
-//	NWave::LinearSrc=NULL;
 }
 
 void I_RK2::TimestepDependence(double dt)
@@ -491,7 +489,6 @@ void I_RK4::Allocate(int n)
 {
 	RK4::Allocate(n);
 	expinv=new Nu[nyprimary];
-//	NWave::LinearSrc=NULL;
 }
 
 void I_RK4::TimestepDependence(double dt)
@@ -577,7 +574,6 @@ void I_RK5::Allocate(int n)
 	RK5::Allocate(n);
 	expinv=new Nu[nyprimary];
 	expinv5=new Nu[nyprimary];
-//	NWave::LinearSrc=NULL;
 }
 
 void I_RK5::Predictor(double t, double, int start, int stop)

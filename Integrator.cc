@@ -32,7 +32,7 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 	TimestepDependence(dt);
 	microprocess=(sample >= 0.0) ? Problem->Microprocess() : 0;
 	
-	// main integration loop
+	// Main integration loop
 	for(it=0; it < itmax && (forwards ? t < tmax : t > tmax); it++) {
 		
 		if(verbose) {
@@ -65,8 +65,7 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 			}
 			cont=1;
 			do {
-				switch(Solve(t,dt))
-				{
+				switch(Solve(t,dt))	{
 				case ADJUST:
 					t += dt;
 					ChangeTimestep(dt,sign*min(sign*dt*stepfactor,dtmax),t);
@@ -138,6 +137,7 @@ Solve_RC PC::Solve(double t, double dt)
 void PC::Predictor(double t, double dt, int start, int stop)
 {
 	for(int j=start; j < stop; j++) y1[j]=y0[j]+dt*source0[j];
+//	Invert(y1,t,dt);
 	Source(source,y1,t+dt);
 }
 
@@ -288,7 +288,8 @@ void RK5::Predictor(double t, double, int start, int stop)
 	Source(source4,y4,t+a4);
 #pragma ivdep		
 	for(j=start; j < stop; j++) y[j]=y0[j]+b50*source0[j]+b51*source[j]+
-									b52*source2[j]+b53*source3[j]+b54*source4[j];
+									b52*source2[j]+b53*source3[j]+
+									b54*source4[j];
 	Source(source,y,t+a5);
 }
 
