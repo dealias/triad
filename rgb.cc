@@ -165,7 +165,7 @@ extern "C" int getopt(int argc, char *const argv[], const char *optstring);
 void usage(char *program)
 {
 	cerr << PROGRAM << " version " << VERSION
-		 << " [(C) John C. Bowman <bowman@ipp-garching.mpg.de> 1997]" << endl
+		 << " [(C) John C. Bowman <bowman@math.ualberta.ca> 1997]" << endl
 		 << endl << "Usage: " << program
 		 << " [-bfFghilmpvz] [-x mag] [-H hmag] [-V vmag] " << endl
 		 << "           [-B begin] [-E end] [-L lower] [-U upper]" << endl
