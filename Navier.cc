@@ -147,8 +147,6 @@ static Avgylabel *avgyre,*avgyim;
 static char tempbuffer[30];
 static int tcount=0;
 
-extern "C" int mkdir(const char *, mode_t); 
-
 void NWave::InitialConditions()
 {
 	int i,n;
