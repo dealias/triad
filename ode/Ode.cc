@@ -5,6 +5,8 @@ const char *method="Ode";
 const char *integrator="PC";
 
 // Global variables
+Var A;
+Var B;
 Nu *nu;
 
 // Local vocabulary declarations and default values
@@ -77,6 +79,13 @@ public:
 	}
 };
 	
+class Implicit : public IntegratorBase {
+public:
+	void Allocate(int n) {IntegratorBase::Allocate(n);}
+	const char *Name() {return "Implicit";}
+	Solve_RC Solve(double, double&);
+};
+
 class E_Euler : public Euler, public Exponential {
 public:
 	void Allocate(int n) {Euler::Allocate(n); Exponential::Allocate(n);}
@@ -144,7 +153,9 @@ OdeVocabulary::OdeVocabulary()
 {
 	Vocabulary=this;
 	
-	VOCAB(nu0,0.0,0.0);
+	VOCAB(nu0,(Var) 0.0,(Var) 0.0);
+	VOCAB(A,(Var) 0.0,(Var) 0.0);
+	VOCAB(B,(Var) 0.0,(Var) 0.0);
 	
 	METHOD(Ode);
 	
@@ -153,6 +164,7 @@ OdeVocabulary::OdeVocabulary()
 	INTEGRATOR(RB1);
 	INTEGRATOR(I_PC);
 	INTEGRATOR(E_PC);
+	INTEGRATOR(Implicit);
 }
 
 OdeVocabulary Ode_Vocabulary;
@@ -184,7 +196,8 @@ void Ode::Output(int)
 
 void Ode::NonLinearSrc(Var *source, Var *, double)
 {
-	source[0]=cos(y[0]);
+//	source[0]=cos(y[0]);
+	source[0]=-A*y[0]-B*y[0]*y[0];
 }
 
 void Ode::LinearSrc(Var *source, Var *y, double)
@@ -214,11 +227,13 @@ Solve_RC I_Euler::Solve(double t, double dt)
 
 Solve_RC RB1::Solve(double t, double dt)
 {
+#if 0	 // ** JCB 
 	Source(source,y0,t);
 	Problem->Transform(y0,t,dt,yi);
 	for(int j=0; j < ny; j++)
 		y0[j]=y0[j]+dt*source[0]/(1.0-dt*(-sin(y0[j])-nu[0]));
 	Problem->BackTransform(y0,t+dt,dt,yi);
+#endif	
 	return SUCCESSFUL;
 }
 
@@ -266,3 +281,46 @@ int E_PC::Corrector(double, int dynamic, int start, int stop)
 		
 	return 1;
 }
+
+Solve_RC Implicit::Solve(double t, double& dt)
+{
+	Source(source,y0,t);
+	cout << endl;
+	for(int j=0; j < ny; j++) {
+#if 0		
+// Implicit midpoint rule		
+		Var a=0.25*dt*B;
+		Var b=dt*(B*y0[j]+0.5*A)+1.0;
+		Var c=(dt*(0.25*B*y0[j]+0.5*A)-1.0)*y0[j];
+		if(a != 0.0) {
+			y0[j]=(-b+sqrt(b*b-4.0*a*c))/(2.0*a);
+		}
+		else y0[j]=-c/b;
+#endif
+		
+#if 0
+// Backward Euler
+		Var a=dt*B;
+		Var b=1.0+dt*A;
+		Var c=-y0[j];
+		if(a != 0.0) y0[j]=(-b+sqrt(b*b-4.0*a*c))/(2.0*a);
+		else y0[j]=-c/b;
+#endif
+		
+		
+#if 0
+// Linearized Backward Euler
+		y0[j]=y0[j]+dt*source[j]/(1-dt*(-A-2.0*B*y0[j]));
+#endif
+		
+#if 1
+// Linearized Trapezoidal
+		y0[j]=y0[j]+dt*source[j]/(1-0.5*dt*(-A-2.0*B*y0[j]));
+#endif		
+		
+		cout << y0[j] << endl;
+	}
+	
+	return SUCCESSFUL;
+}
+

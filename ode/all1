@@ -4,5 +4,5 @@ testcase euler $*
 testcase i-euler $*
 testcase e-euler $*
 testcase rb1 $*
-
+testcase implicit $*
 
