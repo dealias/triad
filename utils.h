@@ -239,7 +239,7 @@ inline void out_function(ostream& os, Real (*f)(int), char *text, int n,
 						 int nperline)
 #else
 template<class T>
-void out_function(ostream& os, T (*f)(int), char *text, int n, int nperline=4)
+void out_function(ostream& os, T (*f)(int), char *text, int n)
 #endif	
 {
 	int i;
