@@ -12,6 +12,7 @@ Var *psibuffer;
 Pair *pair;
 DynVector<Triad> triad;
 Triad *triadBase;
+Triad **triadStop;
 
 Nu *nu,*nu_inv;
 Real *nuR_inv,*nuI;
@@ -35,13 +36,13 @@ inline void PrimitiveNucleus(Complex *source, Real)
 {	
 	Complex *k,*kstop=source+Npsi;
 	Real sumre,sumim;
-	Triad *t=triadBase;
+	Triad *t=triadBase,*tstop,**triadstop=triadStop;
 	for(k=source; k < kstop; k++) {
-		for(sumre=sumim=0.0; t->pq; t++) {
+		tstop=*(triadstop++);
+		for(sumre=sumim=0.0; t < tstop; t++) {
 			sumre += t->Mkpq*(*(Complex *)t->pq).re;
 			sumim -= t->Mkpq*(*(Complex *)t->pq).im;
 		}
-		t++;
 		(*k).re=sumre;
 		(*k).im=sumim;
 	}

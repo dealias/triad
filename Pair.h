@@ -29,5 +29,6 @@ extern Var *psibuffer;
 extern Pair *pair;
 extern DynVector<Triad> triad;
 extern Triad *triadBase;
+extern Triad **triadStop;
 
 #endif

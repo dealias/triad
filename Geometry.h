@@ -252,6 +252,8 @@ void Partition<T>::ComputeTriads() {
 	pqindex=new Var*[pq(n,n)];
 	pair=new Pair[pq(n,n)];
 	for(p=0; p < n; p++) for(q=p; q < n; q++) pqindex[pq(p,q)]=NULL;
+	triadStop=new Triad*[Nmode];
+	Triad *triadBase0=triad.Base();
 	
 	for(k=0; k < Nmode; k++) {
 		denom=twopi2*Area(k);
@@ -274,10 +276,12 @@ void Partition<T>::ComputeTriads() {
 				}
 			}
 		}
-		triad[Ntriad++].Store(NULL,0.0);
+		triadStop[k]=triadBase0+Ntriad;
 	}
 	
 	triadBase=triad.Base();
+	for(k=0; k < Nmode; k++) triadStop[k] += triadBase-triadBase0;
+
 	delete [] pqindex;
 	weight.~DynVector();
 
