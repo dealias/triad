@@ -15,10 +15,11 @@ class ParamBase {
   ParamBase() {}
   virtual void Display(ostream& os)=0;
   virtual void Help(ostream& os)=0;
-  virtual void GraphicsOutput(ostream& os)=0;
+  virtual void GraphicsOutput(ostream& os, int pass=0)=0;
   virtual void Output(ostream& os)=0;
   virtual void SetStr(const char *)=0;		// Set from string	
   virtual const char *Name()=0;
+  virtual int Dump()=0;
 };
 
 class VocabularyBase {
@@ -132,6 +133,8 @@ class Param : public ParamBase {
     os << help << endl;
   }
 	
+  int Dump() {return dump && nvar==1;}
+  
   void Output(ostream& os) {
     if(!dump) return; // Don't dump control parameters
     os << name << "=";
@@ -139,21 +142,28 @@ class Param : public ParamBase {
     os << var[nvar-1] << endl;
   }
 	
-  void Out(ostream& os, const char *type, const char *delim="") 
+  void Out(ostream& os, const char *type, int pass=0, const char *delim="") 
   {
     if(!dump) return; // Don't dump control parameters
-    if(strcmp(name,"dynamic")==0) // An asy keyword; don't need anyway.
-      return;
-    if(nvar == 1) {
-      os << type << " " << name << "=" << delim << var[0] << delim << ";";
+    switch(pass) {
+    case 0: 
+      if(nvar == 1) {
+	os << type << " " << name << "=" << delim << var[0] << delim << ";";
+      }
+      else {
+	os << type << "[] " << name << "={" << delim << var[0] << delim;
+	for(int i=1; i < nvar; i++) os << "," << delim << var[i] << delim;
+	os << "};";
+      }
+      os << endl;
+      break;
+    
+    case 1:
+      os << type;
+      break;
     }
-    else {
-      os << type << "[] " << name << "={" << delim << var[0] << delim;
-      for(int i=1; i < nvar; i++) os << "," << delim << var[i] << delim;
-      os << "};";
-    }
-    os << endl;
   }
+
 
 #if 0 // For sm 
   void GraphicsOutput(ostream& os) {
@@ -168,7 +178,7 @@ class Param : public ParamBase {
   }
 #endif  
 	
-  void GraphicsOutput(ostream& os);
+  void GraphicsOutput(ostream& os, int pass=0);
   
   inline int InRange(T);
 	
@@ -252,12 +262,20 @@ inline void Param<T>::get_values(const char *arg, T (*rtn)(const char *))
   } while ((ptr == optarg) ? 0 : (optarg=ptr+1));
 }
 	
-inline void Param<unsigned int>::GraphicsOutput(ostream& os) {Out(os,"int");}
-inline void Param<int>::GraphicsOutput(ostream& os) {Out(os,"int");}
-inline void Param<double>::GraphicsOutput(ostream& os) {Out(os,"real");}
-inline void Param<Complex>::GraphicsOutput(ostream& os) {Out(os,"pair");}
-inline void Param<const char *>::GraphicsOutput(ostream& os) {
-  Out(os,"string","\"");
+inline void Param<unsigned int>::GraphicsOutput(ostream& os, int pass) {
+  Out(os,"int",pass);
+}
+inline void Param<int>::GraphicsOutput(ostream& os, int pass) {
+  Out(os,"int",pass);
+}
+inline void Param<double>::GraphicsOutput(ostream& os, int pass) {
+  Out(os,"real",pass);
+}
+inline void Param<Complex>::GraphicsOutput(ostream& os, int pass) {
+  Out(os,"pair",pass);
+}
+inline void Param<const char *>::GraphicsOutput(ostream& os, int pass) {
+  Out(os,"string",pass,"\"");
 }
 
 #endif

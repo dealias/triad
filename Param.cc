@@ -40,6 +40,16 @@ void VocabularyBase::Dump(ostream& os)
 void VocabularyBase::GraphicsDump(ostream& os)
 {
   for(unsigned int i=0; i < NParam; i++) ParamList[i]->GraphicsOutput(os);
+  os << "void setvalue(string s, string v) {" << endl;
+  for(unsigned int i=0; i < NParam; i++) {
+    if(ParamList[i]->Dump()) {
+      os << "if(s == \"" << ParamList[i]->Name() << "\") " <<
+	ParamList[i]->Name() << "=(";
+      ParamList[i]->GraphicsOutput(os,1);
+      os << ") v;" << endl;
+    }
+  }
+  os << "}" << endl;
 }
 
 void VocabularyBase::Parse(char *s)
