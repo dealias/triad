@@ -209,7 +209,7 @@ Solve_RC E_Euler::Solve(double t, double dt)
 {
 	Source(source,y0,t);
 	Problem->Transform(y0,t,dt,yi);
-	for(int j=0; j < ny; j++)
+	for(unsigned int j=0; j < ny; j++)
 		y0[j]=expinv[j]*y0[j]+onemexpinv[j]*source[j];
 	Problem->BackTransform(y0,t+dt,dt,yi);
 	return SUCCESSFUL;
@@ -219,7 +219,7 @@ Solve_RC I_Euler::Solve(double t, double dt)
 {
 	Source(source,y0,t);
 	Problem->Transform(y0,t,dt,yi);
-	for(int j=0; j < ny; j++)
+	for(unsigned int j=0; j < ny; j++)
 		y0[j]=(y0[j]+dt*source[j])*expinv[j];
 	Problem->BackTransform(y0,t+dt,dt,yi);
 	return SUCCESSFUL;
@@ -286,7 +286,7 @@ Solve_RC Implicit::Solve(double t, double& dt)
 {
 	Source(source,y0,t);
 	cout << endl;
-	for(int j=0; j < ny; j++) {
+	for(unsigned int j=0; j < ny; j++) {
 #if 0		
 // Implicit midpoint rule		
 		Var a=0.25*dt*B;

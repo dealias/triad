@@ -146,36 +146,44 @@ public:
 	}
 	
 	array1<T>& operator += (const array1<T>& A) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] += A(i);
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] += A(i);
 		return *this;
 	}
 	array1<T>& operator -= (const array1<T>& A) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] -= A(i);
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] -= A(i);
 		return *this;
 	}
 	array1<T>& operator *= (const array1<T>& A) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] *= A(i);
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] *= A(i);
 		return *this;
 	}
 	array1<T>& operator /= (const array1<T>& A) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] /= A(i);
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] /= A(i);
 		return *this;
 	}
 	
 	array1<T>& operator += (T a) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] += a;
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] += a;
 		return *this;
 	}
 	array1<T>& operator -= (T a) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] -= a;
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] -= a;
 		return *this;
 	}
 	array1<T>& operator *= (T a) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] *= a;
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] *= a;
 		return *this;
 	}
 	array1<T>& operator /= (T a) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] /= a;
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] /= a;
 		return *this;
 	}
 	
@@ -244,11 +252,13 @@ public:
 	}
 	
 	array2<T>& operator += (const array2<T>& A) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] += A(i);
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] += A(i);
 		return *this;
 	}
 	array2<T>& operator -= (const array2<T>& A) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] -= A(i);
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] -= A(i);
 		return *this;
 	}
 	array2<T>& operator *= (const array2<T>& A);
@@ -264,7 +274,8 @@ public:
 		return *this;
 	}
 	array2<T>& operator *= (T a) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] *= a;
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] *= a;
 		return *this;
 	}
 };
@@ -342,11 +353,13 @@ public:
 	}
 	
 	array3<T>& operator += (array3<T>& A) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] += A(i);
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] += A(i);
 		return *this;
 	}
 	array3<T>& operator -= (array3<T>& A) {
-		unsigned int size=Size0(); for(unsigned int i=0; i < size; i++) v[i] -= A(i);
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] -= A(i);
 		return *this;
 	}
 	
@@ -612,6 +625,12 @@ public:
 	}
 	
 	Array2<T>& operator *= (const Array2<T>& A);
+	
+	Array2<T>& operator *= (T a) {
+		unsigned int size=Size0();
+		for(unsigned int i=0; i < size; i++) v[i] *= a;
+		return *this;
+	}
 };
 
 template<class T>
