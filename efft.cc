@@ -11,7 +11,8 @@ static int zero=0, one=1;
 static double scale=1.0;
 
 void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
-		  unsigned int inc1, unsigned int inc2, int) {
+		  unsigned int inc1, unsigned int inc2, int)
+{
 	static int naux,nlast=0, nklast=0, inc1last=0, inc2last=0;	
 	static double *aux1,*aux2;
 	unsigned int n=1 << log2n;
@@ -35,3 +36,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		 aux1,naux,aux2,naux);
 }
 
+inline void fft(Complex *data, unsigned int log2n, int isign, int)
+{
+	mfft(data,log2n,isign,1,1,1);
+}
