@@ -435,6 +435,7 @@ int main(int argc, char *argv[])
     {"torus", 0, &trans, TORUS},
     {"reverse", 0, &reverse, 1},
     {"vector", 0, &vector, 1},
+    {"vector2", 0, &vector, 1},
     {"vector3", 0, &vector3, 1},
     {"symmetric", 0, &symmetric, 1},
     {"rescale", 0, &rescale, 1},
