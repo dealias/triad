@@ -106,7 +106,7 @@ public:
 };
 
 template<class Y, class X>
-static double CubicSpline<Y,X>::sixth=1.0/6.0;
+double CubicSpline<Y,X>::sixth=1.0/6.0;
   
 template<class Y, class X>
 unsigned int CubicSpline<Y,X>::size=0;
