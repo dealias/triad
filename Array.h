@@ -18,12 +18,18 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.01
+#define __ARRAY_H_VERSION__ 1.01J
 
 // Setting ARRAY_CHECK to 1 enables optional argument checking.
 
 #ifndef ARRAY_CHECK
 #define ARRAY_CHECK 0
+#endif
+
+#if ARRAY_CHECK
+#define check(i,n,dim,m) Check(i,n,dim,m)
+#else
+#define check(i,n,dim,m)
 #endif
 
 #include "iostream.h"
@@ -47,12 +53,10 @@ protected:
 	mutable int temporary;
 public:
 	virtual int Size() const {return nx;}
-	int Size0() {
-#if ARRAY_CHECK
+	int Size0() const {
 		if(!allocate && Size() == 0)
 			cout << "WARNING: Operation attempted on unallocated array." 
 				 << endl;
-#endif		
 		return Size();
 	}
 	
@@ -72,8 +76,7 @@ public:
 	void Hold() {if(allocate) {temporary=1; allocate=0;}}
 	void Purge() const {if(temporary) {Deallocate(); temporary=0;}}
 	
-	void check(int i, int n, int dim, int m=0) const {
-#if ARRAY_CHECK		
+	void Check(int i, int n, int dim, int m) const {
 		if(i < 0 || i >= n) {
 			cout << "ERROR: Array" << dim << " index ";
 			if(m) cout << m << " ";
@@ -83,34 +86,40 @@ public:
 			cout << ")." << endl;
 			exit(1);
 		}
-#endif		
 	}
 	
 	int Nx() const {return nx;}
 	int N1() const {return nx;}
-	Array1<T> operator () () const {return Array1<T>(Size(),v);}
+//	Array1<T> operator () () const {return Array1<T>(Size(),v);}
 	T& operator [] (int ix) const {check(ix,nx,1,1); return v[ix];}
 	T& operator () (int ix) const {check(ix,nx,1,1); return v[ix];}
+	T *operator + (int i) {return v+i;}
+	T* operator () () const {return v;}
 	operator T* () const {return v;}
 	
-	void Load(T a) {
+	void Load(T a) const {
 		int size=Size0();
 		for(int i=0; i < size; i++) v[i]=a;
 	}
-	void Load(T *a) {set(v,a,Size0());}
-	void Store(T *a) {set(a,v,Size0());}
+	void Load(T *a) const {set(v,a,Size0());}
+	void Store(T *a) const {set(a,v,Size0());}
 	void Set(T *a) {v=a; allocate=0;}
+	void Input (istream &s) const {
+		int size=Size0();
+		for(int i=0; i < size; i++) s >> a(i);
+		return s;
+	}
 	
 	Array1<T>& operator = (T a) {Load(a); return *this;}
 	Array1<T>& operator = (T *a) {Load(a); return *this;}
 	Array1<T>& operator = (const Array1<T>& A) {Load(A()); return *this;}
 	
 	Array1<T>& operator += (const Array1<T>& A) {
-		int size=Size0(); for(int i=0; i < size; i++) v[i] += A()[i];
+		int size=Size0(); for(int i=0; i < size; i++) v[i] += A(i);
 		return *this;
 	}
 	Array1<T>& operator -= (const Array1<T>& A) {
-		int size=Size0(); for(int i=0; i < size; i++) v[i] -= A()[i];
+		int size=Size0(); for(int i=0; i < size; i++) v[i] -= A(i);
 		return *this;
 	}
 	
@@ -146,11 +155,7 @@ ostream& operator << (ostream& s, const Array1<T>& A)
 template<class T>
 istream& operator >> (istream& s, const Array1<T>& A)
 {
-	T *p=A();
-	for(int i=0; i < A.Nx(); i++) {
-		s >> *(p++);
-	}
-	return s;
+	A.Input(s);
 }
 
 template<class T>
@@ -177,7 +182,7 @@ public:
 	
 	int Ny() const {return ny;}
 	int N2() const {return ny;}
-	Array1<T> operator () () const {return Array1<T>(Size(),v);}
+//	Array1<T> operator () () const {return Array1<T>(Size(),v);}
 	Array1<T> operator [] (int ix) const {
 		check(ix,nx,2,1);
 		return Array1<T>(ny,v+ix*ny);
@@ -188,9 +193,10 @@ public:
 		return v[ix*ny+iy];
 	}
 	T& operator () (int i) const {
-		check(i,Size(),2);
+		check(i,Size(),2,0);
 		return v[i];
 	}
+	T* operator () () const {return v;}
 	
 	Array2<T>& operator = (T a) {Load(a); return *this;}
 	Array2<T>& operator = (T *a) {Load(a); return *this;}
@@ -200,12 +206,12 @@ public:
 		return *this;
 	}
 	
-	Array2<T>& operator += (Array2<T>& A) {
-		int size=Size0(); for(int i=0; i < size; i++) v[i] += A()[i];
+	Array2<T>& operator += (const Array2<T>& A) {
+		int size=Size0(); for(int i=0; i < size; i++) v[i] += A(i);
 		return *this;
 	}
-	Array2<T>& operator -= (Array2<T>& A) {
-		int size=Size0(); for(int i=0; i < size; i++) v[i] -= A()[i];
+	Array2<T>& operator -= (const Array2<T>& A) {
+		int size=Size0(); for(int i=0; i < size; i++) v[i] -= A(i);
 		return *this;
 	}
 	
@@ -238,13 +244,7 @@ ostream& operator << (ostream& s, const Array2<T>& A)
 template<class T>
 istream& operator >> (istream& s, const Array2<T>& A)
 {
-	T *p=A();
-	for(int i=0; i < A.Nx(); i++) {
-		for(int j=0; j < A.Ny(); j++) {
-			s >> *(p++);
-		}
-	}
-	return s;
+	A.Input(s);
 }
 
 template<class T>
@@ -274,7 +274,7 @@ public:
 	
 	int Nz() const {return nz;}
 	int N3() const {return nz;}
-	Array1<T> operator () () const {return Array1<T>(Size(),v);}
+//	Array1<T> operator () () const {return Array1<T>(Size(),v);}
 	Array2<T> operator [] (int ix) const {
 		check(ix,nx,3,1);
 		return Array2<T>(ny,nz,v+ix*nyz);
@@ -286,20 +286,21 @@ public:
 		return v[ix*nyz+iy*nz+iz];
 	}
 	T& operator () (int i) const {
-		check(i,Size(),3);
+		check(i,Size(),3,0);
 		return v[i];
 	}
+	T* operator () () const {return v;}
 	
 	Array3<T>& operator = (T a) {Load(a); return *this;}
 	Array3<T>& operator = (T *a) {Load(a); return *this;}
 	Array3<T>& operator = (const Array3<T>& A) {Load(A()); return *this;}
 	
 	Array3<T>& operator += (Array3<T>& A) {
-		int size=Size0(); for(int i=0; i < size; i++) v[i] += A()[i];
+		int size=Size0(); for(int i=0; i < size; i++) v[i] += A(i);
 		return *this;
 	}
 	Array3<T>& operator -= (Array3<T>& A) {
-		int size=Size0(); for(int i=0; i < size; i++) v[i] -= A()[i];
+		int size=Size0(); for(int i=0; i < size; i++) v[i] -= A(i);
 		return *this;
 	}
 	
@@ -335,15 +336,7 @@ ostream& operator << (ostream& s, const Array3<T>& A)
 template<class T>
 istream& operator >> (istream& s, const Array3<T>& A)
 {
-	T *p=A();
-	for(int i=0; i < A.Nx(); i++) {
-		for(int j=0; j < A.Ny(); j++) {
-			for(int k=0; k < A.Nz(); k++) {
-				s >> *(p++);
-			}
-		}
-	}
-	return s;
+	A.Input(s);
 }
 
 template<class T>
@@ -376,7 +369,7 @@ public:
 
 	int Nw() const {return nw;}
 	int N4() const {return nw;}
-	Array1<T> operator () () const {return Array1<T>(Size(),v);}
+//	Array1<T> operator () () const {return Array1<T>(Size(),v);}
 	Array3<T> operator [] (int ix) const {
 		check(ix,nx,3,1);
 		return Array3<T>(ny,nz,nw,v+ix*nyzw);
@@ -389,20 +382,21 @@ public:
 		return v[ix*nyzw+iy*nzw+iz*nw+iw];
 	}
 	T& operator () (int i) const {
-		check(i,Size(),4);
+		check(i,Size(),4,0);
 		return v[i];
 	}
+	T* operator () () const {return v;}
 	
 	Array4<T>& operator = (T a) {Load(a); return *this;}
 	Array4<T>& operator = (T *a) {Load(a); return *this;}
 	Array4<T>& operator = (const Array4<T>& A) {Load(A()); return *this;}
 	
 	Array4<T>& operator += (Array4<T>& A) {
-		int size=Size0(); for(int i=0; i < size; i++) v[i] += A()[i];
+		int size=Size0(); for(int i=0; i < size; i++) v[i] += A(i);
 		return *this;
 	}
 	Array4<T>& operator -= (Array4<T>& A) {
-		int size=Size0(); for(int i=0; i < size; i++) v[i] -= A()[i];
+		int size=Size0(); for(int i=0; i < size; i++) v[i] -= A(i);
 		return *this;
 	}
 	
@@ -421,7 +415,7 @@ public:
 template<class T>
 ostream& operator << (ostream& s, const Array4<T>& A)
 {
-	T *p=A();
+	T *p=A;
 	for(int i=0; i < A.Nx(); i++) {
 		for(int j=0; j < A.Ny(); j++) {
 			for(int k=0; k < A.Nz(); k++) {
@@ -441,9 +435,7 @@ ostream& operator << (ostream& s, const Array4<T>& A)
 template<class T>
 istream& operator >> (istream& s, const Array4<T>& A)
 {
-	T *a=A();
-	for(int i=0; i < A.Size(); i++) s >> a[i];
-	return s;
+	A.Input(s);
 }
 
 #if ARRAY_CHECK

@@ -18,12 +18,13 @@ public:
 	~DynVector() {Deallocate();}
 
 	int Size() const {return sz;}
-	T *operator () () const {return v;}
 	T& operator [] (int i) {
 		if (i >= sz) v=new(v,sz=max(i+1,2*sz)) (T);
 		return v[i];
 	}
 	T *operator + (int i) {return v+i;}
+	T *operator () () const {return v;}
+	operator T* () const {return v;}
 	
 	void Resize(int i) {v=new(v,sz=i) (T);}
 	

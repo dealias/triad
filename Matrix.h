@@ -5,12 +5,16 @@
 #include "Array.h"
 #include <assert.h>
 
+#if !ARRAY_CHECK
+#define NDEBUG 1
+#endif
+
 template<class T>
 inline void SetIdentity(Array2<T>& A)
 {
 	A=0.0;
 	int ny1=A.Ny()+1, size=A.Size();
-	Array1(double) a=A;
+	Array1(T) a=A();
 	for(int i=0; i < size; i += ny1) a[i]=1.0;
 }
 
@@ -26,25 +30,29 @@ inline Array2<T> Identity(int n, int m, T)
 template<class T>
 inline void Trans(const Array2<T>& A, const Array2<T>& B)
 {
-	assert(&A != &B);
+	assert(&A != &B && A.Nx() == B.Nx() && A.Ny() == B.Ny());
+	
 	for(int i=0; i < B.Nx(); i++) {
 		Array1(T) Bi=B[i];
 		for(int j=0; j < B.Ny(); j++) {
 			A(j,i)=Bi[j];
 		}
 	}
+	B.Purge();
 }
 
 template<class T>
 inline void Conjugate(const Array2<T>& A, const Array2<T>& B)
 {
-	assert(&A != &B);
+	assert(&A != &B && A.Nx() == B.Nx() && A.Ny() == B.Ny());
+	
 	for(int i=0; i < B.Nx(); i++) {
 		Array1(T) Bi=B[i];
 		for(int j=0; j < B.Ny(); j++) {
 			A(j,i)=conj(Bi[j]);
 		}
 	}
+	B.Purge();
 }
 
 template<class T>
@@ -69,6 +77,7 @@ inline void Mult(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
 	Array2<T> CT(C.Ny(),C.Nx(),temp());
 	
 	Trans(CT,C);
+	C.Purge();
 	
 	if(&A != &B) {
 		for(int i=0; i < B.Nx(); i++) {
@@ -82,6 +91,7 @@ inline void Mult(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
 				Ai[k]=sum;
 			}
 		}
+		B.Purge();
 	} else {
 		int n=C.Ny();
 		static DynVector<T> temp2(n);
@@ -117,6 +127,7 @@ inline void MultAdd(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C,
 	Array2<T> CT(C.Ny(),C.Nx(),temp());
 	
 	Trans(CT,C);
+	C.Purge();
 	
 	if(&A != &B) {
 		for(int i=0; i < B.Nx(); i++) {
@@ -130,6 +141,7 @@ inline void MultAdd(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C,
 				Ai[k]=sum+Di[k];
 			}
 		}
+		B.Purge();
 	} else {
 		int n=C.Ny();
 		static DynVector<T> temp2(n);
@@ -157,8 +169,6 @@ inline Array2<T> const operator * (const Array2<T>& B, const Array2<T>& C)
 {
 	Array2<T> A(B.Nx(),C.Ny());
 	Mult(A,B,C);
-	B.Purge();
-	C.Purge();
 	A.Hold();
 	return A;
 }
@@ -167,8 +177,9 @@ template<class T>
 inline void Mult(const Array2<T>& A, const Array2<T>& B, T C)
 {
 	int size=A.Size(); 
-	Array1(double) a=A, b=B;
+	Array1(T) a=A(), b=B();
 	for(int i=0; i < size; i++) a[i]=b[i]*C;
+	B.Purge();
 }
 
 template<class T>
@@ -176,7 +187,6 @@ inline Array2<T> operator * (const Array2<T>& B, T C)
 {
 	Array2<T> A(B.Nx(),B.Ny());
 	Mult(A,B,C);
-	B.Purge();
 	A.Hold();
 	return A;
 }
@@ -186,7 +196,6 @@ inline Array2<T> operator * (T C, const Array2<T>& B)
 {
 	Array2<T> A(B.Nx(),B.Ny());
 	Mult(A,B,C);
-	B.Purge();
 	A.Hold();
 	return A;
 }
@@ -196,8 +205,9 @@ inline void Divide(const Array2<T>& A, const Array2<T>& B, T C)
 {
 	int size=A.Size(); 
 	T Cinv=1.0/C;
-	Array1(double) a=A, b=B;
+	Array1(T) a=A(), b=B();
 	for(int i=0; i < size; i++) a[i]=b[i]*Cinv;
+	B.Purge();
 }
 
 template<class T>
@@ -205,7 +215,6 @@ inline Array2<T> operator / (const Array2<T>& B, T C)
 {
 	Array2<T> A(B.Nx(),B.Ny());
 	Divide(A,B,C);
-	B.Purge();
 	A.Hold();
 	return A;
 }
@@ -238,10 +247,8 @@ inline Array2<T> operator + (T C, const Array2<T>& B)
 template<class T>
 inline void Add(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
 {
-#if ARRAY_CHECK
-	assert(A.Nx() == B.Nx() && A.Ny() == B.Ny());
-	assert(B.Nx() == C.Nx() && B.Ny() == C.Ny());
-#endif
+	assert(A.Nx() == B.Nx() && A.Ny() == B.Ny() && 
+		   B.Nx() == C.Nx() && B.Ny() == C.Ny());
 	
 	int size=A.Size();
 	Array1(T) a=A(), b=B(), c=C();
@@ -263,7 +270,7 @@ template<class T>
 inline void Unary(const Array2<T>& A, const Array2<T>& B)
 {
 	int size=A.Size();
-	Array1(double) a=A, b=B;
+	Array1(T) a=A(), b=B();
 	for(int i=0; i < size; i++) a[i]=-b[i];
 	B.Purge();
 }
@@ -314,24 +321,21 @@ inline Array2<T> operator - (T B, const Array2<T>& C)
 template<class T>
 inline void Sub(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
 {
-	for(int i=0; i < B.Nx(); i++) {
-		Array1(T) Ai=A[i], Bi=B[i], Ci=C[i];
-		for(int j=0; j < B.Ny(); j++) {
-			Ai[j]=Bi[j]-Ci[j];
-		}
-	}
+	assert(A.Nx() == B.Nx() && A.Ny() == B.Ny() && 
+		   B.Nx() == C.Nx() && B.Ny() == C.Ny());
+	
+	int size=A.Size();
+	Array1(T) a=A(), b=B(), c=C();
+	for(int i=0; i < size; i++) a[i]=b[i]-c[i];
+	B.Purge();
+	C.Purge();
 }
 
 template<class T>
 inline Array2<T> operator - (const Array2<T>& B, const Array2<T>& C)
 {
-	if(B.Nx() != C.Nx() || B.Ny() != C.Ny())
-		msg(ERROR, "Incompatible matrices");
-	
 	Array2<T> A(B.Nx(),B.Ny());
 	Sub(A,B,C);
-	B.Purge();
-	C.Purge();
 	A.Hold();
 	return A;
 }

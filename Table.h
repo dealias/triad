@@ -40,7 +40,7 @@ public:
 	}
 	void Add(EntryBase<B> *ptr) {list[n++]=ptr;}
 	int Size() {return n;}
-	EntryBase<B> **Base() {return list();}
+	EntryBase<B> **Base() {return list;}
 	EntryBase<B> *Entry(int i) {return list[i];}
 	void List(ostream& os) {
 		for(int i=0; i < Size(); i++) os << Entry(i)->Key() << newl;

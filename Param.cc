@@ -10,7 +10,7 @@ static int ParamKeyCompare(const void*key, const void *p, const size_t n);
 
 void VocabularyBase::Sort()
 {
-	qsort(ParamList(),NParam,sizeof(ParamBase *),ParamCompare);
+	qsort(ParamList,NParam,sizeof(ParamBase *),ParamCompare);
 	
 	for(int i=0; i < NParam-1; i++)
 		if(ParamCompare(&ParamList[i],&ParamList[i+1]) == 0)
@@ -21,7 +21,7 @@ void VocabularyBase::Sort()
 ParamBase *VocabularyBase::Locate(char *key, int *match_type) 
 {
 	ParamBase **ptr;
-	ptr=(ParamBase **) bsearch2(key,ParamList(),NParam,sizeof(ParamBase *),
+	ptr=(ParamBase **) bsearch2(key,ParamList,NParam,sizeof(ParamBase *),
 								ParamKeyCompare,match_type);
 	if(ptr) return *ptr;
 	else return NULL;
