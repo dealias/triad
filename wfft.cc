@@ -1,6 +1,26 @@
 #include "options.h"
 #include "fft.h"
-#include "fftwlocal.h"
+
+inline void fftw_export_wisdom(void (*emitter)(char c, ofstream& s),
+			       ofstream& s)
+{
+  fftw_export_wisdom((void (*) (char, void *)) emitter, (void *) &s);
+}
+
+inline fftw_status fftw_import_wisdom(char (*g)(ifstream& s), ifstream &s)
+{
+  return fftw_import_wisdom((int (*) (void *)) g, (void *) &s);
+}
+
+inline void put_wisdom(char c, ofstream& s)
+{
+  s.put(c);
+}
+
+inline char get_wisdom(ifstream& s)
+{
+  return s.get();
+}
 
 static ifstream ifwisdom;
 static ofstream ofwisdom;
@@ -28,8 +48,8 @@ static int init_plan(unsigned int n, int inc1)
   ifwisdom.close();
 	
   int options=FFTW_MEASURE | FFTW_USE_WISDOM | FFTW_IN_PLACE;
-  plan[nplan-1]=fftw_create_plan(n, 1, options);
-  planinv[nplan-1]=fftw_create_plan(n, -1, options);
+  plan[nplan-1]=fftw_create_plan(n, (fftw_direction) 1, options);
+  planinv[nplan-1]=fftw_create_plan(n, (fftw_direction) -1, options);
 	
   ofwisdom.open(wisdom_name);
   fftw_export_wisdom(put_wisdom,ofwisdom);
@@ -176,7 +196,8 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
   if(Table[n-1] == 0) Table[n-1]=init_plan(n,inc1);
   int j=Table[n-1]-1;
 	
-  fftw((isign == 1) ? plan[j] : planinv[j],nk,data,inc1,inc2,NULL,1,1);
+  fftw((isign == 1) ? plan[j] : planinv[j],nk,
+       (fftw_complex *) data,inc1,inc2,NULL,1,1);
 	
   if(scale != 1.0) scalefft(data,n,nk,inc1,inc2,scale);
 }
