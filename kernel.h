@@ -184,7 +184,7 @@ extern VocabularyBase *Vocabulary;
 int poll();
 void read_init();
 void set_timer();
-void statistics();
+void statistics(int it);
 void lock();
 void unlock();
 void testlock();

@@ -334,12 +334,10 @@ void testlock()
 
 void dump(int it, int final, double tmax) 
 {
-	if(!restart || it > 0) {
+	if((!restart || it > 0) && (tmax-t >= 1.0E-6*tmax || final) &&
+	   t > last_dump) {
 		lock();
-		if((tmax-t >= 1.0E-6*tmax || final) && t > last_dump) {
-			Problem->Output(it); last_dump=t;
-		}
-		statistics();
+		Problem->Output(it); last_dump=t;
 		unlock();
 	}
 	
@@ -388,8 +386,10 @@ void set_timer()
 		setw(w) << "SYS" <<	endl;
 }
 
-void statistics()
+void statistics(int it)
 {
+	if(restart && it == 0) return;
+	lock();
 	fstats << setw(w) << final_iteration+iteration << " " <<
 		setw(e) << t << " " << setw(e) << dt << " " << setw(w) << 
 		invert_cnt << " ";
@@ -401,6 +401,7 @@ void statistics()
 		fstats << setw(w) << cpu[i] << " ";
 	}
 	fstats << endl;
+	unlock();
 }
 
 char *VocabularyBase::FileName(const char* delimiter, const char *suffix)
