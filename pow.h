@@ -38,6 +38,7 @@ inline Real pow(Real x, int p)
 inline int pow(int x, int p)
 {
 	if(p == 0) return 1;
+//	if(x == 2) return 1 << p;
 	if(x == 0 && p > 0) return 0;
 	if(p < 0) {p=-p; x=1/x;}
 	

@@ -35,8 +35,8 @@ public:
 
 inline int InInterval(const Cartesian& x, const Polar& a, const Polar& b)
 {
-	Real xK=x.K(), xTh=x.Th();
-	return xK >= a.K() && xK < b.K() && xTh >= a.Th() && xTh < b.Th();
+	Real xK2=x.K2(), xTh=x.Th();
+	return xK2 >= a.K2() && xK2 < b.K2() && xTh >= a.Th() && xTh < b.Th();
 }
 
 inline int operator == (const Polar& x, const Polar& y)

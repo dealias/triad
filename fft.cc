@@ -3,6 +3,7 @@
 static Complex *wpTablep,*wpTablen;
 static Complex *WTablep,*WTablen;
 static unsigned int TableSize=0, WTablepSize=0, WTablenSize=0;
+void fft(Complex *data, unsigned int log2n, int isign);
 
 void fft_init(unsigned int log2n)
 {
@@ -211,6 +212,7 @@ void rfft_br(Complex *data, unsigned int log2n)
 	
 	if(log2n > TableSize) fft_init(log2n+1);
 	fft_br(data,log2n);
+//	fft(data,log2n,1);
 	
 	unsigned int n2=1 << log2n;
 	unsigned int n4=n2/2;
@@ -259,6 +261,7 @@ void rfft_brinv(Complex *data, unsigned int log2n)
 	}
 	
 	fft_brinv(data,log2n);
+//	fft(data,log2n,-1);
 }
 
 void fft(Complex *data, unsigned int log2n, int isign)
