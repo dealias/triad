@@ -690,7 +690,7 @@ int main(int argc, char *const argv[])
 							}
 							
 							if(grey) {
-								if(index == Undefined) 
+								if(index == -1) 
 									index=PaletteMin+PaletteRange/2; 
 								for(int i2=0; i2 < mx; i2++)
 									fout << (unsigned char) index;
