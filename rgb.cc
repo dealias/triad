@@ -12,9 +12,10 @@
 static double *vmin;
 static double *vmax;
 static char *rgbdir;
+static strstream rgbdirbuf;
 static int xsize,ysize;
 
-void cleanup(char *fieldname);
+void cleanup(char *fieldname, char *type);
 void montage(int argc, char *const argf[], int n, char *const type);
 void identify(int argc, char *const argf[], int n, char *const type,
 			  int& xsize, int& ysize);
@@ -96,7 +97,10 @@ int main(int argc, char *const argv[])
 	vmax=new double[nfiles];
 	
 	rgbdir=getenv("RGB_DIR");
-	if(!rgbdir) rgbdir=".";
+	if(!rgbdir) {
+		rgbdirbuf << "/tmp" << getenv("USER") << ends;
+		rgbdir=rgbdirbuf.str();
+	}
 	
 	for(int f=0; f < nfiles; f++) {
 		char *fieldname=argf[f];
@@ -141,7 +145,8 @@ int main(int argc, char *const argv[])
 		int msep=max(2,my);
 		ysize=my*ny*nz+msep*nz+mpal;
 		
-		cleanup(fieldname);
+		cleanup(fieldname,"*.rgb");
+		cleanup(fieldname,".*.*");
 		
 		double step=(vmaxf == vminf) ? 0.0 : 1.0/(vmaxf-vminf);
 		step *= PaletteMax;
@@ -193,11 +198,11 @@ int main(int argc, char *const argv[])
 	}
 }
 
-void cleanup(char *fieldname)
+void cleanup(char *fieldname, char *type)
 {
 	strstream buf;
 // Delete old files
-	buf << "rm " << rgbdir << "/" << fieldname << ".*"
+	buf << "rm " << rgbdir << "/" << fieldname << type
 		<< "> /dev/null 2>&1" << ends;
 	char *cmd=buf.str();
 	system(cmd);
@@ -256,7 +261,9 @@ void mpeg(int, char *const argf[], int n, char *const type,
 	strstream buf;
 	buf << "mpeg -a 0 -b " << n << " -h " << xsize << " -v " << ysize
 		<< " -PF " << rgbdir << "/" << argf[0] << "." << " -s " << argf[0]
-		<< "." << type << ends;
+		<< "." << type;
+	if(!verbose) cout << "> /dev/null 2>&1";
+	buf << ends;
 	char *cmd=buf.str();
 	if(verbose) cout << cmd << endl;
 	system(cmd);
