@@ -226,9 +226,10 @@ void Partition<T,D>::GenerateWeights() {
 			for(q=p+1; q < n; q++) {
 				kpq=WeightIndex(k,p,q);
 				if(kpq > previous || first) {
-					if((coangular(&bin[k],&bin[p]) ||
-						coangular(&bin[p],&bin[q]) ||
-						coangular(&bin[q],&bin[k]))) binaverage=0.0;
+					if(!discrete && (coangular(&bin[k],&bin[p]) ||
+									 coangular(&bin[p],&bin[q]) ||
+									 coangular(&bin[q],&bin[k])))
+						binaverage=0.0;
 					else binaverage=ComputeBinAverage(&bin[k],&bin[p],&bin[q]);
 				
 					if(binaverage) {
