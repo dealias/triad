@@ -200,13 +200,13 @@ void SYM2::Predictor(double t, double dt, unsigned int start,
     y1[j]=y0[j];
   }
   Problem->BackTransform(y1,t+dt,dt,yi);
-  if(yi) set(yi,y,ny);
+//  if(yi) set(yi,y1,ny);
   Source(source,y1,t+halfdt);
   for(unsigned int j=start+1; j < stop; j += 2) {
     y1[j] += dt*source[j];
   }
   Problem->BackTransform(y1,t+dt,dt,yi);
-  if(yi) set(yi,y,ny);
+//  if(yi) set(yi,y1,ny);
   Source(source,y1,t+dt);
 }
 
