@@ -24,7 +24,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		inc2last=inc2;
 		if(n <= 2048) naux=20000;
 		else naux=20000+2.28*n;
-		if(inc2 == 1 || n >= 252) naux += (2*n+256)*min(64,nk);
+		if(inc2 == 1 || n >= 252) naux += (2*n+256)*((nk > 64) ? nk : 64);
 	
 		aux1=new(aux1,naux) Real;
 		aux2=new(aux2,naux) Real;
