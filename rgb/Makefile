@@ -4,10 +4,10 @@ POLL = poll
 
 include $(TRI)/config/Common
 
-TRIAD = rgb palette msg new getopt
-DEPEND = $(TRIAD)
+RGB = rgb palette msg new getopt
+DEPEND = $(RGB)
 
-rgb:	triad
-		mv triad $(HOME)/bin/rgb
+rgb: $(RGB:=.o)
+	$(C++) $(OPT) -o rgb $(RGB:=.o) $(LIB)
 
 include $(TRI)/config/Rules
