@@ -549,7 +549,7 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 	strstream buf;
 	
 	buf << convertprog << " -size " << xsize << "x" << ysize
-		<< " -geometry " << xsize << "x" << ysize << 
+		<< " -geometry " << xsize << "x" << ysize
 		<< option.str() << " -interlace none ";
 	if(pointsize) buf << "-pointsize " << pointsize << " ";
 	for(int f=0; f < nfiles; f++) {
