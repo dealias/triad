@@ -167,8 +167,11 @@ int PC::Corrector(double dt, double& errmax, int start, int stop)
 		Var pred=y[j];
 		y[j]=y0[j]+halfdt*(source0[j]+source[j]);
 		calc_error(y0[j],y[j],pred,y[j],errmax);
-	} else for(int j=start; j < stop; j++) {
-		y[j]=y0[j]+halfdt*(source0[j]+source[j]);
+	} else {
+		Var *y0_=y0; // Workaround Cray bug;
+		for(int j=start; j < stop; j++) {
+			y[j]=y0_[j]+halfdt*(source0[j]+source[j]);
+		}
 	}
 	return 1;
 }
@@ -202,7 +205,6 @@ void RK4::TimestepDependence(double dt)
 void RK4::Predictor(double t, double dt, int start, int stop)
 {
 	int j;
-	
 	for(j=start; j < stop; j++) y[j]=y0[j]+halfdt*source0[j];
 	Source(source1,y,t+halfdt);
 	for(j=start; j < stop; j++) y[j]=y0[j]+halfdt*source1[j];
@@ -213,13 +215,14 @@ void RK4::Predictor(double t, double dt, int start, int stop)
 
 int RK4::Corrector(double, double& errmax, int start, int stop)
 {
+	int j;
 	Var pred;
-	if(dynamic) for(int j=start; j < stop; j++) {
+	if(dynamic) for(j=start; j < stop; j++) {
 		pred=y[j];
 		y[j]=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+
 							source[j]);
 		calc_error(y0[j],y[j],pred,y[j],errmax);
-	} else for(int j=start; j < stop; j++) {
+	} else for(j=start; j < stop; j++) {
 		y[j]=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+
 							source[j]);
 	}
@@ -245,7 +248,6 @@ void RK5::TimestepDependence(double dt)
 void RK5::Predictor(double t, double, int start, int stop)
 {
 	int j;
-	
 #pragma ivdep		
 	for(j=start; j < stop; j++) {
 		y[j].re=y0[j].re+b10*source0[j].re;
@@ -289,7 +291,6 @@ void RK5::Predictor(double t, double, int start, int stop)
 void RK5::Predictor(double t, double, int start, int stop)
 {
 	int j;
-	
 #pragma ivdep		
 	for(j=start; j < stop; j++) y[j]=y0[j]+b10*source0[j];
 	Source(source,y,t+a1);
