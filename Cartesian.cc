@@ -85,9 +85,11 @@ void DiscretePad(Var *to, Var *from, Real *norm)
 {
 	int k=0;
 	Var *tostop=to+xoffset-Nx0;
+#pragma ivdep		
 	for(; to < tostop; to++) *to=0.0;
 	tostop += Nx0;
 	Var *s=from+Nx0;
+#pragma ivdep		
 	for(; to < tostop; to++) *to=conj(*(--s));
 	*(to++)=0.0;
 	tostop=to+Nx0;
@@ -119,9 +121,11 @@ void CartesianPad(Var *to_, Var *from)
 {
 	Var *to=to_;
 	Var *tostop=to+xoffset-Nx0;
+#pragma ivdep		
 	for(; to < tostop; to++) *to=0.0;
 	tostop += Nx0;
 	const Var *s=from+Nx0;
+#pragma ivdep		
 	for(; to < tostop; to++) *to=conj(*(--s));
 	*(to++)=0.0;
 	tostop=to+Nx0;
