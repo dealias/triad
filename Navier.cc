@@ -246,14 +246,14 @@ void NWave::InitialConditions()
 			
 			xcoeff=new Complex [ngridx*Npsi];
 			for(m=0; m < Npsi; m++) {
-//				Real sqrtArea=sqrt(Geometry->Area(m));
-				Real DkDxinv=1.0/(Dx*Geometry->Area(m));
+				Real sqrtArea=sqrt(Geometry->Area(m));
+//				Real DkDxinv=1.0/(Dx*Geometry->Area(m));
 				Real kx=Geometry->X(m);
 				for(i=0; i < ngridx; i++) {
 					Complex *p=xcoeff+i*Npsi;
 					Real X=i*L/ngridx;
-//					p[m]=expi(kx*X)*sqrtArea;
-					p[m]=expi(kx*X*DkDxinv);
+					p[m]=expi(kx*X)*sqrtArea;
+//					p[m]=expi(kx*X*DkDxinv);
 				}				
 			}
 			
@@ -264,7 +264,8 @@ void NWave::InitialConditions()
 				for(int j=0; j < ngridy; j++) {
 					Complex *q=ycoeff+j*Npsi;
 					Real Y=j*L/ngridy;
-					q[m]=expi(ky*Y*DkDxinv);
+					q[m]=expi(ky*Y)*sqrtArea;
+//					q[m]=expi(ky*Y*DkDxinv);
 				}
 			}
 		}
