@@ -23,7 +23,7 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #define __Complex_h__ 1
 
 #define __ATT_complex__
-#define __MATH_EXTENSIONS
+/* #define __MATH_EXTENSIONS */
 
 #include <iostream.h>
 #include <math.h>

@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <limits.h>
 #define _ANSI_C_SOURCE
-#define __MATH_EXTENSIONS
 #include <math.h>
 #include <errno.h>
 #include <time.h>
