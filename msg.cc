@@ -79,7 +79,10 @@ void msg(int severity, char *file, int line, char *format,...)
 			buf << ((severity == SLEEP_ && __unix) ? "paused" : "terminated")
 				<< " due to error";
 			if(*file) buf << " from \"" << file << "\":" << line;
-			buf << "." << newl << vbuf.str() << ends;
+			buf << "." << newl << vbuf.str();
+			if(errno && errno < sys_nerr)
+				buf << " " << sys_errlist[errno] << ".";
+			buf << ends;
 			(*inform)(buf.str());
 		}
 		if(severity == SLEEP_ && __unix) {

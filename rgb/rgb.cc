@@ -112,7 +112,7 @@ Real zmax=1.0;
 int begin=0;
 int skip=1; 
 	
-int nslice=40;
+int nslice=20;
 
 const int Undefined=-2;
 int background=Undefined;
@@ -1193,6 +1193,11 @@ public:
 	Cartesian(Real x_, Real y_, Real z_) : x(x_), y(y_), z(z_) {}
 };
 
+inline double hypot(double x, double y)
+{
+	return sqrt(x*x+y*y);
+}
+
 class Toroidal {
 public:
 	Real r;
@@ -1220,8 +1225,22 @@ public:
 		}
 	}
 	
+	int InR() {
+		return (0 <= r && r <= nx-1);
+	}
+	
+	int InPhi() {
+		return (phi >= 0 && phi <= cutoff);
+	}
+	
 	int InRange() {
-		return (0 <= r && r <= nx-1 && phi >= 0 && phi <= cutoff);
+		return InR() && InPhi();
+	}
+	
+	Real Distance() {
+		Real x=InR() ? 0.0 : min(-r,r-(nx-1));
+		Real y=InPhi() ? 0.0 : min(twopi-phi,phi-cutoff);
+		return x*x+y*y;
 	}
 	
 	Toroidal(Cartesian P) {SetCartesian(P.x,P.y,P.z);}
@@ -1269,24 +1288,25 @@ void Torus(Array2<Ivec>& Index)
 	Azx=0.0;			Azy=sinTheta;			Azz=cosTheta;
 	
 	Real Pzinv=1.0/Pz;
-	Real projection0=1.0-Pzinv*Pz;
 	unsigned int last=0;
+	Real nsliceinv=1.0/nslice;
+	int npass=3;
 	for(int u=0; u < Nx; u++) {
 		for(int v=0; v < Ny; v++) {
 			unsigned int detected=0;
-			int nsearch=nslice;
 			Real u0=u-uoffset;
 			Real v0=(Ny-v)-voffset;
 			Toroidal T;
-			Real maxz=0;
-			Real minz=0;
-			for(int pass=0; pass < 2; pass++) {
-				minz=-Pz;
-				Real z=maxz=Pz;
-				Real deltaz=(maxz-minz)/nsearch;
-				Real deltazPzinv=Pzinv*deltaz;
-				Real projection=projection0;
-				for(int n=0; n < nsearch; n++) {
+			Real dmin=REAL_MAX;
+			Real z0=Pz;
+			Real deltaz=0.0;
+			Real minz=-Pz;
+			Real maxz=Pz;
+			for(int pass=0; pass < npass; pass++) {
+				deltaz=(maxz-minz)*nsliceinv;
+				Real z=maxz;
+				for(int n=0; n < nslice; n++) {
+					Real projection=1.0-Pzinv*z;
 					Real x=u0*projection;
 					Real y=v0*projection;
 					Real xp=Axx*x+Axy*y+Axz*z;
@@ -1299,17 +1319,27 @@ void Torus(Array2<Ivec>& Index)
 						last=detected=1;
 						break;
 					}
+					
+					if(pass < npass-1) {
+						Real distance=T.Distance();
+						if (distance < dmin) {
+							dmin=distance;
+							z0=z;
+						}
+					}
+					
 					maxz=z;
 					z -= deltaz;
-					projection += deltazPzinv;
 				}
 				if(detected) break;
-				else nsearch *= 10;
+
+				minz=z0-deltaz;
+				maxz=z0+deltaz;
 			}
 			
 			if(detected) {
 				Toroidal T0;
-				for(int n=0; n < 25; n++) {
+				for(int n=0; n < 20; n++) {
 					Real z=0.5*(maxz+minz);
 					Real projection=1.0-Pzinv*z;
 					Real x=u0*projection;
