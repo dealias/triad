@@ -1,9 +1,7 @@
 #ifndef __Polar_h__
 #define __Polar_h__ 1
 
-#include "types.h"
-#include "Bin.h"
-#include "Geometry.h"
+#include "Partition.h"
 
 // Polar vocabulary
 extern int Nr;
@@ -18,7 +16,7 @@ extern Real kthneg;
 
 class Polar {
 public:	
-	Real r,th;	// central wavenumber components
+	Real r,th;	// wavenumber components
 //	int a;		// field index
 	
 	Polar(Real r0=0.0, Real th0=0.0) : r(r0), th(th0) {}
@@ -26,6 +24,13 @@ public:
 	Polar& operator = (const Polar& y) {
 		r=y.r; th=y.th; return *this; 
 	} 
+	
+	Real mag2() {return r*r;}
+	
+	Real K() const {return r;}
+	Real Th() {return th;}
+	Real Kx() {return r*cos(th);}
+	Real Ky() {return r*sin(th);}
 };
 
 inline int operator > (const Polar& x, const Polar& y)
@@ -74,29 +79,10 @@ inline ostream& operator << (ostream& os, const Polar& y) {
 	return os;
 }
 	
+
 inline Real Bin<Polar>::Area()
 {
 	return 0.5*(max.r*max.r-min.r*min.r)*(max.th-min.th);
-}
-
-inline Real Bin<Polar>::K()
-{
-	return cen.r;
-}
-
-inline Real Bin<Polar>::Th()
-{
-	return cen.th;
-}
-
-inline Real Bin<Polar>::Kx()
-{
-	return cen.r*cos(cen.th);
-}
-
-inline Real Bin<Polar>::Ky()
-{
-	return cen.r*sin(cen.th);
 }
 
 inline int coangular(Bin<Polar> *k, Bin<Polar> *p)
@@ -120,7 +106,7 @@ Real BinAverage(Bin<Polar> *k, Bin<Polar> *p, Bin<Polar> *q,
 
 // For Navier-Stokes turbulence (velocity normalization):
 
-inline Mc Partition<Polar>::Ckpq(Polar, Polar P, Polar Q)
+inline Mc Partition<Polar>::Ckpq(Polar&, Polar& P, Polar& Q)
 {
 	return (Q.r-P.r)*(Q.r+P.r);
 }

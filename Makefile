@@ -10,7 +10,7 @@ include config/$(HOSTTYPE)
 UTILS = utils.o strcasecmp.o new.o $(POLL) $(ARCH)
 CORE = kernel.o Approx.o Integrator.o Param.o $(UTILS)
 POLAR = Polar.o PolarAverage.o simpfast.o
-TRIAD = $(CORE) NWave.o Geometry.o $(POLAR)
+TRIAD = $(CORE) NWave.o Geometry.o Cartesian.o $(POLAR)
 
 
 .SUFFIXES: .cc
@@ -40,7 +40,8 @@ clean:
 depend:
 	$(MAKEDEPEND) $(MDOPT) -I /usr/local/include \
 	kernel.cc Approx.cc Integrator.cc Param.cc ThreeWave.cc \
-	Navier.cc NWave.cc Geometry.cc Polar.cc PolarAverage.cc simpfast.cc \
+	Navier.cc NWave.cc Geometry.cc Cartesian.cc \
+	Polar.cc PolarAverage.cc simpfast.cc \
 	Kepler.cc Lotka.cc utils.cc strcasecmp.cc new.cc poll.cc \
 	idle.cc unix.cc
 
@@ -144,7 +145,7 @@ ThreeWave.o: /usr/local/lib/gcc-include/float.h /usr/include/values.h
 ThreeWave.o: /usr/local/include/i386/__math.h arch/i386.h
 ThreeWave.o: /usr/local/include/i386/extensions.h new.h precision.h Complex.h
 ThreeWave.o: pow.h types.h DynVector.h Table.h Param.h Integrator.h Approx.h
-ThreeWave.o: Geometry.h Pair.h Bin.h
+ThreeWave.o: Geometry.h Partition.h Basis.h
 Navier.o: NWave.h kernel.h /usr/lib/g++-include/iostream.h
 Navier.o: /usr/lib/g++-include/streambuf.h /usr/lib/g++-include/libio.h
 Navier.o: /usr/lib/g++-include/_G_config.h /usr/lib/g++-include/fstream.h
@@ -164,7 +165,7 @@ Navier.o: /usr/include/nan.h /usr/local/lib/gcc-include/float.h
 Navier.o: /usr/include/values.h /usr/local/include/i386/__math.h arch/i386.h
 Navier.o: /usr/local/include/i386/extensions.h new.h precision.h Complex.h
 Navier.o: pow.h types.h DynVector.h Table.h Param.h Integrator.h Approx.h
-Navier.o: Geometry.h Pair.h Bin.h Polar.h
+Navier.o: Geometry.h Partition.h Basis.h Polar.h Cartesian.h
 NWave.o: NWave.h kernel.h /usr/lib/g++-include/iostream.h
 NWave.o: /usr/lib/g++-include/streambuf.h /usr/lib/g++-include/libio.h
 NWave.o: /usr/lib/g++-include/_G_config.h /usr/lib/g++-include/fstream.h
@@ -183,7 +184,7 @@ NWave.o: /usr/include/nan.h /usr/local/lib/gcc-include/float.h
 NWave.o: /usr/include/values.h /usr/local/include/i386/__math.h arch/i386.h
 NWave.o: /usr/local/include/i386/extensions.h new.h precision.h Complex.h
 NWave.o: pow.h types.h DynVector.h Table.h Param.h Integrator.h Approx.h
-NWave.o: Geometry.h Pair.h Bin.h
+NWave.o: Geometry.h Partition.h Basis.h
 Geometry.o: NWave.h kernel.h /usr/lib/g++-include/iostream.h
 Geometry.o: /usr/lib/g++-include/streambuf.h /usr/lib/g++-include/libio.h
 Geometry.o: /usr/lib/g++-include/_G_config.h /usr/lib/g++-include/fstream.h
@@ -203,7 +204,28 @@ Geometry.o: /usr/include/nan.h /usr/local/lib/gcc-include/float.h
 Geometry.o: /usr/include/values.h /usr/local/include/i386/__math.h
 Geometry.o: arch/i386.h /usr/local/include/i386/extensions.h new.h
 Geometry.o: precision.h Complex.h pow.h types.h DynVector.h Table.h Param.h
-Geometry.o: Integrator.h Approx.h Geometry.h Pair.h Bin.h
+Geometry.o: Integrator.h Approx.h Geometry.h Partition.h Basis.h
+Cartesian.o: kernel.h /usr/lib/g++-include/iostream.h
+Cartesian.o: /usr/lib/g++-include/streambuf.h /usr/lib/g++-include/libio.h
+Cartesian.o: /usr/lib/g++-include/_G_config.h /usr/lib/g++-include/fstream.h
+Cartesian.o: /usr/include/stdio.h /usr/local/lib/gcc-include/limits.h
+Cartesian.o: /usr/local/lib/gcc-include/syslimits.h /usr/include/errno.h
+Cartesian.o: /usr/include/features.h /usr/include/sys/cdefs.h
+Cartesian.o: /usr/include/linux/errno.h /usr/include/time.h
+Cartesian.o: /usr/lib/g++-include/string.h /usr/lib/g++-include/cstring
+Cartesian.o: /usr/lib/g++-include/std/cstring.h
+Cartesian.o: /usr/lib/g++-include/std/cstddef.h
+Cartesian.o: /usr/lib/g++-include/std/stddef.h utils.h
+Cartesian.o: /usr/local/lib/gcc-include/stdarg.h /usr/include/stdlib.h
+Cartesian.o: /usr/include/alloca.h /usr/include/math.h
+Cartesian.o: /usr/include/huge_val.h /usr/include/endian.h
+Cartesian.o: /usr/include/bytesex.h /usr/include/linux/version.h
+Cartesian.o: /usr/include/asm/byteorder.h /usr/include/nan.h
+Cartesian.o: /usr/local/lib/gcc-include/float.h /usr/include/values.h
+Cartesian.o: /usr/local/include/i386/__math.h arch/i386.h
+Cartesian.o: /usr/local/include/i386/extensions.h new.h precision.h Complex.h
+Cartesian.o: pow.h types.h DynVector.h Table.h Param.h Integrator.h Approx.h
+Cartesian.o: Geometry.h Basis.h Cartesian.h
 Polar.o: kernel.h /usr/lib/g++-include/iostream.h
 Polar.o: /usr/lib/g++-include/streambuf.h /usr/lib/g++-include/libio.h
 Polar.o: /usr/lib/g++-include/_G_config.h /usr/lib/g++-include/fstream.h
@@ -222,29 +244,30 @@ Polar.o: /usr/include/nan.h /usr/local/lib/gcc-include/float.h
 Polar.o: /usr/include/values.h /usr/local/include/i386/__math.h arch/i386.h
 Polar.o: /usr/local/include/i386/extensions.h new.h precision.h Complex.h
 Polar.o: pow.h types.h DynVector.h Table.h Param.h Integrator.h Approx.h
-Polar.o: Geometry.h Pair.h Bin.h Polar.h
-PolarAverage.o: Polar.h types.h precision.h
-PolarAverage.o: /usr/local/lib/gcc-include/float.h Complex.h
+Polar.o: Polar.h Partition.h Geometry.h
+PolarAverage.o: Polar.h Partition.h /usr/include/errno.h
+PolarAverage.o: /usr/include/features.h /usr/include/sys/cdefs.h
+PolarAverage.o: /usr/include/linux/errno.h Geometry.h kernel.h
 PolarAverage.o: /usr/lib/g++-include/iostream.h
 PolarAverage.o: /usr/lib/g++-include/streambuf.h /usr/lib/g++-include/libio.h
-PolarAverage.o: /usr/lib/g++-include/_G_config.h /usr/include/math.h
-PolarAverage.o: /usr/include/features.h /usr/include/sys/cdefs.h
+PolarAverage.o: /usr/lib/g++-include/_G_config.h
+PolarAverage.o: /usr/lib/g++-include/fstream.h /usr/include/stdio.h
+PolarAverage.o: /usr/local/lib/gcc-include/limits.h
+PolarAverage.o: /usr/local/lib/gcc-include/syslimits.h /usr/include/time.h
+PolarAverage.o: /usr/lib/g++-include/string.h /usr/lib/g++-include/cstring
+PolarAverage.o: /usr/lib/g++-include/std/cstring.h
+PolarAverage.o: /usr/lib/g++-include/std/cstddef.h
+PolarAverage.o: /usr/lib/g++-include/std/stddef.h utils.h
+PolarAverage.o: /usr/local/lib/gcc-include/stdarg.h /usr/include/stdlib.h
+PolarAverage.o: /usr/include/alloca.h /usr/include/math.h
 PolarAverage.o: /usr/include/huge_val.h /usr/include/endian.h
 PolarAverage.o: /usr/include/bytesex.h /usr/include/linux/version.h
 PolarAverage.o: /usr/include/asm/byteorder.h /usr/include/nan.h
-PolarAverage.o: /usr/include/values.h /usr/local/include/i386/__math.h Bin.h
-PolarAverage.o: utils.h /usr/lib/g++-include/std/stddef.h
-PolarAverage.o: /usr/lib/g++-include/std/cstddef.h
-PolarAverage.o: /usr/local/lib/gcc-include/stdarg.h /usr/include/stdlib.h
-PolarAverage.o: /usr/include/errno.h /usr/include/linux/errno.h
-PolarAverage.o: /usr/include/alloca.h /usr/lib/g++-include/fstream.h
-PolarAverage.o: arch/i386.h /usr/local/include/i386/extensions.h new.h pow.h
-PolarAverage.o: /usr/local/lib/gcc-include/limits.h
-PolarAverage.o: /usr/local/lib/gcc-include/syslimits.h Geometry.h kernel.h
-PolarAverage.o: /usr/include/stdio.h /usr/include/time.h
-PolarAverage.o: /usr/lib/g++-include/string.h /usr/lib/g++-include/cstring
-PolarAverage.o: /usr/lib/g++-include/std/cstring.h DynVector.h Table.h
-PolarAverage.o: Param.h Integrator.h Approx.h Pair.h
+PolarAverage.o: /usr/local/lib/gcc-include/float.h /usr/include/values.h
+PolarAverage.o: /usr/local/include/i386/__math.h arch/i386.h
+PolarAverage.o: /usr/local/include/i386/extensions.h new.h precision.h
+PolarAverage.o: Complex.h pow.h types.h DynVector.h Table.h Param.h
+PolarAverage.o: Integrator.h Approx.h
 simpfast.o: /usr/include/math.h /usr/include/features.h
 simpfast.o: /usr/include/sys/cdefs.h /usr/include/huge_val.h
 simpfast.o: /usr/include/endian.h /usr/include/bytesex.h

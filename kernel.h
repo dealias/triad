@@ -52,7 +52,6 @@ public:
 enum Solve_RC {NONINVERTIBLE=-1,UNSUCCESSFUL,SUCCESSFUL,ADJUST};
 
 typedef void Source_t(Var *, Var *, double);
-extern Source_t *LinearSrc,*NonlinearSrc,*ConstantSrc;
 
 class IntegratorBase {
 protected:
@@ -106,9 +105,14 @@ KeyCompare_t IntegratorKeyCompare;
 extern IntegratorBase *Integrator;
 
 class ApproximationBase {
+protected:	
+	char *abbrev;
 public:	
-	void (*SourceRtn)(Var *);
+	void SetAbbrev(char *abbrev0) {abbrev=abbrev0;}
+	char *Abbrev() {return abbrev;}
 	virtual char *Name()=0;
+	virtual void SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
+								Source_t **ConstantSrc)=0;
 };
 
 Compare_t ApproximationCompare;
@@ -143,7 +147,9 @@ public:
 	}
 	
 	ApproximationBase *NewApproximation(char *key) {
-		return ApproximationTable->Locate(key);
+		ApproximationBase *p=ApproximationTable->Locate(key);
+		p->SetAbbrev(upcase(key));
+		return p;
 	}
 	
 	Var *Vector() {return y;}

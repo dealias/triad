@@ -13,21 +13,18 @@ static Nu nu0[]={0.0,0.0,0.0};
 static Var IC[]={sqrt(1.5),0.0,sqrt(1.5)};
 Real Area0[]={1.0,1.0,1.0};
 Real *K,*Area=Area0,*y2;
-Real continuum_factor=1.0;
+Real continuum_factor;
 
 NWave::NWave()
 {
 	Problem=this;
+	reality=0;
 	
 	VOCAB(randomIC,0,1);
 	
 	VOCAB_ARRAY(Mkpq);
 	VOCAB_ARRAY(IC);
 	VOCAB_ARRAY(nu0);
-	
-	reality=0;
-	LinearSrc=StandardLinearity;
-	NonlinearSrc=PrimitiveNonlinearity;
 	
 	APPROXIMATION(None);
 	
@@ -40,6 +37,15 @@ NWave::NWave()
 	INTEGRATOR(C_RK4);
 	INTEGRATOR(E_RK4);
 	INTEGRATOR(C_RK5);
+}
+
+void None::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
+							  Source_t **ConstantSrc);
+{
+	*LinearSrc=StandardLinearity;
+	*NonlinearSrc=PrimitiveNonlinearitySR;
+	*ConstantSrc=ConstantForcing;
+	continuum_factor=1.0;
 }
 
 NWave ThreeWaveProblem;

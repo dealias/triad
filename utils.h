@@ -24,19 +24,30 @@
 #include "Complex.h"
 #include "pow.h"
 
-inline int isgn(const Real x)
-{
-	return ((x) == 0.0 ? 0 : ((x) > 0.0 ? 1 : -1));
-}
-
 extern const double pi;
 extern const double twopi;
 extern const double twopi2;
 
 extern char beep;
 
+inline int isgn(const Real x)
+{
+	return ((x) == 0.0 ? 0 : ((x) > 0.0 ? 1 : -1));
+}
+
+// x mod n in [0,n) where n > 0 (implementation-independent definition)
+inline int mod(int x, int n)
+{
+	return x < 0 ? (n-(-x % n)) % n : x % n;
+}
+
+inline Real dmod(Real x, Real n) {
+	return x < 0 ? x-floor(x/n)*n : fmod(x,n);
+}
+
 template<class T>
-inline void swap(T& p, T& q) {
+inline void swap(T& p, T& q)
+{
 	T temp; temp=p; p=q; q=temp;
 }
 

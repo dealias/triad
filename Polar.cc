@@ -1,5 +1,4 @@
 #include "kernel.h"
-#include "Geometry.h"
 #include "Polar.h"
 
 // Polar vocabulary
@@ -88,6 +87,8 @@ void Partition<Polar>::MakeBins() // Radial: logarithmic, Angular: uniform
 	
 	n=Nr*Nth;
 	p=bin=new Bin<Polar>[n];
+	Nmode=Nr*Nthpos;
+	nindependent=(reality || Nth % 2) ? Nmode : Nmode/2;
 	
 	for(j=0; j < Nth; j++) {
 		for(i=0; i < Nr; i++) {
@@ -100,7 +101,6 @@ void Partition<Polar>::MakeBins() // Radial: logarithmic, Angular: uniform
 			p++;
 		}
 	}
-	Nmode=Nr*Nthpos;
 	return;
 }
 
@@ -108,8 +108,8 @@ void Partition<Polar>::MakeBins() // Radial: logarithmic, Angular: uniform
 static const Real linacc=0.01;
 static const Real dxmax=REAL_MAX;
 
-Real growth(const Polar&);
-Real frequency(const Polar&);
+Real frequency(const Polar& v);
+Real growth(const Polar& v);
 
 static Real k0;
 static Bin<Polar> b;
@@ -142,7 +142,7 @@ static Real ThAveragedFrequency(Real k) {
 	return k*ans;
 }
 
-void ComputeBinAveragedLinearity(Real& nu)
+void BinAveragedLinearity(Real& nu)
 {
 	Real ans;
 	int iflag;
@@ -151,22 +151,22 @@ void ComputeBinAveragedLinearity(Real& nu)
 	nu=-ans;
 }
 
-void ComputeBinAveragedLinearity(Complex& nu)
+void BinAveragedLinearity(Complex& nu)
 {
 	Real ans;
 	int iflag;
-	ComputeBinAveragedLinearity(ans);
+	BinAveragedLinearity(ans);
 	nu=ans;
 	if(!simpfast(ThAveragedFrequency,b.min.r,b.max.r,linacc,
 				 ans,dxmax,iflag)) msg(ERROR,"Simp returned code %d",iflag);
 	nu+=I*ans;
 }
 
-Nu Partition<Polar>::BinAveragedLinearity(int i)
+Nu Partition<Polar>::Linearity(int i)
 {
 	Nu nu;
 	b=bin[i];
-	ComputeBinAveragedLinearity(nu);
+	BinAveragedLinearity(nu);
 	return nu/Area(i);
 }
 

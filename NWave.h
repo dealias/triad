@@ -3,6 +3,12 @@
 
 #include "kernel.h"
 #include "Geometry.h"
+#include "Partition.h"
+#include "Basis.h"
+
+extern int Npsi;   // number of explictly evolved modes
+extern int NpsiR;  // number of reflected modes
+extern int Ntotal; // total number of (evolved+reflected) modes
 
 extern Nu *nu,*nu_inv;
 extern Real *nuR_inv,*nuI;

@@ -13,9 +13,6 @@ int invert_cnt=0;
 
 IntegratorBase *Integrator;
 ApproximationBase *Approximation;
-Source_t *LinearSrc;
-Source_t *NonlinearSrc;
-Source_t *ConstantSrc;
 
 // Kernel variables
 static Var *y;
@@ -26,6 +23,7 @@ static double cpu[ncputime],cpu0[ncputime];
 static final_iteration=0;
 static int total_invert_cnt=0;
 void Integrand(Var *, Var *, double);
+Source_t *LinearSrc=NULL,*NonlinearSrc=NULL,*ConstantSrc=NULL;
 
 static char *pname,*rname,*iname,*ptemp,*rtemp,*lname;
 static ifstream fparam,fin;
@@ -84,10 +82,6 @@ ProblemBase::ProblemBase()
 	VOCAB(output,0,1);
 	VOCAB(approximation,"","");
 	VOCAB(integrator,"","");
-	
-	LinearSrc=NULL;
-	NonlinearSrc=NULL;
-	ConstantSrc=NULL;
 	
 	ApproximationTable=new Table<ApproximationBase>("approximation",
 													ApproximationCompare,
@@ -205,6 +199,7 @@ int main(int argc, char *argv[])
 	
 	adjust_parameters(dt,dtmax,tmax,itmax);
 	
+	Approximation->SetSrcRoutines(&LinearSrc,&NonlinearSrc,&ConstantSrc);
 	Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,
 						 dtmax,itmax,microsteps,Problem->Nconserve(),verbose);
 	

@@ -7,11 +7,15 @@
 class SR : public ApproximationBase {
 public:
 	char *Name() {return "Spectral Reduction";}
+	void SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
+						Source_t **ConstantSrc);
 };
 
 class None : public ApproximationBase {
 public:
 	char *Name() {return "None";}
+	void SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
+						Source_t **ConstantSrc);
 };
 
 #endif

@@ -1,5 +1,6 @@
 #include "NWave.h"
 #include "Polar.h"
+#include "Cartesian.h"
 
 char *NWave::Name() {return "N-Wave";}
 char *NWave::Abbrev() {return "nw";}
@@ -21,8 +22,8 @@ Real nu0=0.0;
 Real force=0.0;
 Real tauforce=0.0;
 
-Real kL=0.0;
-Real kH=0.9*DBL_MAX;
+Real kL=0.9*DBL_MAX;
+Real kH=0.0;
 
 Real nuL=0.0;
 Real nuH=0.0;
@@ -31,6 +32,9 @@ int pL=-2;
 int pH=1;
 
 int randomIC=1;
+
+int Nx=8;
+int Ny=8;
 
 NWave::NWave()
 {
@@ -63,19 +67,19 @@ NWave::NWave()
 	
 	VOCAB(randomIC,0,1);
 	
+	VOCAB(Nx,1,INT_MAX);
+	VOCAB(Ny,1,INT_MAX);
+	
 	VOCAB(Nr,1,INT_MAX);
 	VOCAB(Nth,1,INT_MAX);
 	VOCAB(krmin,0.0,DBL_MAX);
 	VOCAB(krmax,0.0,DBL_MAX);
 	VOCAB(kthmin,0.0,twopi);
 	
-	LinearSrc=StandardLinearity;
-	NonlinearSrc=PrimitiveNonlinearitySR;
-	ConstantSrc=ConstantForcing;
-	
 	GeometryTable=new Table<GeometryBase>("Geometry",GeometryCompare,
 										  GeometryKeyCompare);
 	APPROXIMATION(SR);
+	APPROXIMATION(None);
 	
 	INTEGRATOR(C_Euler);
 	INTEGRATOR(C_PC);
@@ -87,7 +91,26 @@ NWave::NWave()
 	INTEGRATOR(E_RK4);
 	INTEGRATOR(C_RK5);
 	
-	GEOMETRY(Polar);
+	PARTITION(Polar);
+	BASIS(Cartesian);
+}
+
+void SR::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
+						Source_t **ConstantSrc)
+{
+	*LinearSrc=StandardLinearity;
+	*NonlinearSrc=PrimitiveNonlinearitySR;
+	*ConstantSrc=ConstantForcing;
+	continuum_factor=1.0/twopi2;
+}
+
+void None::SetSrcRoutines(Source_t **LinearSrc, Source_t **NonlinearSrc,
+						  Source_t **ConstantSrc)
+{
+	*LinearSrc=StandardLinearity;
+	*NonlinearSrc=PrimitiveNonlinearity;
+	*ConstantSrc=ConstantForcing;
+	continuum_factor=1.0;
 }
 
 NWave NWaveProblem;
@@ -101,7 +124,7 @@ Real forcek(int i)
 
 Real growth(const Polar& v) 
 {
-	Real k=v.r;
+	Real k=v.K();
 	Real gamma=0.0;
 	if(k <= kL) gamma -= pow(k,pL)*nuL*pow(k,pL);
 	if(abs(k-kforce) < 0.5*deltaf) gamma += gammaf/deltaf;
@@ -114,24 +137,22 @@ Real frequency(const Polar&)
 	return 0.0;
 }
 
-void ComputeLinearity(int i, Real& nu)
+void ComputeLinearity(const Polar& v, Real& nu)
 {
-	Real k=Geometry->K(i);
-	Real th=Geometry->Th(i);
-	nu=-growth(Polar(k,th));
+	nu=-growth(v);
 }
 
-void ComputeLinearity(int i, Complex& nu)
+void ComputeLinearity(const Polar& v, Complex& nu)
 {
-	Real k=Geometry->K(i);
-	Real th=Geometry->Th(i);
-	nu=-growth(Polar(k,th))+I*frequency(Polar(k,th));
+	nu=-growth(v)+I*frequency(v);
 }
 
-inline Nu Linearity(int i)
+Nu LinearityAt(int i)
 {
 	Nu nu;
-	ComputeLinearity(i,nu);
+	Real k=Geometry->K(i);
+	Real th=Geometry->Th(i);
+	ComputeLinearity(Polar(k,th),nu);
 	return nu;
 }
 
@@ -143,7 +164,7 @@ static Real equilibrium(int i)
 
 static ofstream fparam,fevt,fekvt,favgy[Nmoment],fprolog;
 Real *K,*Th,*Area,*y2;
-Real continuum_factor=1.0/twopi2;
+Real continuum_factor;
 static Real *equil;
 static Complex *nuC;
 
@@ -152,6 +173,9 @@ void NWave::InitialConditions()
 	int i,n;
 	
 	Geometry=GeometryProblem->NewGeometry(geometry);
+	if(strcmp(Geometry->Approximation(),Approximation->Abbrev()) != 0)
+		msg(ERROR,"Geometry \"%s\" is incompatible with Approximation \"%s\"",
+			Geometry->Name(),Approximation->Name());
 	nyconserve=Npsi=Geometry->Create();
 	Ntotal=Geometry->TotalNumber();
 	NpsiR=Ntotal-Npsi;
@@ -168,7 +192,7 @@ void NWave::InitialConditions()
 	Area=new Real[Npsi];
 	
 	for(i=0; i < Npsi; i++) {
-		nuC[i]=nu[i]=Geometry->BinAveragedLinearity(i);
+		nuC[i]=nu[i]=Geometry->Linearity(i);
 		equil[i]=equilibrium(i);
 		y[i]=sqrt(2.0*equil[i]);
 		K[i]=Geometry->K(i);
@@ -181,13 +205,13 @@ void NWave::InitialConditions()
 	// If reality condition is not explicitly enforced and the number of
 	// angular bins is even, force the initial conditions to respect reality. 
 	if(randomIC) {
-		n=(reality || Npsi % 2) ? Npsi : Npsi/2;
-		for(i=0; i < n; i++) {
+		int nindependent=Geometry->IndependentNumber();
+		for(i=0; i < nindependent; i++) {
 			Var w;
 			crand_gauss(&w);
 			y[i] *= w;
 		}
-		for(i=n; i < Npsi; i++) y[i]=conj(y[i-n]);
+		for(i=nindependent; i < Npsi; i++) y[i]=conj(y[i-nindependent]);
 	}
 	
 	open_output(fparam,dirsep,"param",0);

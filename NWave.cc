@@ -3,17 +3,21 @@
 int Npsi;
 int NpsiR;
 int Ntotal;
-int Ntriad;
 
-// Reality condition flag 
 // (0 => evolve all modes, 1 => evolve only half of the modes).
-int reality=1;	
+int reality=1; // Reality condition flag 
 
 Var *psibuffer,*psibufferStop,*pqbuffer;
 Var **pqIndex,*psibufferR;
 int *qStart;
+
+int Ntriad;
 DynVector<Triad> triad;
 TriadLimits *triadLimits;
+
+int Nchainp,Nchainn;
+DynVector<Chain> chainp,chainn;
+Chain *chainpBase,*chainnBase;
 
 Nu *nu,*nu_inv;
 Real *nuR_inv,*nuI;
@@ -84,8 +88,43 @@ void PrimitiveNonlinearitySR(Var *source, Var *psi, double)
 	}
 }
 
-void PrimitiveNonlinearity(Var *, Var *, double)
+void PrimitiveNonlinearity(Var *source, Var *psi, double)
 {
+	set(psibuffer,psi,Npsi);
+	
+	// Compute reflected psi's
+#pragma ivdep		
+	for(Var *k=psibuffer; k < psibufferR; k++) conjugate(*(k+Npsi),*k);
+	
+	for(int i=0; i < Npsi; i++) source[i]=0.0;
+		
+	for(int i=0; i < Nchainp; i++) {
+		Chain *c=chainpBase+i;
+		Var *p=c->pstart, *pstop=c->pstop, *q=c->qstart;
+		Mc *m=c->Mkpq;
+		Var sum;
+		for(sum=0.0; p < pstop; m++,p++,q++) sum += (*m)*(*p)*(*q);
+		source[c->k] += sum;
+	}
+	for(int i=0; i < Nchainn; i++) {
+		Chain *c=chainnBase+i;
+		Var *p=c->pstart, *pstop=c->pstop, *q=c->qstart;
+		Mc *m=c->Mkpq;
+		Var sum;
+		for(sum=0.0; p < pstop; m++,p++,q--) sum += (*m)*(*p)*(*q);
+		source[c->k] += sum;
+	}
+	
+	// Compute moments
+	if(average && Nmoment > 0) {
+		Var *k, *q=source+Npsi, *kstop=psibuffer+Npsi;
+#pragma ivdep
+		for(k=psibuffer; k < kstop; k++, q++) *q=product(*k,*k);   // psi^2
+		for(int n=1; n < Nmoment; n++) { // psi^n
+#pragma ivdep
+			for(k=psibuffer; k < kstop; k++, q++) *q=product(*(q-Npsi),*k);
+		}
+	}
 }
 
 void StandardLinearity(Var *source, Var *psi, double)
