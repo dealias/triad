@@ -42,13 +42,22 @@ class PC : public IntegratorBase {
 protected:
 	int new_y0;
 	Var *y,*y1,*source0;
+	int order;
+	double pgrow, pshrink;
 public:
+	PC() {order=2;}
 	void Allocate(int n) {
 		IntegratorBase::Allocate(n);
 		y=y1=new Var [n]; source0=new(n) (Var); new_y0=1;
+		pgrow=0.5/order; pshrink=0.5/(order-1);
 	}
 	char *Name() {return "Predictor-Corrector";}
 	Solve_RC Solve(double, double);
+	virtual void ExtrapolateTimestep () {
+		if(errmax < tolmin2) {if(errmax) stepfactor=pow(tolmin2/errmax,pgrow);}
+		else if(tolmin2) stepinverse=stepfactor=pow(tolmin2/errmax,pshrink);
+		if(errmax <= tolmax2) errmax=0.0; // Force a time step adjustment.
+	}
 	virtual void Predictor(double, double, int, int);
 	virtual int Corrector(double, int, int, int);
 	virtual void StandardPredictor(double t, double dt, int start, int stop) {
@@ -104,6 +113,7 @@ protected:
 	Var *source1,*source2;
 	double halfdt,sixthdt;
 public:
+	RK4() {order=4;}
 	void Allocate(int n) {
 		PC::Allocate(n); source1=new(n) (Var); source2=new(n) (Var) ;
 	}
@@ -131,20 +141,14 @@ protected:
 	double b50,b51,b52,b53,b54;
 	double c0,c2,c3,c5;
 	double d0,d2,d3,d4,d5;
-	double pgrow, pshrink;
 public:
+	RK5() {order=5;}
 	void Allocate(int n) {
 		RK4::Allocate(n); y2=y4=y; y3=new Var [n];
 		source3=source1; source1=NULL; source4=new(n) Var;
-		pgrow=0.5*0.2; pshrink=0.5*0.25;
 	}
 	char *Name() {return "Fifth-Order Runge-Kutta";}
 	void TimestepDependence(double);
-	void ExtrapolateTimestep () {
-		if(errmax < tolmin2) {if(errmax) stepfactor=pow(tolmin2/errmax,pgrow);}
-		else if(tolmin2) stepinverse=stepfactor=pow(tolmin2/errmax,pshrink);
-		if(errmax <= tolmax2) errmax=0.0; // Force a time step adjustment.
-	}
 	void Predictor(double, double, int, int);
 	int Corrector(double, int, int, int);
 	void StandardPredictor(double t, double dt, int start,int stop) {

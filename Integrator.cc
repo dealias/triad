@@ -162,6 +162,7 @@ void PC::Predictor(double t, double dt, int start, int stop)
 {
 	for(int j=start; j < stop; j++) y1[j]=y0[j]+dt*source0[j];
 	Problem->BackTransform(y1,t+dt,dt,yi);
+	if(yi) set(yi,y1,ny);
 	Source(source,y1,t+dt);
 }
 
@@ -169,12 +170,16 @@ int PC::Corrector(double dt, int dynamic, int start, int stop)
 {
 	int j;
 	const double halfdt=0.5*dt;
-	Var *y0_=y0; // Workaround Cray bug;
-	for(j=start; j < stop; j++) y[j]=y0_[j]+halfdt*(source0[j]+source[j]);
-	if(dynamic)
-		for(j=start; j < stop; j++) 
-			if(!errmask || errmask[j]) 
-				CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
+	if(dynamic) {
+		for(j=start; j < stop; j++) {
+			Var pred=y1[j];
+			y[j]=y0[j]+halfdt*(source0[j]+source[j]);
+			if(!errmask || errmask[j]) CalcError(y0[j],y[j],pred,y[j]);
+		}
+		ExtrapolateTimestep();
+	} else for(j=start; j < stop; j++)
+		y[j]=y0[j]+halfdt*(source0[j]+source[j]);
+	
 	return 1;
 }
 
@@ -193,11 +198,15 @@ void LeapFrog::Predictor(double t, double, int start, int stop)
 int LeapFrog::Corrector(double dt, int dynamic, int start, int stop)
 {
 	int j;
-	for(j=start; j < stop; j++) y[j]=y0[j]+dt*source[j];
-	if(dynamic)
-		for(j=start; j < stop; j++)
+	if(dynamic) {
+		for(j=start; j < stop; j++) {
+			y[j]=y0[j]+dt*source[j];
 			if(!errmask || errmask[j]) 
 				CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
+		}
+		ExtrapolateTimestep();
+	} else for(j=start; j < stop; j++) y[j]=y0[j]+dt*source[j];
+
 	return 1;
 }
 
@@ -216,11 +225,15 @@ void RK2::Predictor(double t, double, int start, int stop)
 int RK2::Corrector(double dt, int dynamic, int start, int stop)
 {
 	int j;
-	for(j=start; j < stop; j++) y[j]=y0[j]+dt*source[j];
-	if(dynamic)
-		for(j=start; j < stop; j++)
+	if(dynamic) {
+		for(j=start; j < stop; j++) {
+			y[j]=y0[j]+dt*source[j];
 			if(!errmask || errmask[j])
 				CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
+		}
+		ExtrapolateTimestep();
+	} else for(j=start; j < stop; j++) y[j]=y0[j]+dt*source[j];
+
 	return 1;
 }
 
@@ -235,24 +248,31 @@ void RK4::Predictor(double t, double dt, int start, int stop)
 	int j;
 	for(j=start; j < stop; j++) y[j]=y0[j]+halfdt*source0[j];
 	Problem->BackTransform(y,t+halfdt,halfdt,yi);
+	if(yi) set(yi,y,ny);
 	Source(source1,y,t+halfdt);
 	for(j=start; j < stop; j++) y[j]=y0[j]+halfdt*source1[j];
 	Problem->BackTransform(y,t+halfdt,halfdt,yi);
+	if(yi) set(yi,y,ny);
 	Source(source2,y,t+halfdt);
 	for(j=start; j < stop; j++) y[j]=y0[j]+dt*source2[j];
 	Problem->BackTransform(y,t+dt,dt,yi);
+	if(yi) set(yi,y,ny);
 	Source(source,y,t+dt);
 }
 
 int RK4::Corrector(double, int dynamic, int start, int stop)
 {
 	int j;
-	for(j=start; j < stop; j++) 
-		y[j]=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+source[j]);
-	if(dynamic)
-		for(j=start; j < stop; j++)
+	if(dynamic) {
+		for(j=start; j < stop; j++) {
+			y[j]=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+
+								source[j]);
 			if(!errmask || errmask[j])
 				CalcError(y0[j],y[j],y0[j]+dt*source2[j],y[j]);
+		}
+		ExtrapolateTimestep();
+	} else for(j=start; j < stop; j++) 
+		y[j]=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+source[j]);
 	return 1;
 }
 
@@ -276,8 +296,8 @@ void RK5::Predictor(double t, double, int start, int stop)
 #pragma ivdep		
 	for(j=start; j < stop; j++) y[j]=y0[j]+b10*source0[j];
 	Problem->BackTransform(y,t+a1,a1,yi);
-	Source(source,y,t+a1);
 	if(yi) set(yi,y,ny);
+	Source(source,y,t+a1);
 #pragma ivdep		
 	for(j=start; j < stop; j++) y2[j]=y0[j]+b20*source0[j]+b21*source[j];
 	Problem->BackTransform(y2,t+a2,a2,yi);
@@ -304,21 +324,22 @@ void RK5::Predictor(double t, double, int start, int stop)
 int RK5::Corrector(double, int dynamic, int start, int stop)
 {
 	int j;
-#pragma ivdep		
-	for(j=start; j < stop; j++) {
-		y[j]=y0[j]+c0*source0[j]+c2*source2[j]+c3*source3[j]+c5*source[j];
-	}
-	
 	if(dynamic) {
 #pragma ivdep		
 		for(j=start; j < stop; j++) {
-			y3[j]=y0[j]+d0*source0[j]+d2*source2[j]+
-				d3*source3[j]+d4*source4[j]+d5*source[j];
+			y[j]=y0[j]+c0*source0[j]+c2*source2[j]+c3*source3[j]+c5*source[j];
+			if(!errmask || errmask[j]) {
+				y3[j]=y0[j]+d0*source0[j]+d2*source2[j]+
+					d3*source3[j]+d4*source4[j]+d5*source[j];
+				CalcError(y0[j],y[j],y3[j],y[j]);
+			}
 		}
-		for(j=start; j < stop; j++)
-			if(!errmask || errmask[j]) CalcError(y0[j],y[j],y3[j],y[j]);
-
 		ExtrapolateTimestep();
+	} else {
+#pragma ivdep		
+		for(j=start; j < stop; j++) {
+			y[j]=y0[j]+c0*source0[j]+c2*source2[j]+c3*source3[j]+c5*source[j];
+		}
 	}
 	return 1;
 }
