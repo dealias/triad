@@ -57,18 +57,20 @@ void mailuser(char *text)
 	system(buf);
 }
 
+extern "C" int getdomainname(char *name, size_t len);
+
 struct utsname platform;
-char machine_name[256];
+
+const int ndomain=65;
+char domain[ndomain];
 
 char *machine()
 {
 	uname(&platform);
-#if _CRAY	
-	char *domain="";
-#else	
-	char *domain=platform.domainname;
-#endif	
-	if(strcmp(domain,"(none)") == 0) domain="";
+	getdomainname(domain,ndomain);
+	if(strcmp(domain,"(none)") == 0) *domain=0;
+	char *machine_name=new char[strlen(platform.nodename)+strlen(domain)+
+	strlen(platform.machine)+5];
 	sprintf(machine_name,"%s%s%s (%s)",platform.nodename,
 			(*domain) ? "." : "",domain,platform.machine);
 	return machine_name;

@@ -7,9 +7,6 @@
 
 #include "utils.h"
 
-extern "C" int gethostname(char *name, size_t len);
-extern "C" int getdomainname(char *name, size_t len);
-
 char* run=NULL;
 Exit_code exit_signal=COMPLETE;
 
