@@ -82,15 +82,17 @@ void msg(int severity, char *file, int line, char *format,...)
 			buf << "." << newl << vbuf.str() << ends;
 			(*inform)(buf.str());
 		}
-		cout << endl;
+		if(severity == SLEEP_ && __unix) {
 #if __unix			
-		if(severity == SLEEP_) {
 			cout << "Going to sleep..." << endl;
-			signal(SIGINT,wakeup);
+			signal(SIGCONT,wakeup);
 			pause();
-			signal(SIGINT,SIG_DFL);
-		} else exit(FATAL);
+			signal(SIGCONT,SIG_DFL);
 #endif			
+		} else {
+			exit(FATAL);
+			cout << endl;
+		}
 	}
 	
 	cout << flush;
