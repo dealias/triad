@@ -89,7 +89,7 @@ public:
 	T *operator () () const {return v;}
 	operator T* () const {return v;}
 	
-	void Load(const T a) {
+	void Load(T a) {
 		int size=Size0();
 		for(int i=0; i < size; i++) v[i]=a;
 	}

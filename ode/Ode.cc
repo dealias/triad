@@ -14,7 +14,6 @@ class OdeVocabulary : public VocabularyBase {
 public:
 	char *Name() {return "Ode";}
 	char *Abbrev() {return "Ode";}
-	char *Directory() {return "";}
 	OdeVocabulary();
 };
 

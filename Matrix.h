@@ -23,7 +23,7 @@ inline Array2<T> Identity(int n, int m, T)
 }
 
 template<class T>
-inline void Trans(Array2<T>& A, const Array2<T>& B)
+inline void Trans(const Array2<T>& A, const Array2<T>& B)
 {
 	assert(&A != &B);
 	for(int i=0; i < B.Nx(); i++) {
@@ -35,7 +35,7 @@ inline void Trans(Array2<T>& A, const Array2<T>& B)
 }
 
 template<class T>
-inline void Conjugate(Array2<T>& A, const Array2<T>& B)
+inline void Conjugate(const Array2<T>& A, const Array2<T>& B)
 {
 	assert(&A != &B);
 	for(int i=0; i < B.Nx(); i++) {
@@ -55,7 +55,7 @@ inline Array2<T> operator * (const Array2<T>& B)
 }
 
 template<class T>
-inline void Mult(Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
+inline void Mult(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
 {
 	assert(B.Ny() == C.Nx());
 
@@ -99,7 +99,7 @@ inline void Mult(Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
 }
 
 template<class T>
-inline void MultAdd(Array2<T>& A, const Array2<T>& B, const Array2<T>& C,
+inline void MultAdd(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C,
 					const Array2<T>& D)
 {
 	assert(B.Ny() == C.Nx());
@@ -153,7 +153,7 @@ inline Array2<T> operator * (const Array2<T>& B, const Array2<T>& C)
 }
 
 template<class T>
-inline void Mult(Array2<T>& A, const Array2<T>& B, T C)
+inline void Mult(const Array2<T>& A, const Array2<T>& B, T C)
 {
 	int size=A.Size(); 
 	Array1(double) a=A, b=B;
@@ -177,7 +177,7 @@ inline Array2<T> operator * (T C, const Array2<T>& B)
 }
 
 template<class T>
-inline void Divide(Array2<T>& A, const Array2<T>& B, T C)
+inline void Divide(const Array2<T>& A, const Array2<T>& B, T C)
 {
 	int size=A.Size(); 
 	T Cinv=1.0/C;
@@ -217,7 +217,7 @@ inline Array2<T> operator + (T C, const Array2<T>& B)
 }
 
 template<class T>
-inline void Add(Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
+inline void Add(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
 {
 	for(int i=0; i < B.Nx(); i++) {
 		Array1(T) Ai=A[i], Bi=B[i], Ci=C[i];
@@ -239,7 +239,7 @@ inline Array2<T> operator + (const Array2<T>& B, const Array2<T>& C)
 }
 
 template<class T>
-inline void Unary(Array2<T>& A, const Array2<T>& B)
+inline void Unary(const Array2<T>& A, const Array2<T>& B)
 {
 	int size=A.Size(); 
 	Array1(double) a=A, b=B;
@@ -270,7 +270,7 @@ inline Array2<T> operator - (const Array2<T>& B, T C)
 }
 
 template<class T>
-inline void Sub(Array2<T>& A, T B, const Array2<T>& C)
+inline void Sub(const Array2<T>& A, T B, const Array2<T>& C)
 {
 	Unary(A,C);
 	A += B;
