@@ -1,6 +1,8 @@
 #include "Matrix.h"
 
 using namespace Array;
+using std::cout;
+using std::endl;
 
 inline double abs2(double x)
 {

@@ -18,10 +18,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Matrix_h__
 #define __Matrix_h__ 1
 
-#define __MATRIX_H_VERSION__ 1.12
+#define __MATRIX_H_VERSION__ 1.13
 
 #include "Array.h"
 #include <cassert>
+#include <cmath>
 #include "pow.h"
 
 inline double pow2(int n)
@@ -550,8 +551,8 @@ template<class T>
 void GaussJordan(const array2<T>& a, const array2<T>& b)
 {
   // Linear equation solution by Gauss-Jordan elimination.
-  // a[1..n][1..n] is the input matrix.
-  // b[1..n][1..m] is input containing the m right-hand side vectors.
+  // On input a is an n x n the matrix
+  // and b is an n x m matrix containing the m right-hand side vectors.
   // On output, a is replaced by its matrix inverse, and b is replaced by  
   // the corresponding set of solution vectors.
 
@@ -591,8 +592,7 @@ void GaussJordan(const array2<T>& a, const array2<T>& b)
 	      row=j;
 	      col=k;
 	    }
-	  } else if(pivot[k] > 1) 
-	    {ArrayExit("Singular matrix");}
+	  } else if(pivot[k] > 1) ArrayExit("Singular matrix");
 	}
       }
     }
@@ -618,9 +618,9 @@ void GaussJordan(const array2<T>& a, const array2<T>& b)
     // We are now ready to divide the pivot row by the pivot element,
     // located at row and col. 
     indx_c[i]=col;
-    if(acol[col] == 0.0) {ArrayExit("Singular matrix");}
+    if(acol[col] == 0.0) ArrayExit("Singular matrix");
     T pivinv=1.0/acol[col];
-    acol[col]=1.0;
+//    acol[col]=1.0;
     for(unsigned int l=0; l < n; l++) acol[l] *= pivinv;
     for(unsigned int l=0; l < m; l++) bcol[l] *= pivinv;
     for(unsigned int ll=0; ll < n; ll++) {
@@ -936,10 +936,14 @@ inline void Exp(array2<T>& B, const array2<U>& A)
   unsigned int n2=n*n;
 	
   double Amax=0.0;
-  for(unsigned int j=0; j < n2; j++) Amax=max(Amax,abs2(A(j)));
+  for(unsigned int j=0; j < n2; j++) {
+    T value=abs2(A(j));
+    if(value > Amax) Amax=value;
+  }
   Amax=sqrt(Amax);
 	
-  int j=max(0,1+((int) (floor(log2(Amax))+0.5)));
+  int j=1+((int) (floor(log2(Amax))+0.5));
+  if(j < 0) j=0;
   double scale=pow2(-j);
   B=A*scale;
   A.Purge();

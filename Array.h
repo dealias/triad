@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.37
+#define __ARRAY_H_VERSION__ 1.38
 
 // Defining NDEBUG improves optimization but disables argument checking.
 // Defining __NOARRAY2OPT inhibits special optimization of Array2[].
@@ -1470,14 +1470,14 @@ template<class T>
 inline void CheckReallocate(T& A, unsigned int n, unsigned int& old,
 			    size_t align=0)
 {
-  if(n > old) {Reallocate(A,n,align); old=n;}
+  if(n > old) {A.Reallocate(n,align); old=n;}
 }
 
 template<class T>
 inline void CheckReallocate(T& A, unsigned int n, int o, unsigned int& old,
 			    size_t align=0)
 {
-  if(n > old) {Reallocate(A,n,o,align); old=n;}
+  if(n > old) {A.Reallocate(n,o,align); old=n;}
 }
 
 }
