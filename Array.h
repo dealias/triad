@@ -90,7 +90,7 @@ class array1 {
   void Deallocate() const {
     if(test(allocated)) {delete [] v; clear(allocated);}
   }
-  virtual void Dimension(unsigned int nx0) {size=nx0;}
+  void Dimension(unsigned int nx0) {size=nx0;}
   void Dimension(unsigned int nx0, T *v0) {
     Dimension(nx0); v=v0; clear(allocated);
   }
