@@ -1217,7 +1217,11 @@ public:
 	
 	void Map() {
 		r -= a0;
-		if(alpha) theta -= (zmin+phi*deltaz)*alpha*yfactor*(xmin+r*deltax);
+		if(alpha) {
+			theta -= (zmin+phi*deltaz)*alpha*yfactor*(xmin+r*deltax);
+			while (theta < 0) theta += twopi;
+			while (theta >= twopi) theta -= twopi;
+		}
 	}
 	
 	int InRange() {
