@@ -1,7 +1,7 @@
 /* RGB:  A movie production utility (requires MPEGv1.2.2J.tar.gz, which
 fixes a buffer overflow and also a warning message in MPEGv1.2.2.tar.gz)
 
-Copyright (C) 2000-2004 John C. Bowman (bowman@math.ualberta.ca)
+Copyright (C) 2000-2005 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -305,7 +305,7 @@ void animate(const char *filename, int n, const char *type,
 void usage(const char *program)
 {
   cerr << PROGRAM << " version " << VERSION
-       << " [(C) John C. Bowman <bowman@math.ualberta.ca> 2002]" << endl
+       << " [(C) John C. Bowman 2005]" << endl
        << "Usage: " << program << " [options] file1 [file2 ...]"
        << endl;
 }
