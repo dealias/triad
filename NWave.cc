@@ -38,7 +38,7 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 		}
 	}
 #else
-#pragma _CRI taskloop private(ip) value(psibuffer,NpsiR,pqbuffer)
+#pragma _CRI taskloop private(ip) value(psibuffer,NpsiR,pqIndex)
 	for(int ip=0; ip < NpsiR; ip++) {
 		Var psip=psibuffer[ip];
 		Var *pq=pqIndex[ip]; 
