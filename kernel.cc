@@ -47,7 +47,7 @@ static int total_invert_cnt=0;
 
 static char *pname,*rname,*ptemp,*rtemp,*lname;
 static ifstream fparam,fin;
-static ofstream fdump,fstat,flock;
+static ofstream fdump,fstats,flock;
 
 // Global vocabulary declarations and default values
 int itmax=-1;
@@ -371,10 +371,10 @@ void set_timer()
 {
 	w=10;
 	e=digits+5;
-	open_output(fstat,dirsep,"stat");
+	open_output(fstats,dirsep,"stat");
 	cputime(cpu0);
 	if(restart) for(int i=0; i < ncputime; i++) cpu0[i] -= cpu[i];
-	else fstat << setw(w) << "iteration" << " " << setw(e) << "t" << " " <<
+	else fstats << setw(w) << "iteration" << " " << setw(e) << "t" << " " <<
 		setw(e) << "dt" << " " << setw(w) << "invert_cnt" << " " <<
 		setw(w) << "CPU" << " " << setw(w) << "CHILD" << " " <<
 		setw(w) << "SYS" <<	endl;
@@ -382,7 +382,7 @@ void set_timer()
 
 void statistics()
 {
-	fstat << setw(w) << final_iteration+iteration << " " <<
+	fstats << setw(w) << final_iteration+iteration << " " <<
 		setw(e) << t << " " << setw(e) << dt << " " << setw(w) << 
 		invert_cnt << " ";
 	total_invert_cnt += invert_cnt;
@@ -390,9 +390,9 @@ void statistics()
 	cputime(cpu);
 	for(int i=0; i < ncputime; i++) {
 		cpu[i] -= cpu0[i];
-		fstat << setw(w) << cpu[i] << " ";
+		fstats << setw(w) << cpu[i] << " ";
 	}
-	fstat << endl;
+	fstats << endl;
 }
 
 char *VocabularyBase::FileName(const char* delimiter, const char *suffix)
