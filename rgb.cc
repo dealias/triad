@@ -359,10 +359,16 @@ int main(int argc, char *const argv[])
 	
 		double *vmink=new double [nz], *vmaxk=new double [nz];
 		
+		int kmin=0;
+		int kmax=nz-1;
+		if(kmin < lower) kmin=lower;
+		if(kmax > upper) kmax=upper;
+		int nz0=kmax-kmin+1;
+		
 		int mpal=max(5,my);
 		int msep=max(2,my);
 		xsize=mx*nx;
-		ysize=my*ny*nz+msep*nz+mpal;
+		ysize=my*ny*nz0+msep*nz0+mpal;
 		
 		float **value=new float* [nz];
 		double gmin=DBL_MAX, gmax=-DBL_MAX; // Global min and max
@@ -423,11 +429,6 @@ int main(int argc, char *const argv[])
 				msg(ERROR,"Cannot open output file %s",oname);
 			}
 			
-			int kmin=0;
-			int kmax=nz-1;
-			if(kmin < lower) kmin=lower;
-			if(kmax > upper) kmax=upper;
-		
 			for(int k=kmin; k <= kmax; k++) {
 				if(floating_section) {vmin=vmink[k]; vmax=vmaxk[k];}
 				double step=(vmax == vmin) ? 0.0 : PaletteRange/(vmax-vmin);
