@@ -138,7 +138,7 @@ Compare_t IntegratorCompare;
 KeyCompare_t IntegratorKeyCompare;
 extern IntegratorBase *Integrator;
 
-class VocabularyBase  {
+class VocabularyBase {
  protected:
   DynVector<ParamBase *> ParamList;
  public:	
