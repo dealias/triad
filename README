@@ -110,7 +110,7 @@ clobber
 override
 verbose
 run
-checkpoint
+checkpoint=100
 output
 method
 integrator
