@@ -147,6 +147,13 @@ public:
 	array1<T>& operator = (T a) {Load(a); return *this;}
 	array1<T>& operator = (const T *a) {Load(a); return *this;}
 	array1<T>& operator = (const array1<T>& A) {
+#if 0		
+		Dimension(A.Nx());
+		if(A.Size() > size) {
+			if(test(allocated)) Deallocate();
+			__checkActivate(1);
+		}
+#endif		
 		Load(A());
 		A.Purge();
 		return *this;
@@ -287,6 +294,13 @@ public:
 	array2<T>& operator = (T a) {Load(a); return *this;}
 	array2<T>& operator = (T *a) {Load(a); return *this;}
 	array2<T>& operator = (const array2<T>& A) {
+#if 0		
+		Dimension(A.Nx(),A.Ny());
+		if(A.Size() > size) {
+			if(test(allocated)) Deallocate();
+			__checkActivate(2);
+		}
+#endif		
 		Load(A());
 		A.Purge();
 		return *this;
@@ -677,6 +691,13 @@ public:
 		return *this;
 	}
 	Array2<T>& operator = (const array2<T>& A) {
+#if 0		
+		Dimension(A.Nx(),A.Ny());
+		if(A.Size() > size) {
+			if(test(allocated)) Deallocate();
+			__checkActivate(2);
+		}
+#endif		
 		Load(A());
 		A.Purge();
 		return *this;

@@ -1,0 +1,11 @@
+--- rfftw.h	Sat Jan 22 16:49:58 2000
++++ /usr/local/include/rfftw.h	Sun Nov 15 10:11:33 1998
+@@ -21,7 +21,7 @@
+ #ifndef RFFTW_H
+ #define RFFTW_H
+ 
+-#include "fftw.h"
++#include <fftw.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {

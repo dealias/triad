@@ -29,11 +29,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 class ArrayMod {
 public:	
 	void Mod(int& i, unsigned int n) const {
-		if(i >= n) i -= n;
+		if((unsigned int) i >= n) i -= n;
 		else if(i < 0) i += n;
 	
-		if(i >= n) i %= n;
-		else if(i < 0) {i=n-(-i % n); if(i == n) i=0;}
+		if((unsigned int) i >= n) i %= n;
+		else if(i < 0) {i=n-(-i % n); if((unsigned int) i == n) i=0;}
 	}
 };
 
@@ -43,7 +43,9 @@ public:
 	Array1p() {}
 	Array1p(unsigned int nx0) {Allocate(nx0);}
 	Array1p(unsigned int nx0, T *v0) {Dimension(nx0,v0);}
-	Array1p(const Array1p<T>& A) {v=A.v; size=A.size; state=A.test(temporary);}
+	Array1p(const Array1p<T>& A) {
+		v=A(); size=A.Size(); state=A.test(temporary);
+	}
 	T& operator [] (int ix) const {Mod(ix,size); return v[ix];}
 	T& operator () (int ix) const {Mod(ix,size); return v[ix];}
 	Array1p<T>& operator = (T a) {Load(a); return *this;}
@@ -55,6 +57,9 @@ public:
 	Array2p() {}
 	Array2p(unsigned int nx0, unsigned int ny0) {Allocate(nx0,ny0);}
 	Array2p(unsigned int nx0, unsigned int ny0, T *v0) {Dimension(nx0,ny0,v0);}
+	Array2p(const array2<T>& A) {
+		v=A(); size=A.Size(); state=A.test(temporary);
+	}
 	Array1p<T> operator [] (int ix) const {
 		Mod(ix,nx);
 		return Array1p<T>(ny,v+ix*ny);
