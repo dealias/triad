@@ -154,8 +154,8 @@ void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
 	
 void PrimitiveNonlinearityFFT(Var *source, Var *psi, double)
 {
-	extern Cartesian *CartesianMode;
 	int i;
+	extern Cartesian *CartesianMode;
 
 	*psibuffer0=0.0;
 	*convolution0=0.0;

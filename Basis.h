@@ -51,11 +51,11 @@ public:
 	Real Normalization(int);
 	
 	Nu Linearity(int);
-	Mc Mkpq(T& k, T& p, T& q);
+	inline Mc Mkpq(T& k, T& p, T& q);
 };
 
 template<class T>
-inline void Basis<T>::ListChains(Chain *chain, int Nchain, char *type) {
+void Basis<T>::ListChains(Chain *chain, int Nchain, char *type) {
 	cout << endl << Nchain << " " << type << " Chains:" << endl;
 	Chain *c,*chainStop=chain+Nchain;
 	for(c=chain; c < chainStop; c++) {
