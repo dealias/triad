@@ -178,7 +178,7 @@ int CartesianPad(Var *to, Var *from)
 		Var *k,*kstop=to+ncol;
 #pragma ivdep
 		for(k=to; k < kstop; k++) *k=*(from++);
-		k=kstop; from += ncol;
+		k=kstop;
 		kstop += NPad;
 		Var *zero=ZeroBuffer;
 #pragma ivdep
@@ -195,7 +195,7 @@ void CartesianUnPad(Var *to, Var *from)
 		Var *k,*kstop=to+ncol;
 #pragma ivdep
 		for(k=to; k < kstop; k++) *k=*(from++);
-		to += ncol; from += ncol+NPad;
+		to=kstop; from += ncol+NPad;
 	}
 }
 
