@@ -84,12 +84,9 @@ class ProblemBase {
 	
   virtual const char *Name() {return "";}
 	
-  virtual void Source(const vector2&,
-		      const vector2&, double)=0;
-  virtual void Transform(const vector2&, double, double,
-			 const vector2&) {}
-  virtual void BackTransform(const vector2&, double, double,
-			     const vector2&) {}
+  virtual void Source(const vector2& Src, const vector2& Y, double t)=0;
+  virtual void Transform(const vector2&, double, double, vector2&) {}
+  virtual void BackTransform(const vector2&, double, double, const vector2&) {}
   virtual void Stochastic(const vector2&, double, double) {}
   virtual void Initialize() {}
   virtual void Setup() {}

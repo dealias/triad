@@ -1,6 +1,6 @@
 /* C++ interface to the XDR External Data Representation I/O routines
-   Version 1.4
-   Copyright (C) 1999 John C. Bowman <bowman@math.ualberta.ca>
+   Version 1.41
+   Copyright (C) 1999-2003 John C. Bowman <bowman@math.ualberta.ca>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ class xbyte {
   xbyte() {};
   xbyte(unsigned char c0) : c(c0) {};
   xbyte(int c0) : c((unsigned char) c0) {};
+  xbyte(unsigned int c0) : c((unsigned char) c0) {};
   int byte() const {return c;}
   operator unsigned char () const {return c;}
 };
