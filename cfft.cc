@@ -46,7 +46,8 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 			isign);
 	
 	if(scale != 1.0) {
-		unsigned int istop=i+n*nk;
+		unsigned int istop=n*nk;
+#pragma ivdep		
 		for(unsigned int i=0; i < istop; i++) data[i] *= scale;
 	}
 }
