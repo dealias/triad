@@ -33,6 +33,7 @@ static int xsize,ysize;
 
 static int verbose=0;
 static int floating_scale=0;
+static int floating_section=0;
 static int byte=0;
 static int preserve=0;
 
@@ -70,9 +71,11 @@ inline float get_value(ixstream& fin)
 
 template<class T>
 int readframe(T& fin, int nx, int ny, int nz, float **value,
-			  double& vmin, double& vmax)
+			  double& gmin, double& gmax, double *vmink, double *vmaxk)
 {
-	vmin=DBL_MAX, vmax=-DBL_MAX;
+	gmin=DBL_MAX; gmax=-DBL_MAX;
+	double vmin=DBL_MAX, vmax=-DBL_MAX;
+	
 	int nxy=nx*ny;
 	for(int k=0; k < nz; k++) {
 		float *valuek=value[k];
@@ -89,11 +92,21 @@ int readframe(T& fin, int nx, int ny, int nz, float **value,
 			if(v > vmax) vmax=v;
 			valuek[i]=v;
 		}
+		if(zero && vmin < 0 && vmax > 0) {
+			vmax=max(-vmin,vmax);
+			vmin=-vmax;
+		}
+		vmink[k]=vmin;
+		vmaxk[k]=vmax;
+		if(vmin < gmin) gmin=vmin;
+		if(vmax > gmax) gmax=vmax;
 	}
-	if(zero && vmin < 0 && vmax > 0) {
-		vmax=max(-vmin,vmax);
-		vmin=-vmax;
+	
+	if(zero && gmin < 0 && gmax > 0) {
+		gmax=max(-gmin,gmax);
+		gmin=-gmax;
 	}
+	
 	if(implicit) {
 		int nx0,ny0,nz0;
 		fin >> nx0 >> ny0 >> nz0;
@@ -122,7 +135,7 @@ extern "C" int getopt(int argc, char *const argv[], const char *optstring);
 void usage(char *program)
 {
 	cerr << "Usage: " << program
-		 << " [-bfghlmpvz] [-x mag] [-H hmag] [-V vmag] "
+		 << " [-bfFghlmpvz] [-x mag] [-H hmag] [-V vmag] "
 		<< "[-B begin] [-E end] [-S skip]" << endl 
 		 << "           [-X xsize -Y ysize [-Z zsize]] file1 [file2 ...]"
 		 << endl;
@@ -134,6 +147,7 @@ void options()
 	cerr << "-b\t\t single-byte (unsigned char instead of float) input"
 		 << endl;
 	cerr << "-f\t\t use a floating scale for each frame" << endl;
+	cerr << "-F\t\t use a floating scale for each cross-section" << endl;
 	cerr << "-g\t\t produce grey-scale output" << endl;
 	cerr << "-h\t\t help" << endl;
 	cerr << "-l\t\t label frames with file names and values" << endl;
@@ -150,8 +164,7 @@ void options()
 	cerr << "-S skip\t\t interval between processed frames" << endl;
 	cerr << "-X xsize\t explicit horizontal size" << endl;
 	cerr << "-Y ysize\t explicit vertical size" << endl;
-	cerr << "-Z zsize\t explicit number of cross-sections/frame"
-		 << endl;
+	cerr << "-Z zsize\t explicit number of cross-sections/frame" << endl;
 }
 
 int main(int argc, char *const argv[])
@@ -171,13 +184,17 @@ int main(int argc, char *const argv[])
 #endif	
 	errno=0;
 	while (1) {
-		int c = getopt(argc,argv,"bfghlmpvzx:H:V:B:E:S:X:Y:Z:");
+		int c = getopt(argc,argv,"bfghlmpvzFx:H:V:B:E:S:X:Y:Z:");
 		if (c == -1) break;
 		switch (c) {
 		case 'b':
 			byte=1;
 			break;
 		case 'f':
+			floating_scale=1;
+			break;
+		case 'F':
+			floating_section=1;
 			floating_scale=1;
 			break;
 		case 'g':
@@ -281,6 +298,8 @@ int main(int argc, char *const argv[])
 		if(byte) openfield(fin,fieldname,nx,ny,nz);
 		else openfield(xin,fieldname,nx,ny,nz);
 	
+		double *vmink=new double [nz], *vmaxk=new double [nz];
+		
 		int mpal=max(5,my);
 		int msep=max(2,my);
 		xsize=mx*nx;
@@ -297,8 +316,8 @@ int main(int argc, char *const argv[])
 			int set=0;
 			do {
 				double vmin,vmax;
-				rc=byte ? readframe(fin,nx,ny,nz,value,vmin,vmax) :
-					readframe(xin,nx,ny,nz,value,vmin,vmax);
+				rc=byte ? readframe(fin,nx,ny,nz,value,vmin,vmax,vmink,vmaxk) :
+					readframe(xin,nx,ny,nz,value,vmin,vmax,vmink,vmaxk);
 				if(rc == EOF) break;
 				if(n < begin) continue;
 				if(--s) continue;
@@ -326,15 +345,14 @@ int main(int argc, char *const argv[])
 		int set=0;
 		do {
 			double vmin,vmax;
-			rc=byte ? readframe(fin,nx,ny,nz,value,vmin,vmax) :
-				readframe(xin,nx,ny,nz,value,vmin,vmax);
+			rc=byte ? readframe(fin,nx,ny,nz,value,vmin,vmax,vmink,vmaxk) :
+				readframe(xin,nx,ny,nz,value,vmin,vmax,vmink,vmaxk);
 			if(rc == EOF) break;
 			if(n < begin) continue;
 			if(--s) continue;
 			s=skip;
 			
-			if(!floating_scale) {vmin=gmin;	vmax=gmax;}
-			double step=(vmax == vmin) ? 0.0 : PaletteMax/(vmax-vmin);
+			if(!floating_scale) {vmin=gmin; vmax=gmax;}
 			
 			strstream buf;
 			buf << rgbdir << fieldname << setfill('0') << setw(4)
@@ -347,6 +365,8 @@ int main(int argc, char *const argv[])
 			}
 			
 			for(int k=0; k < nz; k++) {
+				if(floating_section) {vmin=vmink[k]; vmax=vmaxk[k];}
+				double step=(vmax == vmin) ? 0.0 : PaletteMax/(vmax-vmin);
 				for(int j=0; j < ny; j++)  {
 					for(int j2=0; j2 < my; j2++) {
 						for(int i=0; i < nx; i++)  {
