@@ -1,5 +1,5 @@
 /* Array.h:  A high-performance multi-dimensional C++ array class
-Copyright (C) 1999 John C. Bowman (bowman@math.ualberta.ca)
+Copyright (C) 2000 John C. Bowman (bowman@math.ualberta.ca)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -93,8 +93,7 @@ public:
 	array1() : nx(0), state(unallocated) {}
 	array1(unsigned int nx0) : state(unallocated) {Allocate(nx0);}
 	array1(unsigned int nx0, T *v0) : state(unallocated) {Dimension(nx0,v0);}
-//	array1(const array1<T>& A) : v(A.v), nx(A.nx), state(A.test(temporary)) {}
-	array1(const array1<T>& A) : v(A.v), nx(A.nx), state(unallocated) {}
+	array1(const array1<T>& A) : v(A.v), nx(A.nx), state(A.test(temporary)) {}
 	virtual ~array1() {if(test(allocated)) Deallocate();}
 	
 	void Freeze() {state=unallocated;}
@@ -561,6 +560,11 @@ public:
 	
 	Array1<T>& operator = (T a) {Load(a); return *this;}
 	Array1<T>& operator = (const T *a) {Load(a); return *this;}
+	Array1<T>& operator = (const Array1<T>& A) {
+		Load(A());
+		A.Purge();
+		return *this;
+	}
 	Array1<T>& operator = (const array1<T>& A) {
 		Load(A());
 		A.Purge();
@@ -602,7 +606,7 @@ public:
 	Array2(unsigned int nx0, unsigned int ny0, T *v0, int ox0=0, int oy0=0) {
 		Dimension(nx0,ny0,v0,ox0,oy0);
 	}
-	
+
 	Array1<T> operator [] (int ix) const {
 		check(ix,nx,ox,2,1);
 		return Array1<T>(ny,vtemp+ix*ny,oy);
@@ -621,6 +625,11 @@ public:
 	
 	Array2<T>& operator = (T a) {Load(a); return *this;}
 	Array2<T>& operator = (T *a) {Load(a); return *this;}
+	Array2<T>& operator = (const Array2<T>& A) {
+		Load(A());
+		A.Purge();
+		return *this;
+	}
 	Array2<T>& operator = (const array2<T>& A) {
 		Load(A());
 		A.Purge();
@@ -695,6 +704,11 @@ public:
 	
 	Array3<T>& operator = (T a) {Load(a); return *this;}
 	Array3<T>& operator = (T *a) {Load(a); return *this;}
+	Array3<T>& operator = (const Array3<T>& A) {
+		Load(A());
+		A.Purge(); 
+		return *this;
+	}
 	Array3<T>& operator = (const array3<T>& A) {
 		Load(A());
 		A.Purge(); 
@@ -767,6 +781,11 @@ public:
 	
 	Array4<T>& operator = (T a) {Load(a); return *this;}
 	Array4<T>& operator = (T *a) {Load(a); return *this;}
+	Array4<T>& operator = (const Array4<T>& A) {
+		Load(A());
+		A.Purge();
+		return *this;
+	}
 	Array4<T>& operator = (const array4<T>& A) {
 		Load(A());
 		A.Purge();
