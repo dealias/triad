@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "utils.h"
 extern double polltime;
 
 // return CPU idle time in seconds
