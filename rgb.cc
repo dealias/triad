@@ -377,7 +377,7 @@ int main(int argc, char *const argv[])
 		if(!floating_scale)	{
 			n=0;
 			int rc;
-			int s=skip;
+			int s=1;
 			int set=0;
 			do {
 				double vmin,vmax;
@@ -406,7 +406,7 @@ int main(int argc, char *const argv[])
 		
 		n=0;
 		int rc;
-		int s=skip;
+		int s=1;
 		int set=0;
 		do {
 			double vmin,vmax;
