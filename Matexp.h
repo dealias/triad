@@ -24,7 +24,7 @@ public:
 
 // Compute the matrix exponential of a square matrix
 template<class T>
-const Array2<T>& exp(const Array2<T>& A)
+const Array2<T> exp(const Array2<T>& A)
 {
 //	double tolmax=1e-7;
 //	double tolmin=9e-8;
