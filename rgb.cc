@@ -96,7 +96,8 @@ extern "C" int getopt(int argc, char *const argv[], const char *optstring);
 void usage(char *program)
 {
 	cerr << "Usage: " << program
-		 << " [-bfghlmvz] [-x mag] [-H hmag] [-V vmag]" << endl
+		 << " [-bfghlmvz] [-x mag] [-H hmag] [-V vmag] [-B beg] [-E end]"
+		 << endl 
 		 << "           [-X xsize -Y ysize [-Z zsize]] file1 [file2 ...]"
 		 << endl << endl;
 }
@@ -105,7 +106,7 @@ int main(int argc, char *const argv[])
 {
 	int nx=1,ny=1,nz=1;
 	int nset=0, mx=1, my=1;
-	int n,nmax=INT_MAX;
+	int n,begin=0, end=INT_MAX;
 	int gray=0;
 	int label=0;
 	int make_mpeg=0;
@@ -117,7 +118,7 @@ int main(int argc, char *const argv[])
 	optind=0;
 #endif	
 	while (1) {
-		char c = getopt(argc,argv,"bfghlmvzx:H:V:N:X:Y:Z:");
+		char c = getopt(argc,argv,"bfghlmvzx:H:V:B:E:X:Y:Z:");
 		if (c == -1) break;
 		switch (c) {
 		case 'b':
@@ -145,7 +146,8 @@ int main(int argc, char *const argv[])
 			cerr << "-x mag\t overall magnification factor" << endl;
 			cerr << "-H hmag\t horizontal magnification factor" << endl;
 			cerr << "-V vmag\t vertical magnification factor" << endl;
-			cerr << "-N nmax\t maximum number of frames to process" << endl;
+			cerr << "-B beg\t first frame to process" << endl;
+			cerr << "-E end\t last frame to process" << endl;
 			cerr << "-X xsize\t explicit horizontal size" << endl;
 			cerr << "-Y ysize\t explicit vertical size" << endl;
 			cerr << "-Z zsize\t explicit number of cross-sections/frame"
@@ -172,8 +174,11 @@ int main(int argc, char *const argv[])
 		case 'V':
 			my=atoi(optarg);
 			break;
-		case 'N':
-			nmax=atoi(optarg);
+		case 'B':
+			begin=atoi(optarg);
+			break;
+		case 'E':
+			end=atoi(optarg);
 			break;
 		case 'X':
 			nx=atoi(optarg);
@@ -249,7 +254,7 @@ int main(int argc, char *const argv[])
 				if(vmin < gmin) gmin=vmin;
 				if(vmax > gmax) gmax=vmax;
 				n++;
-			} while (rc == 0 && n < nmax);
+			} while (rc == 0 && n < end);
 			
 			if(zero && gmin < 0 && gmax > 0) {
 				gmax=max(-gmin,gmax);
@@ -269,6 +274,7 @@ int main(int argc, char *const argv[])
 			rc=byte ? readframe(fin,nx,ny,nz,value,vmin,vmax) :
 				readframe(xin,nx,ny,nz,value,vmin,vmax);
 			if(rc == EOF) break;
+			if(n < begin) continue;
 			
 			if(!floating_scale) {vmin=gmin;	vmax=gmax;}
 			double step=(vmax == vmin) ? 0.0 : PaletteMax/(vmax-vmin);
@@ -316,8 +322,8 @@ int main(int argc, char *const argv[])
 			fout.close();
 			if(!fout) msg(ERROR,"Cannot write to output file %s",oname);
 			n++;
-		} while (rc == 0 && n < nmax);
-		nset=nset ? min(nset,n) : n;
+		} while (rc == 0 && n < end);
+		nset=nset ? min(nset,n-begin) : n-begin;
 	}
 	
 	if(label || make_mpeg) { 
