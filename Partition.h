@@ -217,7 +217,6 @@ inline WeightIndex HashWeightIndex(int j)
 
 template<class T, class D>
 class Partition : public GeometryBase {
-	DynVector<Weight> weight;
 	Hash<WeightIndex> *hash;
 	int Nweight,Nhash;
 	Bin<T,D> *bin; // pointer to table of bins
@@ -370,8 +369,9 @@ INLINE void Partition<T,D>::Initialize() {
 	psibufferR=(reality ? psibuffer+Nmode : psibuffer);
 	psibufferStop=psibuffer+n;
 		
-	char *filename=WeightFileName();
+	DynVector<Weight> weight;
 	
+	char *filename=WeightFileName();
 	WeightN=WeightIndex(Nmode,Nmode,n);
 	if(!get_weights(weight,&Nweight,filename)) {
 		GenerateWeights();
@@ -431,7 +431,6 @@ INLINE void Partition<T,D>::Initialize() {
 	triadLimits[Nmode-1].stop=triad.Base()+Ntriad;
 
 	delete [] ntriad;
-	weight.~DynVector();
 
 	cout << Ntriad << " WAVENUMBER TRIADS ALLOCATED." << endl;
 	if(verbose > 2) ListTriads(cout);
