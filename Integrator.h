@@ -31,6 +31,12 @@ class Euler : public IntegratorBase {
   Solve_RC Solve(double, double&);
 };
 
+class SYM1 : public IntegratorBase {
+ public:
+  const char *Name() {return "First-Order Symplectic";}
+  Solve_RC Solve(double, double&);
+};
+
 class Midpoint : public IntegratorBase {
  protected:	
   Var *y;
@@ -78,7 +84,7 @@ class PC : public IntegratorBase {
   void Allocate(int n) {
     IntegratorBase::Allocate(n);
     y=y1=new Var [n]; source0=new(n) (Var); new_y0=1;
-    pgrow=0.5/order; pshrink=0.5/(order-1);
+    pgrow=0.5/order; pshrink=(order > 1) ? 0.5/(order-1) : 0;
   }
   const char *Name() {return "Predictor-Corrector";}
   Solve_RC Solve(double, double&);
@@ -129,13 +135,25 @@ class LeapFrog : public PC {
   }
 };
 
+class SYM2 : public PC {
+ public:
+  const char *Name() {return "Second-Order Symplectic";}
+  void Predictor(double, double, unsigned int, unsigned int);
+  int Corrector(double, int, unsigned int, unsigned int);
+  void StandardPredictor(double t, double dt, unsigned int start, unsigned int stop) {
+    SYM2::Predictor(t,dt,start,stop);
+  }
+  int StandardCorrector(double dt, int dynamic, unsigned int start, unsigned int stop) {
+    return SYM2::Corrector(dt,dynamic,start,stop);
+  }
+};
+
 class RK2 : public PC {
- protected:	
  public:
   const char *Name() {return "Second-Order Runge-Kutta";}
-  void TimestepDependence(double dt) {
-    halfdt=0.5*dt;
-  }
+//  void TimestepDependence(double dt) {
+//    halfdt=0.5*dt;
+//  }
   void Predictor(double, double, unsigned int, unsigned int);
   int Corrector(double, int, unsigned int, unsigned int);
   void StandardPredictor(double t, double dt, unsigned int start, unsigned int stop) {

@@ -131,6 +131,20 @@ Solve_RC Euler::Solve(double t, double& dt)
   return SUCCESSFUL;
 }
 
+Solve_RC SYM1::Solve(double t, double& dt)
+{
+  Source(source,y0,t);
+  Problem->Transform(y0,t,dt,yi);
+  for(unsigned int j=0; j < ny; j += 2) y0[j] += dt*source[j];
+  Problem->BackTransform(y0,t+dt,dt,yi);
+  Source(source,y0,t);
+  Problem->Transform(y0,t,dt,yi);
+  for(unsigned int j=1; j < ny; j += 2) y0[j] += dt*source[j];
+  Problem->BackTransform(y0,t+dt,dt,yi);
+  Problem->Stochastic(y0,t,dt);
+  return SUCCESSFUL;
+}
+
 Solve_RC PC::Solve(double t, double& dt)
 {
   errmax=0.0;
@@ -172,6 +186,43 @@ int PC::Corrector(double dt, int dynamic, unsigned int start, unsigned int stop)
     ExtrapolateTimestep();
   } else for(j=start; j < stop; j++) {
     y[j]=y0[j]+halfdt*(source0[j]+source[j]);
+  }
+	
+  return 1;
+}
+
+void SYM2::Predictor(double t, double dt, unsigned int start,
+		     unsigned int stop)
+{
+  for(unsigned int j=start; j < stop; j++) {
+    y1[j]=y0[j]+halfdt*source0[j];
+    j++;
+    y1[j]=y0[j];
+  }
+  Problem->BackTransform(y1,t+dt,dt,yi);
+  if(yi) set(yi,y,ny);
+  Source(source,y1,t+halfdt);
+  for(unsigned int j=start+1; j < stop; j += 2) {
+    y1[j] += dt*source[j];
+  }
+  Problem->BackTransform(y1,t+dt,dt,yi);
+  if(yi) set(yi,y,ny);
+  Source(source,y1,t+dt);
+}
+
+int SYM2::Corrector(double dt, int dynamic, unsigned int start,
+		    unsigned int stop)
+{
+  unsigned int j;
+  if(dynamic) {
+    for(j=start; j < stop; j += 2) {
+      y[j] += halfdt*source[j];
+      if(!errmask || errmask[j]) CalcError(y0[j],y[j],
+					   y0[j]+dt*source0[j],y[j]);
+    }
+    ExtrapolateTimestep();
+  } else for(j=start; j < stop; j += 2) {
+    y[j] += halfdt*source[j];
   }
 	
   return 1;

@@ -122,6 +122,8 @@ VocabularyBase::VocabularyBase()
   INTEGRATOR(RK2);
   INTEGRATOR(RK4);
   INTEGRATOR(RK5);
+  INTEGRATOR(SYM1);
+  INTEGRATOR(SYM2);
 }
 
 void adjust_parameters(double& dt, double& dtmax, double& tmax, int& itmax)
