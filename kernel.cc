@@ -240,7 +240,7 @@ int main(int argc, char *argv[])
   t=0.0; nout=0;
   Problem->InitialConditions();
   
-  Dimension1(y,Problem->Vector());
+  Dimension1(y,Problem->yVector());
   ny=Problem->Size();
   
   if(restart || initialize) read_init();

@@ -161,9 +161,9 @@ void IntegratorBase::Allocate()
   Alloc0(Src,source);
   
   Dimension1(errmask,Problem->ErrorMask());
-  Dimension1(y,Problem->Vector());
-  Dimension1(Y,Problem->Vector2());
-  Dimension1(Yout,Problem->Vector2());
+  Dimension1(y,Problem->yVector());
+  Dimension1(Y,Problem->YVector());
+  Dimension1(Yout,Problem->YVector());
 }
 
 Solve_RC Euler::Solve()
