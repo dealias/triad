@@ -165,7 +165,7 @@ void PS::NonLinearSrc(Var *source, Var *u, double)
 	rcfft(uconv,log2Nxb,-1);
 	Cartesian1UnPad(source,uconv);
 	
-//	if(Nmoment) ComputeMoments(source,u);
+	if(Nmoment) ComputeMoments(source,u);
 	ConstantForcing(source,t);
 #else	
 	msg(ERROR,"Pseudospectral approximation requires COMPLEX=1");
