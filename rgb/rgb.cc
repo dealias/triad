@@ -1277,7 +1277,7 @@ void Torus(Array2<Ivec>& Index)
 	Real Ayx,Ayy,Ayz;
 	Real Azx,Azy,Azz;
 
-	// Rotate about x axis by -Theta, then about new z axis by -Phi.
+	// Rotate about x axis by Theta, then about new z axis by Phi.
 	
 	Axx=cosPhi;			Axy=-sinPhi*cosTheta;	Axz=sinPhi*sinTheta;
 	Ayx=sinPhi; 		Ayy=cosPhi*cosTheta;	Ayz=-cosPhi*sinTheta;
