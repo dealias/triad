@@ -22,7 +22,7 @@ inline void IntegratorBase::ChangeTimestep(double& dt, const double dtnew,
 static clock_t realtime,lasttime=time(NULL);
 static const int nperline=10;
 
-void IntegratorBase::Integrate(Var *const y0, double& t, const double tmax,
+void IntegratorBase::Integrate(Var *const y0, double& t, double tmax,
 							   Source_t *const LinearSrc0,
 							   Source_t *const NonlinearSrc0,
 							   Source_t *const ConstantSrc0,
@@ -67,7 +67,10 @@ void IntegratorBase::Integrate(Var *const y0, double& t, const double tmax,
 			if(microprocess) Problem->Microprocess();
 			if(polltime) {
 				realtime=time(NULL);
-				if(realtime-lasttime > polltime) {poll(); lasttime=realtime;}
+				if(realtime-lasttime > polltime) {
+					if (!poll()) tmax=tstop=t;
+					lasttime=realtime;
+				}
 			}
 			
 			if(forwards ? t+dt > tstop : t+dt < tstop) {
@@ -245,37 +248,37 @@ void RK5::Predictor(Var *y0, double t, double)
 		y[j].re=y0[j].re+b10*source0[j].re;
 		y[j].im=y0[j].im+b10*source0[j].im;
 	}
-	Source(source1,y,t+a1);
+	Source(source,y,t+a1);
 #pragma ivdep		
 	for(j=0; j < ny; j++) {
-		y2[j].re=y0[j].re+b20*source0[j].re+b21*source1[j].re;
-		y2[j].im=y0[j].im+b20*source0[j].im+b21*source1[j].im;
+		y2[j].re=y0[j].re+b20*source0[j].re+b21*source[j].re;
+		y2[j].im=y0[j].im+b20*source0[j].im+b21*source[j].im;
 	}
 	Source(source2,y2,t+a2);
 #pragma ivdep		
 	for(j=0; j < ny; j++) {
-		y3[j].re=y0[j].re+b30*source0[j].re+b31*source1[j].re+
+		y3[j].re=y0[j].re+b30*source0[j].re+b31*source[j].re+
 			b32*source2[j].re;
-		y3[j].im=y0[j].im+b30*source0[j].im+b31*source1[j].im+
+		y3[j].im=y0[j].im+b30*source0[j].im+b31*source[j].im+
 			b32*source2[j].im;
 	}
 	Source(source3,y3,t+a3);
 #pragma ivdep		
 	for(j=0; j < ny; j++) {
-		y4[j].re=y0[j].re+b40*source0[j].re+b41*source1[j].re+
+		y4[j].re=y0[j].re+b40*source0[j].re+b41*source[j].re+
 			b42*source2[j].re+b43*source3[j].re;
-		y4[j].im=y0[j].im+b40*source0[j].im+b41*source1[j].im+
+		y4[j].im=y0[j].im+b40*source0[j].im+b41*source[j].im+
 			b42*source2[j].im+b43*source3[j].im;
 	}
 	Source(source4,y4,t+a4);
 #pragma ivdep		
 	for(j=0; j < ny; j++) {
-		y5[j].re=y0[j].re+b50*source0[j].re+b51*source1[j].re+
+		y[j].re=y0[j].re+b50*source0[j].re+b51*source[j].re+
 			b52*source2[j].re+b53*source3[j].re+b54*source4[j].re;
-		y5[j].im=y0[j].im+b50*source0[j].im+b51*source1[j].im+
+		y[j].im=y0[j].im+b50*source0[j].im+b51*source[j].im+
 			b52*source2[j].im+b53*source3[j].im+b54*source4[j].im;
 	}
-	Source(source,y5,t+a5);
+	Source(source,y,t+a5);
 }
 	
 #else // COMPLEX
@@ -286,40 +289,82 @@ void RK5::Predictor(Var *y0, double t, double)
 	
 #pragma ivdep		
 	for(j=0; j < ny; j++) y[j]=y0[j]+b10*source0[j];
-	Source(source1,y,t+a1);
+	Source(source,y,t+a1);
 #pragma ivdep		
-	for(j=0; j < ny; j++) y2[j]=y0[j]+b20*source0[j]+b21*source1[j];
+	for(j=0; j < ny; j++) y2[j]=y0[j]+b20*source0[j]+b21*source[j];
 	Source(source2,y2,t+a2);
 #pragma ivdep		
-	for(j=0; j < ny; j++) y3[j]=y0[j]+b30*source0[j]+b31*source1[j]+
+	for(j=0; j < ny; j++) y3[j]=y0[j]+b30*source0[j]+b31*source[j]+
 		b32*source2[j];
 	Source(source3,y3,t+a3);
 #pragma ivdep		
-	for(j=0; j < ny; j++) y4[j]=y0[j]+b40*source0[j]+b41*source1[j]+
+	for(j=0; j < ny; j++) y4[j]=y0[j]+b40*source0[j]+b41*source[j]+
 		b42*source2[j]+b43*source3[j];
 	Source(source4,y4,t+a4);
 #pragma ivdep		
-	for(j=0; j < ny; j++) y5[j]=y0[j]+b50*source0[j]+b51*source1[j]+
+	for(j=0; j < ny; j++) y[j]=y0[j]+b50*source0[j]+b51*source[j]+
 		b52*source2[j]+b53*source3[j]+b54*source4[j];
-	Source(source,y5,t+a5);
+	Source(source,y,t+a5);
 }
 
 #endif // COMPLEX
 
+inline void RK5::Correct(const Real y0, Real& y,
+						 const Real source0, const Real source2, 
+						 const Real source3, const Real,
+						 const Real source, const double)
+{
+	y=y0+c0*source0+c2*source2+c3*source3+c5*source;
+}
+
+inline void RK5::CalcError(const Real y0, Real& y,
+						   const Real source0, const Real source2, 
+						   const Real source3, const Real source4,
+						   const Real source, const double)
+{
+	y=y0+d0*source0+d2*source2+d3*source3+d4*source4+d5*source;
+}
+
+inline void RK5::Correct(const Complex y0, Complex& y,
+						 const Complex source0, const Complex source2, 
+						 const Complex source3, const Complex source4,
+						 const Complex source, const double)
+{
+	Correct(y0.re,y.re,source0.re,source2.re,source3.re,source4.re,source.re,
+			dt);
+	Correct(y0.im,y.im,source0.im,source2.im,source3.im,source4.im,source.im,
+			dt);
+}
+
+inline void RK5::CalcError(const Complex y0, Complex& y,
+						   const Complex source0, const Complex source2, 
+						   const Complex source3, const Complex source4,
+						   const Complex source, const double)
+{
+	CalcError(y0.re,y.re,source0.re,source2.re,source3.re,source4.re,
+			  source.re,dt);
+	CalcError(y0.im,y.im,source0.im,source2.im,source3.im,source4.im,
+			  source.im,dt);
+}
+
 int RK5::Corrector(Var *y0, double, double& errmax, int start, int stop)
 {
+	int j;
 	Var pred;
+
+#pragma ivdep		
+	for(j=start; j < stop; j++)
+		Correct(y0[j],y[j],source0[j],source2[j],source3[j],source4[j],
+				source[j],dt);
 	if(dynamic) {
-		for(int j=start; j < stop; j++) {
-			pred=y0[j]+d0*source0[j]+d2*source2[j]+d3*source3[j]+d4*source4[j]+
-				d5*source[j];
-			y[j]=y0[j]+c0*source0[j]+c2*source2[j]+c3*source3[j]+c5*source[j];
-			calc_error(y0[j],y[j],pred,y[j],errmax);
-		}
+#pragma ivdep		
+		for(j=start; j < stop; j++)
+			CalcError(y0[j],y3[j],source0[j],source2[j],source3[j],source4[j],
+					  source[j],dt);
+		for(j=start; j < stop; j++)
+			calc_error(y0[j],y[j],y3[j],y[j],errmax);
 		ExtrapolateTimestep(errmax);
-	}
-	else for(int j=start; j < stop; j++) {
-		y[j]=y0[j]+c0*source0[j]+c2*source2[j]+c3*source3[j]+c5*source[j];
 	}
 	return 1;
 }
+

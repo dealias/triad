@@ -162,8 +162,8 @@ inline Complex& Complex::operator /= (const Complex& y)
 
 inline Complex& Complex::operator /= (Real y)
 {
-	re/=y;
-	im/=y;
+	re /= y;
+	im /= y;
 	return *this;
 }
 
@@ -231,8 +231,7 @@ inline Complex operator - (Real x, const Complex& y)
 
 inline Complex operator * (const Complex& x, const Complex& y)
 {
-	return Complex(x.re * y.re - x.im * y.im, 
-				   x.re * y.im + x.im * y.re);
+	return Complex(x.re * y.re - x.im * y.im, x.re * y.im + x.im * y.re);
 }
 
 inline Complex operator * (const Complex& x, Real y)

@@ -1,3 +1,4 @@
-void poll()
+int poll()
 {
+	return 1;
 }

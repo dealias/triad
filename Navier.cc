@@ -202,6 +202,7 @@ void NWave::InitialConditions()
 			crand_gauss(&w);
 			y[i] *= w;
 		}
+#pragma ivdep		
 		for(i=nindependent; i < Npsi; i++) y[i]=conj(y[i-nindependent]);
 	}
 	

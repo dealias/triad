@@ -85,7 +85,7 @@ public:
 		nyconserve=nyconserve0;
 		verbose=verbose0;
 	}
-	void Integrate(Var *const y, double& t, const double tmax,
+	void Integrate(Var *const y, double& t, double tmax,
 				   Source_t *const LinearSrc0, Source_t *const NonlinearSrc0,
 				   Source_t *const ConstantSrc, double& dt,
 				   const double sample);
@@ -173,7 +173,7 @@ extern ProblemBase *Problem;
 
 #define PLURAL(x) ((x)==1 ? "" : "s")
 
-void poll();
+int poll();
 void read_init();
 void set_timer();
 void statistics();

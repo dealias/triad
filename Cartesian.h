@@ -88,7 +88,7 @@ inline int CartesianPad(Var *to, const Var *from)
 	for(int i=0; i < NRows; i++) {
 		int ncol=RowBoundary[i+1]-RowBoundary[i];
 		set(to,from,ncol);
-		to += ncol; from +=ncol;
+		to += ncol; from += ncol;
 		set(to,ZeroBuffer,NPad);
 		to += NPad;
 	}

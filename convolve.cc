@@ -20,6 +20,7 @@ void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
 	unsigned int n=1 << log2n;
 	unsigned int i, n2=n/2;
 
+#pragma ivdep	
 	for(i=m; i < n/2+1; i++) F[i]=0.0;
 	rfft_brinv(F,log2n-1);
 	
@@ -51,11 +52,7 @@ void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
 	unsigned int n=1 << log2n;
 	unsigned int i;
 
-//	if(m > n/3) msg(ERROR, "Insufficient room for dealiasing");
-	if(m > n/3) {
-		cout << "Insufficient room for dealiasing" << endl;
-		exit(0);
-	}
+	if(m > n/3) msg(ERROR, "Insufficient room for dealiasing");
 	
 #pragma ivdep	
 	for(i=m; i < n/2+1; i++) G[i]=0.0;

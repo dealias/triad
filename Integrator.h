@@ -29,14 +29,8 @@ inline Solve_RC IntegratorBase::CheckError(double errmax)
 }
 
 template<class T> 
-#if _CRAY	
-inline void set(T * restrict to, const T * restrict from, int n) {
-	T * kstop=to+n;
-	for(T *k=to; k < kstop; k++) *k=*(from++);
-#else	
 inline void set(T *to, const T * from, int n) {
 	memcpy(to,from,sizeof(*from)*n);
-#endif	
 }
 
 class Euler : public IntegratorBase {
@@ -95,7 +89,7 @@ public:
 
 class RK5 : public RK4 {
 protected:
-	Var *y2,*y3,*y4,*y5;
+	Var *y2,*y3,*y4;
 	Var *source3,*source4;
 	double a1,a2,a3,a4,a5;
 	double b10;
@@ -108,8 +102,8 @@ protected:
 	double pgrow, pshrink;
 public:
 	void Allocate(int n) {RK4::Allocate(n);
-						  y2=new Var [n]; y3=new Var [n]; y4=y; y5=y;
-						  source3=source1; source1=source; source4=new Var [n];
+						  y2=y4=y; y3=new Var [n];
+						  source3=source1; source1=NULL; source4=new Var [n];
 						  pgrow=0.5*0.2; pshrink=0.5*0.25;}
 	char *Name() {return "Fifth-Order Runge-Kutta";}
 	void TimestepDependence(double);
@@ -121,9 +115,25 @@ public:
 	void Predictor(Var *, double, double);
 	int Corrector(Var *, double, double&, int, int);
 	int StandardCorrector(Var *y0, double dt, double& errmax,
-								  int start, int stop) {
+						  int start, int stop) {
 		return RK5::Corrector(y0,dt,errmax,start,stop);
 	}
+	virtual void Correct(const Real y0, Real& y,
+						 const Real source0, const Real source2, 
+						 const Real source3, const Real source4,
+						 const Real source, const double dt);
+	virtual void Correct(const Complex y0, Complex& y,
+						 const Complex source0, const Complex source2, 
+						 const Complex source3, const Complex source4,
+						 const Complex source, const double dt);
+	virtual void CalcError(const Real y0, Real& y,
+						   const Real source0, const Real source2, 
+						   const Real source3, const Real source4,
+						   const Real source, const double dt);
+	virtual void CalcError(const Complex y0, Complex& y,
+						   const Complex source0, const Complex source2, 
+						   const Complex source3, const Complex source4,
+						   const Complex source, const double dt);
 };
 
 class Exact : public RK5 {

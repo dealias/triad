@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
 	cout << endl;
 	
 	if(!testing) mailuser("completed");
-	return 1;
+	return 0;
 }
 
 void read_init()

@@ -28,7 +28,7 @@ int idletime()
 
 // Check whether load average is too high. If so, sleep for a while.
 
-void poll()
+int poll()
 {
 	double avg=1.0;
 	int newidle=0,idle=0;
@@ -49,6 +49,7 @@ void poll()
 		sleep(sleeptime);
 		newidle=idletime();
 	}
+	return 1;
 }
 
 
