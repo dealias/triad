@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.36
+#define __ARRAY_H_VERSION__ 1.37
 
 // Defining NDEBUG improves optimization but disables argument checking.
 // Defining __NOARRAY2OPT inhibits special optimization of Array2[].
@@ -94,13 +94,14 @@ inline int posix_memalign0(void **memptr, size_t alignment, size_t size)
     return EINVAL;
   void *p0=malloc(size+alignment);
   if(!p0) return ENOMEM;
-  *memptr=(void *) (((size_t) p0+alignment)&(~((size_t) (alignment-1))));
-  *(memptr-1)=p0;
+  void *p=(void *)(((size_t) p0+alignment)&~(alignment-1));
+  *((void **) p-1)=p0;
+  *memptr=p;
   return 0;
 }
 inline void free0(void *p)
 {
- if(p) free(*((void **) p - 1));
+ if(p) free(*((void **) p-1));
 }
 #endif
 
