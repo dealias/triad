@@ -404,6 +404,7 @@ void statistics(int it)
 	lock();
 	fstats << setw(w) << iter << " " << setw(e) << t << " " << setw(e) 
 		   << dt << " " << setw(w) << invert_cnt << " ";
+
 	total_invert_cnt += invert_cnt;
 	invert_cnt=0;
 	cputime(cpu);
@@ -412,6 +413,7 @@ void statistics(int it)
 		fstats << setw(w) << cpu[i] << " ";
 	}
 	fstats << endl;
+	if(!fstats) msg(WARNING,"Cannot write to statistics file");
 	unlock();
 }
 
