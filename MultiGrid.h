@@ -1,7 +1,7 @@
 #ifndef __MultiGrid_h__
 #define __MultiGrid_h__ 1
 
-#include <new.h>
+#include <new>
 #include "Array.h"
 
 namespace Array {

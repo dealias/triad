@@ -11,7 +11,7 @@ class Grid1 : public Grid<Array1<T>,T> {
   // number of points in previous and current levels and incl. boundaries
   // index limits
   int nx, nx1bc, nxbc, rx, offx, ox, i1, i1p, i2, i2p;
-  Array1<Real>::opt x;
+  typename Array1<Real>::opt x;
   Real hx, hxinv, hx2, hx2inv;
  public:
   Grid1() {radix=2; dimension=1;}
@@ -48,7 +48,7 @@ class Grid1 : public Grid<Array1<T>,T> {
 	
   virtual void Restrict(const Array1<T>& r, const Array1<T>& u) {
     if(&r != &u) XDirichlet(r,u,1);
-    Array1<T>::opt u0=u+offx;
+    typename Array1<T>::opt u0=u+offx;
     for(int i=i1; i <= i2p; i++) {
       r[i]=0.5*(0.5*(u0[rx*i-1]+u0[rx*i+1])+u0[rx*i]);
     }
@@ -56,7 +56,7 @@ class Grid1 : public Grid<Array1<T>,T> {
 	
   virtual void SubtractProlongation(const Array1<T>& u,
 				    const Array1<T>& v0) { 
-    Array1<T>::opt u0=u+offx;
+    typename Array1<T>::opt u0=u+offx;
     for(int i=i1p; i <= i2p; i++) {
       u0[rx*i] -= v0[i];
       u0[rx*i+1] -= 0.5*(v0[i]+v0[i+1]);

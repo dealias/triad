@@ -11,7 +11,7 @@ class Grid2 : public Grid<Array2<T>,T> {
   // number of points in previous and current levels and incl. boundaries
   int nx, nx1bc, nxbc, rx, offx, ox, i1, i1p, i2, i2p;
   int ny, ny1bc, nybc, ry, offy, oy, j1, j1p, j2, j2p;
-  Array1(Real) x,y;
+  Array1<Real>::opt x,y;
   Real hx, hxinv, hx2, hx2inv;
   Real hy, hyinv, hy2, hy2inv;
   Real hxyinv;

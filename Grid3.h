@@ -12,7 +12,7 @@ class Grid3 : public Grid<Array3<T>,T> {
   int nx, nx1bc, nxbc, rx, offx, ox, i1, i1p, i2, i2p;
   int ny, ny1bc, nybc, ry, offy, oy, j1, j1p, j2, j2p;
   int nz, nz1bc, nzbc, rz, offz, oz, k1, k1p, k2, k2p;
-  Array1<Real>::opt x,y,z;
+  typename Array1<Real>::opt x,y,z;
   Real hx, hxinv, hx2, hx2inv;
   Real hy, hyinv, hy2, hy2inv;
   Real hz, hzinv, hz2, hz2inv;
@@ -99,15 +99,17 @@ class Grid3 : public Grid<Array3<T>,T> {
       Array2<T> ri=r[i], um=u[i0-1], uz=u[i0], up=u[i0+1];
       for(int j=j1; j <= j2p; j++) {
 	int j0=ry*j+offy;
-	Array1<T>::opt rij=ri[j];
-	Array1<T>::opt umm=um[j0-1]+offz, umz=um[j0]+offz, ump=um[j0+1]+offz;
-	Array1<T>::opt uzm=uz[j0-1]+offz, uzz=uz[j0]+offz, uzp=uz[j0+1]+offz;
-	Array1<T>::opt upm=up[j0-1]+offz, upz=up[j0]+offz, upp=up[j0+1]+offz;
+	typename Array1<T>::opt rij=ri[j];
+	typename Array1<T>::opt umm=um[j0-1]+offz, umz=um[j0]+offz;
+	typename Array1<T>::opt ump=um[j0+1]+offz, uzm=uz[j0-1]+offz;
+	typename Array1<T>::opt uzz=uz[j0]+offz, uzp=uz[j0+1]+offz;
+	typename Array1<T>::opt upm=up[j0-1]+offz, upz=up[j0]+offz;
+	typename Array1<T>::opt upp=up[j0+1]+offz;
 	for(int k=k1; k <= k2p; k++) {
 	  rij[k]=0.125*(0.5*(0.5*(0.5*(
 				       umm[rz*k-1]+umm[rz*k+1]+ump[rz*k-1]+
-				       ump[rz*k+1]+um[rz*j-1][rz*k-1]+umm[rz*k+1]+
-				       upp[rz*k-1]+upp[rz*k+1])+
+				       ump[rz*k+1]+um[rz*j-1][rz*k-1]+
+				       umm[rz*k+1]+upp[rz*k-1]+upp[rz*k+1])+
 				  umm[rz*k]+umz[rz*k-1]+umz[rz*k+1]+
 				  ump[rz*k]+uzm[rz*k-1]+uzm[rz*k+1]+
 				  uzp[rz*k-1]+uzp[rz*k+1]+upm[rz*k]+
@@ -127,9 +129,9 @@ class Grid3 : public Grid<Array3<T>,T> {
       Array2<T> uz=u[i0], up=u[i0+1], vz=v0[i], vp=v0[i+1];
       for(int j=j1p; j <= j2p; j++) {
 	int j0=ry*j+offy;
-	Array1<T>::opt uzz=uz[j0]+offz, uzp=uz[j0+1]+offz, upz=up[j0]+offz;
-	Array1<T>::opt upp=up[j0+1]+offz;
-	Array1<T>::opt vzz=vz[j], vzp=vz[j+1], vpz=vp[j], vpp=vp[j+1];
+	typename Array1<T>::opt uzz=uz[j0]+offz, uzp=uz[j0+1]+offz;
+	typename Array1<T>::opt upz=up[j0]+offz, upp=up[j0+1]+offz;
+	typename Array1<T>::opt vzz=vz[j], vzp=vz[j+1], vpz=vp[j], vpp=vp[j+1];
 	for(int k=k1p; k <= k2p; k++) {
 	  uzz[rz*k] -= vzz[k];
 	  upz[rz*k] -= 0.5*(vzz[k]+vpz[k]);
@@ -152,7 +154,7 @@ class Grid3 : public Grid<Array3<T>,T> {
     for(int i=i1; i <= i2; i++) {
       Array2<T> di=d[i], ui=u[i];
       for(int j=j1; j <= j2; j++) {
-	Array1<T>::opt dij=di[j], uij=ui[j];
+	typename Array1<T>::opt dij=di[j], uij=ui[j];
 	for(int k=k1; k <= k2; k++) {
 	  uij[k] -= omegah2*dij[k];
 	}
@@ -240,7 +242,7 @@ class Grid3 : public Grid<Array3<T>,T> {
     for(int i=i1; i <= i2; i++) {
       Array2<T> ui=u[i];
       for(int j=j1; j <= j2; j++) {
-	Array1<T>::opt uij=ui[j];
+	typename Array1<T>::opt uij=ui[j];
 	for(int k=k1; k <= k2; k++) s += abs2(uij[k]);
       }
     }
@@ -254,7 +256,7 @@ class Grid3 : public Grid<Array3<T>,T> {
     if(homogeneous) return;
     Array2<T> u0=u[i1-1], unx1=u[i2+1];
     for(int j=0; j < nybc; j++) {
-      Array1<T>::opt u0j=u0[j], unx1j=unx1[j];
+      typename Array1<T>::opt u0j=u0[j], unx1j=unx1[j];
       for(int k=0; k < nzbc; k++) {
 	u0j[k]=b0;
 	unx1j[k]=b1;
@@ -270,8 +272,8 @@ class Grid3 : public Grid<Array3<T>,T> {
     Array2<T> u0=u[i1-1], unx1=u[I2+1];
     Array2<T> b0=b[i1-1], bnx1=b[i2+1];
     for(int j=0; j < ny0bc; j++) {
-      Array1<T>::opt u0j=u0[j], unx1j=unx1[j];
-      Array1<T>::opt b0j=b0[j], bnx1j=bnx1[j];
+      typename Array1<T>::opt u0j=u0[j], unx1j=unx1[j];
+      typename Array1<T>::opt b0j=b0[j], bnx1j=bnx1[j];
       for(int k=0; k < nz0bc; k++) {
 	u0j[k]=b0j[k];
 	unx1j[k]=bnx1j[k];
@@ -282,8 +284,8 @@ class Grid3 : public Grid<Array3<T>,T> {
   void XNeumann(const Array3<T>& u) {
     Array2<T> u0=u[i1-1], u2=u[i1+1], unxm1=u[i2-1], unx1=u[i2+1];
     for(int j=0; j < nybc; j++) {
-      Array1<T>::opt u0j=u0[j], u2j=u2[j];
-      Array1<T>::opt unxm1j=unxm1[j], unx1j=unx1[j];
+      typename Array1<T>::opt u0j=u0[j], u2j=u2[j];
+      typename Array1<T>::opt unxm1j=unxm1[j], unx1j=unx1[j];
       for(int k=0; k < nzbc; k++) {
 	u0j[k]=u2j[k];
 	unx1j[k]=unxm1j[k];
@@ -294,7 +296,7 @@ class Grid3 : public Grid<Array3<T>,T> {
   void XConstant(const Array3<T>& u) {
     Array2<T> u0=u[i1-1], u1=u[i1], unx=u[i2], unx1=u[i2+1];
     for(int j=0; j < nybc; j++) {
-      Array1<T>::opt u0j=u0[j], u1j=u1[j], unxj=unx[j], unx1j=unx1[j];
+      typename Array1<T>::opt u0j=u0[j], u1j=u1[j], unxj=unx[j], unx1j=unx1[j];
       for(int k=0; k < nzbc; k++) {
 	u0j[k]=u1j[k];
 	unx1j[k]=unxj[k];
@@ -305,7 +307,7 @@ class Grid3 : public Grid<Array3<T>,T> {
   void XMixedA(const Array3<T>& u) {
     Array2<T> u0=u[i1-1], u2=u[i1+1];
     for(int j=0; j < nybc; j++) {
-      Array1<T>::opt u0j=u0[j], u2j=u2[j];
+      typename Array1<T>::opt u0j=u0[j], u2j=u2[j];
       for(int k=0; k < nzbc; k++) {
 	u0j[k]=u2j[k];
       }
@@ -315,7 +317,7 @@ class Grid3 : public Grid<Array3<T>,T> {
   void XMixedB(const Array3<T>& u) {
     Array2<T> unxm1=u[i2-1], unx1=u[i2+1];
     for(int j=0; j < nybc; j++) {
-      Array1<T>::opt unxm1j=unxm1[j], unx1j=unx1[j];
+      typename Array1<T>::opt unxm1j=unxm1[j], unx1j=unx1[j];
       for(int k=0; k < nzbc; k++) {
 	unx1j[k]=unxm1j[k];
       }
@@ -325,7 +327,7 @@ class Grid3 : public Grid<Array3<T>,T> {
   void XPeriodic(const Array3<T>& u) {
     Array2<T> u0=u[i1-1], u1=u[i1], unx=u[i2], unx1=u[i2+1];
     for(int j=0; j < nybc; j++) {
-      Array1<T>::opt u0j=u0[j], u1j=u1[j], unxj=unx[j], unx1j=unx1[j];
+      typename Array1<T>::opt u0j=u0[j], u1j=u1[j], unxj=unx[j], unx1j=unx1[j];
       for(int k=0; k < nzbc; k++) {
 	u0j[k]=unxj[k];
 	unx1j[k]=u1j[k];
@@ -339,7 +341,7 @@ class Grid3 : public Grid<Array3<T>,T> {
     if(homogeneous) return;
     for(int i=0; i < nxbc; i++) {
       Array2<T> ui=u[i];
-      Array1<T>::opt ui0=ui[j1-1], uiny1=ui[j2+1];
+      typename Array1<T>::opt ui0=ui[j1-1], uiny1=ui[j2+1];
       for(int k=0; k < nzbc; k++) {
 	ui0[k]=b0;
 	uiny1[k]=b1;
@@ -354,8 +356,8 @@ class Grid3 : public Grid<Array3<T>,T> {
     else {nx0bc=nxbc; J2=j2; nz0bc=nzbc;} 
     for(int i=0; i < nx0bc; i++) {
       Array2<T> ui=u[i], bi=b[i];
-      Array1<T>::opt ui0=ui[j1-1], uiny1=ui[J2+1];
-      Array1<T>::opt bi0=bi[j1-1], biny1=bi[j2+1];
+      typename Array1<T>::opt ui0=ui[j1-1], uiny1=ui[J2+1];
+      typename Array1<T>::opt bi0=bi[j1-1], biny1=bi[j2+1];
       for(int k=0; k < nz0bc; k++) {
 	ui0[k]=bi0[k];
 	uiny1[k]=biny1[k];
@@ -366,8 +368,8 @@ class Grid3 : public Grid<Array3<T>,T> {
   void YNeumann(const Array3<T>& u) {
     for(int i=0; i < nxbc; i++) {
       Array2<T> ui=u[i];
-      Array1<T>::opt ui0=ui[j1-1], ui2=ui[j1+1];
-      Array1<T>::opt uinym1=ui[j2-1], uiny1=ui[j2+1];
+      typename Array1<T>::opt ui0=ui[j1-1], ui2=ui[j1+1];
+      typename Array1<T>::opt uinym1=ui[j2-1], uiny1=ui[j2+1];
       for(int k=0; k < nzbc; k++) {
 	ui0[k]=ui2[k];
 	uiny1[k]=uinym1[k];
@@ -378,7 +380,7 @@ class Grid3 : public Grid<Array3<T>,T> {
   void YConstant(const Array3<T>& u) {
     for(int i=0; i < nxbc; i++) {
       Array2<T> ui=u[i];
-      Array1<T>::opt ui0=ui[j1-1], ui1=ui[j1], uiny=ui[j2], uiny1=ui[j2+1];
+      typename Array1<T>::opt ui0=ui[j1-1], ui1=ui[j1], uiny=ui[j2], uiny1=ui[j2+1];
       for(int k=0; k < nzbc; k++) {
 	ui0[k]=ui1[k];
 	uiny1[k]=uiny[k];
@@ -389,7 +391,7 @@ class Grid3 : public Grid<Array3<T>,T> {
   void YPeriodic(const Array3<T>& u) {
     for(int i=0; i < nxbc; i++) {
       Array2<T> ui=u[i];
-      Array1<T>::opt ui0=ui[j1-1], ui1=ui[j1], uiny=ui[j2], uiny1=ui[j2+1];
+      typename Array1<T>::opt ui0=ui[j1-1], ui1=ui[j1], uiny=ui[j2], uiny1=ui[j2+1];
       for(int k=0; k < nzbc; k++) {
 	ui0[k]=uiny[k];
 	uiny1[k]=ui1[k];
@@ -404,7 +406,7 @@ class Grid3 : public Grid<Array3<T>,T> {
     for(int i=0; i < nxbc; i++) {
       Array2<T> ui=u[i];
       for(int j=0; j < nybc; j++) {
-	Array1<T>::opt uij=ui[j];
+	typename Array1<T>::opt uij=ui[j];
 	uij[k1-1]=b0;
 	uij[k2+1]=b1;
       }
@@ -419,8 +421,8 @@ class Grid3 : public Grid<Array3<T>,T> {
     for(int i=0; i < nx0bc; i++) {
       Array2<T> ui=u[i], bi=b[i];
       for(int j=0; j < ny0bc; j++) {
-	Array1<T>::opt uij=ui[j];
-	Array1<T>::opt bij=bi[j];
+	typename Array1<T>::opt uij=ui[j];
+	typename Array1<T>::opt bij=bi[j];
 	uij[k1-1]=bij[k1-1];
 	uij[K2+1]=bij[k2+1];
       }
@@ -431,7 +433,7 @@ class Grid3 : public Grid<Array3<T>,T> {
     for(int i=0; i < nxbc; i++) {
       Array2<T> ui=u[i];
       for(int j=0; j < nybc; j++) {
-	Array1<T>::opt uij=ui[j];
+	typename Array1<T>::opt uij=ui[j];
 	uij[k1-1]=uij[k1+1];
 	uij[k2+1]=uij[k2-1];
       }
@@ -442,7 +444,7 @@ class Grid3 : public Grid<Array3<T>,T> {
     for(int i=0; i < nxbc; i++) {
       Array2<T> ui=u[i];
       for(int j=0; j < nybc; j++) {
-	Array1<T>::opt uij=ui[j];
+	typename Array1<T>::opt uij=ui[j];
 	uij[k1-1]=uij[k1];
 	uij[k2+1]=uij[k2];
       }
@@ -453,7 +455,7 @@ class Grid3 : public Grid<Array3<T>,T> {
     for(int i=0; i < nxbc; i++) {
       Array2<T> ui=u[i];
       for(int j=0; j < nybc; j++) {
-	Array1<T>::opt uij=ui[j];
+	typename Array1<T>::opt uij=ui[j];
 	uij[k1-1]=uij[k2];
 	uij[k2+1]=uij[k1];
       }
