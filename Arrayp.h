@@ -129,11 +129,4 @@ class Array4p : public array4<T>, public ArrayMod {
 
 }
 
-#ifdef NDEBUG
-// Obsolete: Array1p(T) has been superceded by Array1<T>::opt
-#define Array1p(T) T*
-#else
-#define Array1p(T) Array1p<T>
-#endif
-
 #endif
