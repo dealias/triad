@@ -7,7 +7,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <math.h>
-#include <memory.h>
+#include <memory>
 
 #if _MAC
 #include ":arch:mac.h"
@@ -17,7 +17,7 @@
 
 #endif // _MAC
 
-#include <new.h>
+#include <new>
 void *operator new(size_t size, int);
 void *operator new(size_t size, void *ptr, int new_len);
 size_t memory();

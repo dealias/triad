@@ -20,12 +20,12 @@ const char VERSION[]="1.11";
 
 #include "xstream.h"
 #include <iostream.h>
-#include <limits.h>
+#include <limits>
 #include <errno.h>
 #include <strstream.h>
 #include <iomanip.h>
 #include <unistd.h>
-#include <string.h>
+#include <string>
 #include <sys/wait.h>
 
 #include "getopt.h"
