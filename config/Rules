@@ -1,11 +1,11 @@
+$(NAME)$(MAGIC): dependencies
+	$(MAKE) -f $(TRI)/config/Compile $(NAME)
+
 .cc.o:
 	$(C++) $(OPT) $(INCL) -o $@ -c $<
 
 .c.o:
 	$(CC) $(OPT) $(INCL) -o $@ -c $<
-
-default: $(CLEAN) dependencies
-	make -f $(TRI)/config/Compile files
 
 clean:  FORCE
 	rm -rf *.o *.$(D) *mon.out $(CLEAN)
