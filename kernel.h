@@ -50,8 +50,6 @@ using Array::Allocate;
 using Array::Dimension;
 using Array::Set;
 
-#undef __restrict
-
 typedef array1<Var>::opt vector;
 typedef array1<Real>::opt rvector;
 typedef array1<int>::opt ivector;
