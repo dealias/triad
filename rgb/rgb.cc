@@ -1018,7 +1018,7 @@ void Torus(Array2<Ivec> Index)
 	Real Ayx=cosTheta*sinPhi; Real Ayy=cosTheta*cosPhi; Real Ayz=-sinTheta;
 	Real Azx=sinTheta*sinPhi; Real Azy=sinTheta*cosPhi; Real Azz=cosPhi;
 	
-	Real cutoff=1.75*pi;
+	Real cutoff=1.5*pi;
 	
 	Real xoffset=0.5+Rp*1.2;
 	Real yoffset=0.5+Rp*1.5;
