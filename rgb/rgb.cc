@@ -788,7 +788,6 @@ int main(int argc, char *argv[])
 	msg(ERROR,"Inconsistent component image sizes");
     }
     files[mfiles]=strdup(fieldname.str().c_str());
-    cout << files[mfiles] << endl;
     
     if(vector3) bar=0;
     if((lower == upper || nz == 1) && bar == 0) band=0;
