@@ -260,12 +260,11 @@ void NWave::InitialConditions()
 			ycoeff=new Complex [ngridy*Npsi];
 			for(m=0; m < Npsi; m++) {
 				Real ky=Geometry->Y(m);
-				Real sqrtArea=sqrt(Geometry->Area(m));
 //				Real DkDxinv=1.0/(Dx*Geometry->Area(m));
 				for(int j=0; j < ngridy; j++) {
 					Complex *q=ycoeff+j*Npsi;
 					Real Y=j*L/ngridy;
-					q[m]=expi(ky*Y)*sqrtArea;
+					q[m]=expi(ky*Y);
 //					q[m]=expi(ky*Y*DkDxinv);
 				}
 			}
