@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Arrayp_h__
 #define __Arrayp_h__ 1
 
-#define __ARRAYP_H_VERSION__ 1.06
+#define __ARRAYP_H_VERSION__ 1.07
 
 // Defining NDEBUG improves optimization.
 
@@ -33,7 +33,7 @@ public:
 		else if(i < 0) i += n;
 	
 		if(i >= n) i %= n;
-		else if(i < 0) {i += n-(-i % n); if(i == n) i=0;}
+		else if(i < 0) {i=n-(-i % n); if(i == n) i=0;}
 	}
 };
 
