@@ -44,6 +44,8 @@ using std::endl;
 using std::ends;
 using std::flush;
 using std::setw;
+using std::setfill;
+using std::setprecision;
 
 extern const double pi;
 extern const double twopi;
