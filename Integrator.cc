@@ -21,14 +21,13 @@ static const int nperline=10;
 void IntegratorBase::Integrate(ProblemBase& problem, Var *const y,
 			       double& t, double tmax, 
 			       double& dt, const double sample,
-			       int& iteration)
+			       int& iteration, unsigned long& nout)
   // Don't dump or microprocess if sample is negative.
 {
   Problem=&problem;
   double dtold=0.0, dtorig=0.0;
   int it,itx,cont;
-  int nout=0, final=1;
-  const double tstart=t;
+  int final=1;
   const int forwards=(tmax >= t);
   const double sign=(forwards ? 1.0 : -1.0);
 	
@@ -50,12 +49,13 @@ void IntegratorBase::Integrate(ProblemBase& problem, Var *const y,
       cout << "[" << it << flush;
     }
 		
+    unsigned long count=nout;
     if(sample == 0.0) dump(it,0,tmax);
     else if(sample > 0) {
       if(abs(tstop-t) <= tprecision*abs(tstop)) tstop=t;
       if (forwards ? t >= tstop : t <= tstop) {
-	nout++;
-	tstop=tstart+sign*nout*sample;
+        count++;
+	tstop=sign*count*sample;
 	if((forwards ? tstop > tmax : tstop < tmax) ||
 	   abs(tmax-tstop) <= tprecision*abs(tmax)) tmax=tstop=t;
 	else dump(it,0,tmax);
@@ -64,15 +64,14 @@ void IntegratorBase::Integrate(ProblemBase& problem, Var *const y,
     }
 		
     statistics(it);
+    nout=count;
 		
     for(itx=0; itx < microsteps; itx++) {
       if(microprocess) Problem->Microprocess();
       if(polltime) {
 	realtime=time(NULL);
 	if(realtime-lasttime > polltime) {
-	  if (poll()) {
-	    tmax=tstop=t; final=!sample; exit_signal=CONTINUE;
-	  }
+	  poll();
 	  lasttime=realtime;
 	}
       }
@@ -89,19 +88,24 @@ void IntegratorBase::Integrate(ProblemBase& problem, Var *const y,
 	switch(Solve(t,dt)) {
 	case ADJUST:
 	  t += dt;
-	  ChangeTimestep(dt,sign*min(sign*dt*growfactor,dtmax),t,
+	  ChangeTimestep(dt,sign*max(min(sign*dt*growfactor,dtmax),dtmin),t,
 			 sample);
-	  cont=0;	break;
+	  cont=0;
+	  break;
 	case SUCCESSFUL:
 	  t += dt;
 	  if(dtold) {ChangeTimestep(dt,dtold,t,sample); dtold=0.0;}  
-	  cont=0;	break;
+	  cont=0;
+	  break;
 	case NONINVERTIBLE:
 	  if(!dtold) dtold=dtorig ? dtorig : dt;
 	  invert_cnt++;
-	  ChangeTimestep(dt,dt*stepnoninverse,t,sample); break;
+	  ChangeTimestep(dt,dt*stepnoninverse,t,sample);
+	  break;
 	case UNSUCCESSFUL:
-	  ChangeTimestep(dt,max(dt*shrinkfactor,dtmin),t,sample);
+	  if(sign*dt == dtmin) 
+	    msg(ERROR,"Minimum timestep restriction violated");
+	  ChangeTimestep(dt,sign*max(sign*dt*shrinkfactor,dtmin),t,sample);
 	}
       } while(cont);
       iteration++;

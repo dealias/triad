@@ -26,8 +26,10 @@ using namespace Array;
 
 const char PROGRAM[]="TRIAD";
 const char VERSION[]="1.22";
+int restart_version=1;
 
 // Global variables
+unsigned long nout;
 double t;
 double last_dump=-1.0;
 int iteration=0;
@@ -70,6 +72,7 @@ int hybrid=0;
 int override=0;
 int verbose=1;
 int checkpoint=0;
+int oldversion=0;
 
 // Local vocabulary declarations and default values
 static int microsteps=1;
@@ -104,6 +107,7 @@ VocabularyBase::VocabularyBase()
   VOCAB_NODUMP(override,0,1,"");
   VOCAB_NODUMP(verbose,0,4,"");
   VOCAB_NODUMP(run,null,null,"");
+  VOCAB_NODUMP(oldversion,0,1,"Read in old version of restart");
   VOCAB(checkpoint,0,INT_MAX,"");
   VOCAB(output,0,1,"");
   VOCAB(method,null,null,"");
@@ -231,7 +235,7 @@ int main(int argc, char *argv[])
   }
 					
   save_parameters();
-  t=0.0;
+  t=0.0; nout=0;
   Problem->InitialConditions();
   
   y=Problem->Vector();
@@ -254,7 +258,7 @@ int main(int argc, char *argv[])
   cout << newl << "INTEGRATING:" << endl;
   set_timer();
 	
-  Integrator->Integrate(*Problem,y,t,tmax,dt,sample,iteration);
+  Integrator->Integrate(*Problem,y,t,tmax,dt,sample,iteration,nout);
 	
   Problem->FinalOutput();
 	
@@ -281,25 +285,28 @@ int main(int argc, char *argv[])
 void read_init()
 {
   int i,ny0;
+  unsigned long nout0;
   double t0,dt0;
   const char *type=restart ? "restart" : "initialization";
   char *ny_msg=
-    "Current value of ny (%d) disagrees with value (%d) in file\n%s";
+    "Current value of ny (%d) disagrees with value (%d) in file\n%s. Perhaps you need to specify oldversion=%d";
+  int init_version;
 	
   ixstream finit(rname);
   if(finit) {
     cout << newl << "READING " << upcase(type) << " DATA FROM FILE "
 	 << rname << "." << endl; 
+    if(!oldversion) finit >> init_version >> nout0;
     finit >> t0 >> dt0 >> final_iteration;
     for(i=0; i < ncputime; i++) finit >> cpu_restart[i];
     finit >> ny0;
-    if(ny0 != ny) msg(OVERRIDE_GLOBAL,ny_msg,ny,ny0,rname);
+    if(ny0 != ny) msg(OVERRIDE_GLOBAL,ny_msg,ny,ny0,rname,!oldversion);
     for(i=0; i < min(ny,ny0); i++) finit >> y[i];
     if(!finit)	msg(ERROR,"Cannot read from %s file %s",type,rname);
   } else msg(ERROR,"Could not open %s file %s",type,rname);
 	
   if(!explicit_dt) dt=dt0;
-  if(restart) {t=t0; last_dump=t;}
+  if(restart) {t=t0; nout=nout0; last_dump=t;}
 }
 
 void lock()
@@ -363,7 +370,8 @@ void set_timer()
   cputime(cpu0);
   if(!restart) {
     for(int i=0; i < ncputime; i++) cpu_restart[i]=0.0;
-    fstats << setw(w) << "iteration"
+    fstats        << setw(w) << "it"
+	   << " " << setw(w) << "iteration"
 	   << " " << setw(e) << "t"
 	   << " " << setw(e) << "dt"
 	   << " " << setw(w) << "invert_cnt"
@@ -387,7 +395,8 @@ void statistics(int it)
   oxstream frestart(rtemp);
   if(frestart) {
     int i;
-    frestart << t << newl << dt << newl << iter << newl;
+    frestart << restart_version << newl << nout << newl
+	     << t << newl << dt << newl << iter << newl;
     for(i=0; i < ncputime; i++) frestart << cpu_restart[i]+cpu[i] << newl;
     frestart << ny << newl;
     for(i=0; i < ny; i++) frestart << y[i] << newl;
@@ -416,8 +425,8 @@ void statistics(int it)
   } else if(it == 0) msg(ERROR,"Could not open restart file %s",rtemp);
 	
   lock();
-  fstats << setw(w) << iter << " " << setw(e) << t << " " << setw(e) 
-	 << dt << " " << setw(w) << invert_cnt << " ";
+  fstats << setw(w) << it << " " << iter << " " << setw(e) << t << " " <<
+    setw(e) << dt << " " << setw(w) << invert_cnt << " ";
 
   total_invert_cnt += invert_cnt;
   invert_cnt=0;

@@ -121,7 +121,8 @@ class IntegratorBase {
     dynamic=dynamic0;
   }
   void Integrate(ProblemBase& problem, Var *const y, double& t, double tmax,
-		 double& dt, const double sample, int& iteration);
+		 double& dt, const double sample, int& iteration,
+		 unsigned long& nout);
   void ChangeTimestep(double& dt, double dtnew, const double t,
 		      const double sample);
 	
@@ -190,7 +191,7 @@ extern VocabularyBase *Vocabulary;
 
 #define PLURAL(x) ((x)==1 ? "" : "s")
 
-int poll();
+void poll();
 void read_init();
 void set_timer();
 void statistics(int it);
