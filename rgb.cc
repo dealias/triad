@@ -231,7 +231,7 @@ int main(int argc, char *const argv[])
 #endif	
 	errno=0;
 	while (1) {
-		int c = getopt(argc,argv,"bfghilmprvzFx:H:V:B:E:L:U:P:S:X:Y:Z:");
+		int c = getopt(argc,argv,"bfghimprvzFl:x:H:V:B:E:L:U:P:S:X:Y:Z:");
 		if (c == -1) break;
 		switch (c) {
 		case 'b':
