@@ -331,8 +331,8 @@ int main(int argc, char *const argv[])
 	rgbdir=rgbdirbuf.str();
 	
 	char *const format=gray ? "gray" : "rgb";
-	int PaletteMin=gray ? 255 : ColorPaletteMin[palette];
-	int PaletteRange=gray ? -255 : (ColorPaletteMax[palette]-PaletteMin);
+	int PaletteMin=gray ? 0 : ColorPaletteMin[palette];
+	int PaletteRange=gray ? 255 : (ColorPaletteMax[palette]-PaletteMin);
 	
 	red=Red[palette];
 	green=Green[palette];
