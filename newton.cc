@@ -44,12 +44,9 @@ bool newton(Real &x, Real (*f)(Real x), Real (*dfdx)(Real x),
 bool newton(Real &x1, Real x2, Real (*f)(Real x), Real (*dfdx)(Real x),
 	    Real epsilon, bool verbose=false, unsigned int MaxIterations=100)
 {
-  Real y,dy,f1,f2;
-  Real xh,xl;
-
-  f1=(*f)(x1);
+  Real f1=(*f)(x1);
   if(f1 == 0.0) return x1;
-  f2=(*f)(x2);
+  Real f2=(*f)(x2);
   if(f2 == 0.0) return x2;
 	
   if((f1 > 0.0 && f2 > 0.0) || (f1 < 0.0 && f2 < 0.0)) {
@@ -71,8 +68,8 @@ bool newton(Real &x1, Real x2, Real (*f)(Real x), Real (*dfdx)(Real x),
   }
 
   Real dx=dxold;
-  y=(*f)(x);
-  dy=(*dfdx)(x);
+  Real y=(*f)(x);
+  Real dy=(*dfdx)(x);
   for(unsigned int j=1; j <= MaxIterations; j++) {
     if(((x-x2)*dy-y)*((x-x1)*dy-y) >= 0.0 || fabs(2.0*y) > fabs(dxold*dy)) {
       dxold=dx;
@@ -94,7 +91,7 @@ bool newton(Real &x1, Real x2, Real (*f)(Real x), Real (*dfdx)(Real x),
     if(y < 0.0) x1=x;
     else x2=x;
   }
-  cerr << "WARNING: Newton-Raphson iteration did not converge." << endl;
+  cerr << "WARNING: Newton-Raphson bisection did not converge." << endl;
   return false;
 }
 
