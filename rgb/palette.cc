@@ -10,6 +10,7 @@ Array1<u_char> Green;
 extern int verbose;
 extern int two;
 extern int gradient;
+extern int damp;
 
 static int k,incr;
 
@@ -18,10 +19,25 @@ int ColorByte(double r) {
 }
 
 void AddColor(double r, double g, double b) {
-	Real factor=gradient ? ((double) k)/NColors : 1.0;
-	Red[k]=ColorByte(r*factor);
-	Green[k]=ColorByte(g*factor);
-	Blue[k]=ColorByte(b*factor);
+	if(damp) {
+		Real factor=sqrt(r*r+g*g+b*b);
+		if(factor != 0.0) factor=1.0/factor;
+		r *= r*factor;
+		g *= g*factor;
+		b *= b*factor;
+	}
+	
+	if(gradient) {
+		Real factor=((double) k)/NColors;
+		r *= factor;
+		g *= factor;
+		b *= factor;
+	}
+
+	Red[k]=ColorByte(r);
+	Green[k]=ColorByte(g);
+	Blue[k]=ColorByte(b);
+	
 	k += incr;
 }
 

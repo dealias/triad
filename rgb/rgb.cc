@@ -50,6 +50,8 @@ static int xsize,ysize;
 int verbose=0;
 int two=0;
 int gradient=0;
+int damp=0;
+
 static int floating_scale=0;
 static int floating_section=0;
 static int preserve=0;
@@ -324,9 +326,10 @@ void options()
 	cerr << "-ncolors n\t maximum number of colors to generate (default 65536)"
 		 << endl; 
 	cerr << "-background n\t background color" << endl; 
+	cerr << "-gradient\t apply intensity gradient to palette" << endl; 
 	cerr << "-double\t\t double spectral palette and apply intensity gradient" 
 		 << endl; 
-	cerr << "-gradient\t\t apply intensity gradient to palette" << endl; 
+	cerr << "-damp\t\t apply color intensity damping" << endl; 
 	cerr << endl;
 	cerr << "Color Palettes:" << endl;
 	cerr << "-bwrainbow\t black+rainbow+white [default]"
@@ -384,6 +387,7 @@ int main(int argc, char *const argv[])
                {"symmetric", 0, &symmetric, 1},
                {"double", 0, &two, 1},
                {"gradient", 0, &gradient, 1},
+               {"damp", 0, &damp, 1},
                {"nobar", 0, &nobar, 1},
                {"extract", 1, 0, EXTRACT},
                {"ncolors", 1, 0, NCOLORS},
@@ -510,6 +514,7 @@ int main(int argc, char *const argv[])
 			break;
 		case NCOLORS:
 			NColors=atoi(optarg);
+			if(NColors <= 0) msg(ERROR,"Invalid number of colors: %s", optarg);
 			break;
 		case BACKGROUND:
 			background=atoi(optarg);
