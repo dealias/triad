@@ -239,7 +239,7 @@ public:
 // Factor which converts |y|^2 to energy in various normalizations:
 	Real Normalization(int);
 	
-	Nu Linearity(int);
+	Nu Linear(int);
 	Real Forcing(int);
 	
 	inline Mc Ckpq(T&, T&, T&);

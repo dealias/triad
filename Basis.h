@@ -3,6 +3,7 @@
 
 #include "Geometry.h"
 #include "DynVector.h"
+#include "Linearity.h"
 
 #define BASIS(key) {new Entry<Basis<key>,GeometryBase> (#key,GeometryTable);}
 
@@ -11,8 +12,6 @@ extern int Nxb,Nxb1,Nyb,Nyp;
 
 extern Var *psix,*psiy,*vort;
 extern Real *knorm2,*kfactor;
-
-extern Real krmin;
 
 template<class T>
 class Basis : public GeometryBase {
@@ -41,7 +40,7 @@ public:
 // Factor which converts |y|^2 to energy:
 	Real Normalization(int);
 	
-	inline Nu Linearity(int);
+	inline Nu Linear(int);
 	inline Real Forcing(int);
 };
 
@@ -58,7 +57,6 @@ INLINE void Basis<T>::Initialize()
 {
 	knorm2=new Real[Nmode];
 	kfactor=new Real[Nmode];
-	Real normalization=krmin*krmin;
 	
 	if(strcmp(Problem->Abbrev(),"PS") == 0) {
 		cout << endl << "ALLOCATING FFT BUFFERS (" << Nxb << " x " << Nyp
@@ -69,22 +67,22 @@ INLINE void Basis<T>::Initialize()
 		Real scale=Nxb*Nyb;
 		for(int k=0; k < Nmode; k++) {
 			knorm2[k]=mode[k].K2();
-			kfactor[k]=normalization/(scale*knorm2[k]);
+			kfactor[k]=1.0/(scale*Linearity->Denominator(mode[k].K2()));
 		}
 	} else {
 		psibuffer=new Var[n];
 		psibufferR=(reality ? psibuffer+Nmode : psibuffer);
-		for(int k=0; k < Nmode; k++) kfactor[k]=normalization/mode[k].K2();
+		for(int k=0; k < Nmode; k++) 
+			kfactor[k]=1.0/Linearity->Denominator(mode[k].K2());
 	}
 }
 
-void LinearityAt(int i, Nu& nu);
-
 template <class T>
-INLINE Nu Basis<T>::Linearity(int i)
+INLINE Nu Basis<T>::Linear(int i)
 {
 	Nu nu;
-	LinearityAt(i,nu);
+	Polar v=Polar(Geometry->K(i),Geometry->Th(i));
+	Linearity->Evaluate(v,nu);
 	return nu;
 }
 

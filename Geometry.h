@@ -33,7 +33,7 @@ public:
 	virtual void ListTriads(ostream &) {}
 	virtual void Initialize()=0;
 	
-	virtual Nu Linearity(int)=0;
+	virtual Nu Linear(int)=0;
 	virtual Real Forcing(int)=0;
 	
 	virtual Real Area(int)=0;

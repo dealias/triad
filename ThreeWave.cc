@@ -7,6 +7,8 @@ char *NWaveVocabulary::Abbrev() {return "w3";}
 char *method="SR";
 char *integrator="PC";
 
+LinearityBase *Linearity=new LinearityBase[1];
+
 // Global variables
 int randomIC=0;
 Real tauforce=0.0;
@@ -139,10 +141,6 @@ void NWave::Output(int)
 	fout << t << "\t";
 	for(i=0; i < Npsi-1; i++) fout << y[i] << "\t";
 	fout << y[i] << endl;
-}
-
-void LinearityAt(int, Nu &)
-{
 }
 
 void ForcingAt(int, Real &)

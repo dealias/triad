@@ -50,6 +50,39 @@ int movie=0;
 int truefield=0;
 int weiss=0;
 
+Real krmin2=0.0;
+
+class Diamagnetic {
+	Real Frequency(const Polar& v) {return vd*v.Y()/Denominator(v.K2());}
+}
+
+class BandLimited : public LinearityBase, public Diagmagnetic {
+public:
+	char *Name() {return "Band-Limited";}
+	
+	Real Growth(const Polar& v) {
+		Real k=v.K();
+		Real gamma=0.0;
+		if(k <= kL) gamma -= pow(k,pL)*nuL*pow(k,pL);
+		if(abs(k-kforce) < 0.5*deltaf) gamma += gammaf/deltaf;
+		if(k > kH) gamma -= pow(k,pH)*nuH*pow(k,pH);
+		return gamma;
+	}
+};
+
+class Waltz : public LinearityBase, public Diamagnetic {
+public:
+	char *Name() {return "Waltz";}
+	
+	Real Denominator(Real k2) {return 1.0+k2;}
+	
+	Real Growth(const Polar& v) {
+		Real tempx=abs(v.X())/0.5-1.0;
+		Real tempy=abs(v.Y())/0.5-1.0;
+		return 0.06*(1.0-0.5*(tempx*tempx+tempy*tempy))-0.05;
+	}
+};
+
 NWaveVocabulary::NWaveVocabulary()
 {
 	Vocabulary=this;
@@ -134,33 +167,6 @@ Real force_re(const Polar& v)
 	else return 0.0;
 }
 
-inline Real BandLimited::Growth(const Polar& v) 
-{
-	Real k=v.K();
-	Real gamma=0.0;
-	if(k <= kL) gamma -= pow(k,pL)*nuL*pow(k,pL);
-	if(abs(k-kforce) < 0.5*deltaf) gamma += gammaf/deltaf;
-	if(k > kH) gamma -= pow(k,pH)*nuH*pow(k,pH);
-	return gamma;
-}
-
-inline Real BandLimited::Frequency(const Polar& v)
-{
-	return vd*v.Y()/v.K2();
-}
-
-inline Real Waltz::Growth(const Polar& v) 
-{
-	Real tempx=abs(v.X())/0.5-1.0;
-	Real tempy=abs(v.Y())/0.5-1.0;
-	return 0.06*(1.0-0.5*(tempx*tempx+tempy*tempy))-0.05;
-}
-
-inline Real Waltz::Frequency(const Polar& v)
-{
-	return vd*v.Y()/v.K2();
-}
-
 static Real equilibrium(int i)
 {
 	Real k=Geometry->K(i);
@@ -182,6 +188,7 @@ void NWave::InitialConditions()
 {
 	int i,n;
 	
+	krmin2=krmin*krmin;
 	Geometry=NWave_Vocabulary.NewGeometry(geometry);
 	if(!Geometry->Valid(Problem->Abbrev()))
 		msg(ERROR,"Geometry \"%s\" is incompatible with method \"%s\"",
@@ -197,7 +204,7 @@ void NWave::InitialConditions()
 	
 	for(i=0; i < Npsi; i++) {
 		Real norm=1.0/sqrt(Geometry->Normalization(i));
-		nu[i]=Geometry->Linearity(i);
+		nu[i]=Geometry->Linear(i);
 		y[i]=sqrt(2.0*equilibrium(i))*norm;
 		forcing[i]=Geometry->Forcing(i)*norm;
 	}
@@ -449,20 +456,6 @@ void NWave::Output(int)
 	
 	tcount++;
 	ft << t << endl;
-}
-
-void LinearityAt(int i,Real& nu)
-{
-	Polar v=Polar(Geometry->K(i),Geometry->Th(i));
-	nu=Linearity->LinearityReal(v);
-	return;
-}
-
-void LinearityAt(int i, Complex& nu)
-{
-	Polar v=Polar(Geometry->K(i),Geometry->Th(i));
-	nu=Linearity->LinearityReal(v)+I*Linearity->LinearityImag(v);
-	return;
 }
 
 void ForcingAt(int i, Real &force)

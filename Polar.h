@@ -18,7 +18,6 @@ extern Real kthneg;
 class Polar {
 public:	
 	Real r,th;	// wavenumber components
-//	int a;		// field index
 	
 	Polar(Real r0=0.0, Real th0=0.0) : r(r0), th(th0) {}
 

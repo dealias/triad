@@ -13,13 +13,20 @@ extern int Nevolved;
 extern unsigned int log2Nxb,log2Nyb; // Order of FFT in each direction
 extern double scale;
 
+extern Real krmin,krmin2;
+
 class Cartesian {
 public:	
 	int x,y;	// wavenumber components
 	
 	Cartesian() {}
 	Cartesian(int column, int row) : x(column), y(row) {}
-	Real K2() const {return x*x+y*y;}
+	int Column() {return x;}
+	int Row() {return y;}
+	
+	Real X() const {return krmin*x;}
+	Real Y() const {return krmin*y;}
+	Real K2() const {return krmin2*(x*x+y*y);}
 	Real K() const {return sqrt(K2());}
 	Real Th() const {
 #if _CRAY		
@@ -32,12 +39,6 @@ public:
 		if(y > 0 || (y == 0 && x > 0)) return y*Nx+x-1;
 		else return Nevolved-y*Nx-x-1; // Reflected Modes;
 	}
-	
-	Real X() const {return x;}
-	Real Y() const {return y;}
-	
-	int Column() {return x;}
-	int Row() {return y;}
 };
 
 inline Cartesian operator - (const Cartesian& a)
@@ -142,14 +143,7 @@ inline void CartesianUnPad(Var *to, const Var *from)
 }
 #endif
 
-// For Navier-Stokes turbulence (stream function normalization):
-template<class T>
-inline Mc Mkpq(T& k, T& p, T&)
-{
-	return (k.Y()*p.X()-k.X()*p.Y())*p.K2()/k.K2();
-}
-
-// Factor which converts |y|^2 to 2.0*energy in this normalization:
+// Factor which converts |y|^2 to 2.0*energy in stream function normalization:
 inline Real Basis<Cartesian>::Normalization(int i) {return K2(i);}
 
 #endif
