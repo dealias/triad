@@ -34,6 +34,10 @@ char yuvinterlace[]="";
 #include <iomanip.h>
 #include <unistd.h>
 
+#if sun
+extern int strcmp(const char *, const char *);
+#endif
+
 #include "DynVector.h"
 #include "rgb.h"
 
