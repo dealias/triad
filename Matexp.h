@@ -1,64 +1,76 @@
 #include "options.h"
 #include "kernel.h"
 #include "Matrix.h"
+#include "utils.h"
 
-class MatExp : public ProblemBase {
-private:	
-	const Array2<Var> A;
-public:
-	MatExp(const Array2<Var> &a) : A(a) {
-		ny=a.Nx();
-		assert(ny == A.Ny());
-	}
- 	virtual ~MatExp() {}
-	void InitialConditions() {y=new Var[ny];} 
-	void Source(Var *src, Var *Y, double) {
-		for(unsigned int i=0; i < ny; i++) {
-			Array1<Var> Ai=A[i];
-			Var sum=0.0;
-			for(unsigned int j=0; j < ny; j++) sum += Ai[j]*Y[j];
-			src[i]=sum;
-		}
-	}
-};
+#define log2 __log2
+#define pow2 __pow2
 
 // Compute the matrix exponential of a square matrix
 template<class T>
-const Array2<T> exp(const Array2<T>& A)
+const Array2<T> exp(const Array2<T>& a)
 {
-//	double tolmax=1e-7;
-//	double tolmin=9e-8;
-	double tolmax=1e-9;
-	double tolmin=9e-10;
-
-	MatExp MatExpProblem(A);
-
-	MatExpProblem.InitialConditions();
-	Var *y=MatExpProblem.Vector();
-	unsigned int n=MatExpProblem.Size();
+	unsigned int n=a.Nx();
+    assert(n == a.Ny());
+	const Array2<Var> A(a);
 	
-//	unsigned int n2=n*n;
+	unsigned int n2=n*n;
 //	static DynVector<T> temp(n2);
 //	if(n2 > temp.Alloc()) temp.Resize(n2);
 	Array2<T> B(n,n);
 	
-	static RK5 Int;
-	Int.Allocate(n);
-	Int.SetParam(tolmax,tolmin,2.0,2.0,0.0,DBL_STD_MAX,INT_MAX,100,0,1);
-		
-	for(unsigned int j=0; j < n; j++) {
-		for(unsigned int i=0; i < j; i++) y[i]=0.0;
-		y[j]=1.0;
-		for(unsigned int i=j+1; i < n; i++) y[i]=0.0;
-		
-		Real dt=1.0e-12;
-		Real t=0.0;
-		int iteration=0;
-		Int.Integrate(MatExpProblem,y,t,1.0,dt,-1.0,iteration);
-		for(unsigned int i=0; i < n; i++) B(i,j)=y[i];
+	Real Amax;
+	for(unsigned int j=0; j < n2; j++) Amax=max(Amax,abs2(A(j)));
+	Amax=sqrt(Amax);
+	
+	Real delta=1.0e-11;
+	int j=max(0,1+((int) (floor(log2(Amax))+0.5)));
+	
+	Real scale=pow2(-j);
+	B=A*scale;
+	int q=1;
+	Real epsilon=8.0;
+	while (epsilon > delta) {
+		epsilon /= 8*(4*q*q-1);
+		q++;
 	}
+	q--;
+	
+	Array2<T> D(n,n);
+	Array2<T> N(n,n);
+	Array2<T> X(n,n);
+	
+	D.Identity();
+	N.Identity();
+	X.Identity();
+	
+	Real c=1.0;
+	Real sign=-1.0;
+	
+	for(unsigned int k=1; k <= q; k++) {
+		c=c*(q-k+1)/((Real) (2*q-k+1)*k);
+		X=B*X;
+		N += c*X;
+		D += sign*c*X;
+		sign *= -1.0;
+	}
+	
+	Divide(B,D,N); // B=D^{-1} N
+	
+	for(unsigned int k=0; k < j; k++) B *= B;
 	
 	A.Purge();
 	B.Hold();
 	return B;
 }	
+
+int main()
+{
+	int n=3;
+	Array2<Complex> A(n,n);
+//	cin >> A;
+	A=Identity(n,n,Complex(0.0,0.0));
+	cout.precision(15);
+	cout << exp(A) << endl;
+}
+

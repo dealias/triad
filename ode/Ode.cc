@@ -352,16 +352,17 @@ Solve_RC Implicit::Solve(double t, double& dt)
 #endif
 		
 		
-#if 0
+#if 1
 // Linearized Backward Euler
-		y0[j]=y0[j]+dt*source[j]/(1-dt*(-A-2.0*B*y0[j]));
+		y0[j]=y0[j]+dt*source[j]/(1.0-dt*(-A-2.0*B*y0[j]));
+//		Complex s=-A-2.0*B*y0[j];
+//		y0[j]=exp(s*dt)*(y0[j]+dt*(source[j]-s*y0[j])/(1.0-dt*(-A-2.0*B*y0[j]-s)));
 #endif
 		
-#if 1
+#if 0
 // Linearized Trapezoidal
-		y0[j]=y0[j]+dt*source[j]/(1-0.5*dt*(-A-2.0*B*y0[j]));
+		y0[j]=y0[j]+dt*source[j]/(1.0-0.5*dt*(-A-2.0*B*y0[j]));
 #endif		
-		
 		cout << y0[j] << endl;
 	}
 	

@@ -643,6 +643,12 @@ public:
 		for(unsigned int i=0; i < size; i++) v[i] *= a;
 		return *this;
 	}
+	
+	void Identity() {
+		Load((T) 0.0);
+		unsigned int inc=ny+1, size=Size0();
+		for(unsigned int i=0; i < size; i += inc) v[i]=1.0;
+	}
 };
 
 template<class T>

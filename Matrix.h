@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Matrix_h__
 #define __Matrix_h__ 1
 
-#define __MATRIX_H_VERSION__ 1.06
+#define __MATRIX_H_VERSION__ 1.06J
 
 #include "DynVector.h"
 #include "Array.h"
@@ -137,18 +137,18 @@ inline Array2<T> operator * (const Array2<T>& B)
 	return A;
 }
 
-template<class T>
-inline void Mult(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
+template<class T, class U, class V>
+inline void Mult(const Array2<T>& A, const Array2<U>& B, const Array2<V>& C)
 {
 	unsigned int bny=B.Ny();
 	assert(bny == C.Nx());
 
 	unsigned int n=C.Size();
-	static DynVector<T> temp(n);
+	static DynVector<V> temp(n);
 	if(n > temp.Alloc()) temp.Resize(n);
 	
 	unsigned int cny=C.Ny();
-	Array2<T> CT(cny,C.Nx(),temp);
+	Array2<V> CT(cny,C.Nx(),temp);
 	
 	Trans(CT,C);
 	C.Purge();
@@ -157,10 +157,10 @@ inline void Mult(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
 	if(&A != &B) {
 		for(unsigned int i=0; i < bnx; i++) {
 			Array1(T) Ai=A[i];
-			Array1(T) Bi=B[i];
+			Array1(U) Bi=B[i];
 			for(unsigned int k=0; k < cny; k++) {
 				T sum=0.0;
-				Array1(T) CTk=CT[k];
+				Array1(V) CTk=CT[k];
 				for(unsigned int j=0; j < bny; j++) {
 					sum += Bi[j]*CTk[j];
 				}
@@ -178,7 +178,7 @@ inline void Mult(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
 			unsigned int k;
 			for(k=0; k < cny; k++) {
 				T sum=0.0;
-				Array1(T) CTk=CT[k];
+				Array1(V) CTk=CT[k];
 				for(unsigned int j=0; j < bny; j++) {
 					sum += Ai[j]*CTk[j];
 				}
@@ -189,19 +189,19 @@ inline void Mult(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C)
 	}		
 }
 
-template<class T>
-inline void MultAdd(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C,
-					const Array2<T>& D)
+template<class T, class U, class V, class W>
+inline void MultAdd(const Array2<T>& A, const Array2<U>& B, const Array2<V>& C,
+					const Array2<W>& D)
 {
 	unsigned int bny=B.Ny();
 	assert(bny == C.Nx());
 
 	unsigned int n=C.Size();
-	static DynVector<T> temp(n);
+	static DynVector<V> temp(n);
 	if(n > temp.Alloc()) temp.Resize(n);
 	
 	unsigned int cny=C.Ny();
-	Array2<T> CT(cny,C.Nx(),temp);
+	Array2<V> CT(cny,C.Nx(),temp);
 	
 	Trans(CT,C);
 	C.Purge();
@@ -210,8 +210,8 @@ inline void MultAdd(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C,
 	if(&A != &B) {
 		for(unsigned int i=0; i < bnx; i++) {
 			Array1(T) Ai=A[i];
-			Array1(T) Bi=B[i];
-			Array1(T) Di=D[i];
+			Array1(U) Bi=B[i];
+			Array1(W) Di=D[i];
 			for(unsigned int k=0; k < cny; k++) {
 				T sum=0.0;
 				Array1(T) CTk=CT[k];
@@ -232,20 +232,20 @@ inline void MultAdd(const Array2<T>& A, const Array2<T>& B, const Array2<T>& C,
 			unsigned int k;
 			for(k=0; k < cny; k++) {
 				T sum=0.0;
-				Array1(T) CTk=CT[k];
+				Array1(V) CTk=CT[k];
 				for(unsigned int j=0; j < bny; j++) {
 					sum += Ai[j]*CTk[j];
 				}
 				work[k]=sum;
 			}
-			Array1(T) Di=D[i];
+			Array1(W) Di=D[i];
 			for(k=0; k < cny; k++) Ai[k]=work[k]+Di[k];
 		}
 	}		
 }
 
-template<class T>
-inline Array2<T> const operator * (const Array2<T>& B, const Array2<T>& C)
+template<class T, class U>
+inline Array2<T> const operator * (const Array2<T>& B, const Array2<U>& C)
 {
 	Array2<T> A(B.Nx(),C.Ny());
 	Mult(A,B,C);
@@ -253,16 +253,16 @@ inline Array2<T> const operator * (const Array2<T>& B, const Array2<T>& C)
 	return A;
 }
 
-template<class T, class S>
-inline void Mult(const Array2<T>& A, const Array2<T>& B, S C)
+template<class T, class U, class V>
+inline void Mult(const Array2<T>& A, const Array2<U>& B, V C)
 {
 	unsigned int size=A.Size(); 
 	for(unsigned int i=0; i < size; i++) A(i)=B(i)*C;
 	B.Purge();
 }
 
-template<class T, class S>
-inline Array2<T> operator * (const Array2<T>& B, S C)
+template<class T, class U>
+inline Array2<T> operator * (const Array2<T>& B, U C)
 {
 	Array2<T> A(B.Nx(),B.Ny());
 	Mult(A,B,C);
@@ -270,8 +270,8 @@ inline Array2<T> operator * (const Array2<T>& B, S C)
 	return A;
 }
 
-template<class T>
-inline Array2<T> operator * (T C, const Array2<T>& B)
+template<class T, class U>
+inline Array2<T> operator * (U C, const Array2<T>& B)
 {
 	Array2<T> A(B.Nx(),B.Ny());
 	Mult(A,B,C);
@@ -559,5 +559,66 @@ inline Array2<T> operator - (const Array2<T>& B)
 	A.Hold();
 	return A;
 }
+
+#define log2 __log2
+#define pow2 __pow2
+
+// Compute the matrix exponential of a square matrix
+template<class T>
+const Array2<T> exp(const Array2<T>& a)
+{
+	unsigned int n=a.Nx();
+    assert(n == a.Ny());
+	const Array2<Var> A(a);
+	
+	unsigned int n2=n*n;
+//	static DynVector<T> temp(n2);
+//	if(n2 > temp.Alloc()) temp.Resize(n2);
+	Array2<T> B(n,n);
+	
+	Real Amax=0.0;
+	for(unsigned int j=0; j < n2; j++) Amax=max(Amax,abs2(A(j)));
+	Amax=sqrt(Amax);
+	
+	int j=max(0,1+((int) (floor(log2(Amax))+0.5)));
+	Real scale=pow2(-j);
+	B=A*scale;
+	A.Purge();
+	
+	unsigned int q=1;
+//	Real delta=REAL_EPSILON;
+	Real delta=1.0e-11;
+	Real epsilon=8.0;
+	while (epsilon > delta) {
+		epsilon /= 8*(4*q*q-1);
+		q++;
+	}
+	q--;
+	
+	Array2<T> D(n,n);
+	Array2<T> N(n,n);
+	Array2<T> X(n,n);
+	
+	D.Identity();
+	X=N=D;
+	
+	Real c=1.0;
+	Real sign=-1.0;
+	
+	for(unsigned int k=0; k < q; k++) {
+		X=B*X;
+		c *= (q-k)/((Real) ((q+q-k)*(k+1)));
+		N += c*X;
+		D += (sign*c)*X;
+		sign = -sign;
+	}
+	
+	Divide(B,D,N); // B=D^{-1} N
+	
+	for(int k=0; k < j; k++) B *= B;
+	
+	B.Hold();
+	return B;
+}	
 
 #endif
