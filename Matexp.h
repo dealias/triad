@@ -37,11 +37,8 @@ const Array2<T>& exp(const Array2<T>& A)
 	Var *y=MatExpProblem.Vector();
 	unsigned int n=MatExpProblem.Size();
 	
-	unsigned int n2=n;
-	static DynVector<T> temp(n2);
-	if(n2 > temp.Alloc()) temp.Resize(n2);
-	static Array2<T> B;
-	B.Dimension(n,n,temp);
+	Array2<T> B(n,n);
+	B.Hold();
 	
 	static RK5 Int;
 	Int.Allocate(n);
@@ -59,5 +56,7 @@ const Array2<T>& exp(const Array2<T>& A)
 		for(unsigned int i=0; i < n; i++) B(i,j)=y[i];
 	}
 	
+	A.Purge();
 	return B;
 }	
+
