@@ -5,6 +5,8 @@
 
 using namespace Array;
 
+const double ProblemVersion=1.0;
+
 const char *method="Ode";
 const char *integrator="PC";
 

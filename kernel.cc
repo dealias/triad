@@ -26,8 +26,8 @@ using namespace Array;
 
 const char PROGRAM[]="TRIAD";
 const char VERSION[]="1.41";
-const int restart_version=2;
-Real restart_problem_version=0;
+const int RestartVersion=2;
+Real RestartProblemVersion=0;
 
 // Global variables
 unsigned long nout;
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
   cout << newl << "MACHINE: " << machine() << " [" << date() << "]" << newl;
 	
   cout << newl << "PROBLEM: " << Vocabulary->Name() << " (version "
-       << problem_version << ")" << newl;
+       << ProblemVersion << ")" << newl;
 	
   cout << newl << "COMMAND LINE: ";
   for(i=1; i < argc; i++) cout << argv[i] << " ";
@@ -301,8 +301,8 @@ void read_init()
     cout << newl << "READING " << upcase(type) << " DATA FROM FILE " << rname;
     if(!oldversion) finit >> init_version >> nout0;
     if(init_version > 1) {
-      finit >> restart_problem_version;
-      cout << " (version " << restart_problem_version << ")";
+      finit >> RestartProblemVersion;
+      cout << " (version " << RestartProblemVersion << ")";
     }
     cout << "." << endl; 
     finit >> t0 >> dt0 >> final_iteration;
@@ -407,8 +407,8 @@ void statistics(double t, double dt, int it)
   oxstream frestart(rtemp);
   if(frestart) {
     int i;
-    frestart << restart_version << newl << nout << newl
-	     << problem_version << newl
+    frestart << RestartVersion << newl << nout << newl
+	     << ProblemVersion << newl
 	     << t << newl << dt << newl << iter << newl;
     for(i=0; i < ncputime; i++) frestart << cpu_restart[i]+cpu[i] << newl;
     frestart << ny << newl;

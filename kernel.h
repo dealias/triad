@@ -21,7 +21,7 @@ const bool DEBUG=true;
 void check_compatibility(const bool debug);
 
 // Global variables
-extern const double problem_version;
+extern const double ProblemVersion;
 extern double t;
 extern double last_dump;
 extern int iteration;
