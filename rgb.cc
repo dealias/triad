@@ -27,9 +27,9 @@ void manimate(int argc, char *const argf[], int n, char *const type,
 
 int verbose=0;
 
+#if __GNUC__
 extern "C" int getopt(int argc, char *const argv[], const char *optstring);
-extern int optind;
-extern char *optarg;
+#endif
 
 int main(int argc, char *const argv[])
 {
@@ -38,6 +38,8 @@ int main(int argc, char *const argv[])
 	int c;
 	int label=0;
 	int make_mpeg=0;
+	extern int optind;
+	extern char *optarg;
 	
 	optind=0;
 	while (1) {
@@ -71,6 +73,7 @@ int main(int argc, char *const argv[])
 	}
 	
 	int nfiles=argc-optind;
+	cout << optind << endl;
 	if(nfiles < 1) msg(ERROR,"File name required");
 	char *const *argf=argv+optind;
 		
