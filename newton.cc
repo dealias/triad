@@ -1,10 +1,8 @@
 #include "precision.h"
 #include <iostream>
+#include <cmath>
 
-using std::cin;
-using std::cout;
-using std::cerr;
-using std::endl;
+using namespace std;
 
 // Root solve by Newton-Raphson
 bool newton(Real &x, Real (*f)(Real x), Real (*dfdx)(Real x),

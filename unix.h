@@ -11,7 +11,7 @@ const char* const dirsep="/";
 extern "C" int getdomainname(char *name, size_t len);
 extern "C" int vsnprintf(char *str, size_t size, const char  *format,
 			 va_list ap);
-extern "C" int putenv(const char *string);
+//extern "C" int putenv(const char *string);
 #endif
 
 #if defined __linux__ || defined __mips
