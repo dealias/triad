@@ -434,12 +434,13 @@ void I_RK2::Predictor(double t, double, int start, int stop)
 
 int I_RK2::Corrector(double dt, double& errmax, int start, int stop)
 {
-	for(int j=start; j < stop; j++)
+	int j;x
+	for(j=start; j < stop; j++)
 		y[j]=y0[j]*expinv[j]+dt*source[j];
 	if(dynamic) for(int j=start; j < stop; j++)
 		calc_error(y0[j]*expinv[j],y[j],
 				   (y0[j]+dt*source0[j])*expinv[j],y[j],errmax);
-	for(int j=start; j < stop; j++) y[j] *= expinv[j];
+	for(j=start; j < stop; j++) y[j] *= expinv[j];
 	return 1;
 }
 
