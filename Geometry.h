@@ -255,8 +255,8 @@ void Partition<T>::ComputeTriads() {
 	pqindex=new Var*[pq(n,n)];
 	pair=new Pair[pq(n,n)];
 	for(p=0; p < n; p++) for(q=p; q < n; q++) pqindex[pq(p,q)]=NULL;
-	triadStop=new Triad*[Nmode];
-	Triad *triadBase0=triad.Base();
+	MkpqStop=new Mc*[Nmode];
+	Mc *MkpqBase0=Mkpq.Base();
 	
 	for(k=0; k < Nmode; k++) {
 		norm=1.0/(twopi2*Area(k));
@@ -269,15 +269,17 @@ void Partition<T>::ComputeTriads() {
 					if(!*index) *index=pair[Npair++].Store(&psibuffer[p],
 														   &psibuffer[q]);
 					nkpq *= ((p==q) ? 0.5 : 1.0) * norm;
-					triad[Ntriad++].Store(*index,nkpq);
+					Mkpq[Ntriad]=nkpq; ptrpq[Ntriad]=*index;
+					Ntriad++;
 				}
 			}
 		}
-		triadStop[k]=triadBase0+Ntriad;
+		MkpqStop[k]=MkpqBase0+Ntriad;
 	}
 	
-	triadBase=triad.Base();
-	for(k=0; k < Nmode; k++) triadStop[k] += triadBase-triadBase0;
+	MkpqBase=Mkpq.Base();
+	ptrpqBase=ptrpq.Base();
+	for(k=0; k < Nmode; k++) MkpqStop[k] += MkpqBase-MkpqBase0;
 
 	delete [] pqindex;
 	weight.~DynVector();
@@ -295,7 +297,7 @@ void Partition<T>::ListTriads() {
 	}
 	cout << endl << Ntriad-Nmode << " Triads:" << endl;
 	for(j=0; j < Ntriad; j++) {
-		if(triad[j].pq)	cout << triad[j].Mkpq << endl;
+		if(ptrpq[j]) cout << Mkpq[j] << endl;
 	}
 }
 

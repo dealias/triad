@@ -238,31 +238,21 @@ void RK5::Predictor(Var *y0, double t, double)
 {
 	int j;
 	
-#if _CRAY		
 #pragma ivdep		
-#endif		
 	for(j=0; j < ny; j++) y[j]=y0[j]+b10*source0[j];
 	Source(source1,y,t+a1);
-#if _CRAY		
 #pragma ivdep		
-#endif		
 	for(j=0; j < ny; j++) y2[j]=y0[j]+b20*source0[j]+b21*source1[j];
 	Source(source2,y2,t+a2);
-#if _CRAY		
 #pragma ivdep		
-#endif		
 	for(j=0; j < ny; j++) y3[j]=y0[j]+b30*source0[j]+b31*source1[j]+
 		b32*source2[j];
 	Source(source3,y3,t+a3);
-#if _CRAY		
 #pragma ivdep		
-#endif		
 	for(j=0; j < ny; j++) y4[j]=y0[j]+b40*source0[j]+b41*source1[j]+
 		b42*source2[j]+b43*source3[j];
 	Source(source4,y4,t+a4);
-#if _CRAY		
 #pragma ivdep		
-#endif		
 	for(j=0; j < ny; j++) y5[j]=y0[j]+b50*source0[j]+b51*source1[j]+
 		b52*source2[j]+b53*source3[j]+b54*source4[j];
 	Source(source,y5,t+a5);

@@ -24,7 +24,7 @@
 #include "Complex.h"
 #include "pow.h"
 
-inline int isgn(Real x)
+inline int isgn(const Real x)
 {
 	return ((x) == 0.0 ? 0 : ((x) > 0.0 ? 1 : -1));
 }
@@ -99,12 +99,12 @@ void cputime(double *cpu);
 
 char *output_filename(char *basename, char *suffix);
 
-inline Real abs(const Real& x)
+inline Real abs(const Real x)
 {
 	return fabs(x);
 }
 
-inline Real abs2(const Real& x)
+inline Real abs2(const Real x)
 {
 	return x*x;
 }
@@ -114,7 +114,7 @@ inline Real abs2(const Complex& x)
 	return x.real()*x.real()+x.imag()*x.imag();
 }
 
-inline Real product(const Real& x,const Real& y)
+inline Real product(const Real x,const Real y)
 {
 	return x*y;
 }
@@ -124,29 +124,40 @@ inline Complex product(const Complex& x,const Complex& y)
 	return Complex(x.real()*y.real(),x.imag()*y.imag());
 }
 
-inline Real conj(const Real& x)
+inline void conjugate(Real& x, Real& y)
+{
+	x=y;
+}
+
+inline void conjugate(Complex& x, Complex& y)
+{
+	x.re=y.re;
+	x.im=-y.im;
+}
+
+inline Real conj(const Real x)
 {
 	return x;
 }
 
-inline Real real(const Real& x)
+inline Real real(const Real x)
 {
 	return x;
 }
 
-inline Real imag(const Real&)
+inline Real imag(const Real)
 {
 	return 0.0;
 }
 
-inline Complex expi(const Real& phase)
+inline Complex expi(const Real phase)
 {
 	double cosy,siny;
 	sincos(phase,&siny,&cosy);
 	return Complex(cosy,siny);
 }
 
-inline Complex expim1(const Real& phase)
+inline Complex expim1(const Real phase)
 {
 	double sinyby2=sin(0.5*phase);
 	return Complex(-2.0*sinyby2*sinyby2,sin(phase));
@@ -193,7 +204,7 @@ inline Complex operator / (const Complex& x, Real y)
 	return Complex(x.re/y,x.im/y);
 }
 
-inline Complex operator / (Real x, const Complex& y)
+inline Complex operator / (const Real x, const Complex& y)
 {
 	register double factor;
 	factor=1.0/(y.re*y.re+y.im*y.im);
@@ -210,7 +221,7 @@ inline Complex& Complex::operator /= (const Complex& y)
 	return *this;
 }
 
-inline Complex& Complex::operator /= (Real y)
+inline Complex& Complex::operator /= (const Real y)
 {
 	re/=y;
 	im/=y;
@@ -260,7 +271,7 @@ inline double drand()
 	return ((double) rand())/RAND_MAX;
 }
 
-inline void crand_gauss(Real& w)
+inline void crand_gauss(Real w)
 {
 	double factor,r2,v1,v2;
 	static int flag=0;
