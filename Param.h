@@ -93,6 +93,7 @@ inline void VocabularyBase::ParamAdd(ParamBase *p)
 
 #define VOCAB(var,min,max,help) Vocab(&var, #var, min, max, help, 1, 1)
 #define VOCAB_NODUMP(var,min,max,help) Vocab(&var, #var, min, max, help, 1, 0)
+#define VOCAB_OBSOLETE(var,min,max,help) Vocab(&var, #var, min, max, help, 1,2)
 
 #define VOCAB_ARRAY(var,help) \
 Vocab(var, #var, *var-*var, *var-*var, help, \
@@ -124,6 +125,7 @@ class Param : public ParamBase {
   const char *Name() {return name;}
 	
   void Display(ostream& os) {
+    if(dump == 2) return; // Don't display obsolete parameters
     os << name << "=";
     for(int i=0; i < nvar-1; i++) os << var[i] << ", ";
     os << var[nvar-1] << endl;
@@ -133,10 +135,10 @@ class Param : public ParamBase {
     os << help << endl;
   }
 	
-  int Dump() {return dump && nvar==1;}
+  int Dump() {return dump == 1 && nvar == 1;}
   
   void Output(ostream& os) {
-    if(!dump) return; // Don't dump control parameters
+    if(dump != 1) return; // Don't dump control parameters
     os << name << "=";
     for(int i=0; i < nvar-1; i++) os << var[i] << ",";
     os << var[nvar-1] << endl;
@@ -144,7 +146,7 @@ class Param : public ParamBase {
 	
   void Out(ostream& os, const char *type, int pass=0, const char *delim="") 
   {
-    if(!dump) return; // Don't dump control parameters
+    if(dump != 1) return; // Don't dump control parameters
     switch(pass) {
     case 0: 
       if(nvar == 1) {
@@ -167,7 +169,7 @@ class Param : public ParamBase {
 
 #if 0 // For sm 
   void GraphicsOutput(ostream& os) {
-    if(!dump) return; // Don't dump control parameters
+    if(dump != 1) return; // Don't dump control parameters
     if(nvar == 1) os << "define " << name << " \"" << var[0] << "\"";
     else {
       os << "set " << name << "={";
