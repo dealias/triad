@@ -45,7 +45,7 @@ static double cpu[ncputime],cpu0[ncputime];
 static int final_iteration=0;
 static int total_invert_cnt=0;
 
-static char *pname,*rname,*ptemp,*rtemp,*lname;
+static const char *pname,*rname,*ptemp,*rtemp,*lname;
 static ifstream fparam,fin;
 static ofstream gparam,fdump,fstats,flock;
 
@@ -218,7 +218,7 @@ int main(int argc, char *argv[])
 	if(restart) testlock();
 
 	if(!restart && initialize) {
-		char *sname=Vocabulary->FileName(dirsep,"stat");
+		const char *sname=Vocabulary->FileName(dirsep,"stat");
 		fin.open(sname);
 		if(fin && !clobber && !testing)
 			msg(OVERRIDE_GLOBAL,"Statistics file %s already exists",sname);
@@ -420,7 +420,7 @@ void statistics(int it)
 	unlock();
 }
 
-char *VocabularyBase::FileName(const char* delimiter, const char *suffix)
+const char *VocabularyBase::FileName(const char* delimiter, const char *suffix)
 {
 	strstream buf;
 	buf << Directory() << run << delimiter << suffix << ends;

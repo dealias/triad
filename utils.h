@@ -164,9 +164,9 @@ enum ErrorCode {WARNING_,OVERRIDE_,SLEEP_,ERROR_};
 enum ExitCode {FATAL=-1,CONTINUE,COMPLETE};
 extern ExitCode exit_signal;
 
-void mailuser(char *text);
-void remove_dir(char *text);
-int copy(char *oldname, char *newname);
+void mailuser(const char *text);
+void remove_dir(const char *text);
+int copy(const char *oldname, const char *newname);
 
 char *machine(), *date(), *tempdir();
 

@@ -49,7 +49,7 @@ static char mail_cmd[]="mail";
 #endif
 
 // Mail a message to the user.
-void mailuser(char *text)
+void mailuser(const char *text)
 {
 	if(time(NULL)-init_time < longrun) return;
 	strstream buf;
@@ -61,7 +61,7 @@ void mailuser(char *text)
 static char rmrf_cmd[]="rm -rf";
 
 // Recursively delete a directory and all of its contents.
-void remove_dir(char *text)
+void remove_dir(const char *text)
 {
 	strstream buf;
 	buf << rmrf_cmd << " " << text << ends;
@@ -71,7 +71,7 @@ void remove_dir(char *text)
 static char copy_cmd[]="cp -rf";
 
 // Copy a file or directory to a new location
-int copy(char *oldname, char *newname)
+int copy(const char *oldname, const char *newname)
 {
 	strstream buf;
 	buf << copy_cmd << " " << oldname << " " << newname << ends;

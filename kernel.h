@@ -64,7 +64,7 @@ public:
 	int Size() {return ny;}
 	int *ErrorMask() {return errmask;}
 	
-	virtual char *Name() {return "";}
+	virtual const char *Name() {return "";}
 	
 	virtual void Source(Var *src, Var *y, double t)=0;
 	virtual void Transform(Var *, double, double, Var *&) {}
@@ -165,12 +165,14 @@ public:
 	IntegratorBase *NewIntegrator(const char *& key) {
 		char *key2=strdup(key);
 		undashify(key,key2);
-		IntegratorBase *p=IntegratorTable->Locate((const char *) key2);
+		const char *key0=key2;
+		IntegratorBase *p=IntegratorTable->Locate(key0);
 		p->SetAbbrev(key2);
 		return p;
 	}
 	
-	virtual char *FileName(const char* delimiter="", const char *suffix="");
+	virtual const char *FileName(const char* delimiter="", 
+								 const char *suffix="");
 };
 
 extern VocabularyBase *Vocabulary;
@@ -195,7 +197,7 @@ template<class T>
 inline void open_output(T& fout, const char *delimiter, const char *suffix,
 						int append)
 {
-	char *filename=Vocabulary->FileName(delimiter,suffix);
+	const char *filename=Vocabulary->FileName(delimiter,suffix);
 	if(append) fout.open(filename,fout.app); // Append to end of output file.
 	else fout.open(filename);
 	if(!fout) msg(ERROR,"Output file %s could not be opened",filename);

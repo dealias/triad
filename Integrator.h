@@ -27,7 +27,7 @@ inline Solve_RC IntegratorBase::CheckError()
 
 class Euler : public IntegratorBase {
 public:
-	char *Name() {return "Euler";}
+	const char *Name() {return "Euler";}
 	Solve_RC Solve(double, double);
 };
 
@@ -45,7 +45,7 @@ public:
 		y=y1=new Var [n]; source0=new(n) (Var); new_y0=1;
 		pgrow=0.5/order; pshrink=0.5/(order-1);
 	}
-	char *Name() {return "Predictor-Corrector";}
+	const char *Name() {return "Predictor-Corrector";}
 	Solve_RC Solve(double, double);
 	
 	void TimestepDependence(double dt) {
@@ -82,7 +82,7 @@ public:
 		if(lasthalfdt == 0.0) for(int j=0; j < ny; j++) yp[j] = y0[j];
 		halfdt=0.5*dt;
 	}
-	char *Name() {return "LeapFrog";}
+	const char *Name() {return "LeapFrog";}
 	void Predictor(double, double, int, int);
 	int Corrector(double, int, int, int);
 	void StandardPredictor(double t, double dt, int start, int stop) { 
@@ -96,7 +96,7 @@ public:
 class RK2 : public PC {
 protected:	
 public:
-	char *Name() {return "Second-Order Runge-Kutta";}
+	const char *Name() {return "Second-Order Runge-Kutta";}
 	void TimestepDependence(double dt) {
 		halfdt=0.5*dt;
 	}
@@ -119,7 +119,7 @@ public:
 	void Allocate(int n) {
 		PC::Allocate(n); source1=new(n) (Var); source2=new(n) (Var) ;
 	}
-	char *Name() {return "Fourth-Order Runge-Kutta";}
+	const char *Name() {return "Fourth-Order Runge-Kutta";}
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, int, int, int);
@@ -149,7 +149,7 @@ public:
 		RK4::Allocate(n); y2=y4=y; y3=new Var [n];
 		source3=source1; source1=NULL; source4=new(n) Var;
 	}
-	char *Name() {return "Fifth-Order Runge-Kutta";}
+	const char *Name() {return "Fifth-Order Runge-Kutta";}
 	void TimestepDependence(double);
 	void Predictor(double, double, int, int);
 	int Corrector(double, int, int, int);
@@ -163,7 +163,7 @@ public:
 
 class Exact : public RK5 {
 public:
-	char *Name() {return "Exact";}
+	const char *Name() {return "Exact";}
 	int Microfactor(){return 100;}
 };
 
