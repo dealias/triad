@@ -343,8 +343,7 @@ void dump(int it, int final, double tmax)
 		if(frestart) {
 			if(checkpoint && it > 0 && (it-1) % checkpoint == 0) {
 				strstream rcheck;
-				if(tmpdir) rcheck << tmpdir << dirsep
-								  << Vocabulary->Directory() << run; 
+				if(tmpdir) rcheck << tmpdir << dirsep;
 				rcheck << rname << "." << iter-microsteps << ends;
 				if(rename(rname,rcheck.str()))
 					msg(WARNING,"Cannot rename %s to checkpoint file %s",rname,
