@@ -575,6 +575,67 @@ void I_RK5::Allocate(int n)
 	expinv5=new Nu[nyprimary];
 }
 
+#if COMPLEX
+
+void I_RK5::Predictor(double t, double, int start, int stop)
+{
+	int j;
+#pragma ivdep		
+	for(j=start; j < stop; j++) {
+		expinv[j]=exp(-nu[j]*a1);
+		y[j].re=y0[j].re+b10*source0[j].re;
+		y[j].im=y0[j].im+b10*source0[j].im;
+		y[j] *= expinv[j];
+	}
+	Source(source,y,t+a1);
+#pragma ivdep		
+	for(j=start; j < stop; j++) {
+		source[j] /= expinv[j];
+		expinv[j]=exp(-nu[j]*a2);
+		y2[j].re=y0[j].re+b20*source0[j].re+b21*source[j].re;
+		y2[j].im=y0[j].im+b20*source0[j].im+b21*source[j].im;
+		y2[j] *= expinv[j];
+	}
+	Source(source2,y2,t+a2);
+#pragma ivdep		
+	for(j=start; j < stop; j++) {
+		source2[j] /= expinv[j];
+		expinv[j]=exp(-nu[j]*a3);
+		y3[j].re=y0[j].re+b30*source0[j].re+b31*source[j].re+
+			b32*source2[j].re;
+		y3[j].im=y0[j].im+b30*source0[j].im+b31*source[j].im+
+			b32*source2[j].im;
+		y3[j] *= expinv[j];
+	}
+	Source(source3,y3,t+a3);
+#pragma ivdep		
+	for(j=start; j < stop; j++) {
+		source3[j] /= expinv[j];
+		expinv[j]=exp(-nu[j]*a4);
+		y4[j].re=y0[j].re+b40*source0[j].re+b41*source[j].re+
+			b42*source2[j].re+b43*source3[j].re;
+		y4[j].im=y0[j].im+b40*source0[j].im+b41*source[j].im+
+			b42*source2[j].im+b43*source3[j].im;
+		y4[j] *= expinv[j];
+	}
+	Source(source4,y4,t+a4);
+#pragma ivdep		
+	for(j=start; j < stop; j++) {
+		source4[j] /= expinv[j];
+		expinv5[j]=exp(-nu[j]*a5);
+		y[j].re=y0[j].re+b50*source0[j].re+b51*source[j].re+
+			b52*source2[j].re+b53*source3[j].re+b54*source4[j].re;
+		y[j].im=y0[j].im+b50*source0[j].im+b51*source[j].im+
+			b52*source2[j].im+b53*source3[j].im+b54*source4[j].im;
+		y[j] *= expinv5[j];
+	}
+	Source(source,y,t+a5);
+#pragma ivdep	
+	for(j=start; j < stop; j++) source[j] /= expinv5[j];
+}
+
+#else // COMPLEX
+
 void I_RK5::Predictor(double t, double, int start, int stop)
 {
 	int j;
@@ -617,6 +678,8 @@ void I_RK5::Predictor(double t, double, int start, int stop)
 #pragma ivdep	
 	for(j=start; j < stop; j++) source[j] /= expinv5[j];
 }
+
+#endif // COMPLEX
 
 int I_RK5::Corrector(double dt, double& errmax, int start, int stop)
 {
