@@ -3,6 +3,7 @@
 #include "Polar.h"
 #include "Cartesian.h"
 
+#include <sys/mode.h>
 #include <sys/stat.h>
 
 char *NWaveVocabulary::Name() {return "N-Wave";}
