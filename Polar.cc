@@ -35,7 +35,7 @@ void angular_grid(Bin<Polar,Cartesian> *grid, Real kthmin, Real kthmax,
 	for(j=start; j < stop; j++) {
 		grid[j].min.th=kthbnd;
 		grid[j].cen.th=kth;
-		kthbnd+=delta; kth+=delta;
+		kthbnd += delta; kth += delta;
 	}
 	for(j=start; j < stop-1; j++) grid[j].max.th=grid[j+1].min.th;
 	grid[stop-1].max.th=kthmax;
@@ -45,13 +45,13 @@ void radial_grid(Bin<Polar,Cartesian> *grid, Real krmin, Real krmax, Real
 				 delta, int start, int stop)
 {
 	Real krbnd=krmin;
-	Real kr=krmin*sqrt(delta);
+	Real Kfactor=sqrt(0.5*(1.0+delta*delta));
 	int j;
 	
 	for(j=start; j < stop; j++) {
 		grid[j].min.r=krbnd;
-		grid[j].cen.r=kr;
-		krbnd*=delta; kr*=delta;
+		grid[j].cen.r=krbnd*Kfactor;
+		krbnd *= delta;
 	}
 	for(j=start; j < stop-1; j++) grid[j].max.r=grid[j+1].min.r;
 	grid[stop-1].max.r=krmax;
