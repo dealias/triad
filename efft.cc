@@ -18,7 +18,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	static int TableSize=0;
 	unsigned int naux;
 	unsigned int *nTable=NULL,*nkTable=NULL,*nauxTable=NULL;
-	static double *aux1[2], *aux2[2];
+	static double **aux1[2], **aux2[2];
 	unsigned int n=1 << log2n;
 	isign = -isign;
 	
