@@ -16,23 +16,23 @@ TRIAD = $(CORE) NWave.o Geometry.o $(POLAR)
 .SUFFIXES: .cc
 
 triad:	Navier.o $(TRIAD)
-	$(G++) $(OPT) -o triad Navier.o $(TRIAD) $(LIB) 
+	$(C++) $(OPT) -o triad Navier.o $(TRIAD) $(LIB) 
 
 w3:	ThreeWave.o $(TRIAD)
-	$(G++) $(OPT) -o triad ThreeWave.o NWave.o $(CORE) $(LIB)
+	$(C++) $(OPT) -o triad ThreeWave.o NWave.o $(CORE) $(LIB)
 
 kepler:	Kepler.o $(CORE)
-	$(G++) $(OPT) -o triad Kepler.o $(CORE) $(LIB)
+	$(C++) $(OPT) -o triad Kepler.o $(CORE) $(LIB)
 
 lotka:	Lotka.o $(CORE)
-	$(G++) $(OPT) -o triad Lotka.o $(CORE) $(LIB)
+	$(C++) $(OPT) -o triad Lotka.o $(CORE) $(LIB)
 
 polaraverage: PolarAverageTest.o PolarAverage.o simpfast.o $(UTILS)
-	$(G++) $(OPT) -o triad PolarAverageTest.o PolarAverage.o simpfast.o \
+	$(C++) $(OPT) -o triad PolarAverageTest.o PolarAverage.o simpfast.o \
 		$(UTILS) $(LIB)
 
 .cc.o:
-	$(G++) $(OPT) -o $*.o -c $*.cc
+	$(C++) $(OPT) -o $*.o -c $*.cc
 
 clean:
 	rm -f *.o *mon.out $(ALL)

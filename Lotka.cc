@@ -1,4 +1,3 @@
-#define _ANSI_C_SOURCE
 #define COMPLEX 0
 #include "kernel.h"
 #include "Param.h"
