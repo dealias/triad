@@ -93,7 +93,7 @@ void IntegratorBase::Integrate(Var *const y, double& t, double tmax,
 					if(dtold) {ChangeTimestep(dt,dtold,t); dtold=0.0;}   
 					cont=0;	break;
 				case NONINVERTIBLE:
-					if(!dtold) dtold=dt;
+					if(!dtold) dtold=dtorig ? dtorig : dt;
 					invert_cnt++;
 					ChangeTimestep(dt,dt*stepnoninverse,t); break;
 				case UNSUCCESSFUL:
