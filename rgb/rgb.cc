@@ -819,7 +819,7 @@ void ProjectedTorus(Array3<Ivec> Index)
 	const int Nxfine=4;
 	const int Nyfine=5;
 //	const int Nzfine=200;
-	const int Nzfine=100;
+	const int Nzfine=10;
 
 	const Real xfinestep=1.0/(2.0*Nxfine+1.0);
 	const Real yfinestep=1.0/(2.0*Nyfine+1.0);
@@ -838,7 +838,8 @@ void ProjectedTorus(Array3<Ivec> Index)
 	sincos(-Phi,&sinPhi,&cosPhi);
 	sincos(-Theta,&sinTheta,&cosTheta);
 	
-	// Rotation matrix; Rotate about x axis by Theta, then about z axis by Phi.
+	// Rotate about z axis by -Phi, then about new x axis by -Theta.
+	
 	Real Axx=cosPhi;          Real Axy=-sinPhi;         Real Axz=0.0;
 	Real Ayx=cosTheta*sinPhi; Real Ayy=cosTheta*cosPhi; Real Ayz=-sinTheta;
 	Real Azx=sinTheta*sinPhi; Real Azy=sinTheta*cosPhi; Real Azz=cosPhi;
