@@ -53,10 +53,9 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 	
 	// Compute reflected psi's
 	if(reality) {
-		Var *kstop,*q;
-		kstop=q=psibuffer+Npsi;
+		Var *kstop=psibuffer+Npsi;
 #pragma ivdep		
-		for(Var *k=psibuffer; k < kstop; k++,q++) conjugate(*q,*k);
+		for(Var *k=psibuffer; k < kstop; k++) conjugate(*(k+Npsi),*k);
 	}
 	
 	Pair *pstop=pairBase+Npair;
@@ -74,15 +73,15 @@ void PrimitiveNonlinearity(Var *source, Var *psi, double)
 	
 	// Compute moments
 	if(average && Nmoment > 0) {
-		Var *k,*kstop,*q,*q0;
-		q0=q=source+Npsi;
+		Var *k,*kstop,*q;
+		q=source+Npsi;
 		kstop=psi+Npsi;
 #if 1
 #pragma ivdep
 		for(k=psi; k < kstop; k++,q++) *q=product(*k,*k);   // psi^2
 		for(int n=1; n < Nmoment; n++) {
 #pragma ivdep
-			for(k=psi; k < kstop; k++,q++,q0++) *q=product(*q0,*k);  // psi^n
+			for(k=psi; k < kstop; k++,q++) *q=product(*(q-Npsi),*k);  // psi^n
 		}
 #else
 		for(k=psi; k < kstop; k++) {
