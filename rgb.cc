@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.02";
+const char VERSION[]="1.03";
 
 #define NEW_IMAGEMAGICK 1
 
@@ -54,6 +54,7 @@ static int remote=0;
 static int pointsize=0;
 static int gray=0;
 static char *convertprog;
+static strstream option;
 
 int byte=0;
 int implicit=1;
@@ -181,7 +182,8 @@ void usage(char *program)
 		 << endl
 		 << "           [-B begin] [-E end] [-L lower] [-U upper]" << endl
          << "           [-P palette] [-S skip]" << endl
-		 << "           [-X xsize -Y ysize [-Z zsize]] file1 [file2 ...]"
+		 << "           [-X xsize -Y ysize [-Z zsize]]" << endl
+         << "           [-o option] file1 [file2 ...]"
 		 << endl;
 }
 
@@ -215,6 +217,7 @@ void options()
 	cerr << "-X xsize\t explicit horizontal size" << endl;
 	cerr << "-Y ysize\t explicit vertical size" << endl;
 	cerr << "-Z zsize\t explicit number of sections/frame" << endl;
+	cerr << "-o option\t option to pass to convert" << endl;
 }
 
 int main(int argc, char *const argv[])
@@ -235,7 +238,7 @@ int main(int argc, char *const argv[])
 #endif	
 	errno=0;
 	while (1) {
-		int c = getopt(argc,argv,"bfghimprvzFl:x:H:V:B:E:L:U:P:S:X:Y:Z:");
+		int c = getopt(argc,argv,"bfghimprvzFl:o:x:H:V:B:E:L:U:P:S:X:Y:Z:");
 		if (c == -1) break;
 		switch (c) {
 		case 'b':
@@ -261,6 +264,9 @@ int main(int argc, char *const argv[])
 			break;
 		case 'm':
 			make_mpeg=1;
+			break;
+		case 'o':
+			option << " " << optarg;
 			break;
 		case 'p':
 			preserve=1;
@@ -333,6 +339,7 @@ int main(int argc, char *const argv[])
 		exit(1);
 	}
 	
+	option << ends;
 	convertprog=(nfiles > 1 || pointsize) ? "montage" : "convert";
 	
 	char *const *argf=argv+optind;
@@ -376,6 +383,9 @@ int main(int argc, char *const argv[])
 		
 		int kmin=0;
 		int kmax=nz-1;
+		if(upper < lower || lower < 0) 
+			msg(ERROR, "Invalid section range (%d,%d)",lower,upper);
+
 		if(kmin < lower) kmin=lower;
 		if(kmax > upper) kmax=upper;
 		int nz0=kmax-kmin+1;
@@ -539,7 +549,8 @@ void montage(int nfiles, char *const argf[], int n, char *const format,
 	strstream buf;
 	
 	buf << convertprog << " -size " << xsize << "x" << ysize
-		<< " -geometry " << xsize << "x" << ysize << " -interlace none ";
+		<< " -geometry " << xsize << "x" << ysize
+		<< option.str() << " -interlace none ";
 	if(pointsize) buf << "-pointsize " << pointsize << " ";
 	for(int f=0; f < nfiles; f++) {
 		char *fieldname=argf[f];
