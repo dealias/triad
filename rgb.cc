@@ -1,5 +1,5 @@
 /* RGB:  A movie production utility
-Copyright (C) 1996 John C. Bowman (bowman@ipp-garching.mpg.de)
+Copyright (C) 1997 John C. Bowman (bowman@ipp-garching.mpg.de)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -166,7 +166,7 @@ void usage(char *program)
 		 << " [(C) John C. Bowman <bowman@ipp-garching.mpg.de> 1997]" << endl
 		 << endl << "Usage: " << program
 		 << " [-bfFghilmpvz] [-x mag] [-H hmag] [-V vmag] " << endl
-		 << "[-B begin] [-E end] [-P palette] [-S skip]" << endl 
+		 << "           [-B begin] [-E end] [-P palette] [-S skip]" << endl 
 		 << "           [-X xsize -Y ysize [-Z zsize]] file1 [file2 ...]"
 		 << endl;
 }
