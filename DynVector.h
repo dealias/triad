@@ -47,11 +47,15 @@ public:
 	T *operator () () const {return v;}
 	operator T* () const {return v;}
 	
-	void PushBack(const T& value) {
+	void Push(const T& value) {
 		if (size == alloc) Resize(alloc ? 2*alloc : 1);
 		v[size++]=value;
 	}
 	
+	void Pop() {
+		if(size) size--;
+	}
+
 	void Expand(unsigned int i) {if (i > alloc) Resize(i);}
 
 	DynVector<T> operator = (const T *A) {

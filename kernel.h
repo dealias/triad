@@ -126,7 +126,7 @@ public:
 	Solve_RC CheckError();
 	virtual void Allocate(int n);
 	virtual const char *Name()=0;
-	virtual Solve_RC Solve(double, double)=0;
+	virtual Solve_RC Solve(double, double&)=0;
 	virtual int Microfactor() {return 1;}
 	virtual void TimestepDependence(double) {}
 };
@@ -167,7 +167,7 @@ public:
 		undashify(key,key2);
 		const char *key0=key2;
 		IntegratorBase *p=IntegratorTable->Locate(key0);
-		p->SetAbbrev(key2);
+		p->SetAbbrev(key0);
 		return p;
 	}
 	
