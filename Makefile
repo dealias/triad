@@ -25,9 +25,6 @@ w3:	ThreeWave.o $(TRIAD)
 kepler:	Kepler.o $(CORE)
 	$(C++) $(OPT) -o triad Kepler.o $(CORE) $(LIB)
 
-lotka:	Lotka.o $(CORE)
-	$(C++) $(OPT) -o triad Lotka.o $(CORE) $(LIB)
-
 polaraverage: PolarAverageTest.o PolarAverage.o simpfast.o $(UTILS)
 	$(C++) $(OPT) -o triad PolarAverageTest.o PolarAverage.o simpfast.o \
 		$(UTILS) $(LIB)
@@ -41,7 +38,7 @@ clean:
 depend:	kernel.cc Integrator.cc Param.cc ThreeWave.cc \
 		Navier.cc NWave.cc Geometry.cc Cartesian.cc convolve.cc fft.cc \
 		Polar.cc PolarAverage.cc simpfast.cc \
-		Kepler.cc Lotka.cc utils.cc strcasecmp.cc new.cc \
+		Kepler.cc utils.cc strcasecmp.cc new.cc \
 		poll.cc idle.cc tremain.cc unix.cc cfft.cc efft.cc
 	$(MAKEDEPEND) -f .makedepend $(MDOPT) -I /usr/local/include $^
 

@@ -233,7 +233,7 @@ Complex atoc(const char *s);
 	
 const int default_nperline=4;
 
-#if _CRAY
+#if _CRAY || __AIX
 // Cfront can't seem to handle a template here.
 inline void out_function(ostream& os, Real (*f)(int), char *text, int n,
 						 int nperline)
