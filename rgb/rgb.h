@@ -21,8 +21,8 @@ extern Array1<u_char> Y, U, V;
 static const double cr=0.299;
 static const double cg=0.587;
 static const double cb=0.114;
-static const double cu = 0.5/(1.0-cb);
-static const double cv = 0.5/(1.0-cr);
+static const double cu=0.5/(1.0-cb);
+static const double cv=0.5/(1.0-cr);
   
 inline unsigned char RGBByte(double r) // Normalize to interval [0,255]
 {

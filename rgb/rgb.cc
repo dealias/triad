@@ -1345,7 +1345,6 @@ void montage(unsigned int nfiles, char *argf[], int n, const char *format,
 	
   buf << convertprog << " -size " << xsize << "x" << ysize << 
     " -depth 8 -geometry " << xsize << "x" << ysize;
-//  if(make_mpeg) buf << " -crop 2800x2800+0+0"; // Workaround internal mpeg limit
   buf << option.str() << " -interlace none ";
   if(pointsize) buf << "-pointsize " << pointsize << " ";
   for(unsigned int f=0; f < nfiles; f++) {

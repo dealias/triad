@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.35
+#define __ARRAY_H_VERSION__ 1.36
 
 // Defining NDEBUG improves optimization but disables argument checking.
 // Defining __NOARRAY2OPT inhibits special optimization of Array2[].
@@ -68,21 +68,40 @@ inline void ArrayExit(const char *x)
 #endif  
 }
 
-#ifndef HAVE_POSIX_MEMALIGN  
-#define HAVE_POSIX_MEMALIGN 0
-#endif
+#ifndef HAVE_POSIX_MEMALIGN
 
 #ifdef __GLIBC_PREREQ
-#if !__GLIBC_PREREQ(2,3)
-#undef HAVE_POSIX_MEMALIGN
-#define HAVE_POSIX_MEMALIGN 0
+#if __GLIBC_PREREQ(2,3)
+#define HAVE_POSIX_MEMALIGN
+#endif
+#else
+#ifdef _POSIX_SOURCE
+#define HAVE_POSIX_MEMALIGN
 #endif
 #endif
 
-#if HAVE_POSIX_MEMALIGN  
+#endif
+
+#ifdef HAVE_POSIX_MEMALIGN
 extern "C" int posix_memalign(void **memptr, size_t alignment, size_t size);
 #else
 #include <malloc.h>
+// Adapted from FFTW aligned malloc/free.  Assumes that malloc is at least
+// sizeof(void*)-aligned. Allocated memory must be freed with free0.
+inline int posix_memalign0(void **memptr, size_t alignment, size_t size)
+{
+  if(alignment % sizeof (void *) != 0 || (alignment & (alignment - 1)) != 0)
+    return EINVAL;
+  void *p0=malloc(size+alignment);
+  if(!p0) return ENOMEM;
+  *memptr=(void *) (((size_t) p0+alignment)&(~((size_t) (alignment-1))));
+  *(memptr-1)=p0;
+  return 0;
+}
+inline void free0(void *p)
+{
+ if(p) free(*((void **) p - 1));
+}
 #endif
 
 template<class T>
@@ -91,16 +110,13 @@ inline void newAlign(T *&v, size_t len, size_t align)
   void *mem;
   const char *invalid="Invalid alignment requested";
   const char *nomem="Memory limits exceeded";
-#if HAVE_POSIX_MEMALIGN
+#ifdef HAVE_POSIX_MEMALIGN
   int rc=posix_memalign(&mem,align,len*sizeof(T));
+#else  
+  int rc=posix_memalign0(&mem,align,len*sizeof(T));
+#endif  
   if(rc == EINVAL) Array::ArrayExit(invalid);
   if(rc == ENOMEM) Array::ArrayExit(nomem);
-#else
-  if (align % sizeof (void *) != 0 || (align & (align - 1)) != 0)
-    Array::ArrayExit(invalid);
-  mem=memalign(align,len*sizeof(T));
-  if(len && !mem) Array::ArrayExit(nomem);
-#endif  
   v=(T *) mem;
   for(size_t i=0; i < len; i++) new(v+i) T;
 }
@@ -110,7 +126,11 @@ inline void deleteAlign(T *v, size_t len)
 {
   for(size_t i=len-1; i > 0; i--) v[i].~T();
   v[0].~T();
+#ifdef HAVE_POSIX_MEMALIGN
   free(v);
+#else
+  free0(v);
+#endif  
 }
 
 namespace Array {
