@@ -393,6 +393,14 @@ void out_real(S& os, Complex *f, char *textre, char *textim, int n,
 	out_function(os,out_im,textim,n,nperline);
 }
 
+template<class S>
+void out_real(S& os, Complex *f, char *textre, char *textim, int n)
+{
+	out_base=f;
+	out_function(os,out_re,textre,n,default_nperline);
+	out_function(os,out_im,textim,n,defautl_nperline);
+}
+
 inline double drand()
 {			  
 	return ((double) rand())/RAND_MAX;
