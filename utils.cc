@@ -232,6 +232,7 @@ void msg(int fatal, char *file, int line, char *format,...)
 		mailuser(buf.str());
 		exit(FATAL);
 	}
+	errno=0;
 	cout << flush;
 }
 

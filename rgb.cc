@@ -194,8 +194,8 @@ void options()
 	cerr << "-V vmag\t\t vertical magnification factor" << endl;
 	cerr << "-B begin\t first frame to process" << endl;
 	cerr << "-E end\t\t last frame to process" << endl;
-	cerr << "-L lower\t\t last section to process" << endl;
-	cerr << "-U upper\t\t first section to process" << endl;
+	cerr << "-L lower\t last section to process" << endl;
+	cerr << "-U upper\t first section to process" << endl;
 	cerr << "-P palette\t palette (integer between 0 and " << NPalette-1 <<
 		")" << endl;
 	cerr << "-S skip\t\t interval between processed frames" << endl;
