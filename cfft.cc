@@ -13,12 +13,13 @@ typedef Real *pReal;
 void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 		  unsigned int inc1, unsigned int inc2, int)
 {
-	unsigned int n=1 << log2n;
 	static int TableSize=0;
 	static unsigned int *nTable=NULL, *nkTable=NULL;
-	static int **ifax;
-	static Real **trigs,**work;
+	static int **ifax=NULL;
+	static Real **trigs=NULL,**work=NULL;
 	int j;
+	
+	unsigned int n=1 << log2n;
 	
 	for(j=0; j < TableSize; j++) if(n == nTable[j] && nk == nkTable[j]) break;
 	
@@ -46,19 +47,19 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 
 extern "C" void CCFFT(const int& isign, const int& n, Real& scale,
 					 Complex *x, Complex *y, Real *table, Real *work, 
-					 int* isys);
+					 const int& isys);
 		 
 void fft(Complex *data, unsigned int log2n, int isign, int)
 {
 	static int TableSize=0;
 	static unsigned int *nTable=NULL;
-	static Real **table,**work;
-	static int isys[1]={0};
+	static Real **table=NULL,**work=NULL;
+	const int isys=0;
+	const int zero=0;
+	const Real scale=1.0;
 	int j;
 	
 	unsigned int n=1 << log2n;
-	const int zero=0;
-	Real scale=1.0;
 	
 	for(j=0; j < TableSize; j++) if(n == nTable[j]) break;
 	
