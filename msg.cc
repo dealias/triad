@@ -8,6 +8,7 @@
 
 #if __unix
 #include <unistd.h>
+#include <signal.h>
 #endif
 
 char beep='\a';
@@ -19,6 +20,13 @@ int abort_flag=1; 	// If nonzero, abort program after a fatal error.
 int beep_enabled=1; // If nonzero, enable terminal beep for errors.
 int msg_override=0;
 void (*inform)(char *)=NULL;
+
+#if __unix
+void wakeup(int)
+{
+cout << "...woke up" << endl;
+}
+#endif
 
 void msg(int severity, char *file, int line, char *format,...)
 {
@@ -68,15 +76,21 @@ void msg(int severity, char *file, int line, char *format,...)
 			vform(format,vargs,vbuf);
 			va_end(vargs);
 			vbuf << ends;
-			buf << ((severity == SLEEP_) ?	"paused" : "terminated")
+			buf << ((severity == SLEEP_ && __unix) ? "paused" : "terminated")
 				<< " due to error";
 			if(*file) buf << " from \"" << file << "\":" << line;
 			buf << "." << newl << vbuf.str() << ends;
 			(*inform)(buf.str());
 		}
 		cout << endl;
-		if(severity == SLEEP_) pause();
-		else exit(FATAL);
+#if __unix			
+		if(severity == SLEEP_) {
+			cout << "Going to sleep..." << endl;
+			signal(SIGINT,wakeup);
+			pause();
+			signal(SIGINT,SIG_DFL);
+		} else exit(FATAL);
+#endif			
 	}
 	
 	cout << flush;
