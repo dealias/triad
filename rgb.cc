@@ -43,14 +43,16 @@ int main(int argc, char *argv[])
 	
 	int nset=n;
 	int xsize=mx*nx;
-	int ysize=my*((ny+1)*nz+1);
+	int My=max(5,my);
+	int ysize=my*((ny+1)*nz)+My;
 		
 	char *buf=new char[200+2*strlen(argv[1])];
 	sprintf(buf,"rm %s*.rgb > /dev/null 2>&1",argv[1]); // Delete old rgb files
 	system(buf);
 
 	char *oname=new char[20+strlen(argv[1])];
-	double step=(vmax == vmin) ? 1.0 : 1.0/(vmax-vmin);
+	double step=(vmax == vmin) ? 0.0 : 1.0/(vmax-vmin);
+	step *= PaletteMax;
 	l=0;
 	for(n=0; n < nset; n++) {
 		sprintf(oname,"%s%04d.rgb",argv[1],n);
@@ -60,19 +62,18 @@ int main(int argc, char *argv[])
 			for(int j=0; j < ny; j++)  {
 				for(int j2=0; j2 < my; j2++) {
 					for(int i=0; i < nx; i++)  {
-						int index=(int) (PaletteMax*(1.0-(
-							value[l][i+nx*j]-vmin)*step)+0.5);
-						unsigned char r=red[index], g=green[index],
-							b=blue[index];
+						int index=(step == 0.0) ? PaletteMax/2 : 
+							(int) ((vmax-value[l][i+nx*j])*step+0.5);
+						unsigned char 
+							r=red[index], g=green[index], b=blue[index];
 						for(int i2=0; i2 < mx; i2++) fout << r << g << b;
 					}
 				}
 			}
 			unsigned char black=0;
-			for(int i=0; i < xsize*my; i++) // Output black separator
-				fout << black << black << black;
+			for(int i=0; i < xsize*my; i++) fout << black << black << black;
 		}
-		for(int j2=0; j2 < my; j2++) { // Output palette
+		for(int j2=0; j2 < My; j2++) { // Output palette
 			for(int i=0; i < nx*mx; i++)  {
 				int index=(int) (PaletteMax*(1.0-((double) i)/(nx*mx))+0.5);
 				fout << red[index] << green[index] << blue[index];
