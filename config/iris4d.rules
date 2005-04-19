@@ -1,3 +1,3 @@
 rfft.o: rfft.cc
-	$(C++) $(OPT) -O2 $(INCL) -o $@ -c $<
+	$(CXX) $(OPT) -O2 $(INCL) -o $@ -c $<
 

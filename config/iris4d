@@ -1,8 +1,8 @@
-C++ = CC -64 -D_POSIX_SOURCE
+CXX = CC -64 -D_POSIX_SOURCE
 INCL = -I . -I $(TRI)
 OPT = $(CFLAGS)
 LIB = $(LFLAGS) -lm
-MAKEDEPEND = $(C++) -M -DDEPEND
+MAKEDEPEND = $(CXX) -M -DDEPEND
 
 FFT = wfft
 LIBFFT = -lrfftw -lfftw 

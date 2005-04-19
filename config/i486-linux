@@ -1,7 +1,7 @@
-C++ = g++ -Wall -ansi
+CXX = g++ -Wall -ansi
 CC = gcc -Wall -ansi
 LIB = $(LFLAGS) -lm
-MAKEDEPEND = $(C++) -M -DDEPEND
+MAKEDEPEND = $(CXX) -M -DDEPEND
 
 FFT = fftw++
 LIBFFT = -lfftw3

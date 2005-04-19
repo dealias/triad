@@ -1,7 +1,7 @@
-C++ = xlC -+ -D_ANSI_C_SOURCE
+CXX = xlC -+ -D_ANSI_C_SOURCE
 OPT = $(CFLAGS)
 LIB = $(LFLAGS) -lm
-MAKEDEPEND = $(C++) -M -P -DDEPEND
+MAKEDEPEND = $(CXX) -M -P -DDEPEND
 D = u
 
 #FFT = efft
