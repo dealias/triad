@@ -165,7 +165,7 @@ void IntegratorBase::Allocator(const vector2& Y0, const ivector& errmask0)
   
   Dimension(errmask,errmask0);
   Dimension(Yout,Y0);
-  Dimension(y,ny,(Var *) Y[0]);
+  Dimension(y,ny,(Var *) (Y0[0]));
   
   pgrow=(order > 0) ? 0.5/order : 0;
   pshrink=(order > 1) ? 0.5/(order-1) : pgrow;
@@ -202,10 +202,12 @@ Solve_RC PC::Solve()
   errmax=0.0;
 	
   if(new_y0) {
-//swaparray(Y0,Y); // TODO: Reinstate this optimization
-    for(unsigned i=0; i < Y0.Size(); ++i) {
+#if 1   
+    swaparray(Y0,Y); // TODO: Reinstate this optimization
+#else    
+    for(unsigned i=0; i < Y0.Size(); ++i) // Broken under optimization
       Y0[i]=Y[i];
-    }
+#endif    
     Set(y,Y[0]);
     Set(y0,Y0[0]);
     Source(Src0,Y0,t);
@@ -225,12 +227,14 @@ Solve_RC PC::Solve()
   if(new_y0) {
     Problem->BackTransform(Y,t+dt,dt,YI);
     Problem->Stochastic(Y,t,dt);
-  } else if(Active(YI)) { // TODO: Reinstate this optimization
-//    swaparray(Y0,YI);
-//    Set(y0,Y0[0]);
+  } else if(Active(YI)) {
+    swaparray(Y0,YI);
+    Set(y0,Y0[0]);
+#if 0    
     for(unsigned i=0; i < Y0.Size(); ++i) {
       YI[i]=Y0[i];
     }
+#endif    
   }
   
   return flag;
