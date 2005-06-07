@@ -1,10 +1,9 @@
 #ifndef __Integrator_h__
 #define __Integrator_h__ 1
 
-enum Solve_RC {NONINVERTIBLE=-1,UNSUCCESSFUL,SUCCESSFUL,ADJUST};
 
 class IntegratorBase {
- protected:
+protected:
   const char *abbrev;
   ProblemBase *Problem;
   unsigned int ny;
@@ -25,7 +24,11 @@ class IntegratorBase {
   int dynamic;
   int order;
   double pgrow, pshrink;
- public:	
+  
+public:	
+  
+  IntegratorBase() {}
+  
   virtual ~IntegratorBase() {}
   void SetAbbrev(const char *abbrev0) {abbrev=abbrev0;}
   const char *Abbrev() {return abbrev;}
@@ -49,11 +52,18 @@ class IntegratorBase {
 		 int& iteration, unsigned long& nout);
   void ChangeTimestep(double dtnew);
 	
-  virtual void Source(const vector2& Src, 
-		      const vector2& Y, double t) {
+  virtual void Source(const vector2& Src, const vector2& Y, double t) {
     Problem->Source(Src,Y,t);
   }
 	
+  virtual void PSource(const vector2& Src, const vector2& Y, double t) {
+    Source(Src,Y,t);
+  }
+	
+  virtual void CSource(const vector2& Src, const vector2& Y, double t) {
+    Source(Src,Y,t);
+  }
+  
   void CalcError(const Var& initial, const Var& norm, const Var& pred,
 		 const Var& corr);
   Solve_RC CheckError();
@@ -75,20 +85,41 @@ class IntegratorBase {
     Dimension(a,b);
   }
   
-  virtual void SetProblem(ProblemBase& problem);
-  virtual void Allocator();
+  void SetProblem(ProblemBase& problem);
+  
+  unsigned int Start(int field) {return Problem->Start(field);}
+  unsigned int Stop(int field) {return Problem->Stop(field);}
+  
+  void Allocator(const vector2& Y0, const ivector& mask);
+  
+  virtual void Allocator() {
+    Allocator(Problem->YVector(),Problem->ErrorMask());
+  }
+  virtual void Allocator(ProblemBase& problem) {
+    SetProblem(problem);
+    Allocator();
+  }
+  
   virtual const char *Name()=0;
   virtual Solve_RC Solve()=0;
   virtual int Microfactor() {return 1;}
   virtual void TimestepDependence() {}
+  
+  virtual void Unswap() {if(Yout[0] != Y[0]) set(Yout[0],Y[0],ny);}
+  
+  void SetTime(double t0, double dt0) {
+    t=t0;
+    dt=dt0;
+    TimestepDependence();
+  }
 };
 
 Compare_t IntegratorCompare;
 KeyCompare_t IntegratorKeyCompare;
 extern IntegratorBase *Integrator;
 
-#define INTEGRATOR(key) \
-{(void) new Entry<key,IntegratorBase>(#key,IntegratorTable);}
+#define INTEGRATOR(key)						\
+  {(void) new Entry<key,IntegratorBase>(#key,IntegratorTable);}
 
 inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0, 
 				      const Var& pred, const Var& corr)
@@ -103,37 +134,42 @@ inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0,
 inline Solve_RC IntegratorBase::CheckError()
 {
   if(dynamic >= 0) {
-    if(errmax > tolmax2) return UNSUCCESSFUL;
-    if(errmax < tolmin2) return ADJUST;
-    return SUCCESSFUL;
-  }
-  if(++dynamic == 0) dynamic=1;
+    if(errmax > tolmax2) {
+      return UNSUCCESSFUL;
+    }
+    if(errmax < tolmin2) {
+      return ADJUST;
+    }
+  } else if(++dynamic == 0) dynamic=1;
   return SUCCESSFUL;
 }
 
 class Euler : public IntegratorBase {
- public:
+public:
   const char *Name() {return "Euler";}
   Solve_RC Solve();
+  void Predictor(unsigned int n0, unsigned int ny) {
+    for(unsigned int j=n0; j < ny; j++) y[j] += dt*source[j];
+  }
 };
 
 class SYM1 : public IntegratorBase {
- public:
+public:
   const char *Name() {return "First-Order Symplectic";}
   Solve_RC Solve();
 };
 
 class Midpoint : public IntegratorBase {
- protected:	
+protected:	
   vector y0;
   vector2 Y0;
   double halfdt;
- public:
+public:
   void Allocator() {
-    IntegratorBase::Allocator();
-    Alloc(Y0,y0);
-    halfdt=0.5*dt;
-  }
+  IntegratorBase::Allocator();
+  Alloc(Y0,y0);
+  halfdt=0.5*dt;
+}
   const char *Name() {return "Midpoint Rule";}
   void TimestepDependence() {
     halfdt=0.5*dt;
@@ -147,7 +183,7 @@ class AdamsBashforth : public IntegratorBase {
   double a0,a1,a2;
   double b0,b1,b2;
   int init;
- public:
+public:
   AdamsBashforth() {order=3;}
   void Allocator() {
     IntegratorBase::Allocator();
@@ -168,18 +204,21 @@ class AdamsBashforth : public IntegratorBase {
 };
 
 class PC : public IntegratorBase {
- protected:
+protected:
   int new_y0;
   vector y0,source0;
   vector2 Y0,Src0;
   double halfdt;
- public:
+public:
   PC() {order=2;}
-  void Allocator() {
-    IntegratorBase::Allocator();
+  void Allocator(bool base) {
+    if(base) IntegratorBase::Allocator();
     Alloc(Y0,y0);
     Alloc0(Src0,source0);
     new_y0=1;
+  }
+  void Allocator() {
+    Allocator(true);
   }
   const char *Name() {return "Predictor-Corrector";}
   Solve_RC Solve();
@@ -187,21 +226,22 @@ class PC : public IntegratorBase {
   void TimestepDependence() {
     halfdt=0.5*dt;
   }
-  virtual void Predictor();
-  virtual int Corrector();
+  virtual void Predictor(unsigned int n0, unsigned int ny);
+  virtual int Corrector(unsigned int n0, unsigned int ny);
 };
 
 class LeapFrog : public PC {
   vector yp,yp0;
   vector2 YP,YP0; // array of dependent fields
   double oldhalfdt,lasthalfdt;
- public:
+public:
   void Allocator() {
-    PC::Allocator(); 
-    Alloc(YP,yp);
-    Alloc(YP0,yp0);
-    lasthalfdt=0.0;
+  PC::Allocator(); 
+  Alloc(YP,yp);
+  Alloc(YP0,yp0);
+  lasthalfdt=0.0;
   }
+  const char *Name() {return "Leapfrog";}
   void TimestepDependence() {
     if(lasthalfdt == 0.0) {
       Set(yp,YP[0]);
@@ -210,45 +250,58 @@ class LeapFrog : public PC {
     }
     halfdt=0.5*dt;
   }
-  const char *Name() {return "Leapfrog";}
-  void Predictor();
-  int Corrector();
+  void Predictor(unsigned int n0, unsigned int ny);
+  int Corrector(unsigned int n0, unsigned int ny);
 };
 
 class SYM2 : public PC {
- public:
+public:
   const char *Name() {return "Second-Order Symplectic";}
-  void Predictor();
-  int Corrector();
+  void Predictor(unsigned int n0, unsigned int ny);
+  int Corrector(unsigned int n0, unsigned int ny);
 };
 
 class RK2 : public PC {
- public:
+public:
   const char *Name() {return "Second-Order Runge-Kutta";}
-  void Predictor();
-  int Corrector();
+  void Predictor(unsigned int n0, unsigned int ny);
+  int Corrector(unsigned int n0, unsigned int ny);
 };
 
-class RK4 : public PC {
- protected:
-  vector source1, source2;
-  vector2 Src1,Src2;
+class RK3 : public PC {
+protected:  
+  vector source1;
+  vector2 Src1;
   double sixthdt;
- public:
-  RK4() {order=4;}
+public:
+  RK3() {order=3;}
   void Allocator() {
     PC::Allocator();
     Alloc0(Src1,source1);
+  }
+  const char *Name() {return "Third-Order Runge-Kutta";}
+  void TimestepDependence();
+  void Predictor(unsigned int n0, unsigned int ny);
+  int Corrector(unsigned int n0, unsigned int ny);
+};
+
+class RK4 : public RK3 {
+protected:  
+  vector source2;
+  vector2 Src2;
+public:
+  RK4() {order=4;}
+  void Allocator() {
+    RK3::Allocator();
     Alloc0(Src2,source2);
   }
   const char *Name() {return "Fourth-Order Runge-Kutta";}
-  void TimestepDependence();
-  void Predictor();
-  int Corrector();
+  void Predictor(unsigned int n0, unsigned int ny);
+  int Corrector(unsigned int n0, unsigned int ny);
 };
 
 class RK5 : public RK4 {
- protected:
+protected:
   vector source3,source4;
   vector2 Src3,Src4;
   double a1,a2,a3,a4,a5;
@@ -259,7 +312,7 @@ class RK5 : public RK4 {
   double b50,b51,b52,b53,b54;
   double c0,c2,c3,c5;
   double d0,d2,d3,d4,d5;
- public:
+public:
   RK5() {order=5;}
   void Allocator() {
     RK4::Allocator();
@@ -268,12 +321,12 @@ class RK5 : public RK4 {
   }
   const char *Name() {return "Fifth-Order Runge-Kutta";}
   void TimestepDependence();
-  void Predictor();
-  int Corrector();
+  void Predictor(unsigned int n0, unsigned int ny);
+  int Corrector(unsigned int n0, unsigned int ny);
 };
 
 class Exact : public RK5 {
- public:
+public:
   const char *Name() {return "Exact";}
   int Microfactor(){return 100;}
 };

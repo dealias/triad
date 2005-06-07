@@ -76,7 +76,7 @@ int checkpoint=0;
 int oldversion=0;
 
 // Local vocabulary declarations and default values
-static int microsteps=1;
+int microsteps=1;
 static double sample=0.0;
 static int initialize=0;
 static int clobber=0;
@@ -124,6 +124,7 @@ VocabularyBase::VocabularyBase()
   INTEGRATOR(PC);
   INTEGRATOR(LeapFrog);
   INTEGRATOR(RK2);
+  INTEGRATOR(RK3);
   INTEGRATOR(RK4);
   INTEGRATOR(RK5);
   INTEGRATOR(SYM1);
@@ -255,9 +256,8 @@ int main(int argc, char *argv[])
   Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,dtmin,dtmax,
 		       itmax,microsteps,verbose,dynamic);
 	
-  Integrator->SetProblem(*Problem);
-  Integrator->Allocator();
-	
+  Integrator->Allocator(*Problem);
+  	
   cout << newl << "INTEGRATING:" << endl;
   set_timer();
 	

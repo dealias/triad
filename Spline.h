@@ -1,8 +1,7 @@
 #ifndef __Spline_h__
 #define __Spline_h__ 1
 
-#include "Matrix.h"
-#include "Tridiagonal.h"
+#include "Array.h"
 
 namespace Array {
   
@@ -15,10 +14,9 @@ unsigned int bintsearch(X key, unsigned int n, const typename array1<X>::opt x)
 {
   if(n == 0) return 0;
   if(key < x[0]) return n;
-  if(key >= x[n-1]) return n-1;
-  
-  unsigned int l=0;
   unsigned int u=n-1;
+  if(key >= x[u]) return u;
+  unsigned int l=0;
 	
   while (l < u) {
     unsigned int i=(l+u)/2;

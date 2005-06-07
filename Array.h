@@ -25,7 +25,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 #include <iostream>
 #include <sstream>
-#include <unistd.h>
 #include <climits>
 #include <cstdlib>
 #include <cerrno>
@@ -220,8 +219,11 @@ class array1 {
       buf << "Array" << dim << " index ";
       if(m) buf << m << " ";
       buf << "is out of bounds (" << i+o;
-      if(i < 0) buf << " < " << o;
-      else buf << " > " << n+o-1;
+      if(n == 0) buf << " index given to empty array";
+      else {
+	if(i < 0) buf << " < " << o;
+	else buf << " > " << n+o-1;
+      }
       buf << ")";
       ArrayExit(buf.str().c_str());
     }
@@ -259,6 +261,7 @@ class array1 {
   array1<T>& operator = (T a) {Load(a); return *this;}
   array1<T>& operator = (const T *a) {Load(a); return *this;}
   array1<T>& operator = (const array1<T>& A) {
+    __check(size,A.Size()+1,1,0);
     Load(A());
     A.Purge();
     return *this;
@@ -311,7 +314,7 @@ class array1 {
     __checkSize();
     double norm=0.0;
     for(unsigned int i=0; i < size; i++) norm += abs(v[i]);
-    return norm/size;
+    return norm;
   }
 #ifdef __ArrayExtensions
   double Abs2() const {
@@ -321,18 +324,24 @@ class array1 {
     return norm;
   }
   double L2() const {
-    return sqrt(Abs2()/size);
+    return sqrt(Abs2());
   }
   double LInfinity() const {
     __checkSize();
     double norm=0.0;
-    for(unsigned int i=0; i < size; i++) norm=max(norm,abs(v[i]));
+    for(unsigned int i=0; i < size; i++) {
+      T a=abs(v[i]);
+      if(a > norm) norm=a;
+    }
     return norm;
   }
   double LMinusInfinity() const {
     __checkSize();
     double norm=DBL_MAX;
-    for(unsigned int i=0; i < size; i++) norm=min(norm,abs(v[i]));
+    for(unsigned int i=0; i < size; i++) {
+      T a=abs(v[i]);
+      if(a < norm) norm=a;
+    }
     return norm;
   }
 #endif	

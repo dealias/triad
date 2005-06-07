@@ -57,14 +57,19 @@ typedef array1<unsigned int>::opt uvector;
 
 typedef array1<vector> vector2;
 
+enum Solve_RC {NONINVERTIBLE=-1,UNSUCCESSFUL,SUCCESSFUL,ADJUST};
+
 class ProblemBase {
  protected:
   vector y; // Array of all field data
   DynVector<unsigned int> NY; // number of variables in each field
   array1<vector > Y; // array of dependent fields
+  uvector index; // array of offsets to start of each field
   unsigned int ny;
   const char *abbrev;
   ivector errmask;
+  unsigned int nfields;
+  
  public:	
   ProblemBase() {errmask=__NULLARRAY;}
   virtual ~ProblemBase() {}
@@ -73,20 +78,28 @@ class ProblemBase {
   vector yVector() {return y;}
   vector2 YVector() {return Y;}
   unsigned int Size() {return ny;}
-  DynVector<unsigned int> *Index() {return &NY;}
+  unsigned int Start(unsigned int field) {return index[field];}
+  unsigned int Stop(unsigned int field) {return index[field]+NY[field];}
+  
+  unsigned int Nfields() {return nfields;}
 
   const ivector& ErrorMask() {return errmask;}
   
   void Allocator() {
-    unsigned int nfields=NY.Size();
+    nfields=NY.Size();
     Y.Allocate(nfields);
+    Allocate(index,nfields);
     ny=0;
     for(unsigned int i=0; i < nfields; i++) ny += NY[i];
     Allocate(y,ny);
     Var *p=y;
+    unsigned int count=0;
     for(unsigned int i=0; i < nfields; i++) {
-      Dimension(Y[i],NY[i],p);
-      p += NY[i];
+      unsigned int n=NY[i];
+      Dimension(Y[i],n,p);
+      index[i]=count;
+      count += n;
+      p += n;
     }
   }
 	

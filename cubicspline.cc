@@ -2,8 +2,9 @@
 #include "Spline.h"
 
 using namespace Array;
+using std::cout;
 
-typedef array1<double> vector;
+typedef array1<double>::opt vector;
 
 int main()
 {
@@ -33,7 +34,7 @@ int main()
   double delta=(x[n-1]-x[0])/m;
   for(int i=-m/2; i <= 3*m/2; i++) {
     double xi=x[0]+i*delta;
-    cout << xi << " " << S.Interpolate<double,double>(n,x,y,xi) << endl;
+    cout << xi << " " << S.Interpolate(n,x,y,xi) << endl;
   }
     
   return 0;

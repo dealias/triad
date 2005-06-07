@@ -23,8 +23,8 @@ class Table {
   const char *name;
   Compare_t *Compare;
   KeyCompare_t *KeyCompare;
-  DynVector<EntryBase<B> *>list;
   unsigned int n;
+  DynVector<EntryBase<B> *>list;
  public:
   static int DefaultCompare(const void *a, const void *b) {
     return strcasecmp((*(EntryBase<B> **)a)->Key(),
@@ -35,12 +35,10 @@ class Table {
     return strcasecmpn((char *) key, (*(EntryBase<B> **)p)->Key(), n);
   }
 	
-  Table(const char *name0, Compare_t Compare0, KeyCompare_t KeyCompare0) {
-    name=name0; n=0; Compare=Compare0; KeyCompare=KeyCompare0;
-  }
-  Table(const char *name0) {
-    name=name0; n=0; Compare=DefaultCompare; KeyCompare=DefaultKeyCompare;
-  }
+  Table(const char *name, Compare_t Compare, KeyCompare_t KeyCompare) :
+    name(name), Compare(Compare), KeyCompare(KeyCompare), n(0) {}
+  Table(const char *name) : name(name), Compare(DefaultCompare),
+			    KeyCompare(DefaultKeyCompare), n(0) {}
   void Add(EntryBase<B> *ptr) {list[n++]=ptr;}
   unsigned int Size() {return n;}
   EntryBase<B> **Base() {return list;}
@@ -82,8 +80,18 @@ class Table {
 template<class T, class B>
 class Entry : public EntryBase<B> {
  public:
-  Entry(const char *key0,Table<B> *t) {this->key=key0; t->Add(this);}
+  Entry(const char *key0, Table<B> *t) {this->key=key0; t->Add(this);}
   B *New() {return new T;}
+};
+
+template<class T, class B, class P>
+class entry : public EntryBase<B> {
+  P *p;
+public:
+  entry(const char *key0, Table<B> *t, P *p) : p(p) {
+  this->key=key0; t->Add(this);
+}
+  B *New() {return new T(p);}
 };
 
 #endif

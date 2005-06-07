@@ -89,6 +89,7 @@ void IntegratorBase::Integrate(double& t0, double tmax,
       do {
 	switch(Solve()) {
 	case ADJUST:
+	  ExtrapolateTimestep();
 	  t += dt;
 	  ChangeTimestep(sign*max(min(sign*dt*growfactor,dtmax),dtmin));
 	  cont=0;
@@ -104,6 +105,7 @@ void IntegratorBase::Integrate(double& t0, double tmax,
 	  ChangeTimestep(dt*stepnoninverse);
 	  break;
 	case UNSUCCESSFUL:
+	  ExtrapolateTimestep();
 	  if(sign*dt <= dtmin) 
 	    msg(ERROR,"Minimum timestep restriction violated");
 	  ChangeTimestep(sign*max(sign*dt*shrinkfactor,dtmin));
@@ -112,7 +114,7 @@ void IntegratorBase::Integrate(double& t0, double tmax,
       iteration++;
     }
     
-    if(Yout[0] != Y[0]) set(Yout[0],Y[0],ny);
+    Unswap();
     
     if(verbose) cout << "] ";
   }
@@ -130,16 +132,15 @@ void IntegratorBase::SetProblem(ProblemBase& problem)
   Problem=&problem;
 }
 
-void IntegratorBase::Alloc(vector2& Y, vector& y)
+void IntegratorBase::Alloc(vector2& Y0, vector& y)
 {
   Allocate(y,ny);
-  DynVector<unsigned int> *NY=Problem->Index();
-  unsigned int nfields=NY->Size();
-  Allocate(Y,nfields);
+  unsigned int nfields=Y.Size();
+  Allocate(Y0,nfields);
   Var *p=y;
   for(unsigned int i=0; i < nfields; i++) {
-    unsigned int n=(*NY)[i];
-    Dimension(Y[i],n,p);
+    unsigned int n=Y[i].Size();
+    Dimension(Y0[i],n,p);
     p += n;
   }
 }
@@ -150,29 +151,32 @@ void IntegratorBase::Alloc0(vector2& Y, vector& y)
   for(unsigned int i=0; i < ny; i++) y[i]=0.0;
 }
 
-void IntegratorBase::Allocator()
+void IntegratorBase::Allocator(const vector2& Y0,
+			       const ivector& errmask0)
 {
   check_compatibility(DEBUG);
   
-  DynVector<unsigned int> *NY=Problem->Index();
-  unsigned int nfields=NY->Size();
+  unsigned int nfields=Y0.Size();
   ny=0;
-  for(unsigned int i=0; i < nfields; i++) ny += (*NY)[i];
+  for(unsigned int i=0; i < nfields; i++)
+    ny += Y0[i].Size();
+  
+  Dimension(Y,Y0);
   Alloc0(Src,source);
   
-  Dimension(errmask,Problem->ErrorMask());
-  Dimension(y,Problem->yVector());
-  Dimension(Y,Problem->YVector());
-  Dimension(Yout,Problem->YVector());
+  Dimension(errmask,errmask0);
+  Dimension(Yout,Y0);
+  Dimension(y,ny,Y[0]());
   
-  pgrow=0.5/order; pshrink=(order > 1) ? 0.5/(order-1) : 0;
+  pgrow=(order > 0) ? 0.5/order : 0;
+  pshrink=(order > 1) ? 0.5/(order-1) : pgrow;
 }
 
 Solve_RC Euler::Solve()
 {
   Source(Src,Y,t);
   Problem->Transform(Y,t,dt,YI);
-  for(unsigned int j=0; j < ny; j++) y[j] += dt*source[j];
+  Predictor(0,ny);
   Problem->BackTransform(Y,t+dt,dt,YI);
   Problem->Stochastic(Y,t,dt);
   return SUCCESSFUL;
@@ -199,16 +203,19 @@ Solve_RC PC::Solve()
   errmax=0.0;
 	
   if(new_y0) {
-    swaparray(Y0,Y);
+//swaparray(Y0,Y); // TODO: Reinstate this optimization
+    for(unsigned i=0; i < Y0.Size(); ++i) {
+      Y0[i]=Y[i];
+    }
     Set(y,Y[0]);
     Set(y0,Y0[0]);
     Source(Src0,Y0,t);
   }
   Problem->Transform(Y0,t,dt,YI);
 	
-  Predictor();
+  Predictor(0,ny);
   
-  if(Corrector()) {
+  if(Corrector(0,ny)) {
     flag=(dynamic ? CheckError() : SUCCESSFUL);
     new_y0=(flag != UNSUCCESSFUL);
   } else {
@@ -219,62 +226,63 @@ Solve_RC PC::Solve()
   if(new_y0) {
     Problem->BackTransform(Y,t+dt,dt,YI);
     Problem->Stochastic(Y,t,dt);
-  } else if(Active(YI)) {
-    swaparray(Y0,YI);
-    Set(y0,Y0[0]);
+  } else if(Active(YI)) { // TODO: Reinstate this optimization
+//    swaparray(Y0,YI);
+//    Set(y0,Y0[0]);
+    for(unsigned i=0; i < Y0.Size(); ++i) {
+      YI[i]=Y0[i];
+    }
   }
   
   return flag;
 }
 
-void PC::Predictor()
+void PC::Predictor(unsigned int start, unsigned int stop)
 {
-  for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+dt*source0[j];
+  for(unsigned int j=start; j < stop; j++) y[j]=y0[j]+dt*source0[j];
   Problem->BackTransform(Y,t+dt,dt,YI);
 }
 
-int PC::Corrector()
+int PC::Corrector(unsigned int start, unsigned int stop)
 {
-  Source(Src,Y,t+dt);
+  CSource(Src,Y,t+dt);
   if(dynamic) {
-    for(unsigned int j=0; j < ny; j++) {
+    for(unsigned int j=start; j < stop; j++) {
       y[j]=y0[j]+halfdt*(source0[j]+source[j]);
       if(!Active(errmask) || errmask[j])
 	CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
     }
-    ExtrapolateTimestep();
-  } else for(unsigned int j=0; j < ny; j++) {
+  } else for(unsigned int j=start; j < stop; j++) {
     y[j]=y0[j]+halfdt*(source0[j]+source[j]);
   }
 	
   return 1;
 }
 
-void SYM2::Predictor()
+void SYM2::Predictor(unsigned int start, unsigned int stop)
 {
-  for(unsigned int j=0; j < ny; j++) {
+  for(unsigned int j=start; j < stop; j++) {
     y[j]=y0[j]+halfdt*source0[j];
-    if(++j < ny) y[j]=y0[j];
+    if(++j < stop) y[j]=y0[j];
   }
   Problem->BackTransform(Y,t+dt,dt,YI);
-  Source(Src,Y,t+halfdt);
-  for(unsigned int j=1; j < ny; j += 2) {
+  PSource(Src,Y,t+halfdt);
+  for(unsigned int j=1; j < stop; j += 2) {
     y[j] += dt*source[j];
   }
   Problem->BackTransform(Y,t+dt,dt,YI);
 }
 
-int SYM2::Corrector()
+int SYM2::Corrector(unsigned int start, unsigned int stop)
 {
-  Source(Src,Y,t+dt);
+  CSource(Src,Y,t+dt);
   if(dynamic) {
-    for(unsigned int j=0; j < ny; j += 2) {
+    for(unsigned int j=start; j < stop; j += 2) {
       y[j] += halfdt*source[j];
       if(!Active(errmask) || errmask[j])
 	CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
     }
-    ExtrapolateTimestep();
-  } else for(unsigned int j=0; j < ny; j += 2) {
+  } else for(unsigned int j=start; j < stop; j += 2) {
     y[j] += halfdt*source[j];
   }
 	
@@ -309,7 +317,6 @@ Solve_RC AdamsBashforth::Solve()
 	CalcError(y0[j],temp,y[j],temp);
 	y[j]=temp;
       }
-      ExtrapolateTimestep();
       flag=CheckError();
     } else {
       for(unsigned int j=0; j < ny; j++) {
@@ -371,85 +378,111 @@ Solve_RC Midpoint::Solve()
   return SUCCESSFUL;
 }
 
-void LeapFrog::Predictor()
+void LeapFrog::Predictor(unsigned int start, unsigned int stop)
 {
   if(new_y0) {oldhalfdt=lasthalfdt;}
   else yp=yp0;
   double dtprime=halfdt+oldhalfdt;
   Problem->Transform(YP,t-oldhalfdt,dtprime,YP0);
-  for(unsigned int j=0; j < ny; j++) yp[j] += dtprime*source0[j];
+  for(unsigned int j=start; j < stop; j++) yp[j] += dtprime*source0[j];
   Problem->BackTransform(YP,t+halfdt,dtprime,YP0);
   lasthalfdt=halfdt;
 }
 	
-int LeapFrog::Corrector()
+int LeapFrog::Corrector(unsigned int start, unsigned int stop)
 {
-  Source(Src,YP,t+halfdt);
+  CSource(Src,YP,t+halfdt);
   if(dynamic) {
-    for(unsigned int j=0; j < ny; j++) {
+    for(unsigned int j=start; j < stop; j++) {
       y[j]=y0[j]+dt*source[j];
       if(!Active(errmask) || errmask[j]) 
 	CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
     }
-    ExtrapolateTimestep();
-  } else for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+dt*source[j];
+  } else for(unsigned int j=start; j < stop; j++)
+    y[j]=y0[j]+dt*source[j];
 
   return 1;
 }
 
-void RK2::Predictor()
+void RK2::Predictor(unsigned int start, unsigned int stop)
 {
-  for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+halfdt*source0[j];
+  for(unsigned int j=start; j < stop; j++)
+    y[j]=y0[j]+halfdt*source0[j];
   Problem->BackTransform(Y,t+halfdt,halfdt,YI);
 }
 
-int RK2::Corrector()
+int RK2::Corrector(unsigned int start, unsigned int stop)
 {
-  Source(Src,Y,t+halfdt);
+  CSource(Src,Y,t+halfdt);
   if(dynamic) {
-    for(unsigned int j=0; j < ny; j++) {
+    for(unsigned int j=start; j < stop; j++) {
       y[j]=y0[j]+dt*source[j];
       if(!Active(errmask) || errmask[j])
 	CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
     }
-    ExtrapolateTimestep();
-  } else for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+dt*source[j];
+  } else for(unsigned int j=start; j < stop; j++)
+    y[j]=y0[j]+dt*source[j];
 
   return 1;
 }
 
-void RK4::TimestepDependence()
+void RK3::TimestepDependence()
 {
-  halfdt=0.5*dt;
+  PC::TimestepDependence();
   sixthdt=dt/6.0;
 }
 
-void RK4::Predictor()
+void RK3::Predictor(unsigned int start, unsigned int stop)
 {
-  for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+halfdt*source0[j];
+  for(unsigned int j=start; j < stop; j++)
+    y[j]=y0[j]+halfdt*source0[j];
+  PSource(Src1,Y,t+halfdt);
+  for(unsigned int j=start; j < stop; j++)	
+    y[j]=y0[j]+dt*(2.0*source1[j]-source0[j]);
+}
+
+int RK3::Corrector(unsigned int start, unsigned int stop)
+{
+  CSource(Src,Y,t+dt);
+  if(dynamic) {
+    for(unsigned int j=start; j < stop; j++) {
+      Var pred=y0[j]+dt*source1[j];
+      y[j]=y0[j]+sixthdt*(source0[j]+4.0*source1[j]+source[j]);
+      if(!Active(errmask) || errmask[j])
+	CalcError(y0[j],y[j],pred,y[j]);
+    }
+  } else {
+    for(unsigned int j=start; j < stop; j++)
+      y[j]=y0[j]+sixthdt*(source0[j]+4.0*source1[j]+source[j]);
+  }
+  return 1;
+}
+
+void RK4::Predictor(unsigned int start, unsigned int stop)
+{
+  for(unsigned int j=start; j < stop; j++) y[j]=y0[j]+halfdt*source0[j];
   Problem->BackTransform(Y,t+halfdt,halfdt,YI);
-  Source(Src1,Y,t+halfdt);
+  PSource(Src1,Y,t+halfdt);
   if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
-  for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+halfdt*source1[j];
+  for(unsigned int j=start; j < stop; j++) y[j]=y0[j]+halfdt*source1[j];
   Problem->BackTransform(Y,t+halfdt,halfdt,YI);
-  Source(Src2,Y,t+halfdt);
+  PSource(Src2,Y,t+halfdt);
   if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
-  for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+dt*source2[j];
+  for(unsigned int j=start; j < stop; j++) y[j]=y0[j]+dt*source2[j];
   Problem->BackTransform(Y,t+dt,dt,YI);
 }
 
-int RK4::Corrector()
+int RK4::Corrector(unsigned int start, unsigned int stop)
 {
-  Source(Src,Y,t+dt);
+  CSource(Src,Y,t+dt);
   if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
   if(dynamic) {
-    for(unsigned int j=0; j < ny; j++) {
+    for(unsigned int j=start; j < stop; j++) {
       y[j]=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+source[j]);
       if(!Active(errmask) || errmask[j])
 	CalcError(y0[j],y[j],y0[j]+dt*source2[j],y[j]);
     }
-    ExtrapolateTimestep();
-  } else for(unsigned int j=0; j < ny; j++) 
+  } else for(unsigned int j=start; j < stop; j++) 
     y[j]=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+source[j]);
   return 1;
 }
@@ -468,44 +501,46 @@ void RK5::TimestepDependence()
   d4=277.0/14336.0*dt; d5=0.25*dt;
 }
 
-void RK5::Predictor()
+void RK5::Predictor(unsigned int start, unsigned int stop)
 {
   //#pragma ivdep		
-  for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+b10*source0[j];
+  for(unsigned int j=start; j < stop; j++)
+    y[j]=y0[j]+b10*source0[j];
   Problem->BackTransform(Y,t+a1,a1,YI);
-  Source(Src,Y,t+a1);
+  PSource(Src,Y,t+a1);
   if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
   //#pragma ivdep		
-  for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+b20*source0[j]+b21*source[j];
+  for(unsigned int j=start; j < stop; j++)
+    y[j]=y0[j]+b20*source0[j]+b21*source[j];
   Problem->BackTransform(Y,t+a2,a2,YI);
-  Source(Src2,Y,t+a2);
+  PSource(Src2,Y,t+a2);
   if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
   //#pragma ivdep		
-  for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+b30*source0[j]+b31*source[j]+
-				b32*source2[j];
+  for(unsigned int j=start; j < stop; j++)
+    y[j]=y0[j]+b30*source0[j]+b31*source[j]+b32*source2[j];
   Problem->BackTransform(Y,t+a3,a3,YI);
-  Source(Src3,Y,t+a3);
+  PSource(Src3,Y,t+a3);
   if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
   //#pragma ivdep		
-  for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+b40*source0[j]+b41*source[j]+
-				b42*source2[j]+b43*source3[j];
+  for(unsigned int j=start; j < stop; j++)
+    y[j]=y0[j]+b40*source0[j]+b41*source[j]+b42*source2[j]+b43*source3[j];
   Problem->BackTransform(Y,t+a4,a4,YI);
-  Source(Src4,Y,t+a4);
+  PSource(Src4,Y,t+a4);
   if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
   //#pragma ivdep		
-  for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+b50*source0[j]+b51*source[j]+
-				b52*source2[j]+b53*source3[j]+
-				b54*source4[j];
+  for(unsigned int j=start; j < stop; j++) 
+    y[j]=y0[j]+b50*source0[j]+b51*source[j]+b52*source2[j]+b53*source3[j]+
+      b54*source4[j];
   Problem->BackTransform(Y,t+a5,a5,YI);
 }
 
-int RK5::Corrector()
+int RK5::Corrector(unsigned int start, unsigned int stop)
 {
-  Source(Src,Y,t+a5);
+  CSource(Src,Y,t+a5);
   if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
   if(dynamic) {
     //#pragma ivdep		
-    for(unsigned int j=0; j < ny; j++) {
+    for(unsigned int j=start; j < stop; j++) {
       y[j]=y0[j]+c0*source0[j]+c2*source2[j]+c3*source3[j]+c5*source[j];
       if(!Active(errmask) || errmask[j]) {
 	Var pred=y0[j]+d0*source0[j]+d2*source2[j]+
@@ -513,10 +548,9 @@ int RK5::Corrector()
 	CalcError(y0[j],y[j],pred,y[j]);
       }
     }
-    ExtrapolateTimestep();
   } else {
     //#pragma ivdep		
-    for(unsigned int j=0; j < ny; j++) {
+    for(unsigned int j=start; j < stop; j++) {
       y[j]=y0[j]+c0*source0[j]+c2*source2[j]+c3*source3[j]+c5*source[j];
     }
   }
