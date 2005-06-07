@@ -21,8 +21,8 @@ public:
   
   void Allocator() {
     unsigned int ny=stop-start;
-    Allocate(coeff0,ny,start);
-    Allocate(coeff1,ny,start);
+    Allocate(coeff0,ny,start,0);
+    Allocate(coeff1,ny,start,0);
     Allocator(ny);
   }
   
@@ -115,8 +115,8 @@ public:
   }
   
   void Allocator(unsigned int ny) {
-    Allocate(coeff0h,ny,start);
-    Allocate(coeff1h,ny,start);
+    Allocate(coeff0h,ny,start,0);
+    Allocate(coeff1h,ny,start,0);
   }
   
   void Source(const vector2& Src, const vector2& Y, double t) {
@@ -184,11 +184,11 @@ public:
   NuVector coeff0h,coeff1h,coeffA,coeffB,coeffC;
   
   void Allocator(unsigned int ny, unsigned int start) {
-    Allocate(coeff0h,ny,start);
-    Allocate(coeff1h,ny,start);
-    Allocate(coeffA,ny,start);
-    Allocate(coeffB,ny,start);
-    Allocate(coeffC,ny,start);
+    Allocate(coeff0h,ny,start,0);
+    Allocate(coeff1h,ny,start,0);
+    Allocate(coeffA,ny,start,0);
+    Allocate(coeffB,ny,start,0);
+    Allocate(coeffC,ny,start,0);
   }
   
   virtual Nu LinearCoeff(unsigned int j)=0;
