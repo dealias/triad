@@ -88,7 +88,7 @@ inline void E_PC<T>::Corrector() {
     for(unsigned int j=start; j < stop; j++) {
       Var temp=coeff0[j]*y0[j];
       Var val=temp+coeff1[j]*0.5*(source0[j]+source[j]);
-      if(!Active(errmask) || errmask[j])
+      if(!Array::Active(errmask) || errmask[j])
 	CalcError(y0[j],val,temp+coeff1[j]*source0[j],val);
       y[j]=val;
     }
@@ -169,7 +169,7 @@ inline void E_RK2<T>::Corrector()
   if(dynamic) {
     for(unsigned int j=start; j < stop; j++) {
       Var val=coeff0[j]*y0[j]+coeff1[j]*source[j];
-      if(!Active(errmask) || errmask[j])
+      if(!Array::Active(errmask) || errmask[j])
 	CalcError(y0[j],val,coeff0[j]*y0[j]+coeff1[j]*source0[j],val);
       val=y[j];
     }
@@ -278,7 +278,7 @@ void E_RK3<T>::Corrector()
       Var pred=coeff0[j]*y0[j]+coeff1[j]*source1[j];
       Var val=coeff0[j]*y0[j]+coeffA[j]*source0[j]+2.0*coeffB[j]*source1[j]
 	+coeffC[j]*source[j];
-      if(!Active(errmask) || errmask[j])
+      if(!Array::Active(errmask) || errmask[j])
 	CalcError(y0[j],val,pred,val);
       y[j]=val;
     }
@@ -365,7 +365,7 @@ inline void E_RK4<T>::Corrector()
     for(unsigned int j=start; j < stop; j++) {
       Var val=coeff0[j]*y0[j]+coeffA[j]*source0[j]
 	+coeffB[j]*(source1[j]+source2[j])+coeffC[j]*source[j];
-      if(!Active(errmask) || errmask[j]) {
+      if(!Array::Active(errmask) || errmask[j]) {
 	Var pred=coeff0[j]*y0[j]+coeffA[j]*source0[j]+2.0*coeffB[j]*source1[j]
 	  +coeffC[j]*source3[j];
 	CalcError(y0[j],val,pred,val);

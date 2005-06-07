@@ -74,7 +74,7 @@ inline int C_PC<T>::Corrector()
     for(unsigned int j=start; j < stop; j++) {
       Var pred=y[j];
       if(!Correct(y0[j],y[j],source0[j],source[j],dt)) return 0;
-      if(!Active(errmask) || errmask[j])
+      if(!Array::Active(errmask) || errmask[j])
 	CalcError(y0[j],y[j],pred,y[j]);
     }
   } else for(unsigned int j=start; j < stop; j++)
@@ -139,7 +139,7 @@ inline int C_RK2<T>::Corrector()
   if(dynamic) {
     for(unsigned int j=start; j < stop; j++) {
       if(!Correct(y0[j],y[j],source[j])) return 0;
-      if(!Active(errmask) || errmask[j])
+      if(!Array::Active(errmask) || errmask[j])
 	CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
     }
   } else for(unsigned int j=start; j < stop; j++) {
@@ -227,7 +227,7 @@ inline int C_RK4<T>::Corrector()
       Var pred=y[j];
       if(!Correct(y0[j],y[j],source0[j],source1[j],source2[j],source[j]))
 	return 0;
-      if(!Active(errmask) || errmask[j]) CalcError(y0[j],y[j],pred,y[j]);
+      if(!Array::Active(errmask) || errmask[j]) CalcError(y0[j],y[j],pred,y[j]);
     }
   } else for(unsigned int j=start; j < stop; j++) {
     if(!Correct(y0[j],y[j],source0[j],source1[j],source2[j],source[j]))
@@ -352,7 +352,7 @@ inline int C_RK5<T>::Corrector()
       Var pred,corr;
       if(!Correct(y0[j],y2[j],y3[j],y4[j],y[j],source0[j],source2[j],
 		 source3[j],source4[j],source[j],pred,corr)) return 0;
-      if(!Active(errmask) || errmask[j])
+      if(!Array::Active(errmask) || errmask[j])
 	CalcError(y0[j]*y0[j],corr,pred,corr);
     }
   } else {
