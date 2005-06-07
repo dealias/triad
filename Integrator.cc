@@ -151,22 +151,21 @@ void IntegratorBase::Alloc0(vector2& Y, vector& y)
   for(unsigned int i=0; i < ny; i++) y[i]=0.0;
 }
 
-void IntegratorBase::Allocator(const vector2& Y0,
-			       const ivector& errmask0)
+void IntegratorBase::Allocator(const vector2& Y0, const ivector& errmask0)
 {
   check_compatibility(DEBUG);
   
   unsigned int nfields=Y0.Size();
   ny=0;
   for(unsigned int i=0; i < nfields; i++)
-    ny += Y0[i].Size();
+    ny += Problem->Size(i);
   
   Dimension(Y,Y0);
   Alloc0(Src,source);
   
   Dimension(errmask,errmask0);
   Dimension(Yout,Y0);
-  Dimension(y,ny,Y[0]());
+  Dimension(y,ny,(Var *) Y[0]);
   
   pgrow=(order > 0) ? 0.5/order : 0;
   pshrink=(order > 1) ? 0.5/(order-1) : pgrow;

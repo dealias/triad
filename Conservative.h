@@ -59,7 +59,7 @@ public:
   
   inline int Corrector();
   
-  virtual int Corrector(unsigned int start, unsigned int stop) {
+  virtual int Corrector(unsigned int, unsigned int) {
     int rc=C_PC<T>::Corrector();
     if(rc) rc=PC::Corrector(startN,stopN);
     return rc;
