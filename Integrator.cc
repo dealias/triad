@@ -139,7 +139,7 @@ void IntegratorBase::Alloc(vector2& Y0, vector& y)
   Allocate(Y0,nfields);
   Var *p=y;
   for(unsigned int i=0; i < nfields; i++) {
-    unsigned int n=Y[i].Size();
+    unsigned int n=Problem->Size(i);
     Dimension(Y0[i],n,p);
     p += n;
   }

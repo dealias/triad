@@ -17,7 +17,7 @@ protected:
 public:
   virtual ~Exponential() {}
   
-  virtual void Allocator(unsigned int ny) {};
+  virtual void Allocator(unsigned int) {};
   
   void Allocator() {
     unsigned int ny=stop-start;
@@ -47,8 +47,8 @@ public:
     parent->ExponentialSource(Src,Y,t);
   }
   
-  void PSource(const vector2& Src, const vector2& Y, double t) {}
-  void CSource(const vector2& Src, const vector2& Y, double t) {}
+  void PSource(const vector2&, const vector2&, double) {}
+  void CSource(const vector2&, const vector2&, double) {}
   
   inline void TimestepDependence(),Predictor(),Corrector();
   
@@ -123,8 +123,8 @@ public:
     parent->ExponentialSource(Src,Y,t);
   }
   
-  void PSource(const vector2& Src, const vector2& Y, double t) {}
-  void CSource(const vector2& Src, const vector2& Y, double t) {}
+  void PSource(const vector2&, const vector2&, double) {}
+  void CSource(const vector2&, const vector2&, double) {}
   
   inline void TimestepDependence(),Predictor(),Corrector();
   
@@ -238,8 +238,8 @@ public:
     parent->ExponentialSource(Src,Y,t);
   }
   
-  void PSource(const vector2& Src, const vector2& Y, double t) {}
-  void CSource(const vector2& Src, const vector2& Y, double t) {}
+  void PSource(const vector2&, const vector2&, double) {}
+  void CSource(const vector2&, const vector2&, double) {}
   
   void TimestepDependence() {
     RK3::TimestepDependence();
@@ -319,8 +319,8 @@ public:
     parent->ExponentialSource(Src,Y,t);
   }
   
-  void PSource(const vector2& Src, const vector2& Y, double t) {}
-  void CSource(const vector2& Src, const vector2& Y, double t) {}
+  void PSource(const vector2&, const vector2&, double) {}
+  void CSource(const vector2&, const vector2&, double) {}
   
   void TimestepDependence() {
     RK4::TimestepDependence();

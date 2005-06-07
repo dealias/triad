@@ -78,6 +78,7 @@ class ProblemBase {
   vector yVector() {return y;}
   vector2 YVector() {return Y;}
   unsigned int Size() {return ny;}
+  unsigned int Size(int field) {return NY[field];}
   unsigned int Start(unsigned int field) {return index[field];}
   unsigned int Stop(unsigned int field) {return index[field]+NY[field];}
   
