@@ -151,7 +151,7 @@ public:
     Integrator=Integrator0;
     Integrator->SetTime(t,dt);  // copy errmax as well
     Solve_RC rc=Integrator->Solve();
-    Integrator->Unswap();
+//    Integrator->Unswap();
     return rc;
   }
   

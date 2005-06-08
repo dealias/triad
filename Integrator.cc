@@ -202,14 +202,13 @@ Solve_RC PC::Solve()
   errmax=0.0;
 	
   if(new_y0) {
-#if 1   
+#if 0   
     swaparray(Y0,Y); // TODO: Reinstate this optimization
-#else    
-    for(unsigned i=0; i < Y0.Size(); ++i) // Broken under optimization
-      Y0[i]=Y[i];
-#endif    
     Set(y,Y[0]);
     Set(y0,Y0[0]);
+#else    
+    set(Y0[0],Y[0],ny);
+#endif    
     Source(Src0,Y0,t);
   }
   Problem->Transform(Y0,t,dt,YI);
@@ -228,12 +227,11 @@ Solve_RC PC::Solve()
     Problem->BackTransform(Y,t+dt,dt,YI);
     Problem->Stochastic(Y,t,dt);
   } else if(Active(YI)) {
+#if 0    
     swaparray(Y0,YI);
     Set(y0,Y0[0]);
-#if 0    
-    for(unsigned i=0; i < Y0.Size(); ++i) {
-      YI[i]=Y0[i];
-    }
+#else    
+    set(YI[0],Y0[0],ny);
 #endif    
   }
   
@@ -463,15 +461,18 @@ int RK3::Corrector(unsigned int start, unsigned int stop)
 
 void RK4::Predictor(unsigned int start, unsigned int stop)
 {
-  for(unsigned int j=start; j < stop; j++) y[j]=y0[j]+halfdt*source0[j];
+  for(unsigned int j=start; j < stop; j++)
+    y[j]=y0[j]+halfdt*source0[j];
   Problem->BackTransform(Y,t+halfdt,halfdt,YI);
   PSource(Src1,Y,t+halfdt);
   if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
-  for(unsigned int j=start; j < stop; j++) y[j]=y0[j]+halfdt*source1[j];
+  for(unsigned int j=start; j < stop; j++)
+    y[j]=y0[j]+halfdt*source1[j];
   Problem->BackTransform(Y,t+halfdt,halfdt,YI);
   PSource(Src2,Y,t+halfdt);
   if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
-  for(unsigned int j=start; j < stop; j++) y[j]=y0[j]+dt*source2[j];
+  for(unsigned int j=start; j < stop; j++)
+    y[j]=y0[j]+dt*source2[j];
   Problem->BackTransform(Y,t+dt,dt,YI);
 }
 
@@ -483,7 +484,10 @@ int RK4::Corrector(unsigned int start, unsigned int stop)
     for(unsigned int j=start; j < stop; j++) {
       y[j]=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+source[j]);
       if(!Active(errmask) || errmask[j])
-	CalcError(y0[j],y[j],y0[j]+dt*source2[j],y[j]);
+	CalcError(y0[j],y[j],
+  //		  y0[j]+sixthdt*(source0[j]+4.0*source1[j]+source3[j]),
+		  y0[j]+dt*source2[j],
+		  y[j]);
     }
   } else for(unsigned int j=start; j < stop; j++) 
     y[j]=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+source[j]);

@@ -25,7 +25,6 @@ public:
     Allocate(coeff1,ny,start,0);
     Allocator(ny);
   }
-  
 };
 
 template<class T>
