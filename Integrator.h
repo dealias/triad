@@ -9,6 +9,7 @@ protected:
   unsigned int ny;
   vector y,source;
   vector2 Y,Src,YI,Yout; // arrays of dependent fields
+  DynVector<unsigned int> NY; // number of variables in each field
   double t;
   double dt;
   double sample;
@@ -90,10 +91,11 @@ public:
   unsigned int Start(int field) {return Problem->Start(field);}
   unsigned int Stop(int field) {return Problem->Stop(field);}
   
-  void Allocator(const vector2& Y0, const ivector& mask);
+  void Allocator(const vector2& Y0, DynVector<unsigned int>* NY0,
+		 const ivector& mask);
   
   virtual void Allocator() {
-    Allocator(Problem->YVector(),Problem->ErrorMask());
+    Allocator(Problem->YVector(),Problem->Sizes(),Problem->ErrorMask());
   }
   virtual void Allocator(ProblemBase& problem) {
     SetProblem(problem);
@@ -105,12 +107,22 @@ public:
   virtual int Microfactor() {return 1;}
   virtual void TimestepDependence() {}
   
-  virtual void Unswap() {if(Yout[0] != Y[0]) set(Yout[0],Y[0],ny);}
+  virtual void Unswap() {
+    if(Yout != Y) set(Yout[0],Y[0],ny);
+  }
   
   void SetTime(double t0, double dt0) {
     t=t0;
     dt=dt0;
     TimestepDependence();
+  }
+  
+  const vector2& YVector() const {
+    return Y;
+  }
+  
+  void Sync(IntegratorBase *I) {
+    Set(Y,I->YVector());
   }
 };
 
@@ -211,14 +223,11 @@ protected:
   double halfdt;
 public:
   PC() {order=2;}
-  void Allocator(bool base) {
-    if(base) IntegratorBase::Allocator();
+  void Allocator() {
+    IntegratorBase::Allocator();
     Alloc(Y0,y0);
     Alloc0(Src0,source0);
     new_y0=1;
-  }
-  void Allocator() {
-    Allocator(true);
   }
   const char *Name() {return "Predictor-Corrector";}
   Solve_RC Solve();
@@ -287,13 +296,14 @@ public:
 
 class RK4 : public RK3 {
 protected:  
-  vector source2;
-  vector2 Src2;
+  vector source2,source3;
+  vector2 Src2,Src3;
 public:
   RK4() {order=4;}
   void Allocator() {
     RK3::Allocator();
     Alloc0(Src2,source2);
+    if(dynamic) Alloc0(Src3,source3);
   }
   const char *Name() {return "Fourth-Order Runge-Kutta";}
   void Predictor(unsigned int n0, unsigned int ny);
@@ -302,8 +312,8 @@ public:
 
 class RK5 : public RK4 {
 protected:
-  vector source3,source4;
-  vector2 Src3,Src4;
+  vector source4;
+  vector2 Src4;
   double a1,a2,a3,a4,a5;
   double b10;
   double b20,b21;
@@ -315,7 +325,8 @@ protected:
 public:
   RK5() {order=5;}
   void Allocator() {
-    RK4::Allocator();
+    RK3::Allocator();
+    Alloc0(Src2,source2);
     Alloc(Src3,source3,Src1,source1);
     Alloc0(Src4,source4);
   }

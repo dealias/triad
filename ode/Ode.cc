@@ -139,19 +139,20 @@ class TestIntegrator : public IntegratorBase {
   IntegratorBase *Integrator, *Integrator1, *Integrator2;
 public:  
   const char *Name() {return "Test";}
-//  void Unswap() {Integrator->Unswap();}
+  void Unswap() {Integrator->Unswap();}
   void Allocator() {
     IntegratorBase::Allocator();
     Integrator1=new PC;
     Integrator1->Allocator(*Problem);
     Integrator2=new PC;
     Integrator2->Allocator(*Problem);
+    Integrator=Integrator1;
   }
   Solve_RC Solve(IntegratorBase *Integrator0) {
+    Integrator0->Sync(Integrator);
     Integrator=Integrator0;
     Integrator->SetTime(t,dt);  // copy errmax as well
     Solve_RC rc=Integrator->Solve();
-//    Integrator->Unswap();
     return rc;
   }
   

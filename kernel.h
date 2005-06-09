@@ -81,6 +81,7 @@ class ProblemBase {
   unsigned int Size(int field) {return NY[field];}
   unsigned int Start(unsigned int field) {return index[field];}
   unsigned int Stop(unsigned int field) {return index[field]+NY[field];}
+  DynVector<unsigned int>* Sizes() {return &NY;}
   
   unsigned int Nfields() {return nfields;}
 

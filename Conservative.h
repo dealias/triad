@@ -224,7 +224,7 @@ inline int C_RK4<T>::Corrector()
   parent->ConservativeSource(Src,Y,t+dt);
   if(dynamic) {
     for(unsigned int j=start; j < stop; j++) {
-      Var pred=y[j];
+      Var pred=y[j]; // Fix me
       if(!Correct(y0[j],y[j],source0[j],source1[j],source2[j],source[j]))
 	return 0;
       if(!Array::Active(errmask) || errmask[j]) CalcError(y0[j],y[j],pred,y[j]);

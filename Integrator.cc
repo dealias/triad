@@ -139,7 +139,7 @@ void IntegratorBase::Alloc(vector2& Y0, vector& y)
   Allocate(Y0,nfields);
   Var *p=y;
   for(unsigned int i=0; i < nfields; i++) {
-    unsigned int n=Problem->Size(i);
+    unsigned int n=NY[i];
     Dimension(Y0[i],n,p);
     p += n;
   }
@@ -151,14 +151,17 @@ void IntegratorBase::Alloc0(vector2& Y, vector& y)
   for(unsigned int i=0; i < ny; i++) y[i]=0.0;
 }
 
-void IntegratorBase::Allocator(const vector2& Y0, const ivector& errmask0)
+void IntegratorBase::Allocator(const vector2& Y0, 
+			       DynVector<unsigned int>* NY0,
+			       const ivector& errmask0)
 {
   check_compatibility(DEBUG);
   
   unsigned int nfields=Y0.Size();
   ny=0;
+  NY.SetDynVector(*NY0);
   for(unsigned int i=0; i < nfields; i++)
-    ny += Problem->Size(i);
+    ny += NY[i];
   
   Dimension(Y,Y0);
   Alloc0(Src,source);
@@ -202,13 +205,9 @@ Solve_RC PC::Solve()
   errmax=0.0;
 	
   if(new_y0) {
-#if 0   
-    swaparray(Y0,Y); // TODO: Reinstate this optimization
+    swaparray(Y0,Y);
     Set(y,Y[0]);
     Set(y0,Y0[0]);
-#else    
-    set(Y0[0],Y[0],ny);
-#endif    
     Source(Src0,Y0,t);
   }
   Problem->Transform(Y0,t,dt,YI);
@@ -227,12 +226,8 @@ Solve_RC PC::Solve()
     Problem->BackTransform(Y,t+dt,dt,YI);
     Problem->Stochastic(Y,t,dt);
   } else if(Active(YI)) {
-#if 0    
     swaparray(Y0,YI);
     Set(y0,Y0[0]);
-#else    
-    set(YI[0],Y0[0],ny);
-#endif    
   }
   
   return flag;
@@ -481,13 +476,15 @@ int RK4::Corrector(unsigned int start, unsigned int stop)
   CSource(Src,Y,t+dt);
   if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
   if(dynamic) {
+    for(unsigned int j=start; j < stop; j++)	
+      y[j]=y0[j]+dt*(2.0*source1[j]-source0[j]);
+    Source(Src3,Y,t+dt);
     for(unsigned int j=start; j < stop; j++) {
-      y[j]=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+source[j]);
+      Var val=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+source[j]);
       if(!Active(errmask) || errmask[j])
-	CalcError(y0[j],y[j],
-  //		  y0[j]+sixthdt*(source0[j]+4.0*source1[j]+source3[j]),
-		  y0[j]+dt*source2[j],
-		  y[j]);
+	CalcError(y0[j],val,
+		  y0[j]+sixthdt*(source0[j]+4.0*source1[j]+source3[j]),val);
+      y[j]=val;
     }
   } else for(unsigned int j=start; j < stop; j++) 
     y[j]=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+source[j]);

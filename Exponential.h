@@ -292,8 +292,6 @@ template<class T>
 class E_RK4 : public RK4, public RK3_Exponential {
 protected:
   T *parent;
-  vector source3;
-  vector2 Src3;
 public:
   E_RK4(T *parent) : parent(parent) {order=4;}
   
@@ -307,7 +305,6 @@ public:
   
   void Allocator(unsigned int ny) {
     RK3_Exponential::Allocator(ny,start);
-    if(dynamic) Alloc0(Src3,source3);
   }
   
   Nu LinearCoeff(unsigned int j) {
