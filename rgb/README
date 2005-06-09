@@ -24,10 +24,12 @@ which are part of the ImageMagick package (from
 ftp://ftp.wizards.dupont.com/pub). For final production, I recommend the -m
 option, which uses the "mpeg" encoder to produce a highly compressed .mpg
 movie file.
+Alternatively, one can make an animated GIF with commands like
+rgb -extract gif C
+convert -loop 10 -delay 50 C*.gif animation.gif
+
 
 From the online-help:
-
-
 
 RGB version 1.25 [(C) John C. Bowman 2005]
 Usage: rgb [options] file1 [file2 ...]

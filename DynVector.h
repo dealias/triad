@@ -1,5 +1,5 @@
 /* Dynvector.h:  A simple dynamic vector class
-Copyright (C) 2001 John C. Bowman (bowman@math.ualberta.ca)
+Copyright (C) 2001 John C. Bowman and Malcolm Roberts
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
