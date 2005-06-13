@@ -135,14 +135,23 @@ public:
     } else return -1;
   }
   
-  // Pop v[i], close up, and return v[i].
+  // Pop v[i], close up, and return.
   int Pop(T& value, unsigned int i) {
     if(size) {
       value=v[i];
-     for (unsigned int j=i+1; j < size; j++) v[j-1]=v[j];
+      for (unsigned int j=i+1; j < size; j++) v[j-1]=v[j];
       size--;
       return 0;
     } else return -1;
+  }
+  
+  // Pop v[i], close up, and return v[i].
+  T *pop() {
+    if(size) {
+      --size;
+      return v+size;
+    }
+    else return NULL;
   }
   
   void Expand(unsigned int i) {if (i > alloc) Realloc(i);}
