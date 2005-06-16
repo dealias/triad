@@ -14,7 +14,7 @@ class Grid1 : public Grid<Array1<T>,T> {
   Array1<Real>::opt x;
   Real hx, hxinv, hx2, hx2inv;
  public:
-  Grid1() {radix=2; dimension=1;}
+  Grid1() {this->radix=2; this->dimension=1;}
   virtual ~Grid1() {};
 
   virtual Limits XMeshRange()=0;
@@ -32,15 +32,15 @@ class Grid1 : public Grid<Array1<T>,T> {
     Mesh(x,XMeshRange(),nx,nx1bc,nxbc,hx,hxinv,hx2,hx2inv,rx,
 	 offx,ox,i1,i1p,i2,i2p);
     if(!allocate) return;
-    d.Allocate(nxbc,ox);
-    if(level > 0) {
-      v.Allocate(nx1bc,ox);
-      if(nonlinear) v2.Allocate(nx1bc,ox);
+    this->d.Allocate(nxbc,ox);
+    if(this->level > 0) {
+      this->v.Allocate(nx1bc,ox);
+      if(this->nonlinear) this->v2.Allocate(nx1bc,ox);
     }
   }
 
-  virtual void Defect(const Array1<T>& d0, const Array1<T>& u, const
-		      Array1<T>& f)=0; 
+  virtual void Defect(const Array1<T>& d0, const Array1<T>& u,
+		      const Array1<T>& f)=0; 
   virtual void Smooth(const Array1<T>& u, const Array1<T>& f)=0;
 	
   virtual void GaussSeidel(const Array1<T>&, const Array1<T>&,
@@ -66,8 +66,8 @@ class Grid1 : public Grid<Array1<T>,T> {
   virtual inline void L0inv(const Array1<T>&, const Array1<T>&) {};
 	
   void Jacobi(const Array1<T>& u, const Array1<T>& f, Real omegah2) {
-    Defect(d,u,f);
-    for(int i=i1; i <= i2; i++) u[i] -= omegah2*d[i];
+    Defect(this->d,u,f);
+    for(int i=i1; i <= i2; i++) u[i] -= omegah2*this->d[i];
   }
 	
   void Lexicographical(const Array1<T>& u, const Array1<T>& f) {
@@ -90,13 +90,13 @@ class Grid1 : public Grid<Array1<T>,T> {
   void XDirichlet2(const Array1<T>&) {}
 	
   void XDirichlet(const Array1<T>& u, T b0, T b1) {
-    if(homogeneous) return;
+    if(this->homogeneous) return;
     u[i1-1]=b0;
     u[i2+1]=b1;
   }
 	
   void XDirichlet2(const Array1<T>& u, T b0, T b1) {
-    if(homogeneous) return;
+    if(this->homogeneous) return;
     u[i1-2]=2.0*b0-u[i1];
     u[i1-1]=b0;
     u[i2+1]=b1;
@@ -104,7 +104,7 @@ class Grid1 : public Grid<Array1<T>,T> {
   }
 	
   void XDirichlet(const Array1<T>& u, const Array1<T>& b, int contract=0) {
-    if(homogeneous) return;
+    if(this->homogeneous) return;
     int I2;
     if(contract) I2=i2p;
     else I2=i2;
@@ -114,7 +114,7 @@ class Grid1 : public Grid<Array1<T>,T> {
 	
   void XDirichlet2(const Array1<T>& u, const Array1<T>& b,
 		   int contract=0) {
-    if(homogeneous) return;
+    if(this->homogeneous) return;
     int I2;
     if(contract) I2=i2p;
     else I2=i2;

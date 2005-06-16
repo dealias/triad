@@ -18,7 +18,7 @@ class Grid3 : public Grid<Array3<T>,T> {
   Real hz, hzinv, hz2, hz2inv;
   Real hxyinv, hxzinv, hyzinv;
  public:
-  Grid3() {radix=2; dimension=3;}
+  Grid3() {this->radix=2; this->dimension=3;}
   virtual ~Grid3() {};
 
   virtual Limits XMeshRange()=0;
@@ -62,10 +62,10 @@ class Grid3 : public Grid<Array3<T>,T> {
 	 offz,oz,k1,k1p,k2,k2p);
     hxyinv=1.0/(hx*hy); hxzinv=1.0/(hx*hz); hyzinv=1.0/(hy*hz);
     if(!allocate) return;
-    d.Allocate(nxbc,nybc,nzbc,ox,oy,oz);
-    if(level > 0) {
-      v.Allocate(nx1bc,ny1bc,nz1bc,ox,oy,oz);
-      if(nonlinear) v2.Allocate(nx1bc,ny1bc,nz1bc,ox,oy,oz);
+    this->d.Allocate(nxbc,nybc,nzbc,ox,oy,oz);
+    if(this->level > 0) {
+      this->v.Allocate(nx1bc,ny1bc,nz1bc,ox,oy,oz);
+      if(this->nonlinear) this->v2.Allocate(nx1bc,ny1bc,nz1bc,ox,oy,oz);
     }
   }
 
@@ -150,9 +150,9 @@ class Grid3 : public Grid<Array3<T>,T> {
   virtual inline void L0inv(const Array3<T>&, const Array3<T>&) {};
 	
   void Jacobi(const Array3<T>& u, const Array3<T>& f, Real omegah2) {
-    Defect(d,u,f);
+    Defect(this->d,u,f);
     for(int i=i1; i <= i2; i++) {
-      Array2<T> di=d[i], ui=u[i];
+      Array2<T> di=this->d[i], ui=u[i];
       for(int j=j1; j <= j2; j++) {
 	typename Array1<T>::opt dij=di[j], uij=ui[j];
 	for(int k=k1; k <= k2; k++) {
@@ -248,12 +248,12 @@ class Grid3 : public Grid<Array3<T>,T> {
     }
   }
 	
-  virtual inline void BoundaryConditions(const Array3<T>& u)=0;
+  virtual void BoundaryConditions(const Array3<T>& u)=0;
 	
   void XDirichlet(const Array3<T>&) {}
 	
   void XDirichlet(const Array3<T>& u, T b0, T b1) {
-    if(homogeneous) return;
+    if(this->homogeneous) return;
     Array2<T> u0=u[i1-1], unx1=u[i2+1];
     for(int j=0; j < nybc; j++) {
       typename Array1<T>::opt u0j=u0[j], unx1j=unx1[j];
@@ -265,7 +265,7 @@ class Grid3 : public Grid<Array3<T>,T> {
   }
 	
   void XDirichlet(const Array3<T>& u, const Array3<T>& b, int contract=0) {
-    if(homogeneous) return;
+    if(this->homogeneous) return;
     int I2,ny0bc,nz0bc;
     if(contract) {I2=i2p; ny0bc=ny1bc; nz0bc=nz1bc;}
     else {I2=i2; ny0bc=nybc; nz0bc=nzbc;} 
@@ -338,7 +338,7 @@ class Grid3 : public Grid<Array3<T>,T> {
   void YDirichlet(const Array3<T>&) {}
 	
   void YDirichlet(const Array3<T>& u, T b0, T b1) {
-    if(homogeneous) return;
+    if(this->homogeneous) return;
     for(int i=0; i < nxbc; i++) {
       Array2<T> ui=u[i];
       typename Array1<T>::opt ui0=ui[j1-1], uiny1=ui[j2+1];
@@ -350,7 +350,7 @@ class Grid3 : public Grid<Array3<T>,T> {
   }
 	
   void YDirichlet(const Array3<T>& u, const Array3<T>& b, int contract=0) {
-    if(homogeneous) return;
+    if(this->homogeneous) return;
     int nx0bc,J2,nz0bc;
     if(contract) {nx0bc=nx1bc; J2=j2p; nz0bc=nz1bc;} 
     else {nx0bc=nxbc; J2=j2; nz0bc=nzbc;} 
@@ -404,7 +404,7 @@ class Grid3 : public Grid<Array3<T>,T> {
   void ZDirichlet(const Array3<T>&) {}
 		
   void ZDirichlet(const Array3<T>& u, T b0, T b1) {
-    if(homogeneous) return;
+    if(this->homogeneous) return;
     for(int i=0; i < nxbc; i++) {
       Array2<T> ui=u[i];
       for(int j=0; j < nybc; j++) {
@@ -416,7 +416,7 @@ class Grid3 : public Grid<Array3<T>,T> {
   }
 	
   void ZDirichlet(const Array3<T>& u, const Array3<T>& b, int contract=0) {
-    if(homogeneous) return;
+    if(this->homogeneous) return;
     int nx0bc,ny0bc,K2;
     if(contract) {nx0bc=nx1bc; ny0bc=ny1bc; K2=k2p;}
     else {nx0bc=nxbc; ny0bc=nybc; K2=k2;} 

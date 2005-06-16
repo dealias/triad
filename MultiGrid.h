@@ -166,8 +166,8 @@ class Grid {
   virtual void Smooth(const T& u, const T& f)=0;
   virtual void Restrict(const T& r, const T& u)=0;
   virtual void SubtractProlongation(const T& u, const T& v0)=0;
-  virtual inline void BoundaryConditions(const T&)=0;
-  virtual inline void L0inv(const T&, const T&)=0;
+  virtual void BoundaryConditions(const T&)=0;
+  virtual void L0inv(const T&, const T&)=0;
   virtual inline void SubtractKernel(const T&, const T&) {};
 	
   int Solve(const T& u, const T& f, int nu1=0, int gamma=1, int nu2=1,

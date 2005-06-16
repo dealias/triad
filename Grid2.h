@@ -16,7 +16,7 @@ class Grid2 : public Grid<Array2<T>,T> {
   Real hy, hyinv, hy2, hy2inv;
   Real hxyinv;
  public:
-  Grid2() {radix=2; dimension=2;}
+  Grid2() {this->radix=2; this->dimension=2;}
   virtual ~Grid2() {};
 	
   virtual Limits XMeshRange()=0;
@@ -47,10 +47,10 @@ class Grid2 : public Grid<Array2<T>,T> {
 	 offy,oy,j1,j1p,j2,j2p);
     hxyinv=1.0/(hx*hy);
     if(!allocate) return;
-    d.Allocate(nxbc,nybc,ox,oy);
-    if(level > 0) {
-      v.Allocate(nx1bc,ny1bc,ox,oy);
-      if(nonlinear) v2.Allocate(nx1bc,ny1bc,ox,oy);
+    this->d.Allocate(nxbc,nybc,ox,oy);
+    if(this->level > 0) {
+      this->v.Allocate(nx1bc,ny1bc,ox,oy);
+      if(this->nonlinear) this->v2.Allocate(nx1bc,ny1bc,ox,oy);
     }
   }
 
@@ -98,9 +98,9 @@ class Grid2 : public Grid<Array2<T>,T> {
   virtual inline void L0inv(const Array2<T>&, const Array2<T>&) {};
 	
   void Jacobi(const Array2<T>& u, const Array2<T>& f, Real omegah2) {
-    Defect(d,u,f);
+    Defect(this->d,u,f);
     for(int i=i1; i <= i2; i++) {
-      typename Array1<T>::opt di=d[i], ui=u[i];
+      typename Array1<T>::opt di=this->d[i], ui=u[i];
       for(int j=j1; j <= j2; j++) {
 	ui[j] -= omegah2*di[j];
       }
@@ -144,14 +144,14 @@ class Grid2 : public Grid<Array2<T>,T> {
     }
   }
 	
-  virtual inline void BoundaryConditions(const Array2<T>& u)=0;
+  virtual void BoundaryConditions(const Array2<T>& u)=0;
 	
   void XDirichlet(const Array2<T>&) {}
 	
   void XDirichlet2(const Array2<T>&) {}
 		
   void XDirichlet(const Array2<T>& u, T b0, T b1) {
-    if(homogeneous) return;
+    if(this->homogeneous) return;
     typename Array1<T>::opt u0=u[i1-1], unx1=u[i2+1];
     int nybco=nybc+oy;
     for(int j=oy; j < nybco; j++) {
@@ -161,7 +161,7 @@ class Grid2 : public Grid<Array2<T>,T> {
   }
 	
   void XDirichlet2(const Array2<T>& u, T b0, T b1) {
-    if(homogeneous) return;
+    if(this->homogeneous) return;
     typename Array1<T>::opt um1=u[i1-2], u0=u[i1-1], u1=u[i1];
     typename Array1<T>::opt unx=u[i2], unx1=u[i2+1], unx2=u[i2+2];
     int nybco=nybc+oy;
@@ -176,7 +176,7 @@ class Grid2 : public Grid<Array2<T>,T> {
   }
 	
   void XDirichlet(const Array2<T>& u, const Array2<T>& b, int contract=0) {
-    if(homogeneous) return;
+    if(this->homogeneous) return;
     int I2,nybco;
     if(contract) {I2=i2p; nybco=ny1bc+oy;} 
     else {I2=i2; nybco=nybc+oy;} 
@@ -189,7 +189,7 @@ class Grid2 : public Grid<Array2<T>,T> {
   }
 	
   void XDirichlet2(const Array2<T>& u, const Array2<T>& b, int contract=0) {
-    if(homogeneous) return;
+    if(this->homogeneous) return;
     int I2,nybco;
     if(contract) {I2=i2p; nybco=ny1bc+oy;} 
     else {I2=i2; nybco=nybc+oy;} 
@@ -306,7 +306,7 @@ class Grid2 : public Grid<Array2<T>,T> {
   void YDirichlet2(const Array2<T>&) {}
 	
   void YDirichlet(const Array2<T>& u, T b0, T b1) {
-    if(homogeneous) return;
+    if(this->homogeneous) return;
     int nxbco=nxbc+ox;
     for(int i=ox; i < nxbco; i++) {
       typename Array1<T>::opt ui=u[i];
@@ -316,7 +316,7 @@ class Grid2 : public Grid<Array2<T>,T> {
   }
 	
   void YDirichlet2(const Array2<T>& u, T b0, T b1) {
-    if(homogeneous) return;
+    if(this->homogeneous) return;
     int nxbco=nxbc+ox;
     T twob0=2.0*b0;
     T twob1=2.0*b1;
@@ -330,7 +330,7 @@ class Grid2 : public Grid<Array2<T>,T> {
   }
 	
   void YDirichlet(const Array2<T>& u, const Array2<T>& b, int contract=0) {
-    if(homogeneous) return;
+    if(this->homogeneous) return;
     int nxbco,J2;
     if(contract) {nxbco=nx1bc+ox; J2=j2p;} 
     else {nxbco=nxbc+ox; J2=j2;} 
@@ -343,7 +343,7 @@ class Grid2 : public Grid<Array2<T>,T> {
   }
 	
   void YDirichlet2(const Array2<T>& u, const Array2<T>& b, int contract=0) {
-    if(homogeneous) return;
+    if(this->homogeneous) return;
     int nxbco,J2;
     if(contract) {nxbco=nx1bc+ox; J2=j2p;} 
     else {nxbco=nxbc+ox; J2=j2;} 
