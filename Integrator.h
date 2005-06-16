@@ -57,6 +57,8 @@ public:
     Problem->Source(Src,Y,t);
   }
 	
+  virtual bool fsal() {return false;} // First Same As Last
+    
   virtual void PSource(const vector2& Src, const vector2& Y, double t) {
     Source(Src,Y,t);
   }
@@ -217,7 +219,7 @@ public:
 
 class PC : public IntegratorBase {
 protected:
-  int new_y0;
+  bool new_y0;
   vector y0,source0;
   vector2 Y0,Src0;
   double halfdt;
@@ -227,7 +229,7 @@ public:
     IntegratorBase::Allocator();
     Alloc(Y0,y0);
     Alloc0(Src0,source0);
-    new_y0=1;
+    new_y0=true;
   }
   const char *Name() {return "Predictor-Corrector";}
   Solve_RC Solve();
@@ -279,29 +281,65 @@ public:
 
 class RK3 : public PC {
 protected:  
+  vector source1,source2,source3;
+  vector2 Src1,Src2,Src3;
+  double a21;
+  double a32;
+  double b1,b2,b3;
+  double B1,B2,B3,B4;
+  double threefourthsdt;
+public:
+  RK3() {order=3;}
+  const char *Name() {return "Third-Order Bogacki-Shampine Runge-Kutta";}
+  
+  void Allocator() {
+    PC::Allocator();
+    Alloc0(Src1,source1);
+    Alloc0(Src2,source2);
+    if(dynamic) Alloc0(Src3,source3);
+  }
+  
+  void TimestepDependence();
+  
+  bool fsal() {
+    if(dynamic) {
+      swaparray(Src0,Src3);
+      Set(source0,Src0[0]);
+      Set(source3,Src3[0]);
+      return true;
+    }
+    return false;
+  }
+  
+  void Predictor(unsigned int n0, unsigned int ny);
+  int Corrector(unsigned int n0, unsigned int ny);
+};
+
+class RK3C : public PC {
+protected:  
   vector source1;
   vector2 Src1;
   double sixthdt;
 public:
-  RK3() {order=3;}
+  RK3C() {order=3;}
   void Allocator() {
     PC::Allocator();
     Alloc0(Src1,source1);
   }
-  const char *Name() {return "Third-Order Runge-Kutta";}
+  const char *Name() {return "Third-Order Classical Runge-Kutta";}
   void TimestepDependence();
   void Predictor(unsigned int n0, unsigned int ny);
   int Corrector(unsigned int n0, unsigned int ny);
 };
 
-class RK4 : public RK3 {
+class RK4 : public RK3C {
 protected:  
   vector source2,source3;
   vector2 Src2,Src3;
 public:
   RK4() {order=4;}
   void Allocator() {
-    RK3::Allocator();
+    RK3C::Allocator();
     Alloc0(Src2,source2);
     if(dynamic) Alloc0(Src3,source3);
   }
@@ -325,7 +363,7 @@ protected:
 public:
   RK5() {order=5;}
   void Allocator() {
-    RK3::Allocator();
+    RK3C::Allocator();
     Alloc0(Src2,source2);
     Alloc(Src3,source3,Src1,source1);
     Alloc0(Src4,source4);

@@ -164,6 +164,7 @@ public:
   DynVector<T>& operator = (T a) {Load(a); return *this;}
   DynVector<T>& operator = (const T *a) {Load(a); return *this;}
   DynVector<T>& operator = (const DynVector<T>& A) {
+    Realloc(A.size);
     Load(A()); 
     A.Purge();
     return *this;

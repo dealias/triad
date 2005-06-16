@@ -11,15 +11,15 @@ static const long double Coeff[]={1.0,1.0/2.0,1.0/6.0,1.0/24.0,1.0/120.0,
 				  1.0/1124000727777607680000.0};
 
 
-// (exp(x)-1)/x
+// phi1(x)=(exp(x)-1)/x
 
 #ifndef NEED_EXPM
-inline double expratio1(double x)
+inline double phi1(double x)
 {
   return (x != 0.0) ? expm1(x)/x : 1.0;
 } 
 #else
-inline double expratio1(double x)
+inline double phi1(double x)
 {
   if(fabs(x) > 1.0) return (exp(x)-1.0)/x;
   x *= 0.0625;
@@ -36,9 +36,9 @@ inline double expratio1(double x)
 }
 #endif
 
-// (exp(x)-1-x)/(x*x);
+// phi2(x)=(exp(x)-1-x)/(x*x);
 
-inline double expratio2(double x)
+inline double phi2(double x)
 {
   register long double x2=x*x;
   if(fabs(x) > 1.0) return (exp(x)-x-1.0)/x2;
@@ -57,9 +57,9 @@ inline double expratio2(double x)
   }
 }
 
-// (exp(x)-1-x-0.5*x*x)/(x*x*x)
+// phi3(x)=(exp(x)-1-x-0.5*x*x)/(x*x*x)
 
-inline double expratio3(double x)
+inline double phi3(double x)
 {
   register long double x2=x*x;
   register long double x3=x2*x;

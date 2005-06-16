@@ -36,6 +36,7 @@ public:
   void InitialConditions();
   void Initialize();
   void Output(int it);
+  void FinalOutput();
 	
   Nu LinearCoeff(unsigned int i) {
     return nu[i];
@@ -58,27 +59,9 @@ public:
     NonConservativeSource(Src,Y,t);
   }
   
-  class C_PC;
-  class C_RK2;
-  class C_RK4;
-  class C_RK5;
-  
-  class E_PC;
-  class E_RK2;
-  class E_RK3;
-  class E_RK4;
-  
   Ode() {
-    Table<IntegratorBase> *t=Ode_Vocabulary.IntegratorTable;
-    new entry<C_PC,IntegratorBase,Ode>("C_PC",t,this);
-    new entry<C_RK2,IntegratorBase,Ode>("C_RK2",t,this);
-    new entry<C_RK4,IntegratorBase,Ode>("C_RK4",t,this);
-    new entry<C_RK5,IntegratorBase,Ode>("C_RK5",t,this);
-    
-    new entry<E_PC,IntegratorBase,Ode>("E_PC",t,this);
-    new entry<E_RK2,IntegratorBase,Ode>("E_RK2",t,this);
-    new entry<E_RK3,IntegratorBase,Ode>("E_RK3",t,this);
-    new entry<E_RK4,IntegratorBase,Ode>("E_RK4",t,this);
+    ExponentialIntegrators(Ode_Vocabulary.IntegratorTable,this);
+    ConservativeIntegrators(Ode_Vocabulary.IntegratorTable,this);
   }
   
   void IndexLimits(unsigned int& start, unsigned int& stop,
@@ -89,46 +72,6 @@ public:
     stopN=0;
   }
   
-};
-
-class Ode::C_PC : public ::C_PC<Ode> {
-public:
-  C_PC(Ode *parent) : ::C_PC<Ode>(parent) {}
-};
-
-class Ode::C_RK2 : public ::C_RK2<Ode> {
-public:
-  C_RK2(Ode *parent) : ::C_RK2<Ode>(parent) {}
-};
-
-class Ode::C_RK4 : public ::C_RK4<Ode> {
-public:
-  C_RK4(Ode *parent) : ::C_RK4<Ode>(parent) {}
-};
-
-class Ode::C_RK5 : public ::C_RK5<Ode> {
-public:
-  C_RK5(Ode *parent) : ::C_RK5<Ode>(parent) {}
-};
-
-class Ode::E_PC : public ::E_PC<Ode> {
-public:
-  E_PC(Ode *parent) : ::E_PC<Ode>(parent) {}
-};
-
-class Ode::E_RK2 : public ::E_RK2<Ode> {
-public:
-  E_RK2(Ode *parent) : ::E_RK2<Ode>(parent) {}
-};
-
-class Ode::E_RK3 : public ::E_RK3<Ode> {
-public:
-  E_RK3(Ode *parent) : ::E_RK3<Ode>(parent) {}
-};
-
-class Ode::E_RK4 : public ::E_RK4<Ode> {
-public:
-  E_RK4(Ode *parent) : ::E_RK4<Ode>(parent) {}
 };
 
 Ode *OdeProblem;
@@ -213,13 +156,16 @@ void Ode::Output(int)
   fout << t << "\t" << abs(y[0]) << "\t" << endl;
 }
 
+unsigned int count=0;
 void Ode::NonLinearSource(const vector2& Src, const vector2& Y, double)
 {
+  count++;
   vector source=Src[0];
   vector y=Y[0];
 //  source[0]=cos(y[0]);
 //  source[0]=cos(t)*y[0];
-  source[0]=-A*y[0]-B*y[0]*y[0];
+//  source[0]=-A*y[0]-B*y[0]*y[0];
+    source[0]=-A*y[0]-B*exp(y[0].re);
 }
 
 void Ode::LinearSource(const vector2& Src, const vector2& Y, double)
@@ -227,4 +173,8 @@ void Ode::LinearSource(const vector2& Src, const vector2& Y, double)
   vector source=Src[0];
   vector y=Y[0];
   source[0] -= nu[0]*y[0];
+}
+
+void Ode::FinalOutput() {
+  cout << endl << "Number of source evaluations: " << count << endl;
 }

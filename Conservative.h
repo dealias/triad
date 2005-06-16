@@ -365,4 +365,12 @@ inline int C_RK5<T>::Corrector()
   return 1;
 }
 
+template<class T>
+void ConservativeIntegrators(Table<IntegratorBase> *t, T *parent) {
+  new entry<C_PC<T>,IntegratorBase,T>("C_PC",t,parent);
+  new entry<C_RK2<T>,IntegratorBase,T>("C_RK2",t,parent);
+  new entry<C_RK4<T>,IntegratorBase,T>("C_RK4",t,parent);
+  new entry<C_RK5<T>,IntegratorBase,T>("C_RK5",t,parent);
+}
+
 #endif

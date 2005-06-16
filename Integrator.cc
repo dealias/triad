@@ -26,7 +26,8 @@ void IntegratorBase::Integrate(double& t0, double tmax,
   // Don't dump or microprocess if sample is negative.
 {
   double dtold=0.0, dtorig=0.0;
-  int it,itx,cont;
+  int it,itx;
+  bool cont;
   int final=1;
   
   t=t0;
@@ -43,6 +44,8 @@ void IntegratorBase::Integrate(double& t0, double tmax,
   TimestepDependence();
   microprocess=(sample >= 0.0) ? Problem->Microprocess() : 0;
 	
+  Problem->Stochastic(true); // No FSAL for first step or with stochastic force
+  
   // Main integration loop
   for(it=0; it < itmax && (forwards ? t < tmax : t > tmax); it++) {
 		
@@ -85,19 +88,19 @@ void IntegratorBase::Integrate(double& t0, double tmax,
 	ChangeTimestep(tstop-t);
 	itx=microsteps-1; // This is the final iteration.
       }
-      cont=1;
+      cont=true;
       do {
 	switch(Solve()) {
 	case ADJUST:
 	  ExtrapolateTimestep();
 	  t += dt;
 	  ChangeTimestep(sign*max(min(sign*dt*growfactor,dtmax),dtmin));
-	  cont=0;
+	  cont=false;
 	  break;
 	case SUCCESSFUL:
 	  t += dt;
 	  if(dtold) {ChangeTimestep(dtold); dtold=0.0;}  
-	  cont=0;
+	  cont=false;
 	  break;
 	case NONINVERTIBLE:
 	  if(!dtold) dtold=dtorig ? dtorig : dt;
@@ -208,7 +211,8 @@ Solve_RC PC::Solve()
     swaparray(Y0,Y);
     Set(y,Y[0]);
     Set(y0,Y0[0]);
-    Source(Src0,Y0,t);
+    if(Problem->Stochastic() || !fsal())
+      Source(Src0,Y0,t);
   }
   Problem->Transform(Y0,t,dt,YI);
 	
@@ -219,12 +223,12 @@ Solve_RC PC::Solve()
     new_y0=(flag != UNSUCCESSFUL);
   } else {
     flag=NONINVERTIBLE;
-    new_y0=0;
+    new_y0=false;
   }
   
   if(new_y0) {
     Problem->BackTransform(Y,t+dt,dt,YI);
-    Problem->Stochastic(Y,t,dt);
+    Problem->Stochastic(Y0,t,dt);
   } else if(Active(YI)) {
     swaparray(Y0,YI);
     Set(y0,Y0[0]);
@@ -424,11 +428,47 @@ int RK2::Corrector(unsigned int start, unsigned int stop)
 
 void RK3::TimestepDependence()
 {
+  a21=0.5*dt;
+  a32=0.75*dt;
+  b1=2.0/9.0*dt; b2=1.0/3.0*dt; b3=4.0/9.0*dt;
+  if(dynamic) {
+    B1=7.0/24.0*dt; B2=0.25*dt; B3=1.0/3.0*dt; B4=0.125*dt;
+  }
+}
+
+void RK3::Predictor(unsigned int start, unsigned int stop)
+{
+  for(unsigned int j=start; j < stop; j++)	
+    y[j]=y0[j]+a21*source0[j];
+  PSource(Src1,Y,t+a21);
+  for(unsigned int j=start; j < stop; j++)	
+    y[j]=y0[j]+a32*source1[j];
+}
+
+int RK3::Corrector(unsigned int start, unsigned int stop)
+{
+  CSource(Src,Y,t+a32);
+  
+  for(unsigned int j=start; j < stop; j++)	
+    y[j]=y0[j]+b1*source0[j]+b2*source1[j]+b3*source[j];
+  
+  if(dynamic) {
+    CSource(Src3,Y,t+dt);
+    for(unsigned int j=start; j < stop; j++)
+      if(!Array::Active(errmask) || errmask[j])
+	CalcError(y0[j],y[j],y0[j]+B1*source0[j]+B2*source1[j]+B3*source[j]+
+		  B4*source3[j],y[j]);
+  }
+  return 1;
+}
+
+void RK3C::TimestepDependence()
+{
   PC::TimestepDependence();
   sixthdt=dt/6.0;
 }
 
-void RK3::Predictor(unsigned int start, unsigned int stop)
+void RK3C::Predictor(unsigned int start, unsigned int stop)
 {
   for(unsigned int j=start; j < stop; j++)
     y[j]=y0[j]+halfdt*source0[j];
@@ -437,15 +477,14 @@ void RK3::Predictor(unsigned int start, unsigned int stop)
     y[j]=y0[j]+dt*(2.0*source1[j]-source0[j]);
 }
 
-int RK3::Corrector(unsigned int start, unsigned int stop)
+int RK3C::Corrector(unsigned int start, unsigned int stop)
 {
   CSource(Src,Y,t+dt);
   if(dynamic) {
     for(unsigned int j=start; j < stop; j++) {
-      Var pred=y0[j]+dt*source1[j];
       y[j]=y0[j]+sixthdt*(source0[j]+4.0*source1[j]+source[j]);
       if(!Active(errmask) || errmask[j])
-	CalcError(y0[j],y[j],pred,y[j]);
+	CalcError(y0[j],y[j],y0[j]+dt*source1[j],y[j]);
     }
   } else {
     for(unsigned int j=start; j < stop; j++)
@@ -478,7 +517,7 @@ int RK4::Corrector(unsigned int start, unsigned int stop)
   if(dynamic) {
     for(unsigned int j=start; j < stop; j++)	
       y[j]=y0[j]+dt*(2.0*source1[j]-source0[j]);
-    Source(Src3,Y,t+dt);
+    CSource(Src3,Y,t+dt);
     for(unsigned int j=start; j < stop; j++) {
       Var val=y0[j]+sixthdt*(source0[j]+2.0*(source1[j]+source2[j])+source[j]);
       if(!Active(errmask) || errmask[j])

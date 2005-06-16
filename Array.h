@@ -251,7 +251,21 @@ class array1 {
   void Load(const T *a) const {memcpy(v,a,sizeof(T)*size);}
   void Store(T *a) const {memcpy(a,v,sizeof(T)*size);}
   void Set(T *a) {v=a; clear(allocated);}
-
+  T Min() {
+    if(size == 0)
+      ArrayExit("Cannot take minimum of empty array"); 
+    T min=v[0];
+    for(unsigned int i=1; i < size; i++) if(v[i] < min) min=v[i];
+    return min;
+  }
+  T Max() {
+    if(size == 0)
+      ArrayExit("Cannot take maximum of empty array"); 
+    T max=v[0];
+    for(unsigned int i=1; i < size; i++) if(v[i] > max) max=v[i];
+    return max;
+  }
+  
   istream& Input (istream &s) const {
     __checkSize();
     for(unsigned int i=0; i < size; i++) s >> v[i];
@@ -260,7 +274,7 @@ class array1 {
 	
   array1<T>& operator = (T a) {Load(a); return *this;}
   array1<T>& operator = (const T *a) {Load(a); return *this;}
-  array1<T>& operator = (const array1<T>& A) {
+  array1<T>& operator = (const array1<T>& A) { // Remove surprises here.
     __check(size,A.Size()+1,1,0);
     Load(A());
     A.Purge();

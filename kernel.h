@@ -69,6 +69,7 @@ class ProblemBase {
   const char *abbrev;
   ivector errmask;
   unsigned int nfields;
+  bool stochastic;
   
  public:	
   ProblemBase() {errmask=__NULLARRAY;}
@@ -110,7 +111,9 @@ class ProblemBase {
   virtual void Source(const vector2& Src, const vector2& Y, double t)=0;
   virtual void Transform(const vector2&, double, double, vector2&) {}
   virtual void BackTransform(const vector2&, double, double, const vector2&) {}
-  virtual void Stochastic(const vector2&, double, double) {}
+  virtual void Stochastic(const vector2&, double, double) {stochastic=false;}
+  virtual void Stochastic(bool b) {stochastic=b;}
+  virtual bool Stochastic() {return stochastic;}
   virtual void Initialize() {}
   virtual void Setup() {}
   virtual void FinalOutput() {}
