@@ -175,6 +175,8 @@ void IntegratorBase::Allocator(const vector2& Y0,
   
   pgrow=(order > 0) ? 0.5/order : 0;
   pshrink=(order > 1) ? 0.5/(order-1) : pgrow;
+  
+  Allocator();
 }
 
 Solve_RC Euler::Solve()
@@ -228,7 +230,7 @@ Solve_RC PC::Solve()
   
   if(new_y0) {
     Problem->BackTransform(Y,t+dt,dt,YI);
-    Problem->Stochastic(Y0,t,dt);
+    Problem->Stochastic(Y,t,dt);
   } else if(Active(YI)) {
     swaparray(Y0,YI);
     Set(y0,Y0[0]);

@@ -72,7 +72,7 @@ class ProblemBase {
   bool stochastic;
   
  public:	
-  ProblemBase() {errmask=__NULLARRAY;}
+  ProblemBase() {Array::Null(errmask);}
   virtual ~ProblemBase() {}
   void SetAbbrev(const char *abbrev0) {abbrev=abbrev0;}
   const char *Abbrev() {return abbrev;}
@@ -84,7 +84,7 @@ class ProblemBase {
   unsigned int Stop(unsigned int field) {return index[field]+NY[field];}
   DynVector<unsigned int>* Sizes() {return &NY;}
   
-  unsigned int Nfields() {return nfields;}
+  unsigned int NFields() {return nfields;}
 
   const ivector& ErrorMask() {return errmask;}
   

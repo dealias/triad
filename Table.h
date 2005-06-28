@@ -14,6 +14,7 @@ class EntryBase {
  protected:	
   const char *key;
  public:
+  virtual ~EntryBase() {}
   const char *Key() {return key;}
   virtual B* New()=0;
 };

@@ -206,4 +206,14 @@ public:
   }
 };
 
+template<class T>
+ostream& operator << (ostream& s, const DynVector<T>& A)
+{
+  T *p=A();
+  for(unsigned int i=0; i < A.Size(); i++) {
+    s << *(p++) << " ";
+  }
+  return s;
+}
+
 #endif

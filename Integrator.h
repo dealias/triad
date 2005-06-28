@@ -95,13 +95,10 @@ public:
   
   void Allocator(const vector2& Y0, DynVector<unsigned int>* NY0,
 		 const ivector& mask);
-  
-  virtual void Allocator() {
-    Allocator(Problem->YVector(),Problem->Sizes(),Problem->ErrorMask());
-  }
+  virtual void Allocator() {}
   virtual void Allocator(ProblemBase& problem) {
     SetProblem(problem);
-    Allocator();
+    Allocator(problem.YVector(),problem.Sizes(),problem.ErrorMask());
   }
   
   virtual const char *Name()=0;
@@ -180,7 +177,6 @@ protected:
   double halfdt;
 public:
   void Allocator() {
-  IntegratorBase::Allocator();
   Alloc(Y0,y0);
   halfdt=0.5*dt;
 }
@@ -200,7 +196,6 @@ class AdamsBashforth : public IntegratorBase {
 public:
   AdamsBashforth() {order=3;}
   void Allocator() {
-    IntegratorBase::Allocator();
     Alloc(Y0,y0);
     Alloc0(Src0,source0);
     Alloc0(Src1,source1);
@@ -226,7 +221,6 @@ protected:
 public:
   PC() {order=2;}
   void Allocator() {
-    IntegratorBase::Allocator();
     Alloc(Y0,y0);
     Alloc0(Src0,source0);
     new_y0=true;

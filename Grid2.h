@@ -61,7 +61,7 @@ class Grid2 : public Grid<Array2<T>,T> {
   virtual void GaussSeidel(const Array2<T>&, const Array2<T>&, int, int,
 			   int, int) {}; 
   virtual void XGaussSeidel(const Array2<T>&, const Array2<T>&, int, int) {};
-  virtual void YGaussSeidel(const Array2<T>&, const Array2<T>&, int, int)	{};
+  virtual void YGaussSeidel(const Array2<T>&, const Array2<T>&, int, int) {};
 
   virtual void Restrict(const Array2<T>& r, const Array2<T>& u) {
     if(&r != &u) {
@@ -85,7 +85,8 @@ class Grid2 : public Grid<Array2<T>,T> {
 				    const Array2<T>& v0) {
     for(int i=i1p; i <= i2p; i++) {
       int i0=rx*i+offx;
-      typename Array1<T>::opt vz=v0[i], vp=v0[i+1], uz=u[i0]+offy, up=u[i0+1]+offy;
+      typename Array1<T>::opt vz=v0[i], vp=v0[i+1], uz=u[i0]+offy,
+	up=u[i0+1]+offy;
       for(int j=j1p; j <= j2p; j++) {
 	uz[ry*j] -= vz[j];
 	up[ry*j] -= 0.5*(vz[j]+vp[j]);
@@ -193,8 +194,10 @@ class Grid2 : public Grid<Array2<T>,T> {
     int I2,nybco;
     if(contract) {I2=i2p; nybco=ny1bc+oy;} 
     else {I2=i2; nybco=nybc+oy;} 
-    typename Array1<T>::opt um1=u[i1-2], u0=u[i1-1], unx1=u[I2+1], unx2=u[I2+2];
-    typename Array1<T>::opt bm1=b[i1-2], b0=b[i1-1], bnx1=b[i2+1], bnx2=b[i2+2];
+    typename Array1<T>::opt um1=u[i1-2], u0=u[i1-1], unx1=u[I2+1],
+      unx2=u[I2+2];
+    typename Array1<T>::opt bm1=b[i1-2], b0=b[i1-1], bnx1=b[i2+1],
+      bnx2=b[i2+2];
     for(int j=oy; j < nybco; j++) {
       um1[j]=bm1[j];
       u0[j]=b0[j];
@@ -215,7 +218,8 @@ class Grid2 : public Grid<Array2<T>,T> {
 	
   void XNeumann2(const Array2<T>& u) {
     typename Array1<T>::opt um1=u[i1-2], u0=u[i1-1], u2=u[i1+1], u3=u[i1+2];
-    typename Array1<T>::opt unxm2=u[i2-2], unxm1=u[i2-1], unx1=u[i2+1], unx2=u[i2+2];
+    typename Array1<T>::opt unxm2=u[i2-2], unxm1=u[i2-1], unx1=u[i2+1],
+      unx2=u[i2+2];
     int nybco=nybc+oy;
     for(int j=oy; j < nybco; j++) {
       um1[j]=u3[j];
@@ -271,7 +275,8 @@ class Grid2 : public Grid<Array2<T>,T> {
   }
 	
   void XMixedB2(const Array2<T>& u) {
-    typename Array1<T>::opt unxm2=u[i2-2], unxm1=u[i2-1], unx1=u[i2+1], unx2=u[i2+2];
+    typename Array1<T>::opt unxm2=u[i2-2], unxm1=u[i2-1], unx1=u[i2+1],
+      unx2=u[i2+2];
     int nybco=nybc+oy;
     for(int j=oy; j < nybco; j++) {
       unx1[j]=unxm1[j];
@@ -291,7 +296,8 @@ class Grid2 : public Grid<Array2<T>,T> {
 	
   void XPeriodic2(const Array2<T>& u) {
     typename Array1<T>::opt um1=u[i1-2], u0=u[i1-1], u1=u[i1], u2=u[i1+1];
-    typename Array1<T>::opt unxm1=u[i2-1], unx=u[i2], unx1=u[i2+1], unx2=u[i2+2];
+    typename Array1<T>::opt unxm1=u[i2-1], unx=u[i2], unx1=u[i2+1],
+      unx2=u[i2+2];
     int nybco=nybc+oy;
     for(int j=oy; j < nybco; j++) {
       um1[j]=unxm1[j];

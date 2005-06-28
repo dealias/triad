@@ -13,6 +13,7 @@ class ParamBase {
   int nvar;
  public:
   ParamBase() {}
+  virtual ~ParamBase() {}
   virtual void Display(ostream& os)=0;
   virtual void Help(ostream& os)=0;
   virtual void GraphicsOutput(ostream& os, int pass=0)=0;
@@ -206,30 +207,42 @@ inline const char *atosc(const char *s)
   return atos(s);
 }
 
+template<>
 inline void Param<char *>::SetStr(const char *s) {get_values(s,&atos);}
+template<>
 inline void Param<const char *>::SetStr(const char *s) {get_values(s,&atosc);}
+template<>
 inline void Param<double>::SetStr(const char *s) {get_values(s,&atof);}
+template<>
 inline void Param<int>::SetStr(const char *s) {get_values(s,&atoi);}
+template<>
 inline void Param<unsigned int>::SetStr(const char *s) {get_values(s,&atou);}
+template<>
 inline void Param<Complex>::SetStr(const char *s) {get_values(s,&atoc);}
 
+template<>
 inline int Param<double>::InRange(double value)
 {
   return (min == max) || (value >= min && value <= max);
 }
 
+template<>
 inline int Param<int>::InRange(int value)
 {
   return (min == max) || (value >= min && value <= max);
 }
 
+template<>
 inline int Param<unsigned int>::InRange(unsigned int value)
 {
   return (min == max) || (value >= min && value <= max);
 }
 
+template<>
 inline int Param<const char *>::InRange(const char *) {return 1;}
+template<>
 inline int Param<char *>::InRange(char *) {return 1;}
+template<>
 inline int Param<Complex>::InRange(Complex) {return 1;}
 
 template<class T>
@@ -264,18 +277,27 @@ inline void Param<T>::get_values(const char *arg, T (*rtn)(const char *))
   } while ((ptr == optarg) ? 0 : (optarg=ptr+1));
 }
 	
+template<>
 inline void Param<unsigned int>::GraphicsOutput(ostream& os, int pass) {
   Out(os,"int",pass);
 }
+
+template<>
 inline void Param<int>::GraphicsOutput(ostream& os, int pass) {
   Out(os,"int",pass);
 }
+
+template<>
 inline void Param<double>::GraphicsOutput(ostream& os, int pass) {
   Out(os,"real",pass);
 }
+
+template<>
 inline void Param<Complex>::GraphicsOutput(ostream& os, int pass) {
   Out(os,"pair",pass);
 }
+
+template<>
 inline void Param<const char *>::GraphicsOutput(ostream& os, int pass) {
   Out(os,"string",pass,"\"");
 }
