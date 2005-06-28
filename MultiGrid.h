@@ -15,6 +15,7 @@ class BC {
   int poffset;// Offset to first prolongation point
  public:	
   BC() : offset(0), ioff(0), active(1), poffset(-1) {}
+  virtual ~BC() {};
   int Internal() const {return internal;}
   int External() const {return external;}
   int Offset() const {return offset;}
