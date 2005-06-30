@@ -210,9 +210,16 @@ Solve_RC PC::Solve()
   errmax=0.0;
 	
   if(new_y0) {
-    swaparray(Y0,Y);
+#if 0   
+    swaparray(Y0,Y); // TODO: Reinstate this optimization
     Set(y,Y[0]);
     Set(y0,Y0[0]);
+#else    
+    set(Y0[0],Y[0],ny);
+#endif    
+    cout << Y[0] << endl;
+    cout << Y0[0] << endl;
+    cout << endl;
     if(Problem->Stochastic() || !fsal())
       Source(Src0,Y0,t);
   }
@@ -232,8 +239,12 @@ Solve_RC PC::Solve()
     Problem->BackTransform(Y,t+dt,dt,YI);
     Problem->Stochastic(Y,t,dt);
   } else if(Active(YI)) {
+#if 0    
     swaparray(Y0,YI);
     Set(y0,Y0[0]);
+#else    
+    set(YI[0],Y0[0],ny);
+#endif    
   }
   
   return flag;
