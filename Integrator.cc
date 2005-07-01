@@ -217,9 +217,6 @@ Solve_RC PC::Solve()
 #else    
     set(Y0[0],Y[0],ny);
 #endif    
-    cout << Y[0] << endl;
-    cout << Y0[0] << endl;
-    cout << endl;
     if(Problem->Stochastic() || !fsal())
       Source(Src0,Y0,t);
   }
