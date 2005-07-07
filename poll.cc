@@ -2,6 +2,7 @@
 #include "kernel.h"
 
 #include <sys/stat.h>
+#include <unistd.h>
 
 extern VocabularyBase *Vocabulary;
 extern double polltime;
