@@ -91,11 +91,11 @@ public:
     Integrator2->Allocator(*Problem);
     Integrator=Integrator1;
   }
-  Solve_RC Solve(IntegratorBase *Integrator0) {
-    Integrator0->Sync(Integrator);
-    Integrator=Integrator0;
-    Integrator->SetTime(t,dt);  // copy errmax as well
-    Solve_RC rc=Integrator->Solve();
+  Solve_RC Solve(IntegratorBase *I) {
+    I->Sync(Integrator);
+    Integrator=I;
+    I->SetTime(t,dt);  // copy errmax as well
+    Solve_RC rc=I->Solve();
     return rc;
   }
   

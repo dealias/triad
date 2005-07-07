@@ -210,13 +210,9 @@ Solve_RC PC::Solve()
   errmax=0.0;
 	
   if(new_y0) {
-#if 0   
-    swaparray(Y0,Y); // TODO: Reinstate this optimization
+    swaparray(Y0,Y);
     Set(y,Y[0]);
     Set(y0,Y0[0]);
-#else    
-    set(Y0[0],Y[0],ny);
-#endif    
     if(Problem->Stochastic() || !fsal())
       Source(Src0,Y0,t);
   }
@@ -236,12 +232,8 @@ Solve_RC PC::Solve()
     Problem->BackTransform(Y,t+dt,dt,YI);
     Problem->Stochastic(Y,t,dt);
   } else if(Active(YI)) {
-#if 0    
     swaparray(Y0,YI);
     Set(y0,Y0[0]);
-#else    
-    set(YI[0],Y0[0],ny);
-#endif    
   }
   
   return flag;
@@ -299,7 +291,64 @@ int SYM2::Corrector(unsigned int start, unsigned int stop)
   return 1;
 }
 
-Solve_RC AdamsBashforth::Solve()
+Solve_RC AB2::Solve()
+{
+  Solve_RC flag=UNSUCCESSFUL;
+  errmax=0.0;
+  
+  swaparray(Y0,Y);
+  Set(y,Y[0]);
+  Set(y0,Y0[0]);
+  
+  switch(init) {
+  case 0:
+    {
+    Source(Src0,Y0,t);
+    Problem->Transform(Y0,t,dt,YI);
+    if(dynamic) {
+      for(unsigned int j=0; j < ny; j++) {
+	Var temp=y0[j]+a0*source0[j]+a1*source[j];
+	CalcError(y0[j],temp,y0[j]+dt*source0[j],temp);
+	y[j]=temp;
+      }
+      flag=CheckError();
+    } else {
+      for(unsigned int j=0; j < ny; j++) {
+	y[j]=y0[j]+a0*source0[j]+a1*source[j];
+      }
+      flag=SUCCESSFUL;
+    }
+    if (flag != UNSUCCESSFUL) Problem->BackTransform(Y,t+dt,dt,YI);
+    swaparray(Src,Src0);
+    Set(source0,Src0[0]);
+    Set(source,Src[0]);
+    break;
+    }
+  case 1:
+    {
+    Set(source0,Src0[0]);
+    Set(source,Src[0]);
+    // Initialize with 2nd-order predictor-corrector
+    Source(Src0,Y0,t);
+    Problem->Transform(Y0,t,dt,YI);
+    for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+dt*source0[j];
+    Problem->BackTransform(Y,t+dt,dt,YI);
+    Source(Src,Y,t);
+    double halfdt=0.5*dt;
+    for(unsigned int j=0; j < ny; j++) 
+      y[j]=y0[j]+halfdt*(source0[j]+source[j]);
+    Problem->BackTransform(Y,t+dt,dt,YI);
+    flag=SUCCESSFUL;
+    init--;
+    break;
+    }
+  }
+  
+  Problem->Stochastic(Y,t,dt);
+  return flag;
+}
+
+Solve_RC ABM3::Solve()
 {
   Solve_RC flag=UNSUCCESSFUL;
   errmax=0.0;
@@ -343,7 +392,7 @@ Solve_RC AdamsBashforth::Solve()
     {
     Set(source0,Src0[0]);
     Set(source,Src[0]);
-    // Initialize with 2nd-order predictor-corrector **IMPROVE: USE RK4?**
+    // Initialize with 2nd-order predictor-corrector **IMPROVE: USE RK3C?**
     Source(Src0,Y0,t);
     Problem->Transform(Y0,t,dt,YI);
     for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+dt*source0[j];

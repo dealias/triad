@@ -187,14 +187,35 @@ public:
   Solve_RC Solve();
 };
 
-class AdamsBashforth : public IntegratorBase {
+class AB2 : public IntegratorBase {
+  vector y0,source0,source1;
+  vector2 Y0,Src0,Src1;
+  double a0,a1;
+  int init;
+public:
+  AB2() {order=2;}
+  void Allocator() {
+    Alloc(Y0,y0);
+    Alloc0(Src0,source0);
+    Alloc0(Src1,source1);
+  }
+  const char *Name() {return "Second-Order Adams-Bashforth";}
+  Solve_RC Solve();
+  void TimestepDependence() {
+    init=1;
+    a0=1.5*dt;
+    a1=-0.5*dt;
+  }
+};
+
+class ABM3 : public IntegratorBase {
   vector y0,source0,source1;
   vector2 Y0,Src0,Src1;
   double a0,a1,a2;
   double b0,b1,b2;
   int init;
 public:
-  AdamsBashforth() {order=3;}
+  ABM3() {order=3;}
   void Allocator() {
     Alloc(Y0,y0);
     Alloc0(Src0,source0);

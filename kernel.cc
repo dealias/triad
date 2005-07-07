@@ -120,7 +120,8 @@ VocabularyBase::VocabularyBase()
   INTEGRATOR(Exact);
   INTEGRATOR(Euler);
   INTEGRATOR(Midpoint);
-  INTEGRATOR(AdamsBashforth);
+  INTEGRATOR(AB2);
+  INTEGRATOR(ABM3);
   INTEGRATOR(PC);
   INTEGRATOR(LeapFrog);
   INTEGRATOR(RK2);
