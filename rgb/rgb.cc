@@ -18,7 +18,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 const char PROGRAM[]="RGB";
-const char VERSION[]="1.25";
+const char VERSION[]="1.26";
 
 #include "xstream.h"
 #include <iostream>
@@ -78,6 +78,7 @@ int nx1=1,ny1=1,nz1=1;
 int nx,ny,nz;
 int sx=1,sy=1;
 int byte=0;
+int double_precision=0;
 int display=0;
 int implicit=1;
 int backwards=0;
@@ -188,7 +189,7 @@ void openfield(T& fin, const char *fieldname, int& nx, int& ny, int& nz)
 				
 }
 
-int readframe(ixstream& xin, int nx, int ny, int nz, array3<float> value,
+int readframe(ixstream& xin, int nx, int ny, int nz, array3<double> value,
 	      double& gmin, double& gmax, double *vmink, double *vmaxk)
 {
   gmin=DBL_MAX; gmax=-DBL_MAX;
@@ -198,7 +199,7 @@ int readframe(ixstream& xin, int nx, int ny, int nz, array3<float> value,
   errno=0;
   for(int k=0; k < nz; k++) {
     if(floating_section) {vmin=DBL_MAX; vmax=-DBL_MAX;}
-    array2<float> valuek=value[k];
+    array2<double> valuek=value[k];
     int start,stop,incr;
     if(invert) {
       start=ny1-1;
@@ -225,20 +226,27 @@ int readframe(ixstream& xin, int nx, int ny, int nz, array3<float> value,
 			
       int init=0;
       if((j-start) % sy == 0) {j0 += incr; init=1;}
-      array1<float>::opt valuekj=valuek[j0];
+      array1<double>::opt valuekj=valuek[j0];
       if(init) for(int i0=0; i0 < nx; i0++) valuekj[i0]=0.0;
 			
       Real sumv=0.0;
       int i0=0;
       for(int i=0; i < nx1; i++) {
-	float v;
+	double v;
 	if(byte) {
 	  xbyte x;
 	  xin >> x;
 	  v=x;
-	}
-	else xin >> v;
-				
+	} else {
+	  if(double_precision) {
+	    xin >> v;
+	  } else {
+	    float v0;
+	    xin >> v0;
+	    v=v0;
+	  }
+	}		
+	
 	if(xin.eof()) {
 	  if(implicit || i > 0)
 	    msg(WARNING,"End of file during processing");
@@ -316,6 +324,7 @@ void options()
   cerr << "Options: " << endl;
   cerr << "-b\t\t single-byte (unsigned char instead of float) input"
        << endl;
+  cerr << "-d\t\t double precision (instead of float) input" << endl;
   cerr << "-f\t\t use a floating scale for each frame" << endl;
   cerr << "-g\t\t produce grey-scale output" << endl;
   cerr << "-h\t\t help" << endl;
@@ -558,7 +567,7 @@ int main(int argc, char *argv[])
   errno=0;
   for (;;) {
     int c = getopt_long_only(argc,argv,
-			     "2bfghilmprvFo:x:H:V:B:E:L:O:U:S:X:Y:Z:",
+			     "2bdfghilmprvFo:x:H:V:B:E:L:O:U:S:X:Y:Z:",
 			     long_options,&option_index);
     if (c == -1) break;
     int nargs;
@@ -568,6 +577,9 @@ int main(int argc, char *argv[])
       break;
     case 'b':
       byte=1;
+      break;
+    case 'd':
+      double_precision=1;
       break;
     case '2':
       two=1;
@@ -972,7 +984,7 @@ int main(int argc, char *argv[])
     if(verbose) cerr << "Producing image of dimensions " << xsize << " x " 
 		     << ysize << "." << endl;
     
-    array3<float> value,value2,value3;
+    array3<double> value,value2,value3;
     value.Allocate(nz,ny,nx);
     if(vector) value2.Allocate(nz,ny,nx);
     if(vector3) value3.Allocate(nz,ny,nx);
