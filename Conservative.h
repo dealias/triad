@@ -61,7 +61,10 @@ public:
   
   virtual int Corrector(unsigned int, unsigned int) {
     int rc=C_PC<T>::Corrector();
+    int dynamic_save=dynamic;
+    dynamic=0;
     if(rc) rc=PC::Corrector(startN,stopN);
+    dynamic=dynamic_save;
     return rc;
   }
 };
@@ -275,7 +278,10 @@ public:
   
   virtual int Corrector(unsigned int, unsigned int) {
     int rc=C_RK5<T>::Corrector();
+    int dynamic_save=dynamic;
+    dynamic=0;
     if(rc) rc=PC::Corrector(startN,stopN);
+    dynamic=dynamic_save;
     return rc;
   }
 };

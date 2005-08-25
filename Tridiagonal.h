@@ -20,7 +20,7 @@ inline void CheckReallocate(T& A, S& B, U& C,
 }
 
 // Solve the problem Lu=f for u given f, subject to the Dirichlet boundary
-// condtions u[0]=u_0 and u[n+1]=u_{n+1},
+// conditions u[0]=u_0 and u[n+1]=u_{n+1},
 // where L is the n x (n+2) matrix
 //
 // [c1 a1 b1              ]
@@ -240,7 +240,7 @@ inline void tridiagonalp(unsigned int n,
 // [ a1 b1          c1 ]
 // [ c2 a2 b2          ]
 // [    c3 a3 b3       ]
-// [         ...       ]
+// [           ...     ]
 // [ bn          cn an ]
 //
 // where a_i+b_i+c_i=0 for i=1,...,n.
@@ -459,7 +459,7 @@ inline void mtridiagonalp(unsigned int n,
 }
 
 // Solve the problem Lu=f for u given f, subject to the Dirichlet boundary
-// condtions u[0]=u_0 and u[n+1]=u_{n+1},
+// conditions u[0]=u_0 and u[n+1]=u_{n+1},
 // where L is the n x (n+2) matrix
 //
 // [b a b           ]

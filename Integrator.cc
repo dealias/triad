@@ -643,11 +643,12 @@ int RK5::Corrector(unsigned int start, unsigned int stop)
   if(dynamic) {
     //#pragma ivdep		
     for(unsigned int j=start; j < stop; j++) {
-      y[j]=y0[j]+c0*source0[j]+c2*source2[j]+c3*source3[j]+c5*source[j];
+      Var val=y0[j]+c0*source0[j]+c2*source2[j]+c3*source3[j]+c5*source[j];
       if(!Active(errmask) || errmask[j]) {
-	Var pred=y0[j]+d0*source0[j]+d2*source2[j]+
-	  d3*source3[j]+d4*source4[j]+d5*source[j];
-	CalcError(y0[j],y[j],pred,y[j]);
+	Var pred=y0[j]+d0*source0[j]+d2*source2[j]+d3*source3[j]+d4*source4[j]+
+	  d5*source[j];
+	CalcError(y0[j],val,pred,val);
+	y[j]=val;
       }
     }
   } else {

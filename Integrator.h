@@ -71,6 +71,7 @@ public:
 		 const Var& corr);
   Solve_RC CheckError();
   
+  // Add tolgood to inhibit time step adjustment.
   virtual void ExtrapolateTimestep () {
     if(errmax < tolmin2) {
       if(errmax) growfactor=pow(tolmin2/errmax,pgrow);

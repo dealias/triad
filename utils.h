@@ -368,41 +368,8 @@ const int default_nperline=4;
 const char *const outerror="Cannot write %s to output stream";
 
 template<class T>	
-inline void out_curve(oxstream& os, T *f, const char *text, unsigned int n,
-		      int)
-{
-  os << n;
-  for(unsigned int i=0; i < n; i++) os << f[i];
-  if(!os) msg(WARNING,outerror,text);
-}
-
-template<class T>
-inline void out_function(oxstream& os, T (*f)(unsigned int), const char *text, 
-			 unsigned int n, int) 
-{
-  os << n;
-  for(unsigned int i=0; i < n; i++) os << (*f)(i);
-  if(!os) msg(WARNING,outerror,text);
-}
-
-template<class T>
-inline void out_function(ostream& os, T (*f)(unsigned int), const char *text,
-			 unsigned int n, int nperline)
-{
-  unsigned int i;
-  os << "# " << text << newl;
-  if(n == 0) return;
-  for(i=0; i < n-1;) {
-    os << (*f)(i);
-    if(++i % nperline) os << "\t"; else os << " \\\n";
-  }
-  os << (*f)(n-1) << newl;
-  if(!os) msg(WARNING,outerror,text);
-}
-
-template<class T>	
-inline void out_curve(ostream& os, T *f, const char *text, unsigned int n,
-		      int nperline)
+inline void out_curve(ofstream& os, T *f, const char *text, unsigned int n=1,
+		      int nperline=default_nperline)
 {
   unsigned int i;
   os << "# " << text << newl;
@@ -415,89 +382,50 @@ inline void out_curve(ostream& os, T *f, const char *text, unsigned int n,
   if(!os) msg(WARNING,outerror,text);
 }
 
-template<class S>
-inline void out_function(S& os, Real (*f)(unsigned int), const char *text,
-			 unsigned int n)
+template<class T>	
+inline void out_curve(oxstream& os, T *f, const char *text, unsigned int n=1,
+		      int=default_nperline)
 {
-  out_function(os,f,text,n,default_nperline);
+  os << n;
+  for(unsigned int i=0; i < n; i++) os << f[i];
+  if(!os) msg(WARNING,outerror,text);
 }
-	
-template<class S, class T>
-inline void out_curve(S& os, T *f, const char *text, unsigned int n)
+
+template<class T>
+inline void out_curve(ofstream& os, T (*f)(unsigned int), const char *text,
+		      unsigned int n, int nperline=default_nperline)
 {
-  out_curve(os,f,text,n,default_nperline);
+  unsigned int i;
+  os << "# " << text << newl;
+  if(n == 0) return;
+  for(i=0; i < n-1;) {
+    os << (*f)(i);
+    if(++i % nperline) os << "\t"; else os << " \\\n";
+  }
+  os << (*f)(n-1) << newl;
+  if(!os) msg(WARNING,outerror,text);
+}
+
+template<class T>
+inline void out_curve(oxstream& os, T (*f)(unsigned int), const char *text,
+		      unsigned int n, int=default_nperline) 
+{
+  os << n;
+  for(unsigned int i=0; i < n; i++) os << (*f)(i);
+  if(!os) msg(WARNING,outerror,text);
 }
 
 template<class S, class T>
-inline void out_curve(S& os, T f, const char *text)
+inline void out_curve(S& os, T f, const char *text,
+		      int nperline=default_nperline)
 {
-  out_curve(os,&f,text,(unsigned int) 1,default_nperline);
-}
-
-template<class S>
-void out_real(S& os, Real *f, const char *textre, const char *,
-	      unsigned int n, int nperline) 
-{
-  out_curve(os,f,textre,n,nperline);
-}
-
-template<class S>
-void out_real(S& os, Real *f, const char *textre, const char *, unsigned int n)
-{
-  out_curve(os,f,textre,n,default_nperline);
-}
-
-template<class S>
-inline void out_function(S& os, Real (*f)(unsigned int), const char *text,
-			 int n)
-{
-  if(n >= 0) out_function(os,f,text,(unsigned int) n,default_nperline);
-}
-	
-template<class S, class T>
-inline void out_curve(S& os, T *f, const char *text, int n)
-{
-  if(n >= 0) out_curve(os,f,text,(unsigned int) n,default_nperline);
-}
-
-template<class S>
-void out_real(S& os, Real *f, const char *textre, const char *,
-	      int n, int nperline) 
-{
-  if(n >= 0) out_curve(os,f,textre,(unsigned int) n,nperline);
-}
-
-template<class S>
-void out_real(S& os, Real *f, const char *textre, const char *, int n)
-{
-  if(n >= 0) out_curve(os,f,textre,(unsigned int) n,default_nperline);
-}
-
-extern Complex *out_base;
-Real out_re(unsigned int i);
-Real out_im(unsigned int i);
-
-template<class S>
-void out_real(S& os, Complex *f, const char *textre, const char *textim,
-	      unsigned int n, int nperline) 
-{
-  out_base=f;
-  out_function(os,out_re,textre,n,nperline);
-  out_function(os,out_im,textim,n,nperline);
-}
-
-template<class S>
-void out_real(S& os, Complex *f, const char *textre, const char *textim,
-	      unsigned int n)
-{
-  out_base=f;
-  out_function(os,out_re,textre,n,default_nperline);
-  out_function(os,out_im,textim,n,default_nperline);
+  out_curve(os,&f,text,1,nperline);
 }
 
 inline double drand()
 {			  
-  return ((double) rand())/RAND_MAX;
+  static const double factor=1.0/RAND_MAX;
+  return rand()*factor;
 }
 
 double drand_gauss();
