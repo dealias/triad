@@ -250,9 +250,10 @@ int PC::Corrector(unsigned int start, unsigned int stop)
   CSource(Src,Y,t+dt);
   if(dynamic) {
     for(unsigned int j=start; j < stop; j++) {
-      y[j]=y0[j]+halfdt*(source0[j]+source[j]);
+      Var val=y0[j]+halfdt*(source0[j]+source[j]);
       if(!Active(errmask) || errmask[j])
-	CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
+	CalcError(y0[j],val,y0[j]+dt*source0[j],val);
+      y[j]=val;
     }
   } else for(unsigned int j=start; j < stop; j++) {
     y[j]=y0[j]+halfdt*(source0[j]+source[j]);
@@ -307,9 +308,9 @@ Solve_RC AB2::Solve()
     Problem->Transform(Y0,t,dt,YI);
     if(dynamic) {
       for(unsigned int j=0; j < ny; j++) {
-	Var temp=y0[j]+a0*source0[j]+a1*source[j];
-	CalcError(y0[j],temp,y0[j]+dt*source0[j],temp);
-	y[j]=temp;
+	Var val=y0[j]+a0*source0[j]+a1*source[j];
+	CalcError(y0[j],val,y0[j]+dt*source0[j],val);
+	y[j]=val;
       }
       flag=CheckError();
     } else {
@@ -372,9 +373,9 @@ Solve_RC ABM3::Solve()
     Source(Src,Y,t);
     if(dynamic) {
       for(unsigned int j=0; j < ny; j++) {
-	Var temp=y0[j]+b0*source[j]+b1*source0[j]+b2*source1[j];
-	CalcError(y0[j],temp,y[j],temp);
-	y[j]=temp;
+	Var val=y0[j]+b0*source[j]+b1*source0[j]+b2*source1[j];
+	CalcError(y0[j],val,y[j],val);
+	y[j]=val;
       }
       flag=CheckError();
     } else {
@@ -453,9 +454,10 @@ int LeapFrog::Corrector(unsigned int start, unsigned int stop)
   CSource(Src,YP,t+halfdt);
   if(dynamic) {
     for(unsigned int j=start; j < stop; j++) {
-      y[j]=y0[j]+dt*source[j];
+      Var val=y0[j]+dt*source[j];
       if(!Active(errmask) || errmask[j]) 
-	CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
+	CalcError(y0[j],val,y0[j]+dt*source0[j],val);
+      y[j]=val;
     }
   } else for(unsigned int j=start; j < stop; j++)
     y[j]=y0[j]+dt*source[j];
@@ -475,9 +477,10 @@ int RK2::Corrector(unsigned int start, unsigned int stop)
   CSource(Src,Y,t+halfdt);
   if(dynamic) {
     for(unsigned int j=start; j < stop; j++) {
-      y[j]=y0[j]+dt*source[j];
+      Var val=y0[j]+dt*source[j];
       if(!Active(errmask) || errmask[j])
-	CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
+	CalcError(y0[j],val,y0[j]+dt*source0[j],val);
+      y[j]=val;
     }
   } else for(unsigned int j=start; j < stop; j++)
     y[j]=y0[j]+dt*source[j];
@@ -541,9 +544,10 @@ int RK3C::Corrector(unsigned int start, unsigned int stop)
   CSource(Src,Y,t+dt);
   if(dynamic) {
     for(unsigned int j=start; j < stop; j++) {
-      y[j]=y0[j]+sixthdt*(source0[j]+4.0*source1[j]+source[j]);
+      Var val=y0[j]+sixthdt*(source0[j]+4.0*source1[j]+source[j]);
       if(!Active(errmask) || errmask[j])
-	CalcError(y0[j],y[j],y0[j]+dt*source1[j],y[j]);
+	CalcError(y0[j],val,y0[j]+dt*source1[j],val);
+      y[j]=val;
     }
   } else {
     for(unsigned int j=start; j < stop; j++)
@@ -645,9 +649,8 @@ int RK5::Corrector(unsigned int start, unsigned int stop)
     for(unsigned int j=start; j < stop; j++) {
       Var val=y0[j]+c0*source0[j]+c2*source2[j]+c3*source3[j]+c5*source[j];
       if(!Active(errmask) || errmask[j]) {
-	Var pred=y0[j]+d0*source0[j]+d2*source2[j]+d3*source3[j]+d4*source4[j]+
-	  d5*source[j];
-	CalcError(y0[j],val,pred,val);
+	CalcError(y0[j],val,y0[j]+d0*source0[j]+d2*source2[j]+d3*source3[j]+
+		  d4*source4[j]+d5*source[j],val);
 	y[j]=val;
       }
     }

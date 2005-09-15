@@ -1439,6 +1439,17 @@ inline void Null(array1<T>& A)
 }
 
 template<class T>
+inline void Dimension(T *&A, unsigned int)
+{
+}
+
+template<class T>
+inline void Dimension(array1<T> &A, unsigned int n)
+{
+  A.Dimension(n);
+}
+
+template<class T>
 inline void Dimension(T *&A, unsigned int, T *v)
 {
   A=v;
