@@ -91,6 +91,16 @@ public:
     parent->IndexLimits(start,stop,startN,stopN);
   }
   
+  
+#if 0
+  bool fsal() {
+    swaparray(Src0,Src);
+    Set(source0,Src0[0]);
+    Set(source,Src[0]);
+    return true;
+  }
+#endif
+  
   inline bool Correct(Real y0, Real& y, Real source);
   inline bool Correct(const Complex& y0, Complex& y, const Complex& source);
   
@@ -100,16 +110,22 @@ public:
   
   inline void Predictor();
   
-  void Predictor(unsigned int start, unsigned int stop) {
+  // TODO: Optimize memory usage here.
+  void Predictor(unsigned int, unsigned int) {
     RK2::Predictor(start,stop);
-    PC::Predictor(startN,stopN);
   }
   
   inline int Corrector();
   
   virtual int Corrector(unsigned int, unsigned int) {
     int rc=C_RK2<T>::Corrector();
-    if(rc) rc=PC::Corrector(startN,stopN);
+//    cout << errmax << endl;
+//    errmax=0;
+    if(rc) {
+      Source(Src,Y,t+dt);
+      PC::Corrector(startN,stopN);
+    }
+//    cout << errmax << endl;
     return rc;
   }
 };
@@ -141,14 +157,14 @@ inline int C_RK2<T>::Corrector()
   parent->ConservativeSource(Src,Y,t+halfdt);
   if(dynamic) {
     for(unsigned int j=start; j < stop; j++) {
-      Var val;
+      Var val=y[j];
       if(!Correct(y0[j],val,source[j])) return 0;
       if(!Array::Active(errmask) || errmask[j])
 	CalcError(y0[j],val,y0[j]+dt*source0[j],val);
       y[j]=val;
     }
   } else for(unsigned int j=start; j < stop; j++) {
-    if(!Correct(y0[j],y[j],source[j])) return 0;
+      if(!Correct(y0[j],y[j],source[j])) return 0;
   }
   
   return 1;
@@ -181,16 +197,18 @@ public:
   
   inline void Predictor();
   
-  void Predictor(unsigned int start, unsigned int stop) {
+  void Predictor(unsigned int, unsigned int) {
     RK4::Predictor(start,stop);
-    PC::Predictor(startN,stopN);
   }
   
   inline int Corrector();
   
   virtual int Corrector(unsigned int, unsigned int) {
     int rc=C_RK4<T>::Corrector();
-    if(rc) rc=PC::Corrector(startN,stopN);
+    if(rc) {
+      Source(Src,Y,t+dt);
+      PC::Corrector(startN,stopN);
+    }
     return rc;
   }
 };
@@ -285,21 +303,22 @@ public:
 		      const Complex& source, Complex& pred, Complex& corr);
   
   void CSource(const vector2& Src, const vector2& Y, double t) {
-    parent->NonConservativeSource(Src,Y,t);
+    Source(Src,Y,t);
+//    parent->NonConservativeSource(Src,Y,t);
   }
   
   inline void Predictor();
   
   void Predictor(unsigned int, unsigned int) {
     C_RK5<T>::Predictor();
-    PC::Predictor(startN,stopN);
+    RK5::Predictor(startN,stopN);
   }
   
   inline int Corrector();
   
   virtual int Corrector(unsigned int, unsigned int) {
     int rc=C_RK5<T>::Corrector();
-    if(rc) rc=PC::Corrector(startN,stopN);
+    if(rc) RK5::Corrector(startN,stopN);
     return rc;
   }
 };
