@@ -13,6 +13,7 @@ class Exponential {
 protected:
   unsigned int start,stop;
   unsigned int startN,stopN;
+  unsigned int stop0,start0; // Unused
   NuVector coeff0,coeff1;
 public:
   virtual ~Exponential() {}
@@ -38,7 +39,7 @@ public:
   
   void Allocator() {
     PC::Allocator();
-    parent->IndexLimits(start,stop,startN,stopN);
+    parent->IndexLimits(start,stop,startN,stop0,start0,stopN);
     Exponential::Allocator();
   }
   
@@ -111,7 +112,7 @@ public:
   
   void Allocator() {
     RK2::Allocator();
-    parent->IndexLimits(start,stop,startN,stopN);
+    parent->IndexLimits(start,stop,startN,stop0,start0,stopN);
     Exponential::Allocator();
   }
   
@@ -191,6 +192,7 @@ class E_RK3 : public RK3 {
 protected:
   unsigned int start,stop;
   unsigned int startN,stopN;
+  unsigned int stop0,start0;
   T *parent;
   NuVector coeff0,coeff0h,coeff0i;
   NuVector a21;
@@ -206,7 +208,7 @@ public:
   
   void Allocator() {
     RK3::Allocator();
-    parent->IndexLimits(start,stop,startN,stopN);
+    parent->IndexLimits(start,stop,startN,stop0,start0,stopN);
 
     unsigned int ny=stop-start;
     Allocate(coeff0,ny,start,0);
@@ -369,7 +371,7 @@ public:
   
   void Allocator() {
     RK3C::Allocator();
-    parent->IndexLimits(start,stop,startN,stopN);
+    parent->IndexLimits(start,stop,startN,stop0,start0,stopN);
     Exponential::Allocator();
   }
   
@@ -449,7 +451,7 @@ public:
   
   void Allocator() {
     RK4::Allocator();
-    parent->IndexLimits(start,stop,startN,stopN);
+    parent->IndexLimits(start,stop,startN,stop0,start0,stopN);
     Exponential::Allocator();
   }
   
@@ -550,7 +552,7 @@ public:
   void Allocator() {
     RK4::Allocator();
     if(!dynamic) Alloc0(Src3,source3);
-    parent->IndexLimits(start,stop,startN,stopN);
+    parent->IndexLimits(start,stop,startN,stop0,start0,stopN);
 
     unsigned int ny=stop-start;
     Allocate(coeff0,ny,start,0);

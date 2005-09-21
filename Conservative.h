@@ -6,7 +6,8 @@
 class Conservative {
 protected:
   unsigned int start,stop;
-  unsigned int startN,stopN;
+  unsigned int startT,stopT;
+  unsigned int startM,stopM;
 public:
   virtual ~Conservative() {}
 };
@@ -20,23 +21,31 @@ public:
   
   void Allocator() {
     PC::Allocator();
-    parent->IndexLimits(start,stop,startN,stopN);
+    parent->IndexLimits(start,stop,startT,stopT,startM,stopM);
   }
   
   inline bool Correct(Real y0, Real& y, Real source0, Real source);
   inline bool Correct(const Complex& y0, Complex& y,
 		      const Complex& source0, const Complex& source);
   
-// Average derived conserved quantities with trapezoidal rule
+  void PSource(const vector2& Src, const vector2& Y, double t) {
+    parent->ConservativeSource(Src,Y,t);
+  }
+  
   void CSource(const vector2& Src, const vector2& Y, double t) {
-    parent->NonConservativeSource(Src,Y,t);
+    parent->NonConservativeSource(Src,Y,t+dt);
+  }
+  
+  inline void Predictor(unsigned int, unsigned int) {
+    PC::Predictor(start,stopT);
   }
   
   inline int Corrector();
   
   virtual int Corrector(unsigned int, unsigned int) {
     int rc=C_PC<T>::Corrector();
-    if(rc) rc=PC::Corrector(startN,stopN);
+    // Average the conservative moments with a trapezoidal rule
+    if(rc) PC::Corrector(startT,stopM);
     return rc;
   }
 };
@@ -88,44 +97,32 @@ public:
   
   void Allocator() {
     RK2::Allocator();
-    parent->IndexLimits(start,stop,startN,stopN);
+    parent->IndexLimits(start,stop,startT,stopT,startM,stopM);
   }
-  
-  
-#if 0
-  bool fsal() {
-    swaparray(Src0,Src);
-    Set(source0,Src0[0]);
-    Set(source,Src[0]);
-    return true;
-  }
-#endif
   
   inline bool Correct(Real y0, Real& y, Real source);
   inline bool Correct(const Complex& y0, Complex& y, const Complex& source);
   
-  void CSource(const vector2& Src, const vector2& Y, double t) {
-    parent->NonConservativeSource(Src,Y,t);
+  void PSource(const vector2& Src, const vector2& Y, double t) {
+    parent->ConservativeSource(Src,Y,t);
   }
   
-  inline void Predictor();
+  void CSource(const vector2& Src, const vector2& Y, double t) {}
   
-  // TODO: Optimize memory usage here.
-  void Predictor(unsigned int, unsigned int) {
-    RK2::Predictor(start,stop);
+  inline void Predictor(unsigned int, unsigned int) {
+    RK2::Predictor(start,stopT);
   }
   
   inline int Corrector();
   
   virtual int Corrector(unsigned int, unsigned int) {
     int rc=C_RK2<T>::Corrector();
-//    cout << errmax << endl;
-//    errmax=0;
     if(rc) {
-      Source(Src,Y,t+dt);
-      PC::Corrector(startN,stopN);
+      RK2::Corrector(startT,stopT);
+      // Average the conservative moments with a trapezoidal rule
+      parent->NonConservativeSource(Src,Y,t+dt);
+      PC::Corrector(startM,stopM);
     }
-//    cout << errmax << endl;
     return rc;
   }
 };
@@ -180,7 +177,7 @@ public:
   
   void Allocator() {
     RK4::Allocator();
-    parent->IndexLimits(start,stop,startN,stopN);
+    parent->IndexLimits(start,stop,startT,stopT,startM,stopM);
   }
   
   void TimestepDependence();
@@ -191,14 +188,14 @@ public:
 		      const Complex& source1, const Complex& source2, 
 		      const Complex& source);
   
-  void CSource(const vector2& Src, const vector2& Y, double t) {
-    parent->NonConservativeSource(Src,Y,t);
+  void PSource(const vector2& Src, const vector2& Y, double t) {
+    parent->ConservativeSource(Src,Y,t);
   }
   
-  inline void Predictor();
+  void CSource(const vector2& Src, const vector2& Y, double t) {}
   
-  void Predictor(unsigned int, unsigned int) {
-    RK4::Predictor(start,stop);
+  inline void Predictor(unsigned int, unsigned int) {
+    RK4::Predictor(start,stopT);
   }
   
   inline int Corrector();
@@ -206,8 +203,10 @@ public:
   virtual int Corrector(unsigned int, unsigned int) {
     int rc=C_RK4<T>::Corrector();
     if(rc) {
-      Source(Src,Y,t+dt);
-      PC::Corrector(startN,stopN);
+      RK4::Corrector(startT,stopT);
+      // Average the conservative moments with a trapezoidal rule
+      parent->NonConservativeSource(Src,Y,t+dt);
+      PC::Corrector(startM,stopM);
     }
     return rc;
   }
@@ -286,7 +285,7 @@ public:
     Alloc(Y2,y2);
     Alloc(Y3,y3);
     Alloc(Y4,y4);
-    parent->IndexLimits(start,stop,startN,stopN);
+    parent->IndexLimits(start,stop,startT,stopT,startM,stopM);
   }
   
   void TimestepDependence();
@@ -302,23 +301,24 @@ public:
 		      const Complex& source3, const Complex& source4,
 		      const Complex& source, Complex& pred, Complex& corr);
   
-  void CSource(const vector2& Src, const vector2& Y, double t) {
-    Source(Src,Y,t);
-//    parent->NonConservativeSource(Src,Y,t);
+  void PSource(const vector2& Src, const vector2& Y, double t) {
+    parent->ConservativeSource(Src,Y,t);
   }
   
-  inline void Predictor();
+  void CSource(const vector2& Src, const vector2& Y, double t) {}
   
-  void Predictor(unsigned int, unsigned int) {
-    C_RK5<T>::Predictor();
-    RK5::Predictor(startN,stopN);
-  }
+  inline void Predictor(unsigned int start, unsigned int stop);
   
   inline int Corrector();
   
   virtual int Corrector(unsigned int, unsigned int) {
     int rc=C_RK5<T>::Corrector();
-    if(rc) RK5::Corrector(startN,stopN);
+    if(rc) {
+      RK5::Corrector(startT,stopT);      
+      // Average the conservative moments with a trapezoidal rule
+      parent->NonConservativeSource(Src,Y,t+dt);
+      PC::Corrector(startM,stopM);
+    }
     return rc;
   }
 };
@@ -331,21 +331,21 @@ void C_RK5<T>::TimestepDependence()
 }
 
 template<class T>
-void C_RK5<T>::Predictor()
+void C_RK5<T>::Predictor(unsigned int start, unsigned int stop)
 {
-  for(unsigned int j=start; j < stop; j++)
+  for(unsigned int j=start; j < stopT; j++)
     y[j]=y0[j]+b10*source0[j];
-  Source(Src,Y,t+a1);
-  for(unsigned int j=start; j < stop; j++)
+  PSource(Src,Y,t+a1);
+  for(unsigned int j=start; j < stopT; j++)
     y2[j]=y0[j]+b20*source0[j]+b21*source[j];
-  Source(Src2,Y2,t+a2);
-  for(unsigned int j=start; j < stop; j++)
+  PSource(Src2,Y2,t+a2);
+  for(unsigned int j=start; j < stopT; j++)
     y3[j]=y0[j]+b30*source0[j]+b31*source[j]+b32*source2[j];
-  Source(Src3,Y3,t+a3);
-  for(unsigned int j=start; j < stop; j++)
+  PSource(Src3,Y3,t+a3);
+  for(unsigned int j=start; j < stopT; j++)
     y4[j]=y0[j]+b40*source0[j]+b41*source[j]+b42*source2[j]+b43*source3[j];
-  Source(Src4,Y4,t+a4);
-  for(unsigned int j=start; j < stop; j++) 
+  PSource(Src4,Y4,t+a4);
+  for(unsigned int j=start; j < stopT; j++) 
     y[j]=y0[j]+b50*source0[j]+b51*source[j]+b52*source2[j]+b53*source3[j]+
       b54*source4[j];
 }
