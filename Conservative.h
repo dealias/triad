@@ -32,9 +32,7 @@ public:
     parent->ConservativeSource(Src,Y,t);
   }
   
-  void CSource(const vector2& Src, const vector2& Y, double t) {
-    parent->NonConservativeSource(Src,Y,t+dt);
-  }
+  void CSource(const vector2& Src, const vector2& Y, double t) {}
   
   inline void Predictor(unsigned int, unsigned int) {
     PC::Predictor(start,stopT);
@@ -45,7 +43,11 @@ public:
   virtual int Corrector(unsigned int, unsigned int) {
     int rc=C_PC<T>::Corrector();
     // Average the conservative moments with a trapezoidal rule
-    if(rc) PC::Corrector(startT,stopM);
+    if(rc) {
+      PC::Corrector(startT,stopT);
+      parent->NonConservativeSource(Src,Y,t+dt);
+      PC::Corrector(startM,stopM);
+    }
     return rc;
   }
 };
