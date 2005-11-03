@@ -120,7 +120,7 @@ public:
   virtual void TimestepDependence() {}
   
   virtual void Unswap() {
-    if(Yout != Y) set(Yout[0],Y[0],ny);
+    if(Yout.Size() && Yout != Y) set(Yout[0],Y[0],ny);
   }
   
   void SetTime(double t0, double dt0) {
