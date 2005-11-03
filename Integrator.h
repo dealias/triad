@@ -34,20 +34,32 @@ public:
   void SetAbbrev(const char *abbrev0) {abbrev=abbrev0;}
   const char *Abbrev() {return abbrev;}
   void SetParam(double tolmax, double tolmin, double stepfactor0,
-		double stepnoninvert, double dtmin0, double dtmax0,
+		double stepnoninverse0, double dtmin0, double dtmax0,
 		int itmax0, int microsteps0, int verbose0, int dynamic0) {
     if(tolmax < tolmin) msg(ERROR_GLOBAL,"tolmax < tolmin"); 
     tolmax2=tolmax*tolmax;
     tolmin2=tolmin*tolmin;
     growfactor=stepfactor=stepfactor0;
     shrinkfactor=stepinverse=1.0/stepfactor;
-    stepnoninverse=1.0/stepnoninvert;
+    stepnoninverse=1.0/stepnoninverse0;
     dtmin=dtmin0;
     dtmax=dtmax0;
     itmax=itmax0;
     microsteps=microsteps0*Microfactor();
     verbose=verbose0;
     dynamic=dynamic0;
+  }
+  void SetParam(const IntegratorBase& I) {
+    tolmax2=I.tolmax2;
+    tolmin2=I.tolmin2;
+    stepfactor=I.stepfactor;
+    stepnoninverse=I.stepnoninverse;
+    dtmin=I.dtmin;
+    dtmax=I.dtmax;
+    itmax=I.itmax;
+    microsteps=I.microsteps;
+    verbose=I.verbose;
+    dynamic=I.dynamic;
   }
   void Integrate(double& t0, double tmax, double& dt0, double sample0,
 		 int& iteration, unsigned long& nout);
