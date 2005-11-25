@@ -32,7 +32,7 @@ public:
     parent->ConservativeSource(Src,Y,t);
   }
   
-  void CSource(const vector2& Src, const vector2& Y, double t) {}
+  void CSource(const vector2&, const vector2&, double) {}
   
   inline void Predictor(unsigned int, unsigned int) {
     PC::Predictor(start,stopT);
@@ -109,7 +109,7 @@ public:
     parent->ConservativeSource(Src,Y,t);
   }
   
-  void CSource(const vector2& Src, const vector2& Y, double t) {}
+  void CSource(const vector2&, const vector2&, double) {}
   
   inline void Predictor(unsigned int, unsigned int) {
     RK2::Predictor(start,stopT);
@@ -194,7 +194,7 @@ public:
     parent->ConservativeSource(Src,Y,t);
   }
   
-  void CSource(const vector2& Src, const vector2& Y, double t) {}
+  void CSource(const vector2&, const vector2&, double) {}
   
   inline void Predictor(unsigned int, unsigned int) {
     RK4::Predictor(start,stopT);
@@ -307,7 +307,7 @@ public:
     parent->ConservativeSource(Src,Y,t);
   }
   
-  void CSource(const vector2& Src, const vector2& Y, double t) {}
+  void CSource(const vector2&, const vector2&, double) {}
   
   inline void Predictor(unsigned int start, unsigned int stop);
   
@@ -333,7 +333,7 @@ void C_RK5<T>::TimestepDependence()
 }
 
 template<class T>
-void C_RK5<T>::Predictor(unsigned int start, unsigned int stop)
+void C_RK5<T>::Predictor(unsigned int start, unsigned int)
 {
   for(unsigned int j=start; j < stopT; j++)
     y[j]=y0[j]+b10*source0[j];
