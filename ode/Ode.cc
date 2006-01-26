@@ -65,11 +65,14 @@ public:
   }
   
   void IndexLimits(unsigned int& start, unsigned int& stop,
-		   unsigned int& startN, unsigned int& stopN) {
+		   unsigned int& startT, unsigned int& stopT,
+		   unsigned int& startM, unsigned int& stopM) {
     start=0;
     stop=1;
-    startN=0;
-    stopN=0;
+    startT=0;
+    stopT=0;
+    startM=0;
+    stopM=0;
   }
   
 };

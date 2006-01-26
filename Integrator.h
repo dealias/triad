@@ -83,6 +83,10 @@ public:
 		 const Var& corr);
   Solve_RC CheckError();
   
+  double Errmax() {
+    return errmax;
+  }
+  
   // Add tolgood to inhibit time step adjustment.
   virtual void ExtrapolateTimestep () {
     if(errmax < tolmin2) {
@@ -129,6 +133,11 @@ public:
     TimestepDependence();
   }
   
+  void SetTime(double t0, double dt0, double errmax0) {
+    SetTime(t0,dt0);
+    errmax=errmax0;
+  }
+  
   const vector2& YVector() const {
     return Y;
   }
@@ -172,7 +181,7 @@ class Euler : public IntegratorBase {
 public:
   const char *Name() {return "Euler";}
   Solve_RC Solve();
-  void Predictor(unsigned int n0, unsigned int ny) {
+  virtual void Predictor(unsigned int n0, unsigned int ny) {
     for(unsigned int j=n0; j < ny; j++) y[j] += dt*source[j];
   }
 };
@@ -377,7 +386,7 @@ public:
 };
 
 class RK5 : public RK4 {
-protected:
+protected:	
   vector source4;
   vector2 Src4;
   double a1,a2,a3,a4,a5;

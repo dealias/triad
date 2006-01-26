@@ -26,16 +26,13 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 namespace Array {
   
-class arrayMod {
- public:	
-  inline void Mod(int& i, unsigned int n) const {
-    i %= (int) n;
-    if(i < 0) i += (int) n;
-  }
+inline void Mod(int& i, unsigned int n) {
+  i %= (int) n;
+  if(i < 0) i += (int) n;
 };
 
 template<class T>
-class array1p : public array1<T>, public arrayMod {
+class array1p : public array1<T> {
  public:
   array1p() {}
   array1p(unsigned int nx0) {this->Allocate(nx0);}
@@ -46,7 +43,7 @@ class array1p : public array1<T>, public arrayMod {
 };
 
 template<class T>
-class array2p : public array2<T>, public arrayMod {
+class array2p : public array2<T> {
  public:
   array2p() {}
   array2p(unsigned int nx0, unsigned int ny0) {this->Allocate(nx0,ny0);}
@@ -68,7 +65,7 @@ class array2p : public array2<T>, public arrayMod {
 };
 
 template<class T>
-class array3p : public array3<T>, public arrayMod {
+class array3p : public array3<T> {
  public:	
   array3p() {}
   array3p(unsigned int nx0, unsigned int ny0, unsigned int nz0) {
@@ -94,7 +91,7 @@ class array3p : public array3<T>, public arrayMod {
 };
 
 template<class T>
-class array4p : public array4<T>, public arrayMod {
+class array4p : public array4<T> {
  public:	
   array4p() {}
   array4p(unsigned int nx0, unsigned int ny0, unsigned int nz0,
