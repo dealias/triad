@@ -56,6 +56,8 @@ typedef array1<int>::opt ivector;
 typedef array1<unsigned int>::opt uvector;
 
 typedef array1<vector> vector2;
+typedef array1<vector2> vector3;
+typedef array1<rvector> rvector2;
 
 enum Solve_RC {NONINVERTIBLE=-1,UNSUCCESSFUL,SUCCESSFUL,ADJUST};
 

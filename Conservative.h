@@ -258,7 +258,7 @@ inline int C_RK4<T>::Corrector()
       y[j]=y0[j]+dt*(2.0*source1[j]-source0[j]);
     parent->ConservativeSource(Src3,Y,t+dt);
     for(unsigned int j=start; j < stop; j++) {
-      Var val;
+      Var val=0.0;
       if(!Correct(y0[j],val,source0[j],source1[j],source2[j],source[j]))
 	return 0;
       if(!Array::Active(errmask) || errmask[j]) 

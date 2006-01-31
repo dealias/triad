@@ -634,7 +634,7 @@ void RK5::Predictor(unsigned int start, unsigned int stop)
   PSource(Src4,Y,t+a4);
   if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
   //#pragma ivdep		
-  for(unsigned int j=start; j < stop; j++) 
+  for(unsigned int j=start; j < stop; j++)
     y[j]=y0[j]+b50*source0[j]+b51*source[j]+b52*source2[j]+b53*source3[j]+
       b54*source4[j];
   Problem->BackTransform(Y,t+a5,a5,YI);
@@ -648,11 +648,10 @@ int RK5::Corrector(unsigned int start, unsigned int stop)
     //#pragma ivdep		
     for(unsigned int j=start; j < stop; j++) {
       Var val=y0[j]+c0*source0[j]+c2*source2[j]+c3*source3[j]+c5*source[j];
-      if(!Active(errmask) || errmask[j]) {
+      if(!Active(errmask) || errmask[j])
 	CalcError(y0[j],val,y0[j]+d0*source0[j]+d2*source2[j]+d3*source3[j]+
 		  d4*source4[j]+d5*source[j],val);
-	y[j]=val;
-      }
+      y[j]=val;
     }
   } else {
     //#pragma ivdep		

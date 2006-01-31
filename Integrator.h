@@ -309,6 +309,141 @@ public:
   int Corrector(unsigned int n0, unsigned int ny);
 };
 
+class RK : public PC {
+protected:  
+  array2<double> a,A;
+  array1<double> b,B,c;
+  unsigned int nstages;
+  vector3 vSrc;
+  vector2 vsource;
+  bool FSAL;
+public:
+  void Allocator() {
+    Alloc(Y0,y0);
+    vSrc.Allocate(nstages);
+    vsource.Allocate(nstages);
+    for(unsigned int s=0; s < nstages; s++)
+      Alloc0(vSrc[s],vsource[s]);
+    Src0.Dimension(vSrc[0]);
+    new_y0=true;
+  }
+  
+  void Stage(unsigned int s, unsigned int n0, unsigned int ny) {
+    rvector as=a[s];
+    for(unsigned int j=n0; j < ny; j++) {
+      Var sum=y0[j];
+      for(unsigned int k=0; k <= s; k++)
+	sum += as[k]*vsource[k][j];
+      y[j]=sum;
+    }
+  }
+  
+  void Predictor(unsigned int n0, unsigned int ny) {
+    for(unsigned int s=0; s < nstages-1; ++s) {
+      Stage(s,n0,ny);
+      double cs=c[s];
+      Problem->BackTransform(Y,t+cs,cs,YI);
+      Source(vSrc[s+1],Y,t+cs);
+      if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
+    }
+  }
+  
+  int Corrector(unsigned int n0, unsigned int ny) {
+    if(FSAL) msg(ERROR,"Too bad for you!");
+    if(dynamic) {
+      rvector as=a[nstages-1];
+      for(unsigned int j=n0; j < ny; j++) {
+	Var sum=y0[j];
+	Var pred=sum;
+	for(unsigned int k=0; k < nstages; k++) {
+	  Var Skj=vsource[k][j];
+	  sum += as[k]*Skj;
+	  pred += b[k]*Skj;
+	}
+	if(!Active(errmask) || errmask[j])
+	  CalcError(y0[j],sum,pred,sum);
+	y[j]=sum;
+      }
+    } else Stage(nstages-1,n0,ny);
+    return 1;
+  };
+  
+  void stages(unsigned int s, bool fsal=false) {
+    FSAL=fsal;
+    nstages=s;
+    A.Allocate(nstages,nstages);
+    a.Allocate(nstages,nstages);
+    if(!fsal) {
+      Allocate(B,nstages);
+      Allocate(b,nstages);
+    }
+    Allocate(c,nstages);
+    a=0.0;
+  }
+    
+  void csum() {
+    for(unsigned int s=0; s < nstages; ++s) {
+      Real sum=0.0;
+      for(unsigned int k=0; k <= s; ++k)
+	sum += a[s][k];
+      c[s]=sum;
+    }
+  }
+  
+  void TimestepDependence() {
+    for(unsigned int s=0; s < nstages; ++s) {
+      rvector as=a[s];
+      rvector As=A[s];
+      for(unsigned int k=0; k <= s; k++)
+	as[k]=dt*As[k];
+    }
+    if(!FSAL)
+      for(unsigned int k=0; k < nstages; k++)
+	b[k]=dt*B[k];
+    csum();
+  }
+};
+  
+class RK2p : public RK {
+public:
+  const char *Name() {return "Second-Order TEST Runge-Kutta";}
+  RK2p() {
+    order=2;
+    stages(2);
+    A[0][0]=0.5;
+    A[1][1]=1.0;
+    
+    B[0]=1.0;
+    B[1]=0.0;
+  }
+};
+
+class RK5p : public RK {
+public:
+  const char *Name() {return "Fifth-Order TEST Runge-Kutta";}
+  RK5p() {
+    order=5;
+    stages(6);
+    
+    A[0][0]=0.2;
+    A[1][0]=3.0/40.0; A[1][1]=9.0/40.0;
+    
+    A[2][0]=0.3; A[2][1]=-0.9; A[2][2]=1.2;
+    
+    A[3][0]=-11.0/54.0; A[3][1]=2.5; A[3][2]=-70.0/27.0; A[3][3]=35.0/27.0;
+  
+    A[4][0]=1631.0/55296.0; A[4][1]=175.0/512.0; A[4][2]=575.0/13824.0;
+    A[4][3]=44275.0/110592.0; A[4][4]=253.0/4096.0;
+  
+    A[5][0]=37.0/378.0; A[5][2]=250.0/621.0; A[5][3]=125.0/594.0;
+    A[5][5]=512.0/1771.0;
+								  
+    B[0]=2825.0/27648.0; B[2]=18575.0/48384.0; B[3]=13525.0/55296.0;
+    B[4]=277.0/14336.0; B[5]=0.25;
+  }
+};
+
+
 class RK2 : public PC {
 public:
   const char *Name() {return "Second-Order Runge-Kutta";}
@@ -397,6 +532,7 @@ protected:
   double b50,b51,b52,b53,b54;
   double c0,c2,c3,c5;
   double d0,d2,d3,d4,d5;
+
 public:
   RK5() {order=5;}
   void Allocator() {
