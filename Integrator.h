@@ -1,6 +1,7 @@
 #ifndef __Integrator_h__
 #define __Integrator_h__ 1
 
+using Array::array2;
 
 class IntegratorBase {
 protected:
