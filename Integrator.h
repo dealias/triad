@@ -1,8 +1,6 @@
 #ifndef __Integrator_h__
 #define __Integrator_h__ 1
 
-using Array::array2;
-
 class IntegratorBase {
 protected:
   const char *abbrev;
@@ -312,8 +310,8 @@ public:
 
 class RK : public PC {
 protected:  
-  array2<double> a,A;
-  array1<double> b,B,c;
+  Array::array2<double> a,A;
+  Array::array1<double> b,B,c;
   unsigned int nstages;
   vector3 vSrc;
   vector2 vsource;
