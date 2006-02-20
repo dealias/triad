@@ -343,7 +343,7 @@ public:
       double cs=c[s];
       Problem->BackTransform(Y,t+cs,cs,YI);
       Source(vSrc[s+1],Y,t+cs);
-      if(Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
+      if(Array::Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
     }
   }
   
@@ -359,7 +359,7 @@ public:
 	  sum += as[k]*Skj;
 	  pred += b[k]*Skj;
 	}
-	if(!Active(errmask) || errmask[j])
+	if(!Array::Active(errmask) || errmask[j])
 	  CalcError(y0[j],sum,pred,sum);
 	y[j]=sum;
       }
