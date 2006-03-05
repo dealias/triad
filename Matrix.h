@@ -551,7 +551,7 @@ template<class T>
 void GaussJordan(const array2<T>& a, const array2<T>& b)
 {
   // Linear equation solution by Gauss-Jordan elimination.
-  // On input a is an n x n the matrix
+  // On input a is an n x n matrix
   // and b is an n x m matrix containing the m right-hand side vectors.
   // On output, a is replaced by its matrix inverse, and b is replaced by  
   // the corresponding set of solution vectors.
@@ -620,7 +620,7 @@ void GaussJordan(const array2<T>& a, const array2<T>& b)
     indx_c[i]=col;
     if(acol[col] == 0.0) ArrayExit("Singular matrix");
     T pivinv=1.0/acol[col];
-//    acol[col]=1.0;
+    acol[col]=1.0;
     for(unsigned int l=0; l < n; l++) acol[l] *= pivinv;
     for(unsigned int l=0; l < m; l++) bcol[l] *= pivinv;
     for(unsigned int ll=0; ll < n; ll++) {
@@ -671,6 +671,8 @@ inline void Divide(const array2<T>& A, const array2<T>& C, const array2<T>& B)
   GaussJordan(D,A);
 }
 	
+// Compute A=C^{-1} B
+  
 template<class T>
 inline void Divide(const array1<T>& A, const array2<T>& C, const array1<T>& B)
 {
