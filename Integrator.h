@@ -319,6 +319,22 @@ protected:
 public:
   RK(int nstages) : nstages(nstages) {}
   
+  const unsigned int NStages() {return nstages;}
+
+  virtual void Source(const vector2& Src, const vector2& Y, double t) {
+    Problem->Source(Src,Y,t);
+  }
+  
+  void Source(unsigned int i) {
+    IntegratorBase::Source(vsource,Y,t+c[i]);
+  }
+  
+  void Allocator(const vector2& Y0, 
+		 DynVector<unsigned int>* NY0,
+		 const ivector& errmask0) {
+    IntegratorBase::Allocator(Y0,NY0,errmask0);
+  }
+
   void Allocator() {
     Alloc(Y0,y0);
     vSrc.Allocate(nstages);
@@ -329,9 +345,9 @@ public:
     new_y0=true;
   }
   
-  void Stage(unsigned int s, unsigned int n0, unsigned int ny) {
+  void Stage(unsigned int s, unsigned int start=0, unsigned int stop) {
     rvector as=a[s];
-    for(unsigned int j=n0; j < ny; j++) {
+    for(unsigned int j=start; j < stop; j++) {
       Var sum=y0[j];
       for(unsigned int k=0; k <= s; k++)
 	sum += as[k]*vsource[k][j];
@@ -339,9 +355,13 @@ public:
     }
   }
   
-  void Predictor(unsigned int n0, unsigned int ny) {
+  void Stage(unsigned int s, unsigned int start=0) {
+    Stage(s,0,ny);
+  }
+  
+  void Predictor(unsigned int start, unsigned int stop) {
     for(unsigned int s=0; s < nstages-1; ++s) {
-      Stage(s,n0,ny);
+      Stage(s,start,stop);
       double cs=c[s];
       Problem->BackTransform(Y,t+cs,cs,YI);
       Source(vSrc[s+1],Y,t+cs);
@@ -349,11 +369,11 @@ public:
     }
   }
   
-  int Corrector(unsigned int n0, unsigned int ny) {
+  int Corrector(unsigned int start, unsigned int stop) {
     if(FSAL) msg(ERROR,"Too bad for you!");
     if(dynamic) {
       rvector as=a[nstages-1];
-      for(unsigned int j=n0; j < ny; j++) {
+      for(unsigned int j=start; j < stop; j++) {
 	Var sum0=y0[j];
 	Var sum=sum0;
 	Var pred=sum0;
@@ -366,7 +386,7 @@ public:
 	  CalcError(sum0,sum,pred,sum);
 	y[j]=sum;
       }
-    } else Stage(nstages-1,n0,ny);
+    } else Stage(nstages-1,start,stop);
     return 1;
   };
   
@@ -423,10 +443,10 @@ class RK5p : public RK {
 public:
   const char *Name() {return "Fifth-Order TEST Runge-Kutta";}
   
-  int Corrector(unsigned int n0, unsigned int ny) {
+  int Corrector(unsigned int start, unsigned int stop) {
     if(dynamic) {
       rvector as=a[5];
-      for(unsigned int j=n0; j < ny; j++) {
+      for(unsigned int j=start; j < stop; j++) {
 	Var sum0=y0[j];
 	Var sum=sum0+as[0]*vsource[0][j]+as[2]*vsource[2][j]+
 	  as[3]*vsource[3][j]+as[5]*vsource[5][j];
@@ -438,7 +458,7 @@ public:
       }
     } else {
       rvector as=a[5];
-      for(unsigned int j=n0; j < ny; j++) {
+      for(unsigned int j=start; j < stop; j++) {
 	y[j]=y0[j]+as[0]*vsource[0][j]+as[2]*vsource[2][j]+
 	  as[3]*vsource[3][j]+as[5]*vsource[5][j];
       }
