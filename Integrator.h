@@ -312,11 +312,13 @@ class RK : public PC {
 protected:  
   Array::array2<double> a,A;
   Array::array1<double> b,B,c;
-  unsigned int nstages;
+  const unsigned int nstages;
   vector3 vSrc;
   vector2 vsource;
   bool FSAL;
 public:
+  RK(int nstages) : nstages(nstages) {}
+  
   void Allocator() {
     Alloc(Y0,y0);
     vSrc.Allocate(nstages);
@@ -352,24 +354,24 @@ public:
     if(dynamic) {
       rvector as=a[nstages-1];
       for(unsigned int j=n0; j < ny; j++) {
-	Var sum=y0[j];
-	Var pred=sum;
+	Var sum0=y0[j];
+	Var sum=sum0;
+	Var pred=sum0;
 	for(unsigned int k=0; k < nstages; k++) {
 	  Var Skj=vsource[k][j];
 	  sum += as[k]*Skj;
 	  pred += b[k]*Skj;
 	}
 	if(!Array::Active(errmask) || errmask[j])
-	  CalcError(y0[j],sum,pred,sum);
+	  CalcError(sum0,sum,pred,sum);
 	y[j]=sum;
       }
     } else Stage(nstages-1,n0,ny);
     return 1;
   };
   
-  void stages(unsigned int s, bool fsal=false) {
+  void allocate(bool fsal=false) {
     FSAL=fsal;
-    nstages=s;
     A.Allocate(nstages,nstages);
     a.Allocate(nstages,nstages);
     if(!fsal) {
@@ -406,9 +408,9 @@ public:
 class RK2p : public RK {
 public:
   const char *Name() {return "Second-Order TEST Runge-Kutta";}
-  RK2p() {
-    order=2;
-    stages(2);
+  
+  RK2p() : RK(2) {
+    allocate();
     A[0][0]=0.5;
     A[1][1]=1.0;
     
@@ -420,9 +422,33 @@ public:
 class RK5p : public RK {
 public:
   const char *Name() {return "Fifth-Order TEST Runge-Kutta";}
-  RK5p() {
+  
+  int Corrector(unsigned int n0, unsigned int ny) {
+    if(dynamic) {
+      rvector as=a[5];
+      for(unsigned int j=n0; j < ny; j++) {
+	Var sum0=y0[j];
+	Var sum=sum0+as[0]*vsource[0][j]+as[2]*vsource[2][j]+
+	  as[3]*vsource[3][j]+as[5]*vsource[5][j];
+	Var pred=sum0+b[0]*vsource[0][j]+b[2]*vsource[2][j]+
+	  +b[3]*vsource[3][j]+b[4]*vsource[4][j]+b[5]*vsource[5][j];
+	if(!Array::Active(errmask) || errmask[j])
+	  CalcError(sum0,sum,pred,sum);
+	y[j]=sum;
+      }
+    } else {
+      rvector as=a[5];
+      for(unsigned int j=n0; j < ny; j++) {
+	y[j]=y0[j]+as[0]*vsource[0][j]+as[2]*vsource[2][j]+
+	  as[3]*vsource[3][j]+as[5]*vsource[5][j];
+      }
+    }
+    return 1;
+  };
+  
+  RK5p() : RK(6) {
+    allocate();
     order=5;
-    stages(6);
     
     A[0][0]=0.2;
     A[1][0]=3.0/40.0; A[1][1]=9.0/40.0;
