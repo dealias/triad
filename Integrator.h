@@ -326,7 +326,8 @@ public:
   }
   
   void Source(unsigned int i) {
-    IntegratorBase::Source(vsource,Y,t+c[i]);
+    //use vSrc[?] instead of vsource?
+    Source(vSrc[i],Y,t+c[i]);
   }
   
   void Allocator(const vector2& Y0, 
