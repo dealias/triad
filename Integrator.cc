@@ -209,13 +209,8 @@ Solve_RC PC::Solve()
   
   errmax=0.0;
 	
-  if(new_y0) {
-    swaparray(Y0,Y);
-    Set(y,Y[0]);
-    Set(y0,Y0[0]);
-    if(Problem->Stochastic() || !fsal())
-      Source(Src0,Y0,t);
-  }
+  initialize();
+  
   Problem->Transform(Y0,t,dt,YI);
 	
   Predictor(0,ny);

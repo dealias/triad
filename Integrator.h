@@ -273,6 +273,17 @@ public:
   void TimestepDependence() {
     halfdt=0.5*dt;
   }
+  
+  void initialize() {
+    if(new_y0) {
+    swaparray(Y0,Y);
+    Set(y,Y[0]);
+    Set(y0,Y0[0]);
+    if(Problem->Stochastic() || !fsal())
+      Source(Src0,Y0,t);
+    }
+  }
+  
   virtual void Predictor(unsigned int n0, unsigned int ny);
   virtual int Corrector(unsigned int n0, unsigned int ny);
 };
@@ -332,7 +343,6 @@ public:
   }
   
   void Source(unsigned int i) {
-    //use vSrc[?] instead of vsource?
     Source(vSrc[i],Y,t+c[i]);
   }
   
