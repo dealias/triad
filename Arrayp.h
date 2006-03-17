@@ -29,7 +29,7 @@ namespace Array {
 inline void Mod(int& i, unsigned int n) {
   i %= (int) n;
   if(i < 0) i += (int) n;
-};
+}
 
 template<class T>
 class array1p : public array1<T> {
