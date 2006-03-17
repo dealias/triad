@@ -36,7 +36,7 @@ class array1p : public array1<T> {
  public:
   array1p() {}
   array1p(unsigned int nx0) {this->Allocate(nx0);}
-  array1p(unsigned int nx0, T *v0) {Dimension(nx0,v0);}
+  array1p(unsigned int nx0, T *v0) {this->Dimension(nx0,v0);}
   T& operator [] (int ix) const {Mod(ix,this->size); return this->v[ix];}
   T& operator () (int ix) const {Mod(ix,this->size); return this->v[ix];}
   array1p<T>& operator = (T a) {Load(a); return *this;}
@@ -47,7 +47,8 @@ class array2p : public array2<T> {
  public:
   array2p() {}
   array2p(unsigned int nx0, unsigned int ny0) {this->Allocate(nx0,ny0);}
-  array2p(unsigned int nx0, unsigned int ny0, T *v0) {Dimension(nx0,ny0,v0);}
+  array2p(unsigned int nx0, unsigned int ny0, T *v0) {
+    this->Dimension(nx0,ny0,v0);}
   array1p<T> operator [] (int ix) const {
     Mod(ix,this->nx);
     return array1p<T>(this->ny,this->v+ix*this->ny);
@@ -72,7 +73,7 @@ class array3p : public array3<T> {
     this->Allocate(nx0,ny0,nz0);
   }
   array3p(unsigned int nx0, unsigned int ny0, unsigned int nz0, T *v0) {
-    Dimension(nx0,ny0,nz0,v0);
+    this->Dimension(nx0,ny0,nz0,v0);
   }
   array2p<T> operator [] (int ix) const {
     Mod(ix,this->nx);
@@ -100,7 +101,7 @@ class array4p : public array4<T> {
   }
   array4p(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 	  unsigned int nw0, T *v0) {
-    Dimension(nx0,ny0,nz0,nw0,v0);
+    this->Dimension(nx0,ny0,nz0,nw0,v0);
   }
   array3p<T> operator [] (int ix) const {
     Mod(ix,this->nx);
