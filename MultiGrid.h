@@ -320,6 +320,8 @@ class MultiGrid {
   G *grid;
   int nlevel;
  public:
+  virtual ~MultiGrid() {delete[] grid;}
+  
   MultiGrid(int nlevel0, int nonlinear=0) : nlevel(nlevel0) {
     grid=new G[nlevel];
     for(int i=0; i < nlevel; i++) 
