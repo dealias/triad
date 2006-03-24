@@ -328,7 +328,7 @@ protected:
   vector2 vsource;
   bool FSAL;
 public:
-  RK(int nstages) : nstages(nstages) {}
+  RK(int nstages, int Order) : nstages(nstages) {order=Order;}
   
   const unsigned int NStages() {return nstages;}
   const void Showy() {
@@ -362,7 +362,7 @@ public:
     new_y0=true;
   }
   
-  void Stage(unsigned int s, unsigned int start=0, unsigned int stop) {
+  void Stage(unsigned int s, unsigned int start, unsigned int stop) {
     rvector as=a[s];
     for(unsigned int j=start; j < stop; j++) {
       Var sum=y0[j];
@@ -416,7 +416,8 @@ public:
       Allocate(b,nstages);
     }
     Allocate(c,nstages);
-    a=0.0;
+    A=0.0;
+    B=0.0;
   }
     
   void csum() {
@@ -446,7 +447,7 @@ class RK2p : public RK {
 public:
   const char *Name() {return "Second-Order TEST Runge-Kutta";}
   
-  RK2p() : RK(2) {
+  RK2p() : RK(2,2) {
     allocate();
     A[0][0]=0.5;
     A[1][1]=1.0;
@@ -483,12 +484,8 @@ public:
     return 1;
   };
   
-  RK5p() : RK(6) {
+  RK5p() : RK(6,5) {
     allocate();
-    order=5;
-    
-    A=0.0;
-    B=0.0;
     
     A[0][0]=0.2;
     A[1][0]=3.0/40.0; A[1][1]=9.0/40.0;
