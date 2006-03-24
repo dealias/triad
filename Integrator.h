@@ -274,14 +274,19 @@ public:
     halfdt=0.5*dt;
   }
   
-  void initialize() {
+  void initialize0() {
     if(new_y0) {
-    swaparray(Y0,Y);
-    Set(y,Y[0]);
-    Set(y0,Y0[0]);
+      Set(y,Y[0]);
+      Set(y0,Y0[0]);
+    }
+  }
+  
+  void initialize() {
+    initialize0();
+    if(new_y0)
+      swaparray(Y0,Y);
     if(Problem->Stochastic() || !fsal())
       Source(Src0,Y0,t);
-    }
   }
   
   virtual void Predictor(unsigned int n0, unsigned int ny);
@@ -372,8 +377,8 @@ public:
     }
   }
   
-  void Stage(unsigned int s, unsigned int start=0) {
-    Stage(s,0,ny);
+  void Stage(unsigned int s, int start=0) {
+    Stage(s,start,ny);
   }
   
   void Predictor(unsigned int start, unsigned int stop) {
