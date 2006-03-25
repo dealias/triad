@@ -275,16 +275,18 @@ public:
   }
   
   void initialize0() {
-    if(new_y0) {
-      Set(y,Y[0]);
-      Set(y0,Y0[0]);
-    }
+    Set(y,Y[0]);
+    Set(y0,Y0[0]);
+    y0.Load(y);
   }
   
   void initialize() {
-    initialize0();
-    if(new_y0)
+    if(new_y0) {
       swaparray(Y0,Y);
+      Set(y,Y[0]);
+      Set(y0,Y0[0]);
+    }
+    initialize0();
     if(Problem->Stochastic() || !fsal())
       Source(Src0,Y0,t);
   }
