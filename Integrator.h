@@ -277,7 +277,8 @@ public:
   void initialize0() {
     Set(y,Y[0]);
     Set(y0,Y0[0]);
-    y0.Load(y);
+    for(unsigned int i=0; i < ny; ++i)
+      y0[i]=y[i];
   }
   
   void initialize() {
