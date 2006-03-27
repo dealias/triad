@@ -250,9 +250,11 @@ int main(int argc, char *argv[])
   if(restart && dynamic < 0) dynamic=1;
   if(!restart) Problem->Initialize();
   
-  open_output(gparam,dirsep,"param.asy",0);
-  Vocabulary->GraphicsDump(gparam);
-  gparam.close();
+  for(int i=0; i < 2; ++i) {
+    open_output(gparam,(i == 0 ? "" : dirsep),"param.asy",0);
+    Vocabulary->GraphicsDump(gparam,i);
+    gparam.close();
+  }
 
   Problem->Setup();
   Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,dtmin,dtmax,
@@ -459,7 +461,9 @@ void statistics(double t, double dt, int it)
 const char *VocabularyBase::FileName(const char* delimiter, const char *suffix)
 {
   ostringstream buf;
-  buf << Directory() << run << delimiter << suffix;
+  buf << Directory();
+  if(*delimiter) buf << run << delimiter;
+  buf << suffix;
   return strdup(buf.str().c_str());
 }
 
