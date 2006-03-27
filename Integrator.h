@@ -338,12 +338,8 @@ protected:
 public:
   RK(int nstages, int Order) : nstages(nstages) {order=Order;}
   
-  const unsigned int NStages() {return nstages;}
-  const void Showy() {
-    for (unsigned int i=0; i < ny; i++)
-      cout << y[i] << ",";
-    cout << endl;
-  }
+  unsigned int NStages() {return nstages;}
+  
   void setnew_y0(bool flag) {new_y0=flag;}
 
   virtual void Source(const vector2& Src, const vector2& Y, double t) {
