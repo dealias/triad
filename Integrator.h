@@ -287,7 +287,6 @@ public:
       Set(y,Y[0]);
       Set(y0,Y0[0]);
     }
-    initialize0();
     if(Problem->Stochastic() || !fsal())
       Source(Src0,Y0,t);
   }
