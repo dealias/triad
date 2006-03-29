@@ -446,6 +446,18 @@ public:
   }
 };
   
+class RK1p : public RK {
+public:
+  const char *Name() {return "First-Order TEST Runge-Kutta";}
+  
+  RK1p() : RK(1,1) {
+    allocate();
+    A[0][0]=1.0;
+    
+    B[0]=0.0;
+  }
+};
+
 class RK2p : public RK {
 public:
   const char *Name() {return "Second-Order TEST Runge-Kutta";}
