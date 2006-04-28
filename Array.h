@@ -1439,7 +1439,7 @@ inline void Null(array1<T>& A)
 }
 
 template<class T>
-inline void Dimension(T *&A, unsigned int)
+inline void Dimension(T *&, unsigned int)
 {
 }
 

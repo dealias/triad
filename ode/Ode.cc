@@ -122,6 +122,7 @@ OdeVocabulary::OdeVocabulary()
   // Specialized integrators:
   
   INTEGRATOR(TestIntegrator);
+  INTEGRATOR(RK1p);
   INTEGRATOR(RK2p);
   INTEGRATOR(RK5p);
 #if 0  
