@@ -336,9 +336,16 @@ protected:
   bool FSAL;
 public:
   RK(int nstages, int Order) : nstages(nstages) {order=Order;}
-  
+    
+  Var getvsource(unsigned int stage, unsigned int i) {
+    return vsource[stage][i];
+  }
+  void setvsource(unsigned int stage, unsigned int i, Var value) {
+    vsource[stage][i]=value;
+  }
+
   unsigned int NStages() {return nstages;}
-  
+    
   void setnew_y0(bool flag) {new_y0=flag;}
 
   virtual void Source(const vector2& Src, const vector2& Y, double t) {
