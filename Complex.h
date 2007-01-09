@@ -289,13 +289,14 @@ inline Real arg(const Complex& x)
   return atan2(x.im, x.re);
 }
 
+// Return the principal branch of the square root (non-negative real part).
 inline Complex sqrt(const Complex& x)
 {
   Real mag=abs(x);
   if(mag == 0.0) return Complex(0.0,0.0);
   else if(x.re > 0) {
     Real re=sqrt(0.5*(mag+x.re));
-    return Complex (re,0.5*x.im/re);
+    return Complex(re,0.5*x.im/re);
   } else {
     Real im=sqrt(0.5*(mag-x.re));
     if(x.im < 0) im=-im;

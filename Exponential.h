@@ -301,7 +301,7 @@ public:
       Nu b2j=ph1/3.0;
       Nu b3j=4.0/3.0*ph2-2.0/9.0*ph1;
       
-      b1[j]=ph1-b2j-b3j;
+      b1[j]=2.0*b2j-b3j;
       b2[j]=b2j;
       b3[j]=b3j;
       if(dynamic) {
