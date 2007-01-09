@@ -52,8 +52,6 @@ char *undashify(const char *s, char *s2)
   return convert(s, '-', '_', s2);
 }
 
-//extern "C" char *strdup(const char *s);
-
 char *convert(const char *s, char from, char to, char *s2)
 {
   char *p;
