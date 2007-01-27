@@ -6,7 +6,7 @@ INCL = -I. -I$(TRI)
 
 vpath %.cc $(TRI)
 
-include $(TRI)/config/`uname -m`
+include $(TRI)/config/$(shell uname -m)
 
 UTILS = utils msg strcasecmp new $(ARCH) $(POLL)
 CORE = kernel Integrator Param
