@@ -1,12 +1,12 @@
 NAME = triad
 D = d
-LIB = $(LFLAGS) -lm
+LIB = $(LFLAGS) -L. -lm
 OPT = -g $(CFLAGS) -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 INCL = -I. -I$(TRI)
 
 vpath %.cc $(TRI)
 
-include $(TRI)/config/$(HOSTTYPE)
+include $(TRI)/config/`uname -m`
 
 UTILS = utils msg strcasecmp new $(ARCH) $(POLL)
 CORE = kernel Integrator Param
