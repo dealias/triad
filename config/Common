@@ -1,7 +1,7 @@
 NAME = triad
 D = d
 LIB = $(LFLAGS) -lm
-OPT = -g $(CFLAGS)
+OPT = -g $(CFLAGS) -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 INCL = -I. -I$(TRI)
 
 vpath %.cc $(TRI)
