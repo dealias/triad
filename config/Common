@@ -5,6 +5,7 @@ OPT = -g $(CFLAGS) -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 INCL = -I. -I$(TRI)
 
 vpath %.cc $(TRI)
+vpath %.c $(TRI)
 
 include $(TRI)/config/$(shell uname -m)
 

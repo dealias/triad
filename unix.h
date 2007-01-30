@@ -7,6 +7,8 @@
 
 const char* const dirsep="/";
 
+#include <netdb.h>
+
 #ifndef __GNUC__
 extern "C" int getdomainname(char *name, size_t len);
 extern "C" int vsnprintf(char *str, size_t size, const char  *format,
