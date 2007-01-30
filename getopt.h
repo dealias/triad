@@ -1,4 +1,3 @@
-#define __STDC__ 1
 /* Declarations for getopt.
    Copyright (C) 1989-1994, 1996-1999, 2001 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
@@ -151,7 +150,7 @@ extern int getopt (int __argc, char *const *__argv, const char *__shortopts);
 # ifndef __need_getopt
 extern int getopt_long (int __argc, char *const *__argv, const char *__shortopts,
 		        const struct option *__longopts, int *__longind);
-int getopt_long_only (int __argc, char *const *__argv,
+extern int getopt_long_only (int __argc, char *const *__argv,
 			     const char *__shortopts,
 		             const struct option *__longopts, int *__longind);
 
