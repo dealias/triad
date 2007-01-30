@@ -4,7 +4,7 @@ POLL = poll
 
 include $(TRI)/config/Common
 
-FILES = rgb palette msg new getopt
+FILES = rgb palette msg new getopt getopt1
 NAME = rgb
 
 include $(TRI)/config/Rules
