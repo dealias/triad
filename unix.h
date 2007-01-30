@@ -14,11 +14,6 @@ extern "C" int vsnprintf(char *str, size_t size, const char  *format,
 extern "C" int putenv(char *string);
 #endif
 
-#if defined __linux__ || defined __mips
-extern int sys_nerr;
-extern const char *const sys_errlist[];
-#endif
-
 #if defined __i386__ && defined __GNUC__ && defined __inline_mathop
 #define log2 __log2
 #define pow2 __pow2
