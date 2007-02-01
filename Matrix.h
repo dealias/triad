@@ -18,17 +18,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Matrix_h__
 #define __Matrix_h__ 1
 
-#define __MATRIX_H_VERSION__ 1.13
+#define __MATRIX_H_VERSION__ 1.14
 
 #include "Array.h"
 #include <cassert>
 #include <cmath>
-#include "pow.h"
-
-inline double pow2(int n)
-{
-  return pow(2,n);
-}
 
 namespace Array {
   
@@ -944,9 +938,9 @@ inline void Exp(array2<T>& B, const array2<U>& A)
   }
   Amax=sqrt(Amax);
 	
-  int j=1+((int) (floor(log2(Amax))+0.5));
+  unsigned int j=1+((int) (floor(log2(Amax))+0.5));
   if(j < 0) j=0;
-  double scale=pow2(-j);
+  double scale=1.0/(1 << j);
   B=A*scale;
   A.Purge();
 	
@@ -991,7 +985,7 @@ inline void Exp(array2<T>& B, const array2<U>& A)
 	
   Divide(B,D,N); // B=D^{-1} N
 	
-  for(int k=0; k < j; k++) B *= B;
+  for(unsigned int k=0; k < j; k++) B *= B;
 }	
 
 template<class T>
