@@ -44,7 +44,7 @@ extern "C" double log1p(double);
 #elifdef _AIX
 #undef hz
 
-#elifdef mips
+#elifdef __mips
 extern "C" double expm1(double);
 extern "C" double log1p(double);
 
