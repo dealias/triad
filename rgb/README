@@ -8,7 +8,7 @@ C++ users: see http://www.math.ualberta.ca/~bowman/xstream.html
 Each frame has the following format:
 Fields				Description
 
-Nz Ny Nx	Dimensions of the data. Use N1=1 to display a single
+Nz Ny Nx	Dimensions of the data. Use Nz=1 to display a single
 	two-dimensional cross-section. Cross-sections are displayed
 	consecutively, separated by a black band. The data is
 	stored sequentially, with the last index varying most rapidly.
@@ -31,7 +31,7 @@ convert -loop 10 -delay 50 C*.gif animation.gif
 
 From the online-help:
 
-RGB version 1.25 [(C) John C. Bowman 2005]
+RGB version 1.26 [(C) John C. Bowman 2005]
 Usage: rgb [options] file1 [file2 ...]
 
 Options: 

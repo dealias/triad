@@ -1,7 +1,7 @@
 #include "fftw++.h"
 
-ifstream fftw::ifWisdom;
-ofstream fftw::ofWisdom;
+std::ifstream fftw::ifWisdom;
+std::ofstream fftw::ofWisdom;
 bool fftw::Wise=false;
 
 // User settings:
