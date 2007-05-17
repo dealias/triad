@@ -19,6 +19,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include "options.h"
 #include "kernel.h"
+#include "fpu.h"
 
 #include <sys/stat.h> // On sun machines this must come after xstream.h
 
@@ -169,6 +170,8 @@ int main(int argc, char *argv[])
   for(i=1; i < argc; i++) cout << argv[i] << " ";
   cout << endl;
 	
+  fpu_trap();
+  
   Vocabulary->Sort();
 	
   // Do a preliminary parse of command line to obtain parameter file name.
