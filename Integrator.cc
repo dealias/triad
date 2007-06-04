@@ -12,7 +12,7 @@ inline void IntegratorBase::ChangeTimestep(double dtnew)
 	
   if(verbose > 1) cout << newl << "Time step changed from " << dt <<
 		    " to " << dtnew << " at t=" << t << "." << endl;
-  if(dtnew == 0.0) msg(ERROR,"Zero time step encountered");
+  if(dtnew < DBL_MIN) msg(ERROR,"Zero time step encountered");
   dt=dtnew;
   TimestepDependence();
 }
