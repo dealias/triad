@@ -286,9 +286,9 @@ public:
       swaparray(Y0,Y);
       Set(y,Y[0]);
       Set(y0,Y0[0]);
+      if(Problem->Stochastic() || !fsal())
+	Source(Src0,Y0,t);
     }
-    if(Problem->Stochastic() || !fsal())
-      Source(Src0,Y0,t);
   }
   
   virtual void Predictor(unsigned int n0, unsigned int ny);
@@ -328,14 +328,18 @@ public:
 
 class RK : public PC {
 protected:  
-  Array::array2<double> a,A;
-  Array::array1<double> b,B,c;
+  Array::array2<double> a,A;   // source coefficients for each stage
+  Array::array1<double> b,B,c; // b=error coefficients, c=time coefficients
   const unsigned int nstages;
   vector3 vSrc;
   vector2 vsource;
   bool FSAL;
+  const unsigned int Astages;
 public:
-  RK(int nstages, int Order) : nstages(nstages) {order=Order;}
+  RK(int Order, int nstages, bool FSAL=false) : 
+    nstages(nstages), FSAL(FSAL), Astages(FSAL ? nstages-1 : nstages) {
+    order=Order;
+  }
     
   Var getvsource(unsigned int stage, unsigned int i) {
     return vsource[stage][i];
@@ -372,6 +376,16 @@ public:
     new_y0=true;
   }
   
+  bool fsal() {
+    if(dynamic && FSAL) {
+      swaparray(vSrc[0],vSrc[Astages]);
+      Set(vsource[0],vSrc[0][0]);
+      Set(vsource[Astages],vSrc[Astages][0]);
+      return true;
+    }
+    return false;
+  }
+  
   void Stage(unsigned int s, unsigned int start, unsigned int stop) {
     rvector as=a[s];
     for(unsigned int j=start; j < stop; j++) {
@@ -387,7 +401,7 @@ public:
   }
   
   void Predictor(unsigned int start, unsigned int stop) {
-    for(unsigned int s=0; s < nstages-1; ++s) {
+    for(unsigned int s=0; s < Astages-1; ++s) {
       Stage(s,start,stop);
       double cs=c[s];
       Problem->BackTransform(Y,t+cs,cs,YI);
@@ -397,41 +411,56 @@ public:
   }
   
   int Corrector(unsigned int start, unsigned int stop) {
-    if(FSAL) msg(ERROR,"Too bad for you!");
     if(dynamic) {
-      rvector as=a[nstages-1];
-      for(unsigned int j=start; j < stop; j++) {
-	Var sum0=y0[j];
-	Var sum=sum0;
-	Var pred=sum0;
-	for(unsigned int k=0; k < nstages; k++) {
-	  Var Skj=vsource[k][j];
-	  sum += as[k]*Skj;
-	  pred += b[k]*Skj;
+      rvector as=a[Astages-1];
+      if(FSAL) {
+	for(unsigned int j=start; j < stop; j++) {
+	  Var sum=y0[j];
+	  for(unsigned int k=0; k < Astages; k++)
+	    sum += as[k]*vsource[k][j];
+	  y[j]=sum;
 	}
-	if(!Array::Active(errmask) || errmask[j])
-	  CalcError(sum0,sum,pred,sum);
-	y[j]=sum;
+	Source(vSrc[Astages],Y,t+dt);
+	for(unsigned int j=start; j < stop; j++) {
+	  Var pred=y0[j];
+	  for(unsigned int k=0; k < nstages; k++)
+	    pred += b[k]*vsource[k][j];
+	  if(!Array::Active(errmask) || errmask[j])
+	    CalcError(y0[j],y[j],pred,y[j]);
+	}
+      } else {
+	for(unsigned int j=start; j < stop; j++) {
+	  Var sum0=y0[j];
+	  Var sum=sum0;
+	  Var pred=sum0;
+	  for(unsigned int k=0; k < Astages; k++) {
+	    Var Skj=vsource[k][j];
+	    sum += as[k]*Skj;
+	    pred += b[k]*Skj;
+	  }
+	  if(!Array::Active(errmask) || errmask[j])
+	    CalcError(sum0,sum,pred,sum);
+	  y[j]=sum;
+	}
       }
-    } else Stage(nstages-1,start,stop);
+    } else Stage(Astages-1,start,stop);
     return 1;
   };
   
-  void allocate(bool fsal=false) {
-    FSAL=fsal;
-    A.Allocate(nstages,nstages);
-    a.Allocate(nstages,nstages);
-    if(!fsal) {
-      Allocate(B,nstages);
-      Allocate(b,nstages);
-    }
-    Allocate(c,nstages);
+  void allocate() {
+    A.Allocate(Astages,Astages);
+    a.Allocate(Astages,Astages);
     A=0.0;
+    
+    Allocate(B,nstages);
+    Allocate(b,nstages);
     B=0.0;
+    
+    Allocate(c,Astages);
   }
     
   void csum() {
-    for(unsigned int s=0; s < nstages; ++s) {
+    for(unsigned int s=0; s < Astages; ++s) {
       Real sum=0.0;
       for(unsigned int k=0; k <= s; ++k)
 	sum += a[s][k];
@@ -440,15 +469,14 @@ public:
   }
   
   void TimestepDependence() {
-    for(unsigned int s=0; s < nstages; ++s) {
+    for(unsigned int s=0; s < Astages; ++s) {
       rvector as=a[s];
       rvector As=A[s];
       for(unsigned int k=0; k <= s; k++)
 	as[k]=dt*As[k];
     }
-    if(!FSAL)
-      for(unsigned int k=0; k < nstages; k++)
-	b[k]=dt*B[k];
+    for(unsigned int k=0; k < nstages; k++)
+      b[k]=dt*B[k];
     csum();
   }
 };
@@ -479,6 +507,26 @@ public:
   }
 };
 
+class RK3p : public RK {
+public:
+  const char *Name() {return "Third-Order TEST Bogacki-Shampine Runge-Kutta";}
+  
+  RK3p() : RK(3,4,true) {
+    allocate();
+    A[0][0]=0.5;
+    A[1][1]=0.75;
+    
+    A[2][0]=2.0/9.0;
+    A[2][1]=1.0/3.0;
+    A[2][2]=4.0/9.0;
+    
+    B[0]=7.0/24.0;
+    B[1]=0.25;
+    B[2]=1.0/3.0;
+    B[3]=0.125;
+  }
+};
+
 class RK5p : public RK {
 public:
   const char *Name() {return "Fifth-Order TEST Runge-Kutta";}
@@ -506,7 +554,7 @@ public:
     return 1;
   };
   
-  RK5p() : RK(6,5) {
+  RK5p() : RK(5,6) {
     allocate();
     
     A[0][0]=0.2;

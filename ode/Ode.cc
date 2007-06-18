@@ -124,13 +124,11 @@ OdeVocabulary::OdeVocabulary()
   INTEGRATOR(TestIntegrator);
   INTEGRATOR(RK1p);
   INTEGRATOR(RK2p);
+  INTEGRATOR(RK3p);
   INTEGRATOR(RK5p);
 #if 0  
-  INTEGRATOR(E_Euler);
-  INTEGRATOR(I_Euler);
   INTEGRATOR(RB1);
   INTEGRATOR(I_PC);
-  
   INTEGRATOR(Implicit);
 #endif  
 }
@@ -168,10 +166,10 @@ void Ode::NonLinearSource(const vector2& Src, const vector2& Y, double)
   count++;
   vector source=Src[0];
   vector y=Y[0];
-//  source[0]=cos(y[0]);
+  source[0]=cos(y[0]);
 //  source[0]=cos(t)*y[0];
 //  source[0]=-A*y[0]-B*y[0]*y[0];
-    source[0]=-A*y[0]-B*exp(y[0].re);
+//    source[0]=-A*y[0]-B*exp(y[0].re);
 }
 
 void Ode::LinearSource(const vector2& Src, const vector2& Y, double)
@@ -182,5 +180,5 @@ void Ode::LinearSource(const vector2& Src, const vector2& Y, double)
 }
 
 void Ode::FinalOutput() {
-  cout << endl << "Number of source evaluations: " << count << endl;
+  cout << endl << "NUMBER OF SOURCE EVALUATIONS: " << count << endl;
 }

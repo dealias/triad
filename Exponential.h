@@ -72,6 +72,46 @@ inline void E_Euler<T>::Predictor() {
 }
   
 template<class T>
+class I_Euler : public Euler, public Exponential {
+protected:
+  T *parent;
+public:
+  I_Euler(T *parent) : parent(parent) {}
+  
+  const char *Name() {return "Integrating Factor Euler";}
+  
+  void Allocator() {
+    Euler::Allocator();
+    parent->IndexLimits(start,stop,startN,stop0,start0,stopN);
+    Exponential::Allocator();
+  }
+  
+  void Source(const vector2& Src, const vector2& Y, double t) {
+    parent->ExponentialSource(Src,Y,t);
+  }
+  
+  inline void TimestepDependence(),Predictor();
+  virtual void Predictor(unsigned int, unsigned int) {
+    I_Euler<T>::Predictor();
+    Euler::Predictor(startN,stopN);
+  }
+};
+
+template<class T>
+inline void I_Euler<T>::TimestepDependence() {
+  for(unsigned int j=start; j < stop; j++) {
+    Nu nuk=this->parent->LinearCoeff(j);
+    coeff0[j]=exp(-nuk*dt);
+  }
+}
+
+template<class T>
+inline void I_Euler<T>::Predictor() {
+  for(unsigned int j=start; j < stop; j++)	
+    y[j]=coeff0[j]*(y[j]+dt*source[j]);
+}
+  
+template<class T>
 class E_PC : public PC, public Exponential {
 protected:
   T *parent;
@@ -717,6 +757,7 @@ inline void E_RK4HO<T>::Corrector()
 template<class T>
 void ExponentialIntegrators(Table<IntegratorBase> *t, T *parent) {
   new entry<E_Euler<T>,IntegratorBase,T>("E_Euler",t,parent);
+  new entry<I_Euler<T>,IntegratorBase,T>("I_Euler",t,parent);
   new entry<E_PC<T>,IntegratorBase,T>("E_PC",t,parent);
   new entry<E_RK2<T>,IntegratorBase,T>("E_RK2",t,parent);
   new entry<E_RK3<T>,IntegratorBase,T>("E_RK3",t,parent);
