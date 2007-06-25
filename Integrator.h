@@ -527,6 +527,47 @@ public:
   }
 };
 
+class RK4p : public RK {
+public:
+  const char *Name() {return "Fourth-Order TEST Classic Runge-Kutta";}
+   
+  void Predictor(unsigned int start, unsigned int stop) {
+    Stage(0,start,stop);
+    double cs=c[0];
+    Problem->BackTransform(Y,t+cs,cs,YI);
+    Source(vSrc[1],Y,t+cs);
+    if(Array::Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
+
+    for(unsigned int s=1; s < 3; ++s) {
+      rvector as=a[s];
+      for(unsigned int j=start; j < stop; j++) {
+	Var sum=y0[j];
+	sum += as[s]*vsource[s][j];
+	y[j]=sum;
+      }
+      cs=c[s];
+      Problem->BackTransform(Y,t+cs,cs,YI);
+      Source(vSrc[s+1],Y,t+cs);
+      if(Array::Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
+    }
+  }
+
+  RK4p() : RK(4,4) {
+    allocate();
+    A[0][0]=0.5;
+
+    A[1][1]=0.5;
+    
+    A[2][2]=1.0;
+    
+    A[3][0]=1.0/6.0;
+    A[3][1]=1.0/3.0;
+    A[3][2]=1.0/3.0;
+    A[3][3]=1.0/6.0;
+
+  }
+};
+
 class RK5p : public RK {
 public:
   const char *Name() {return "Fifth-Order TEST Runge-Kutta";}
