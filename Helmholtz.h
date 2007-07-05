@@ -15,7 +15,7 @@ namespace Array {
     void Defect(const Array2<T>& d0, const Array2<T>& u, const Array2<T>& f);
     void GaussSeidel(const Array2<T>&, const Array2<T>&, int, int, int, int);
     void Smooth(const Array2<T>& u, const Array2<T>& f);
-    virtual inline void BoundaryConditions(const Array2<T>& u)=0;
+    virtual void BoundaryConditions(const Array2<T>& u)=0;
   };
 
   template<class T>
