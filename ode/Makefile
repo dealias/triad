@@ -1,4 +1,4 @@
-TRI = $(HOME)/tri
+TRI = ..
 ARCH = unix
 POLL = poll
 
