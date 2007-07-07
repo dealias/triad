@@ -400,52 +400,22 @@ public:
     Stage(s,start,ny);
   }
   
+  void PredictorSource(unsigned int s, unsigned int start,
+		       unsigned int stop) {
+    double cs=c[s];
+    Problem->BackTransform(Y,t+cs,cs,YI);
+    Source(vSrc[s+1],Y,t+cs);
+    if(Array::Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
+  }
+  
   void Predictor(unsigned int start, unsigned int stop) {
     for(unsigned int s=0; s < Astages-1; ++s) {
       Stage(s,start,stop);
-      double cs=c[s];
-      Problem->BackTransform(Y,t+cs,cs,YI);
-      Source(vSrc[s+1],Y,t+cs);
-      if(Array::Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
+      PredictorSource(s,start,stop);
     }
   }
   
-  int Corrector(unsigned int start, unsigned int stop) {
-    if(dynamic) {
-      rvector as=a[Astages-1];
-      if(FSAL) {
-	for(unsigned int j=start; j < stop; j++) {
-	  Var sum=y0[j];
-	  for(unsigned int k=0; k < Astages; k++)
-	    sum += as[k]*vsource[k][j];
-	  y[j]=sum;
-	}
-	Source(vSrc[Astages],Y,t+dt);
-	for(unsigned int j=start; j < stop; j++) {
-	  Var pred=y0[j];
-	  for(unsigned int k=0; k < nstages; k++)
-	    pred += b[k]*vsource[k][j];
-	  if(!Array::Active(errmask) || errmask[j])
-	    CalcError(y0[j],y[j],pred,y[j]);
-	}
-      } else {
-	for(unsigned int j=start; j < stop; j++) {
-	  Var sum0=y0[j];
-	  Var sum=sum0;
-	  Var pred=sum0;
-	  for(unsigned int k=0; k < Astages; k++) {
-	    Var Skj=vsource[k][j];
-	    sum += as[k]*Skj;
-	    pred += b[k]*Skj;
-	  }
-	  if(!Array::Active(errmask) || errmask[j])
-	    CalcError(sum0,sum,pred,sum);
-	  y[j]=sum;
-	}
-      }
-    } else Stage(Astages-1,start,stop);
-    return 1;
-  };
+  int Corrector(unsigned int start, unsigned int stop);
   
   void allocate() {
     A.Allocate(Astages,Astages);
@@ -532,27 +502,51 @@ public:
   const char *Name() {return "Fourth-Order TEST Runge-Kutta";}
 
   void Predictor(unsigned int start, unsigned int stop) {
-    Stage(0,start,stop);
-    double cs=c[0];
-    Problem->BackTransform(Y,t+cs,cs,YI);
-    Source(vSrc[1],Y,t+cs);
-    if(Array::Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
-
-    for(unsigned int s=1; s < Astages-1; ++s) {
-      rvector as=a[s];
-      for(unsigned int j=start; j < stop; j++) {
-	Var sum=y0[j];
-	sum += as[s]*vsource[s][j];
-	y[j]=sum;
-      }
-      cs=c[s];
-      Problem->BackTransform(Y,t+cs,cs,YI);
-      Source(vSrc[s+1],Y,t+cs);
-      if(Array::Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
+    double halfdt=0.5*dt;
+    for(unsigned int j=start; j < stop; j++)
+      y[j]=y0[j]+halfdt*vsource[0][j];
+    PredictorSource(0,start,stop);
+    
+    for(unsigned int j=start; j < stop; j++)
+      y[j]=y0[j]+halfdt*vsource[1][j];
+    PredictorSource(1,start,stop);
+    
+    for(unsigned int j=start; j < stop; j++)
+      y[j]=y0[j]+dt*vsource[2][j];
+    PredictorSource(2,start,stop);
+    
+    if(dynamic) {
+      double twodt=2.0*dt;
+      for(unsigned int j=start; j < stop; j++)
+	y[j]=y0[j]-dt*vsource[0][j]+twodt*vsource[1][j];
+      PredictorSource(3,start,stop);
     }
   }
 
-  RK4p() : RK(4,4) {
+  int Corrector(unsigned int start, unsigned int stop) {
+    if(dynamic) {
+      rvector as=a[4];
+      for(unsigned int j=start; j < stop; j++) {
+	Var sum0=y0[j];
+	Var sum=sum0+as[0]*vsource[0][j]+as[1]*vsource[1][j]+
+	  as[2]*vsource[2][j]+as[3]*vsource[3][j];
+	Var pred=sum0+b[0]*vsource[0][j]+b[1]*vsource[1][j]+
+	  b[4]*vsource[4][j];
+	if(!Array::Active(errmask) || errmask[j])
+	  CalcError(sum0,sum,pred,sum);
+	y[j]=sum;
+      }
+    } else {
+      rvector as=a[4];
+      for(unsigned int j=start; j < stop; j++) {
+	y[j]=y0[j]+as[0]*vsource[0][j]+as[1]*vsource[1][j]+
+	  as[2]*vsource[2][j]+as[3]*vsource[3][j];
+      }
+    }
+    return 1;
+  };
+  
+  RK4p() : RK(4,5) {
     allocate();
     A[0][0]=0.5;
 
@@ -560,14 +554,17 @@ public:
     
     A[2][2]=1.0;
     
-    A[3][0]=1.0/6.0;
-    A[3][1]=1.0/3.0;
-    A[3][2]=1.0/3.0;
-    A[3][3]=1.0/6.0;
+    A[3][0]=-1.0;
+    A[3][1]=2.0;
+
+    A[4][0]=1.0/6.0;
+    A[4][1]=1.0/3.0;
+    A[4][2]=1.0/3.0;
+    A[4][3]=1.0/6.0;
 
     B[0]=1.0/6.0;
     B[1]=2.0/3.0;
-    B[3]=1.0/6.0;
+    B[4]=1.0/6.0;
 
   }
 };
