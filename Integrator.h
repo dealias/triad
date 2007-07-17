@@ -329,7 +329,7 @@ public:
 class RK : public PC {
 protected:  
   Array::array2<double> a,A;   // source coefficients for each stage
-  Array::array1<double> b,B,c; // b=error coefficients, c=time coefficients
+  Array::array1<double>::opt b,B,c; // b=error coefficients, c=time coefficients
   const unsigned int nstages;
   vector3 vSrc;
   vector2 vsource;
@@ -424,7 +424,8 @@ public:
     
     Allocate(B,nstages);
     Allocate(b,nstages);
-    B=0.0;
+    for(unsigned int i=0; i < nstages; ++i)
+      B[i]=0.0;
     
     Allocate(c,Astages);
   }
