@@ -502,23 +502,27 @@ public:
   const char *Name() {return "Fourth-Order TEST Runge-Kutta";}
 
   void Predictor(unsigned int start, unsigned int stop) {
-    double halfdt=0.5*dt;
+    Real a00=a[0][0];
     for(unsigned int j=start; j < stop; j++)
-      y[j]=y0[j]+halfdt*vsource[0][j];
+      y[j]=y0[j]+a00*vsource[0][j];
     PredictorSource(0,start,stop);
     
+    Real a11=a[1][1];
     for(unsigned int j=start; j < stop; j++)
-      y[j]=y0[j]+halfdt*vsource[1][j];
+      y[j]=y0[j]+a11*vsource[1][j];
     PredictorSource(1,start,stop);
     
+    Real a22=a[2][2];
     for(unsigned int j=start; j < stop; j++)
-      y[j]=y0[j]+dt*vsource[2][j];
+      y[j]=y0[j]+a22*vsource[2][j];
     PredictorSource(2,start,stop);
     
     if(dynamic) {
-      double twodt=2.0*dt;
+      rvector a3=a[3];
+      Real a30=a3[0];
+      Real a31=a3[1];
       for(unsigned int j=start; j < stop; j++)
-	y[j]=y0[j]-dt*vsource[0][j]+twodt*vsource[1][j];
+	y[j]=y0[j]+a30*vsource[0][j]+a31*vsource[1][j];
       PredictorSource(3,start,stop);
     }
   }
