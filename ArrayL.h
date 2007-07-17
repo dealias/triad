@@ -29,7 +29,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifdef NDEBUG
 #define __check(i,n,dim,m)
 #else
-#define __check(i,n,dim,m) Check(i,n,dim,m)
+#define __check(i,n,dim,m) this->Check(i,n,dim,m)
 #endif
 
 typedef unsigned int uint;
@@ -40,29 +40,34 @@ template<class T>
 class array2L : public array1<T> {
   uint n;
  public:
-  void Dimension(uint n0) {n=n0; size=n*(n+1)/2;}
+  void Dimension(uint n0) {n=n0; this->size=n*(n+1)/2;}
 
   uint index(int i, int j) const {return i*(i+1)/2+j;}
   int N() const {return n;}
   
   array2L() {}
-  array2L(uint n) {Allocate(n);}
-  array2L(uint n, T *v0) {Dimension(n,v0);}
+  array2L(uint n0, size_t align=0) {n=n0; this->Allocate(n0,align);}
+  array2L(uint n0, T *v0) {n=n0; Dimension(n0,v0);}
   array2L(const array2L<T>& A) : n(A.n) {
-    v=A.v; size=A.size; state=A.test(temporary);
+    this->v=A.v; this->size=A.size; this->state=A.test(this->temporary);
   }
 	
   array1<T> operator [] (uint i) const {
     __check(i,n,1,1);
-    return array1<T>(i+1,v+index(i,0));
+    return array1<T>(i+1,this->v+index(i,0));
+  }
+	
+  array1<T> operator [] (int i) const {
+    __check(i,n,1,1);
+    return array1<T>(i+1,this->v+index(i,0));
   }
 	
   T& operator () (uint i, uint j) const {
     __check(i,n,2,1);
     __check(j,i+1,2,1);
-    return v[index(i,j)];
+    return this->v[index(i,j)];
   }
-  T* operator () () const {return v;}
+  T* operator () () const {return this->v;}
 	
   array2L<T>& operator = (T a) {Load(a); return *this;}
 };
