@@ -329,8 +329,12 @@ public:
 class RK : public PC {
 protected:  
   Array::array2<double> a,A;   // source coefficients for each stage
-  Array::array1<double>::opt b,B,c; // b=error coefficients, c=time coefficients
+  Array::array1<double>::opt b,B,c; // b=error coefficients, c=time coeffs
+  Array::array2<unsigned int> Srcindex;
+  Array::array1<unsigned int>::opt sumlength;
   const unsigned int nstages;
+  bool optimised;
+
   vector3 vSrc;
   vector2 vsource;
   bool FSAL;
@@ -339,6 +343,7 @@ public:
   RK(int Order, int nstages, bool FSAL=false) : 
     nstages(nstages), FSAL(FSAL), Astages(FSAL ? nstages-1 : nstages) {
     order=Order;
+    optimised=0;
   }
     
   Var getvsource(unsigned int stage, unsigned int i) {
@@ -387,12 +392,24 @@ public:
   }
   
   void Stage(unsigned int s, unsigned int start, unsigned int stop) {
-    rvector as=a[s];
-    for(unsigned int j=start; j < stop; j++) {
-      Var sum=y0[j];
-      for(unsigned int k=0; k <= s; k++)
-	sum += as[k]*vsource[k][j];
-      y[j]=sum;
+    if (optimised) {
+      uvector Srcindexs = Srcindex[s];
+      rvector as=a[s];
+      unsigned int last=sumlength[s];
+      for(unsigned int j=start; j < stop; j++) {
+	Var sum=y0[j];
+	for(unsigned int k=0; k < last; ++k) 
+	  sum += as[k]*vsource[Srcindexs[k]][j];
+	y[j]=sum;
+      }
+    } else {    
+      rvector as=a[s];
+      for(unsigned int j=start; j < stop; j++) {
+	Var sum=y0[j];
+	for(unsigned int k=0; k <= s; k++)
+	  sum += as[k]*vsource[k][j];
+	y[j]=sum;
+      }
     }
   }
   
@@ -426,10 +443,33 @@ public:
     Allocate(b,nstages);
     for(unsigned int i=0; i < nstages; ++i)
       B[i]=0.0;
+    Allocate(sumlength,Astages);
     
+    Srcindex.Allocate(Astages,Astages);
+
     Allocate(c,Astages);
   }
-    
+
+  void optimise() {
+    for (unsigned int i=0; i < Astages; ++i) {
+      unsigned int counter=0;
+      for (unsigned int j=0; j <= i; ++j) {
+	if (A[i][j] != 0.0) 
+	  Srcindex[i][counter++]=j;
+      }
+      sumlength[i]=counter;
+    }
+    for (unsigned int i=0; i < Astages; ++i) {
+      for (unsigned int j=0; j < i; ++j) {
+	while (A[i][j] == 0.0) {
+	  for (unsigned int k=j; k < Astages; ++k)
+	    A[i][k] = A[i][k+1];
+	}
+      }
+    }
+    optimised=1;
+  }
+
   void csum() {
     for(unsigned int s=0; s < Astages; ++s) {
       Real sum=0.0;
@@ -461,6 +501,8 @@ public:
     A[0][0]=1.0;
     
     B[0]=0.0;
+
+    optimise();
   }
 };
 
@@ -475,13 +517,15 @@ public:
     
     B[0]=1.0;
     B[1]=0.0;
+
+    optimise();
   }
 };
 
 class RK3p : public RK {
 public:
   const char *Name() {return "Third-Order TEST Bogacki-Shampine Runge-Kutta";}
-  
+
   RK3p() : RK(3,4,true) {
     allocate();
     A[0][0]=0.5;
@@ -495,7 +539,10 @@ public:
     B[1]=0.25;
     B[2]=1.0/3.0;
     B[3]=0.125;
+    
+    optimise();
   }
+    
 };
 
 class RK4p : public RK {
@@ -550,7 +597,7 @@ public:
     }
     return 1;
   };
-  
+
   RK4p() : RK(4,5) {
     allocate();
     A[0][0]=0.5;
@@ -571,13 +618,15 @@ public:
     B[1]=2.0/3.0;
     B[4]=1.0/6.0;
 
+    optimise();
   }
 };
 
 class RK5p : public RK {
 public:
   const char *Name() {return "Fifth-Order TEST Runge-Kutta";}
-  
+
+  /*
   int Corrector(unsigned int start, unsigned int stop) {
     if(dynamic) {
       rvector as=a[5];
@@ -600,6 +649,8 @@ public:
     }
     return 1;
   };
+  */
+  
   
   RK5p() : RK(5,6) {
     allocate();
@@ -619,6 +670,8 @@ public:
 								  
     B[0]=2825.0/27648.0; B[2]=18575.0/48384.0; B[3]=13525.0/55296.0;
     B[4]=277.0/14336.0; B[5]=0.25;
+
+    optimise();
   }
 };
 
