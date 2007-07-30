@@ -1,10 +1,10 @@
 /* C++ interface to the XDR External Data Representation I/O routines
-   Version 1.45
+   Version 1.46
    Copyright (C) 1999-2007 John C. Bowman
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
+the Free Software Foundation; either version 3 of the License, or
 (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -24,6 +24,15 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #endif
 
 #include <cstdio>
+
+#ifndef _LARGEFILE_SOURCE
+#define fseeko fseek
+#define ftello ftell
+#endif
+
+#include <sys/types.h>
+#include <rpc/types.h>
+#define quad_t long long
 
 #ifdef _POSIX_SOURCE
 #undef _POSIX_SOURCE
@@ -73,15 +82,15 @@ class xstream : public xios {
 
   void precision(int) {}
   
-  xstream& seek(long pos, seekdir dir=beg) {
+  xstream& seek(off_t pos, seekdir dir=beg) {
     if(buf) {
       clear();
-      if(fseek(buf,pos,dir) != 0) set(failbit); 
+      if(fseeko(buf,pos,dir) != 0) set(failbit); 
     }
     return *this;
   }
-  long tell() {
-    return ftell(buf);
+  off_t tell() {
+    return ftello(buf);
   }
 };
 
@@ -123,6 +132,7 @@ public:
   IXSTREAM(int,int);
   IXSTREAM(unsigned int,u_int);
   IXSTREAM(long,long);
+  IXSTREAM(long long,longlong_t);
   IXSTREAM(unsigned long,u_long);
   IXSTREAM(short,short);
   IXSTREAM(unsigned short,u_short);
@@ -174,6 +184,7 @@ public:
   OXSTREAM(int,int);
   OXSTREAM(unsigned int,u_int);
   OXSTREAM(long,long);
+  OXSTREAM(long long,longlong_t);
   OXSTREAM(unsigned long,u_long);
   OXSTREAM(short,short);
   OXSTREAM(unsigned short,u_short);
@@ -234,5 +245,7 @@ inline oxstream& flush(oxstream& s) {s.flush(); return s;}
 #undef OXSTREAM
 
 }
+
+#undef quad_t
 
 #endif
