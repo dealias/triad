@@ -468,7 +468,7 @@ int LeapFrog::Corrector(unsigned int start, unsigned int stop)
 int RK::Corrector(unsigned int start, unsigned int stop) {
   if(dynamic) {
     if(FSAL) {
-      Stage(Astages-1,start,stop);
+      RK::Stage(Astages-1,start,stop);
       Source(vSrc[Astages],Y,t+dt);
       for(unsigned int j=start; j < stop; j++) {
 	Var pred=y0[j];
@@ -493,11 +493,10 @@ int RK::Corrector(unsigned int start, unsigned int stop) {
 	y[j]=sum;
       }
     }
-  } else Stage(Astages-1,start,stop);
+  } else RK::Stage(Astages-1,start,stop);
   return 1;
-};
+}
   
-
 void RK2::Predictor(unsigned int start, unsigned int stop)
 {
   for(unsigned int j=start; j < stop; j++)

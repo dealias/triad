@@ -329,14 +329,15 @@ public:
 class RK : public PC {
 protected:  
   Array::array2<double> a,A;   // source coefficients for each stage
-  Array::array1<double>::opt b,B,c; // b=error coefficients, c=time coefficients
+  Array::array1<double>::opt b,B,C; // b=error coefficients, C=time coefficients
   const unsigned int nstages;
   vector3 vSrc;
   vector2 vsource;
   bool FSAL;
   const unsigned int Astages;
 public:
-  RK(int Order, int nstages, bool FSAL=false) : 
+
+  RK(int Order, int nstages, bool FSAL=false) :
     nstages(nstages), FSAL(FSAL), Astages(FSAL ? nstages-1 : nstages) {
     order=Order;
   }
@@ -357,7 +358,7 @@ public:
   }
   
   void Source(unsigned int i) {
-    Source(vSrc[i],Y,t+c[i]);
+    Source(vSrc[i],Y,t+C[i]*dt);
   }
   
   void Allocator(const vector2& Y0, 
@@ -366,6 +367,20 @@ public:
     IntegratorBase::Allocator(Y0,NY0,errmask0);
   }
 
+  void Csum() {
+    for(unsigned int s=0; s < Astages; ++s) {
+      Real sum=0.0;
+      rvector As=A[s];
+      for(unsigned int k=0; k <= s; ++k)
+	sum += As[k];
+      C[s]=sum;
+    }
+    
+    for(unsigned int k=0; k < nstages; k++)
+      if(B[k] != 0.0) return;
+    dynamic=0;
+  }
+  
   void Allocator() {
     Alloc(Y0,y0);
     vSrc.Allocate(nstages);
@@ -374,6 +389,7 @@ public:
       Alloc0(vSrc[s],vsource[s]);
     Src0.Dimension(vSrc[0]);
     new_y0=true;
+    Csum();
   }
   
   bool fsal() {
@@ -386,7 +402,7 @@ public:
     return false;
   }
   
-  void Stage(unsigned int s, unsigned int start, unsigned int stop) {
+  virtual void Stage(unsigned int s, unsigned int start, unsigned int stop) {
     rvector as=a[s];
     for(unsigned int j=start; j < stop; j++) {
       Var sum=y0[j];
@@ -402,20 +418,20 @@ public:
   
   void PredictorSource(unsigned int s, unsigned int start,
 		       unsigned int stop) {
-    double cs=c[s];
+    double cs=C[s]*dt;
     Problem->BackTransform(Y,t+cs,cs,YI);
     Source(vSrc[s+1],Y,t+cs);
     if(Array::Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
   }
   
-  void Predictor(unsigned int start, unsigned int stop) {
+  virtual void Predictor(unsigned int start, unsigned int stop) {
     for(unsigned int s=0; s < Astages-1; ++s) {
       Stage(s,start,stop);
       PredictorSource(s,start,stop);
     }
   }
   
-  int Corrector(unsigned int start, unsigned int stop);
+  virtual int Corrector(unsigned int start, unsigned int stop);
   
   void allocate() {
     A.Allocate(Astages,Astages);
@@ -427,19 +443,10 @@ public:
     for(unsigned int i=0; i < nstages; ++i)
       B[i]=0.0;
     
-    Allocate(c,Astages);
+    Allocate(C,Astages);
   }
     
-  void csum() {
-    for(unsigned int s=0; s < Astages; ++s) {
-      Real sum=0.0;
-      for(unsigned int k=0; k <= s; ++k)
-	sum += a[s][k];
-      c[s]=sum;
-    }
-  }
-  
-  void TimestepDependence() {
+  virtual void TimestepDependence() {
     for(unsigned int s=0; s < Astages; ++s) {
       rvector as=a[s];
       rvector As=A[s];
@@ -448,19 +455,15 @@ public:
     }
     for(unsigned int k=0; k < nstages; k++)
       b[k]=dt*B[k];
-    csum();
   }
 };
   
 class RK1p : public RK {
 public:
   const char *Name() {return "First-Order TEST Runge-Kutta";}
-  
   RK1p() : RK(1,1) {
     allocate();
     A[0][0]=1.0;
-    
-    B[0]=0.0;
   }
 };
 
@@ -471,10 +474,10 @@ public:
   RK2p() : RK(2,2) {
     allocate();
     A[0][0]=0.5;
+    
     A[1][1]=1.0;
     
     B[0]=1.0;
-    B[1]=0.0;
   }
 };
 
@@ -485,6 +488,7 @@ public:
   RK3p() : RK(3,4,true) {
     allocate();
     A[0][0]=0.5;
+    
     A[1][1]=0.75;
     
     A[2][0]=2.0/9.0;
@@ -495,6 +499,24 @@ public:
     B[1]=0.25;
     B[2]=1.0/3.0;
     B[3]=0.125;
+  }
+};
+
+class RK3Cp : public RK {
+public:
+  const char *Name() {return "Third-Order TEST Classical Runge-Kutta";}
+  
+  RK3Cp() : RK(3,3) {
+    allocate();
+    A[0][0]=0.5;
+    
+    A[1][0]=-1.0; A[1][1]=2.0;
+    
+    A[2][0]=1.0/6.0;
+    A[2][1]=2.0/3.0;
+    A[2][2]=1.0/6.0;
+    
+    B[1]=1.0;
   }
 };
 

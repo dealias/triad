@@ -48,12 +48,12 @@ inline double phi2(double x)
     return Coeff[1]+x*Coeff[2]+x2*Coeff[3]+x3*Coeff[4]+x2*x2*Coeff[5]
       +x5*Coeff[6]+x3*x3*Coeff[7]+x5*x2*Coeff[8]+x5*x3*Coeff[9];
   else {
-  register long double x7=x5*x2;
-  register long double x8=x7*x;
-  return Coeff[1]+x*Coeff[2]+x2*Coeff[3]+x3*Coeff[4]+x2*x2*Coeff[5]
-    +x5*Coeff[6]+x3*x3*Coeff[7]+x7*Coeff[8]+x8*Coeff[9]
-    +x8*x*Coeff[10]+x5*x5*Coeff[11]+x8*x3*Coeff[12]+x7*x5*Coeff[13]+
-    x8*x5*Coeff[14]+x7*x7*Coeff[15]+x8*x7*Coeff[16]+x8*x8*Coeff[17];
+    register long double x7=x5*x2;
+    register long double x8=x7*x;
+    return Coeff[1]+x*Coeff[2]+x2*Coeff[3]+x3*Coeff[4]+x2*x2*Coeff[5]
+      +x5*Coeff[6]+x3*x3*Coeff[7]+x7*Coeff[8]+x8*Coeff[9]
+      +x8*x*Coeff[10]+x5*x5*Coeff[11]+x8*x3*Coeff[12]+x7*x5*Coeff[13]+
+      x8*x5*Coeff[14]+x7*x7*Coeff[15]+x8*x7*Coeff[16]+x8*x8*Coeff[17];
   }
 }
 
@@ -67,17 +67,17 @@ inline double phi3(double x)
   register long double x5=x2*x3;
   if(fabs(x) < 0.1) 
     return Coeff[2]+x*Coeff[3]+x2*Coeff[4]+x3*Coeff[5]
-	    +x2*x2*Coeff[6]+x5*Coeff[7]+x3*x3*Coeff[8]+x5*x2*Coeff[9]
-	    +x5*x3*Coeff[10];
+      +x2*x2*Coeff[6]+x5*Coeff[7]+x3*x3*Coeff[8]+x5*x2*Coeff[9]
+      +x5*x3*Coeff[10];
   else {
-  register long double x7=x5*x2;
-  register long double x8=x7*x;
-  register long double x16=x8*x8;
-  return Coeff[2]+x*Coeff[3]+x2*Coeff[4]+x3*Coeff[5]
-	  +x2*x2*Coeff[6]+x5*Coeff[7]+x3*x3*Coeff[8]+x5*x2*Coeff[9]
-	  +x5*x3*Coeff[10]+x8*x*Coeff[11]
-	  +x5*x5*Coeff[12]+x8*x3*Coeff[13]+x7*x5*Coeff[14]
-	  +x8*x5*Coeff[15]+x7*x7*Coeff[16]+x8*x7*Coeff[17]+x16*Coeff[18]
-	  +x16*x*Coeff[19]+x16*x2*Coeff[20];
+    register long double x7=x5*x2;
+    register long double x8=x7*x;
+    register long double x16=x8*x8;
+    return Coeff[2]+x*Coeff[3]+x2*Coeff[4]+x3*Coeff[5]
+      +x2*x2*Coeff[6]+x5*Coeff[7]+x3*x3*Coeff[8]+x5*x2*Coeff[9]
+      +x5*x3*Coeff[10]+x8*x*Coeff[11]
+      +x5*x5*Coeff[12]+x8*x3*Coeff[13]+x7*x5*Coeff[14]
+      +x8*x5*Coeff[15]+x7*x7*Coeff[16]+x8*x7*Coeff[17]+x16*Coeff[18]
+      +x16*x*Coeff[19]+x16*x2*Coeff[20];
   }
 }

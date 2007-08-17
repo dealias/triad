@@ -125,6 +125,7 @@ OdeVocabulary::OdeVocabulary()
   INTEGRATOR(RK1p);
   INTEGRATOR(RK2p);
   INTEGRATOR(RK3p);
+  INTEGRATOR(RK3Cp);
   INTEGRATOR(RK4p);
   INTEGRATOR(RK5p);
 #if 0  
