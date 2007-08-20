@@ -386,7 +386,7 @@ void set_timer()
   cputime(cpu0);
   if(!restart) {
     for(int i=0; i < ncputime; i++) cpu_restart[i]=0.0;
-    fstats << setw(w) << "it"
+    fstats << "#" << setw(w) << "it"
 	   << " " << setw(w) << "iteration"
 	   << " " << setw(e) << "t"
 	   << " " << setw(e) << "dt"
