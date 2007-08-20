@@ -69,10 +69,10 @@ public:
 		   unsigned int& startM, unsigned int& stopM) {
     start=0;
     stop=1;
-    startT=0;
-    stopT=0;
-    startM=0;
-    stopM=0;
+    startT=1;
+    stopT=1;
+    startM=1;
+    stopM=1;
   }
   
 };
@@ -122,12 +122,6 @@ OdeVocabulary::OdeVocabulary()
   // Specialized integrators:
   
   INTEGRATOR(TestIntegrator);
-  INTEGRATOR(RK1p);
-  INTEGRATOR(RK2p);
-  INTEGRATOR(RK3p);
-  INTEGRATOR(RK3Cp);
-  INTEGRATOR(RK4p);
-  INTEGRATOR(RK5p);
 #if 0  
   INTEGRATOR(RB1);
   INTEGRATOR(I_PC);

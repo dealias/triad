@@ -54,7 +54,7 @@ public:
     for(unsigned int s=0; s < Astages-1; ++s) {
       Stage(s,start,stop);
       RK::Stage(s,startN,stopN);
-      PredictorSource(s,start,stop);
+      PredictorSource(s);
     }
   }
   
@@ -104,7 +104,7 @@ template<class T>
 class E_Euler : public E_RK<T> {
 protected:
 public:
-  const char *Name() {return "Exponential TEST Euler";}
+  const char *Name() {return "Exponential Euler";}
   E_Euler(T *parent) : E_RK<T>(parent,1,1) {
     RK::allocate();
     this->A[0][0]=1.0;
@@ -126,7 +126,7 @@ template<class T>
 class I_Euler : public E_RK<T> {
 protected:
 public:
-  const char *Name() {return "Integrating TEST Factor Euler";}
+  const char *Name() {return "Integrating Factor Euler";}
   I_Euler(T *parent) : E_RK<T>(parent,1,1) {
     RK::allocate();
     this->A[0][0]=1.0;
@@ -147,7 +147,7 @@ template<class T>
 class E_PC : public E_RK<T> {
 protected:
 public:
-  const char *Name() {return "Exponential TEST Predictor-Corrector";}
+  const char *Name() {return "Exponential Predictor-Corrector";}
   
   E_PC(T *parent) : E_RK<T>(parent,2,2) {
     RK::allocate();
@@ -178,7 +178,7 @@ template<class T>
 class E_RK2 : public E_RK<T> {
 protected:
 public:
-  const char *Name() {return "Second-Order TEST Exponential Runge-Kutta";}
+  const char *Name() {return "Second-Order Exponential Runge-Kutta";}
   
   E_RK2(T *parent) : E_RK<T>(parent,2,2) {
     RK::allocate();
@@ -213,7 +213,7 @@ class E_RK3 : public E_RK<T> {
 protected:
 public:
   const char *Name() {
-    return "Third-Order TEST Exponential Bogacki-Shampine Runge-Kutta";
+    return "Third-Order Exponential Bogacki-Shampine Runge-Kutta";
   }
   
   E_RK3(T *parent) : E_RK<T>(parent,3,4,true) {

@@ -416,8 +416,7 @@ public:
     Stage(s,start,ny);
   }
   
-  void PredictorSource(unsigned int s, unsigned int start,
-		       unsigned int stop) {
+  void PredictorSource(unsigned int s) {
     double cs=C[s]*dt;
     Problem->BackTransform(Y,t+cs,cs,YI);
     Source(vSrc[s+1],Y,t+cs);
@@ -427,7 +426,7 @@ public:
   virtual void Predictor(unsigned int start, unsigned int stop) {
     for(unsigned int s=0; s < Astages-1; ++s) {
       Stage(s,start,stop);
-      PredictorSource(s,start,stop);
+      PredictorSource(s);
     }
   }
   
@@ -458,20 +457,20 @@ public:
   }
 };
   
-class RK1p : public RK {
+class RK1 : public RK {
 public:
-  const char *Name() {return "First-Order TEST Runge-Kutta";}
-  RK1p() : RK(1,1) {
+  const char *Name() {return "First-Order Runge-Kutta";}
+  RK1() : RK(1,1) {
     allocate();
     A[0][0]=1.0;
   }
 };
 
-class RK2p : public RK {
+class RK2 : public RK {
 public:
-  const char *Name() {return "Second-Order TEST Runge-Kutta";}
+  const char *Name() {return "Second-Order Runge-Kutta";}
   
-  RK2p() : RK(2,2) {
+  RK2() : RK(2,2) {
     allocate();
     A[0][0]=0.5;
     
@@ -481,11 +480,27 @@ public:
   }
 };
 
-class RK3p : public RK {
+class RKPC : public RK {
 public:
-  const char *Name() {return "Third-Order TEST Bogacki-Shampine Runge-Kutta";}
+  const char *Name() {return "Predictor-Corrector";}
   
-  RK3p() : RK(3,4,true) {
+  RKPC() : RK(2,2) {
+    allocate();
+    
+    A[0][0]=1.0;
+    
+    A[1][0]=0.5;
+    A[1][1]=0.5;
+    
+    B[0]=1.0;
+  }
+};
+
+class RK3 : public RK {
+public:
+  const char *Name() {return "Third-Order Bogacki-Shampine Runge-Kutta";}
+  
+  RK3() : RK(3,4,true) {
     allocate();
     A[0][0]=0.5;
     
@@ -502,11 +517,11 @@ public:
   }
 };
 
-class RK3Cp : public RK {
+class RK3C : public RK {
 public:
-  const char *Name() {return "Third-Order TEST Classical Runge-Kutta";}
+  const char *Name() {return "Third-Order Classical Runge-Kutta";}
   
-  RK3Cp() : RK(3,3) {
+  RK3C() : RK(3,3) {
     allocate();
     A[0][0]=0.5;
     
@@ -520,25 +535,25 @@ public:
   }
 };
 
-class RK4p : public RK {
+class RK4 : public RK {
 public:
-  const char *Name() {return "Fourth-Order TEST Runge-Kutta";}
+  const char *Name() {return "Fourth-Order Runge-Kutta";}
 
   void Predictor(unsigned int start, unsigned int stop) {
     Real a00=a[0][0];
     for(unsigned int j=start; j < stop; j++)
       y[j]=y0[j]+a00*vsource[0][j];
-    PredictorSource(0,start,stop);
+    PredictorSource(0);
     
     Real a11=a[1][1];
     for(unsigned int j=start; j < stop; j++)
       y[j]=y0[j]+a11*vsource[1][j];
-    PredictorSource(1,start,stop);
+    PredictorSource(1);
     
     Real a22=a[2][2];
     for(unsigned int j=start; j < stop; j++)
       y[j]=y0[j]+a22*vsource[2][j];
-    PredictorSource(2,start,stop);
+    PredictorSource(2);
     
     if(dynamic) {
       rvector a3=a[3];
@@ -546,7 +561,7 @@ public:
       Real a31=a3[1];
       for(unsigned int j=start; j < stop; j++)
 	y[j]=y0[j]+a30*vsource[0][j]+a31*vsource[1][j];
-      PredictorSource(3,start,stop);
+      PredictorSource(3);
     }
   }
 
@@ -573,7 +588,7 @@ public:
     return 1;
   };
   
-  RK4p() : RK(4,5) {
+  RK4() : RK(4,5) {
     allocate();
     A[0][0]=0.5;
 
@@ -596,9 +611,9 @@ public:
   }
 };
 
-class RK5p : public RK {
+class RK5 : public RK {
 public:
-  const char *Name() {return "Fifth-Order TEST Runge-Kutta";}
+  const char *Name() {return "Fifth-Order Runge-Kutta";}
   
   int Corrector(unsigned int start, unsigned int stop) {
     if(dynamic) {
@@ -623,7 +638,7 @@ public:
     return 1;
   };
   
-  RK5p() : RK(5,6) {
+  RK5() : RK(5,6) {
     allocate();
     
     A[0][0]=0.2;
@@ -642,110 +657,6 @@ public:
     B[0]=2825.0/27648.0; B[2]=18575.0/48384.0; B[3]=13525.0/55296.0;
     B[4]=277.0/14336.0; B[5]=0.25;
   }
-};
-
-
-class RK2 : public PC {
-public:
-  const char *Name() {return "Second-Order Runge-Kutta";}
-  void Predictor(unsigned int n0, unsigned int ny);
-  int Corrector(unsigned int n0, unsigned int ny);
-};
-
-class RK3 : public PC {
-protected:  
-  vector source1,source2,source3;
-  vector2 Src1,Src2,Src3;
-  double a21;
-  double a32;
-  double b1,b2,b3;
-  double B1,B2,B3,B4;
-  double threefourthsdt;
-public:
-  RK3() {order=3;}
-  const char *Name() {return "Third-Order Bogacki-Shampine Runge-Kutta";}
-  
-  void Allocator() {
-    PC::Allocator();
-    Alloc0(Src1,source1);
-    Alloc0(Src2,source2);
-    if(dynamic) Alloc0(Src3,source3);
-  }
-  
-  void TimestepDependence();
-  
-  bool fsal() {
-    if(dynamic) {
-      swaparray(Src0,Src3);
-      Set(source0,Src0[0]);
-      Set(source3,Src3[0]);
-      return true;
-    }
-    return false;
-  }
-  
-  void Predictor(unsigned int n0, unsigned int ny);
-  int Corrector(unsigned int n0, unsigned int ny);
-};
-
-class RK3C : public PC {
-protected:  
-  vector source1;
-  vector2 Src1;
-  double sixthdt;
-public:
-  RK3C() {order=3;}
-  void Allocator() {
-    PC::Allocator();
-    Alloc0(Src1,source1);
-  }
-  const char *Name() {return "Third-Order Classical Runge-Kutta";}
-  void TimestepDependence();
-  void Predictor(unsigned int n0, unsigned int ny);
-  int Corrector(unsigned int n0, unsigned int ny);
-};
-
-class RK4 : public RK3C {
-protected:  
-  vector source2,source3;
-  vector2 Src2,Src3;
-public:
-  RK4() {order=4;}
-  void Allocator() {
-    RK3C::Allocator();
-    Alloc0(Src2,source2);
-    if(dynamic) Alloc0(Src3,source3);
-  }
-  const char *Name() {return "Fourth-Order Runge-Kutta";}
-  void Predictor(unsigned int n0, unsigned int ny);
-  int Corrector(unsigned int n0, unsigned int ny);
-};
-
-class RK5 : public RK4 {
-protected:	
-  vector source4;
-  vector2 Src4;
-  double a1,a2,a3,a4,a5;
-  double b10;
-  double b20,b21;
-  double b30,b31,b32;
-  double b40,b41,b42,b43;
-  double b50,b51,b52,b53,b54;
-  double c0,c2,c3,c5;
-  double d0,d2,d3,d4,d5;
-
-public:
-  RK5() {order=5;}
-  void Allocator() {
-    RK3C::Allocator();
-    Alloc0(Src2,source2);
-    Alloc(Src3,source3,Src1,source1);
-    Alloc0(Src4,source4);
-  }
-  const char *Name() {return "Fifth-Order Runge-Kutta";}
-  void TimestepDependence();
-  void Predictor(unsigned int n0, unsigned int ny);
-  int Corrector(unsigned int n0, unsigned int ny);
 };
 
 class Exact : public RK5 {
