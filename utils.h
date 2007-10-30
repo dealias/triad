@@ -422,6 +422,13 @@ inline void out_curve(S& os, T f, const char *text,
   out_curve(os,&f,text,1,nperline);
 }
 
+template<class S, class T>
+inline void out_curve(S& os, Array::array1<T> f, const char *text,
+		      int nperline=default_nperline)
+{
+  out_curve(os,f(),text,1,nperline);
+}
+
 inline double drand()
 {			  
   static const double factor=1.0/RAND_MAX;
