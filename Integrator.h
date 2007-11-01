@@ -157,9 +157,12 @@ inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0,
 				      const Var& pred, const Var& corr)
 {
   if(initial != 0.0 && pred != initial) {
-    Real error=max(divide0(abs2(corr-pred),
-			   max(abs2(norm0),abs2(initial))));
-    if(error > errmax) errmax=error;
+    Real denom=max(abs2(norm0),abs2(initial));
+    static double epsilon=DBL_MIN/DBL_EPSILON;
+    if(denom > epsilon) {
+      Real error=max(abs2(corr-pred)/denom);
+      if(error > errmax) errmax=error;
+    }
   }
 }
 
