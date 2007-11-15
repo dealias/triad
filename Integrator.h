@@ -80,10 +80,14 @@ public:
   
   void CalcError(const Var& initial, const Var& norm, const Var& pred,
 		 const Var& corr);
-  Solve_RC CheckError();
+  virtual Solve_RC CheckError();
   
   double Errmax() {
     return errmax;
+  }
+  
+  unsigned int Ny() {
+    return ny;
   }
   
   // Add tolgood to inhibit time step adjustment.
@@ -278,6 +282,7 @@ public:
   }
   
   void initialize0() {
+    errmax=0.0;
     Set(y,Y[0]);
     Set(y0,Y0[0]);
     for(unsigned int i=0; i < ny; ++i)
@@ -285,6 +290,7 @@ public:
   }
   
   void initialize() {
+    errmax=0.0;
     if(new_y0) {
       swaparray(Y0,Y);
       Set(y,Y[0]);
