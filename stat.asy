@@ -8,20 +8,26 @@ string fieldname=getstring("field","dt");
 if(fieldname == "dt")
   scale(Linear,Log);
 
-while(nextrun()) {
+real[][] a;
+real[] data;
+
+while(nextrun()) { 
   file fin=line(input(run+"/stat",comment=""));
   
   string[] names=word(fin);
   int field=find(names == fieldname);
   if(field < 0) abort("No such field: "+fieldname);
-  real[][] a=dimension(word(fin,false),0,0);
+  a=dimension(word(fin,false),0,0);
   a=transpose(a);
-  real[] data=a[field];
+  data=a[field];
 
   draw(graph(a[0],data),p+Pen(n),texify(run));
   
+  real[] data0=copy(data);
+  data0.delete(0);
   write("max=",max(data));
   write("min=",min(data));
+  write("min0=",min(data0));
   write("mean=",sum(data)/data.length);
 }
 
