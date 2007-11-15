@@ -212,8 +212,6 @@ Solve_RC PC::Solve()
 {
   Solve_RC flag;
   
-  errmax=0.0;
-	
   initialize();
   
   Problem->Transform(Y0,t,dt,YI);
