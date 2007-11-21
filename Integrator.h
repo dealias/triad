@@ -86,6 +86,11 @@ public:
     return errmax;
   }
   
+  int Order() {
+    return order;
+  }
+
+
   unsigned int Ny() {
     return ny;
   }
