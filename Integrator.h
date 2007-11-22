@@ -165,12 +165,13 @@ extern IntegratorBase *Integrator;
 inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0, 
 				      const Var& pred, const Var& corr)
 {
-  if(isfinite(norm0) && isfinite(corr-pred)) {
+  Var diff=corr-pred;
+  if(isfinite(norm0) && isfinite(diff)) {
     if(initial != 0.0 && pred != initial) {
       double denom=max(abs2(norm0),abs2(initial));
       static double epsilon=DBL_MIN/DBL_EPSILON;
       if(denom > epsilon) {
-	double error=max(abs2(corr-pred)/denom);
+	double error=max(abs2(diff)/denom);
 	if(error > errmax) errmax=error;
       }
     }
