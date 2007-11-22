@@ -165,14 +165,16 @@ extern IntegratorBase *Integrator;
 inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0, 
 				      const Var& pred, const Var& corr)
 {
-  if(initial != 0.0 && pred != initial) {
-    Real denom=max(abs2(norm0),abs2(initial));
-    static double epsilon=DBL_MIN/DBL_EPSILON;
-    if(denom > epsilon) {
-      Real error=max(abs2(corr-pred)/denom);
-      if(error > errmax) errmax=error;
+  if(isfinite(norm0) && isfinite(corr-pred)) {
+    if(initial != 0.0 && pred != initial) {
+      double denom=max(abs2(norm0),abs2(initial));
+      static double epsilon=DBL_MIN/DBL_EPSILON;
+      if(denom > epsilon) {
+	double error=max(abs2(corr-pred)/denom);
+	if(error > errmax) errmax=error;
+      }
     }
-  }
+  } else errmax=HUGE_VAL;
 }
 
 inline Solve_RC IntegratorBase::CheckError()

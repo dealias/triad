@@ -330,4 +330,9 @@ inline ostream& operator << (ostream& s, const Complex& y)
   return s;
 }
 
+inline int isfinite(Complex z)
+{
+  return isfinite(z.re) && isfinite(z.im);
+}
+
 #endif
