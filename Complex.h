@@ -332,7 +332,8 @@ inline ostream& operator << (ostream& s, const Complex& y)
 
 inline int isfinite(Complex z)
 {
-  return isfinite(z.re) && isfinite(z.im);
+  return !(isinf(z.re) || isnan(z.re) || isinf(z.re) || isnan(z.re));
+  //return isfinite(z.re) && isfinite(z.im); // FIXME: code segfaults. Why?
 }
 
 #endif
