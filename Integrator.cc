@@ -122,9 +122,8 @@ void IntegratorBase::Integrate(double& t0, double tmax,
     if(verbose) cout << "] ";
   }
 
-  if (verbose) {
-    if (it >= itmax) cout << "\n\nREACHED " << itmax << " iterations."<<endl;
-    if (forwards ? t >= tmax : t <= tmax)
+  if(verbose) {
+    if(forwards ? t >= tmax : t <= tmax)
       cout << "\n\nREACHED t=" << t << ".";
     cout << endl;
   }
@@ -217,7 +216,7 @@ Solve_RC PC::Solve()
   Problem->Transform(Y0,t,dt,YI);
 	
   Predictor(0,ny);
-  
+
   if(Corrector(0,ny)) {
     flag=(dynamic ? CheckError() : SUCCESSFUL);
     new_y0=(flag != UNSUCCESSFUL);
