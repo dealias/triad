@@ -122,11 +122,9 @@ void IntegratorBase::Integrate(double& t0, double tmax,
     if(verbose) cout << "] ";
   }
 
-  if(verbose) {
-    if(forwards ? t >= tmax : t <= tmax)
-      cout << "\n\nREACHED t=" << t << ".";
-    cout << endl;
-  }
+  if(verbose && forwards ? t >= tmax : t <= tmax)
+    cout << newl << newl << "REACHED t=" << t << "." << endl;
+
   if(dtorig) ChangeTimestep(dtorig);
   t0=t;
   if(sample >= 0.0) dump(t0,it,final,tmax);
