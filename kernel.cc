@@ -134,6 +134,13 @@ VocabularyBase::VocabularyBase()
   INTEGRATOR(RK5);
   INTEGRATOR(SYM1);
   INTEGRATOR(SYM2);
+
+  RKIntegratorTable=new Table<RK>("integrator");
+  RKINTEGRATOR(RK1);
+  RKINTEGRATOR(RK2);
+  RKINTEGRATOR(RK3);
+  RKINTEGRATOR(RK4);
+  RKINTEGRATOR(RK5);
 }
 
 void adjust_parameters(double& dt, double& dtmax, double& tmax, int& itmax)

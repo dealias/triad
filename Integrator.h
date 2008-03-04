@@ -161,6 +161,8 @@ extern IntegratorBase *Integrator;
 
 #define INTEGRATOR(key)						\
   {(void) new Entry<key,IntegratorBase>(#key,IntegratorTable);}
+#define RKINTEGRATOR(key)						\
+  {(void) new Entry<key,RK>(#key,RKIntegratorTable);}
 
 inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0, 
 				      const Var& pred, const Var& corr)

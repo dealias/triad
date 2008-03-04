@@ -31,6 +31,7 @@ class VocabularyBase {
   virtual ~VocabularyBase() {}
   Table<ProblemBase> *ProblemTable;
   Table<IntegratorBase> *IntegratorTable;
+  Table<RK> *RKIntegratorTable;
 	
   ParamBase *Locate(const char *key, int *match_type);
   void ParamAdd(ParamBase *p);
@@ -50,6 +51,15 @@ class VocabularyBase {
     return p;
   }
 	
+  RK *NewRKIntegrator(const char *& key) {
+    char *key2=strdup(key);
+    undashify(key,key2);
+    const char *key0=key2;
+    RK *p=RKIntegratorTable->Locate(key0);
+    p->SetAbbrev(key0);
+    return p;
+  }  
+
   IntegratorBase *NewIntegrator(const char *& key) {
     char *key2=strdup(key);
     undashify(key,key2);
