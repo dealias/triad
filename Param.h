@@ -92,13 +92,13 @@ inline void VocabularyBase::ParamAdd(ParamBase *p)
   ParamList[NParam++]=p;
 }
 
-#define VOCAB(var,min,max,help) Vocab(&var, #var, min, max, help, 1, 1)
-#define VOCAB_NODUMP(var,min,max,help) Vocab(&var, #var, min, max, help, 1, 0)
-#define VOCAB_OBSOLETE(var,min,max,help) Vocab(&var, #var, min, max, help, 1,2)
+#define VOCAB(var,min,max,help) Vocab(&var,#var,min,max,min == max,help,1,1)
+#define VOCAB_CONSTANT(var,value,help) Vocab(&var,#var,value,value,false,help,1,1)
+#define VOCAB_NODUMP(var,min,max,help) Vocab(&var,#var,min,max,min == max,help,1,0)
+#define VOCAB_OBSOLETE(var,min,max,help) Vocab(&var,#var,min,max,true,help,1,2)
 
 #define VOCAB_ARRAY(var,help) \
-Vocab(var, #var, *var-*var, *var-*var, help, \
-(int) (sizeof(var)/sizeof(*var)), 1)
+  Vocab(var,#var,*var,*var,true,help,(int) (sizeof(var)/sizeof(*var)), 1)
 	
 template<class T>
 class Param : public ParamBase {
@@ -107,12 +107,14 @@ class Param : public ParamBase {
   T *var;
   T min;
   T max;
+  bool unlimited;
   const char *help;
   int dump;
  public:
-  Param(T *address, const char *s, int n, T min0, T max0, const char *help0,
-	int dump0) {
-    name=s; nvar=n; var=address; min=min0; max=max0; help=help0; dump=dump0;
+  Param(T *var, const char *name, int nvar, T min, T max, bool unlimited,
+	const char *help, int dump) :
+    name(name), nvar(nvar), var(var), min(min), max(max), unlimited(unlimited),
+    help(help), dump(dump) {
     Vocabulary->ParamAdd(this);
   }
 
@@ -180,17 +182,18 @@ class Param : public ParamBase {
 };
 
 template<class T>
-inline void Vocab(T *var, const char *s, T min, T max, const char *help, int n,
-		  int dump)
-{
-  (void) new Param<T>(var,s,n,min,max,help,dump);
-}
-
-inline void Vocab(unsigned int *var, const char *s, int min, int max,
+inline void Vocab(T *var, const char *s, T min, T max, bool unlimited,
 		  const char *help, int n, int dump)
 {
+  (void) new Param<T>(var,s,n,min,max,unlimited,help,dump);
+}
+
+
+inline void Vocab(unsigned int *var, const char *s, int min, int max,
+		  bool unlimited, const char *help, int n, int dump)
+{
   (void) new Param<unsigned int>(var,s,n,(unsigned int) min,(unsigned int) max,
-				 help,dump);
+				 unlimited,help,dump);
 }
 
 inline const char *atosc(const char *s)
@@ -214,19 +217,19 @@ inline void Param<Complex>::SetStr(const char *s) {get_values(s,&atoc);}
 template<>
 inline int Param<double>::InRange(double value)
 {
-  return (min == max) || (value >= min && value <= max);
+  return unlimited || (value >= min && value <= max);
 }
 
 template<>
 inline int Param<int>::InRange(int value)
 {
-  return (min == max) || (value >= min && value <= max);
+  return unlimited || (value >= min && value <= max);
 }
 
 template<>
 inline int Param<unsigned int>::InRange(unsigned int value)
 {
-  return (min == max) || (value >= min && value <= max);
+  return unlimited || (value >= min && value <= max);
 }
 
 template<>
