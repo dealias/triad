@@ -8,10 +8,10 @@ string fieldname=getstring("field","dt");
 if(fieldname == "dt")
   scale(Linear,Log);
 
-real[][] a;
-real[] data;
 
-while(nextrun()) { 
+while(nextrun()) {
+  real[][] a;
+  real[] data;
   file fin=line(input(run+"/stat",comment=""));
   
   string[] names=word(fin);
