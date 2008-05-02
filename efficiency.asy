@@ -3,10 +3,9 @@ include getparam;
 include averages;
 size(200,150,IgnoreAspect);
 
-real[][] a;
-real[] data;
-
-while(nextrun()) { 
+while(nextrun()) {
+  real[][] a;
+  real[] data;
   file fin=line(input(run+"/stat",comment=""));
   
   string[] names=word(fin);
