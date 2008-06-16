@@ -74,7 +74,7 @@ class ProblemBase {
   bool stochastic;
   
  public:	
-  ProblemBase() {Array::Null(errmask);}
+  ProblemBase() : stochastic(false) {Array::Null(errmask);}
   virtual ~ProblemBase() {}
   void SetAbbrev(const char *abbrev0) {abbrev=abbrev0;}
   const char *Abbrev() {return abbrev;}
@@ -113,7 +113,7 @@ class ProblemBase {
   virtual void Source(const vector2& Src, const vector2& Y, double t)=0;
   virtual void Transform(const vector2&, double, double, vector2&) {}
   virtual void BackTransform(const vector2&, double, double, const vector2&) {}
-  virtual void Stochastic(const vector2&, double, double) {stochastic=false;}
+  virtual void Stochastic(const vector2&, double, double) {}
   virtual void Stochastic(bool b) {stochastic=b;}
   virtual bool Stochastic() {return stochastic;}
   virtual void Initialize() {}

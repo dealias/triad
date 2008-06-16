@@ -44,7 +44,7 @@ void IntegratorBase::Integrate(double& t0, double tmax,
   TimestepDependence();
   microprocess=(sample >= 0.0) ? Problem->Microprocess() : 0;
 	
-  Problem->Stochastic(true); // No FSAL for first step or with stochastic force
+  first=true;
   
   // Main integration loop
   for(it=0; it < itmax && (forwards ? t < tmax : t > tmax); it++) {
@@ -181,6 +181,9 @@ void IntegratorBase::Allocator(const vector2& Y0,
   pshrink=(order > 1) ? 0.5/(order-1) : pgrow;
   
   Allocator();
+  
+  if(Problem->Stochastic())
+    FSAL=false;
 }
 
 Solve_RC Euler::Solve()

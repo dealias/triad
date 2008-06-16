@@ -24,10 +24,12 @@ protected:
   int dynamic;
   int order;
   double pgrow, pshrink;
+  bool FSAL; // First Same As Last
+  bool first;
   
 public:	
   
-  IntegratorBase() {}
+  IntegratorBase() : FSAL(false) {}
   
   virtual ~IntegratorBase() {}
   void SetAbbrev(const char *abbrev0) {abbrev=abbrev0;}
@@ -68,8 +70,6 @@ public:
     Problem->Source(Src,Y,t);
   }
 	
-  virtual bool fsal() {return false;} // First Same As Last
-    
   virtual void PSource(const vector2& Src, const vector2& Y, double t) {
     Source(Src,Y,t);
   }
@@ -90,6 +90,7 @@ public:
     return order;
   }
 
+  virtual bool fsal() {return FSAL;}
 
   unsigned int Ny() {
     return ny;
@@ -118,8 +119,8 @@ public:
   unsigned int Start(int field) {return Problem->Start(field);}
   unsigned int Stop(int field) {return Problem->Stop(field);}
   
-  void Allocator(const vector2& Y0, DynVector<unsigned int>* NY0,
-		 const ivector& mask);
+  virtual void Allocator(const vector2& Y0, DynVector<unsigned int>* NY0,
+			 const ivector& mask);
   virtual void Allocator() {}
   virtual void Allocator(ProblemBase& problem) {
     SetProblem(problem);
@@ -303,8 +304,10 @@ public:
       swaparray(Y0,Y);
       Set(y,Y[0]);
       Set(y0,Y0[0]);
-      if(Problem->Stochastic() || !fsal())
+      if(first || !fsal()) {
 	Source(Src0,Y0,t);
+	first=false;
+      }
     }
   }
   
@@ -350,13 +353,13 @@ protected:
   const unsigned int nstages;
   vector3 vSrc;
   vector2 vsource;
-  bool FSAL;
-  const unsigned int Astages;
+  unsigned int Astages;
 public:
 
-  RK(int Order, int nstages, bool FSAL=false) :
-    nstages(nstages), FSAL(FSAL), Astages(FSAL ? nstages-1 : nstages) {
+  RK(int Order, int nstages, bool fsal=false) :
+    nstages(nstages), Astages(nstages) {
     order=Order;
+    FSAL=fsal;
   }
     
   Var getvsource(unsigned int stage, unsigned int i) {
@@ -382,6 +385,8 @@ public:
 		 DynVector<unsigned int>* NY0,
 		 const ivector& errmask0) {
     IntegratorBase::Allocator(Y0,NY0,errmask0);
+    if(FSAL)
+      Astages=nstages-1;
   }
 
   void Csum() {
