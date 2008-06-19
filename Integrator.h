@@ -29,7 +29,7 @@ protected:
   
 public:	
   
-  IntegratorBase() : FSAL(false) {}
+  IntegratorBase(int order=0, bool fsal=false) : order(order), FSAL(fsal) {}
   
   virtual ~IntegratorBase() {}
   void SetAbbrev(const char *abbrev0) {abbrev=abbrev0;}
@@ -230,7 +230,7 @@ class AB2 : public IntegratorBase {
   double a0,a1;
   int init;
 public:
-  AB2() {order=2;}
+  AB2() : IntegratorBase(2) {}
   void Allocator() {
     Alloc(Y0,y0);
     Alloc0(Src0,source0);
@@ -252,7 +252,7 @@ class ABM3 : public IntegratorBase {
   double b0,b1,b2;
   int init;
 public:
-  ABM3() {order=3;}
+  ABM3() : IntegratorBase(3) {}
   void Allocator() {
     Alloc(Y0,y0);
     Alloc0(Src0,source0);
@@ -277,7 +277,7 @@ protected:
   vector2 Y0,Src0;
   double halfdt;
 public:
-  PC() {order=2;}
+  PC(int order=2, bool fsal=false) : IntegratorBase(order,fsal) {}
   void Allocator() {
     Alloc(Y0,y0);
     Alloc0(Src0,source0);
@@ -356,11 +356,8 @@ protected:
   unsigned int Astages;
 public:
 
-  RK(int Order, int nstages, bool fsal=false) :
-    nstages(nstages), Astages(nstages) {
-    order=Order;
-    FSAL=fsal;
-  }
+  RK(int order, int nstages, bool fsal=false) :
+    PC(order,fsal), nstages(nstages), Astages(nstages) {}
     
   Var getvsource(unsigned int stage, unsigned int i) {
     return vsource[stage][i];

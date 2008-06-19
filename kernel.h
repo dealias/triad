@@ -82,8 +82,8 @@ class ProblemBase {
   vector2 YVector() {return Y;}
   unsigned int Size() {return ny;}
   unsigned int Size(int field) {return NY[field];}
-  unsigned int Start(unsigned int field) {return index[field];}
-  unsigned int Stop(unsigned int field) {return index[field]+NY[field];}
+  unsigned int Start(unsigned int field) {return field < nfields ? index[field] : 0;}
+  unsigned int Stop(unsigned int field) {return field < nfields ? index[field]+NY[field] : 0;}
   DynVector<unsigned int>* Sizes() {return &NY;}
   
   unsigned int NFields() {return nfields;}

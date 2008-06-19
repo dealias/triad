@@ -18,8 +18,8 @@ protected:
   Array::Array3<Nu> e;
   Array::Array2<Nu> f,phi0;
 public:
-  E_RK(T *parent, int Order, int nstages, bool FSAL=false) : 
-    RK(Order,nstages,FSAL), parent(parent) {}
+  E_RK(T *parent, int order, int nstages, bool fsal=false) : 
+    RK(order,nstages,fsal), parent(parent) {}
 
   void Allocator() {
     RK::Allocator();
