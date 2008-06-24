@@ -212,9 +212,9 @@ protected:
   double halfdt;
 public:
   void Allocator() {
-  Alloc(Y0,y0);
-  halfdt=0.5*dt;
-}
+    Alloc(Y0,y0);
+    halfdt=0.5*dt;
+  }
   const char *Name() {return "Midpoint Rule";}
   void TimestepDependence() {
     halfdt=0.5*dt;
@@ -319,10 +319,10 @@ class LeapFrog : public PC {
   double oldhalfdt,lasthalfdt;
 public:
   void Allocator() {
-  PC::Allocator(); 
-  Alloc(YP,yp);
-  Alloc(YP0,yp0);
-  lasthalfdt=0.0;
+    PC::Allocator(); 
+    Alloc(YP,yp);
+    Alloc(YP0,yp0);
+    lasthalfdt=0.0;
   }
   const char *Name() {return "Leapfrog";}
   void TimestepDependence() {
@@ -355,7 +355,7 @@ protected:
 public:
 
   RK(int order, int nstages, bool fsal=false) :
-    PC(order,fsal), nstages(nstages), Astages(nstages) {}
+    PC(order,fsal), nstages(nstages), Astages(fsal ? nstages-1 : nstages) {}
     
   Var getvsource(unsigned int stage, unsigned int i) {
     return vsource[stage][i];
@@ -380,8 +380,6 @@ public:
 		 DynVector<unsigned int>* NY0,
 		 const ivector& errmask0) {
     IntegratorBase::Allocator(Y0,NY0,errmask0);
-    if(FSAL)
-      Astages=nstages-1;
   }
 
   void Csum() {
