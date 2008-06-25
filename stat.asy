@@ -21,8 +21,20 @@ while(nextrun()) {
   a=transpose(a);
   data=a[field];
 
+  real recount=0;
+  real[] stops;
+  for (int i=1; i < a[0].length; ++i) {
+    if (a[0][i] == 1) {
+      recount += a[0][i-1];
+      stops.push(a[0][i-1]);
+    }
+    a[0][i] += recount;
+  }
+	
   draw(graph(a[0],data),p+Pen(n),texify(run));
-  
+  for (int i=0; i < stops.length; ++i)
+    xequals(stops[i],Pen(n)+dashed);
+
   real[] data0=copy(data);
   data0.delete(0);
   write("max=",max(data));
