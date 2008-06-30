@@ -15,7 +15,17 @@ while(nextrun()) {
   a=transpose(a);
   data=a[field];
 
+  real[] stops;
+  for (int i=1; i < a[0].length; ++i) {
+    if (a[0][i] == 1) {
+      stops.push(a[5][i-1]);
+    }
+  }
+
   draw(graph(a[5],data),p+Pen(n),texify(run));
+
+  for (int i=0; i < stops.length; ++i)
+    xequals(stops[i],Pen(n)+dashed);
   
   real[] data0=copy(data);
   data0.delete(0);
