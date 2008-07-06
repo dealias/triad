@@ -34,7 +34,7 @@ Real RestartProblemVersion=0;
 unsigned long nout;
 double t;
 double last_dump=-1.0;
-int iteration=0;
+long long iteration=0;
 int invert_cnt=0;
 
 VocabularyBase *Vocabulary;
@@ -47,7 +47,7 @@ static int ny;
 static int explicit_dt=0;
 static int testing=0;
 static double cpu[ncputime],cpu0[ncputime],cpu_restart[ncputime];
-static int final_iteration=0;
+static long long final_iteration=0;
 static int total_invert_cnt=0;
 
 static const char *pname,*rname,*ptemp,*rtemp,*lname;
@@ -55,7 +55,7 @@ static ifstream fparam,fin;
 static ofstream gparam,fdump,fstats,flock;
 
 // Global vocabulary declarations and default values
-int itmax=-1;
+long long itmax=-1;
 double tmax=0.0;
 double dt=0.0;
 int dynamic=1;
@@ -87,7 +87,7 @@ VocabularyBase::VocabularyBase()
 {
   Vocabulary=this;
 	
-  VOCAB(itmax,0,INT_MAX,"Maximum number of iterations");
+  VOCAB(itmax,(long long) 0,LLONG_MAX,"Maximum number of iterations");
   VOCAB(microsteps,1,INT_MAX,"");
   VOCAB(tmax,0.0,DBL_STD_MAX,"");
   VOCAB(dt,0.0,DBL_STD_MAX,"");
@@ -136,7 +136,8 @@ VocabularyBase::VocabularyBase()
   INTEGRATOR(SYM2);
 }
 
-void adjust_parameters(double& dt, double& dtmax, double& tmax, int& itmax)
+void adjust_parameters(double& dt, double& dtmax, double& tmax, 
+		       long long& itmax)
 {
   if(dt == 0.0) {
     if(tmax == 0.0) tmax=1.0;
@@ -145,7 +146,7 @@ void adjust_parameters(double& dt, double& dtmax, double& tmax, int& itmax)
   }
 	
   if(tmax == 0.0) tmax=DBL_STD_MAX; 
-  if(itmax == -1) itmax=INT_MAX;
+  if(itmax == -1) itmax=LLONG_MAX;
 
   if(dtmax == 0.0) dtmax=DBL_STD_MAX;
 	
@@ -407,7 +408,7 @@ void statistics(double t, double dt, int it)
   
 	
   static int last_iter=0;
-  int iter=final_iteration+iteration;
+  long long iter=final_iteration+iteration;
 
   cputime(cpu);
   for(i=0; i < ncputime; i++) cpu[i] -= cpu0[i];

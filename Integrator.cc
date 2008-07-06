@@ -22,7 +22,7 @@ static const int nperline=10;
 
 void IntegratorBase::Integrate(double& t0, double tmax, 
 			       double& dt0, double sample0,
-			       int& iteration, unsigned long& nout)
+			       long long& iteration, unsigned long& nout)
   // Don't dump or microprocess if sample is negative.
 {
   double dtold=0.0, dtorig=0.0;

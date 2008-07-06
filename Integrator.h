@@ -18,7 +18,8 @@ protected:
   double stepfactor,stepinverse,stepnoninverse;
   double growfactor,shrinkfactor;
   double dtmin,dtmax;
-  int itmax,microsteps;
+  long long itmax;
+  int microsteps;
   int microprocess;
   int verbose;
   int dynamic;
@@ -36,7 +37,7 @@ public:
   const char *Abbrev() {return abbrev;}
   void SetParam(double tolmax, double tolmin, double stepfactor0,
 		double stepnoninverse0, double dtmin0, double dtmax0,
-		int itmax0, int microsteps0, int verbose0, int dynamic0) {
+		long long itmax0, int microsteps0, int verbose0, int dynamic0) {
     if(tolmax < tolmin) msg(ERROR_GLOBAL,"tolmax < tolmin"); 
     tolmax2=tolmax*tolmax;
     tolmin2=tolmin*tolmin;
@@ -63,7 +64,7 @@ public:
     dynamic=I.dynamic;
   }
   void Integrate(double& t0, double tmax, double& dt0, double sample0,
-		 int& iteration, unsigned long& nout);
+		 long long& iteration, unsigned long& nout);
   void ChangeTimestep(double dtnew);
 	
   virtual void Source(const vector2& Src, const vector2& Y, double t) {

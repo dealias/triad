@@ -24,7 +24,7 @@ void check_compatibility(const bool debug);
 extern const double ProblemVersion;
 extern double t;
 extern double last_dump;
-extern int iteration;
+extern long long iteration;
 extern int invert_cnt;
 
 extern const char *run;
@@ -32,7 +32,7 @@ extern const char *method;
 extern const char *integrator;
 
 // Global vocabulary
-extern int itmax; 
+extern long long itmax; 
 extern double tmax;
 extern double dt;
 extern double tprecision;
