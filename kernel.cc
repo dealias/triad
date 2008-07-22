@@ -27,7 +27,7 @@ using namespace Array;
 
 const char PROGRAM[]="TRIAD";
 const char VERSION[]="1.44";
-const int RestartVersion=2;
+const int RestartVersion=3;
 Real RestartProblemVersion=0;
 
 // Global variables
@@ -314,7 +314,14 @@ void read_init()
       cout << " (version " << RestartProblemVersion << ")";
     }
     cout << "." << endl; 
-    finit >> t0 >> dt0 >> final_iteration;
+    finit >> t0 >> dt0;
+    
+    if(init_version < 3) {
+      int final_iteration0;
+      finit >> final_iteration0;
+      final_iteration=final_iteration0;
+    } else finit >> final_iteration;
+    
     for(i=0; i < ncputime; i++) finit >> cpu_restart[i];
     finit >> ny0;
     if(ny0 != ny) msg(OVERRIDE_GLOBAL,ny_msg,ny,ny0,rname,!oldversion);
