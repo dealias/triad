@@ -215,6 +215,7 @@ int main(int argc, char *argv[])
   cout << newl << "PARAMETERS:" << newl << newl;
   Vocabulary->List(cout);
 	
+  fpu_trap(!dynamic);
   cout.precision(digits);
 	
   Problem=Vocabulary->NewProblem(method);
