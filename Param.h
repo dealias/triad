@@ -93,6 +93,7 @@ inline void VocabularyBase::ParamAdd(ParamBase *p)
 }
 
 #define VOCAB(var,min,max,help) Vocab(&var,#var,min,max,min == max,help,1,1)
+#define VOCAB_NOLIMIT(var,help) Vocab(&var,#var,help,1,1)
 #define VOCAB_CONSTANT(var,value,help) Vocab(&var,#var,value,value,false,help,1,1)
 #define VOCAB_NODUMP(var,min,max,help) Vocab(&var,#var,min,max,min == max,help,1,0)
 #define VOCAB_OBSOLETE(var,min,max,help) Vocab(&var,#var,min,max,true,help,1,2)
@@ -188,6 +189,11 @@ inline void Vocab(T *var, const char *s, T min, T max, bool unlimited,
   (void) new Param<T>(var,s,n,min,max,unlimited,help,dump);
 }
 
+template<class T>
+inline void Vocab(T *var, const char *s, const char *help, int n, int dump)
+{
+  (void) new Param<T>(var,s,n,T(),T(),true,help,dump);
+}
 
 inline void Vocab(unsigned int *var, const char *s, int min, int max,
 		  bool unlimited, const char *help, int n, int dump)
