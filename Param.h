@@ -218,6 +218,8 @@ inline void Param<unsigned int>::SetStr(const char *s) {get_values(s,&atou);}
 template<>
 inline void Param<int>::SetStr(const char *s) {get_values(s,&atoi);}
 template<>
+inline void Param<long>::SetStr(const char *s) {get_values(s,&atol);}
+template<>
 inline void Param<long long>::SetStr(const char *s) {get_values(s,&atoll);}
 template<>
 inline void Param<Complex>::SetStr(const char *s) {get_values(s,&atoc);}
@@ -238,7 +240,11 @@ inline int Param<int>::InRange(int value)
 {
   return unlimited || (value >= min && value <= max);
 }
-
+template<>
+inline int Param<long>::InRange(long value)
+{
+  return unlimited || (value >= min && value <= max);
+}
 template<>
 inline int Param<long long>::InRange(long long value)
 {
@@ -294,8 +300,13 @@ template<>
 inline void Param<int>::GraphicsOutput(ostream& os, int define) {
   Out(os,"int",define);
 }
-template<>
 
+template<>
+inline void Param<long>::GraphicsOutput(ostream& os, int define) {
+  Out(os,"int",define);
+}
+
+template<>
 inline void Param<long long>::GraphicsOutput(ostream& os, int define) {
   Out(os,"int",define);
 }
