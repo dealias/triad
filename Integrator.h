@@ -373,6 +373,10 @@ public:
     Problem->Source(Src,Y,t);
   }
   
+  void iSource() {
+    Source(Src0,Y0,t);
+  }
+
   void Source(unsigned int i) {
     Source(vSrc[i],Y,t+C[i]*dt);
   }
