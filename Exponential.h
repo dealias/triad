@@ -50,14 +50,18 @@ public:
     }
   }
   
+  virtual void PStage(unsigned int s) {
+    Stage(s,start,stop);
+    RK::Stage(s,startN,stopN);
+  }
+  
   void Predictor(unsigned int, unsigned int) {
     for(unsigned int s=0; s < Astages-1; ++s) {
-      Stage(s,start,stop);
-      RK::Stage(s,startN,stopN);
+      PStage(s);
       PredictorSource(s);
     }
   }
-  
+
   int Corrector(unsigned int, unsigned int) {
     if(dynamic) {
       NuVector phi0s=phi0[Astages-1];

@@ -432,6 +432,10 @@ public:
     }
   }
   
+  virtual void PStage(unsigned int s) {
+    Stage(s);
+  }
+
   void Stage(unsigned int s, int start=0) {
     Stage(s,start,ny);
   }
