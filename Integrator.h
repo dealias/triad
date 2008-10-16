@@ -432,14 +432,14 @@ public:
     }
   }
   
-  virtual void PStage(unsigned int s) {
-    Stage(s);
-  }
-
   void Stage(unsigned int s, int start=0) {
     Stage(s,start,ny);
   }
   
+  virtual void PStage(unsigned int s) {
+    Stage(s);
+  }
+
   void PredictorSource(unsigned int s) {
     double cs=C[s]*dt;
     Problem->BackTransform(Y,t+cs,cs,YI);

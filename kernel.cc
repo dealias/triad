@@ -112,8 +112,8 @@ VocabularyBase::VocabularyBase()
   VOCAB_NODUMP(oldversion,0,1,"Read in old version of restart");
   VOCAB(checkpoint,0,INT_MAX,"");
   VOCAB(output,0,1,"");
-  VOCAB(method,"","","");
-  VOCAB(integrator,"","","");
+  VOCAB_NOLIMIT(method,"");
+  VOCAB_NOLIMIT(integrator,"");
 	
   ProblemTable=new Table<ProblemBase>("method");
   IntegratorTable=new Table<IntegratorBase>("integrator");
