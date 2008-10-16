@@ -140,7 +140,6 @@ public:
   void SetTime(double t0, double dt0) {
     t=t0;
     dt=dt0;
-    TimestepDependence();
   }
   
   void SetTime(double t0, double dt0, double errmax0) {
