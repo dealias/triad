@@ -92,6 +92,8 @@ inline void VocabularyBase::ParamAdd(ParamBase *p)
   ParamList[NParam++]=p;
 }
 
+extern const char *null;
+
 #define VOCAB(var,min,max,help) Vocab(&var,#var,min,max,min == max,help,1,1)
 #define VOCAB_NOLIMIT(var,help) Vocab(&var,#var,help,1,1)
 #define VOCAB_CONSTANT(var,value,help) Vocab(&var,#var,value,value,false,help,1,1)

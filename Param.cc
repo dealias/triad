@@ -4,6 +4,7 @@
 
 unsigned int NParam=0;
 int param_warn=1;
+const char *null=NULL;
 
 static int ParamCompare(const void *a, const void *b);
 static int ParamKeyCompare(const void*key, const void *p, const size_t n);

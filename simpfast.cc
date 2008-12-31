@@ -57,7 +57,7 @@ simpfast(Real (*f)(Real),	// Pointer to function to be integrated.
     area -= diff;
 
     if(p >= pstop) iflag=1;
-    if(iflag || fabs(diff) <= acc*fabs(area) && da <= dxmax) {
+    if(iflag || (fabs(diff) <= acc*fabs(area) && da <= dxmax)) {
       //  Accept approximate integral sum. If it was a right interval,
       //  add results to finish at this level.  If it was a left
       //  interval, process right interval. Array lorr indicates left
