@@ -20,6 +20,7 @@ protected:
   double dtmin,dtmax;
   long long itmax;
   int microsteps;
+  Real microfactor;
   int microprocess;
   int verbose;
   int dynamic;
@@ -37,7 +38,8 @@ public:
   const char *Abbrev() {return abbrev;}
   void SetParam(double tolmax, double tolmin, double stepfactor0,
 		double stepnoninverse0, double dtmin0, double dtmax0,
-		long long itmax0, int microsteps0, int verbose0, int dynamic0) {
+		long long itmax0, int microsteps0, Real microfactor0,
+		int verbose0, int dynamic0) {
     if(tolmax < tolmin) msg(ERROR_GLOBAL,"tolmax < tolmin"); 
     tolmax2=tolmax*tolmax;
     tolmin2=tolmin*tolmin;
@@ -48,6 +50,7 @@ public:
     dtmax=dtmax0;
     itmax=itmax0;
     microsteps=microsteps0*Microfactor();
+    microfactor=microfactor0;
     verbose=verbose0;
     dynamic=dynamic0;
   }
@@ -60,6 +63,7 @@ public:
     dtmax=I.dtmax;
     itmax=I.itmax;
     microsteps=I.microsteps;
+    microfactor=I.microfactor;
     verbose=I.verbose;
     dynamic=I.dynamic;
   }

@@ -78,6 +78,7 @@ int oldversion=0;
 
 // Local vocabulary declarations and default values
 int microsteps=1;
+Real microfactor=1.0;
 static double sample=0.0;
 static int initialize=0;
 static int clobber=0;
@@ -88,7 +89,8 @@ VocabularyBase::VocabularyBase()
   Vocabulary=this;
 	
   VOCAB(itmax,(long long) 0,LLONG_MAX,"Maximum number of iterations");
-  VOCAB(microsteps,1,INT_MAX,"");
+  VOCAB(microsteps,1,INT_MAX,"Number of iterations per output step");
+  VOCAB(microfactor,0.0,REAL_MAX,"Microstep growth factor per output step");
   VOCAB(tmax,0.0,DBL_STD_MAX,"");
   VOCAB(dt,0.0,DBL_STD_MAX,"");
   VOCAB(dynamic,-INT_MAX,1,"");
@@ -99,7 +101,7 @@ VocabularyBase::VocabularyBase()
   VOCAB(dtmin,0.0,DBL_STD_MAX,"");
   VOCAB(dtmax,0.0,DBL_STD_MAX,"");
   VOCAB(tprecision,0.0,DBL_STD_MAX,"");
-  VOCAB(sample,0.0,DBL_STD_MAX,"");
+  VOCAB(sample,0.0,DBL_STD_MAX,"Number of time units per output step");
   VOCAB(polltime,0.0,DBL_STD_MAX,"");
   VOCAB(hybrid,0,1,"");
   VOCAB(digits,1,INT_MAX,"");
@@ -265,7 +267,7 @@ int main(int argc, char *argv[])
 
   Problem->Setup();
   Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,dtmin,dtmax,
-		       itmax,microsteps,verbose,dynamic);
+		       itmax,microsteps,microfactor,verbose,dynamic);
 	
   Integrator->Allocator(*Problem);
   	

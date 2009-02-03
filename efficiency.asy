@@ -24,8 +24,8 @@ while(nextrun()) {
 
   draw(graph(a[5],data),p+Pen(n),texify(run));
 
-  for (int i=0; i < stops.length; ++i)
-    xequals(stops[i],Pen(n)+dashed);
+  //  for (int i=0; i < stops.length; ++i)
+  //    xequals(stops[i],Pen(n)+dashed);
   
   real[] data0=copy(data);
   data0.delete(0);

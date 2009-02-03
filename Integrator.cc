@@ -117,6 +117,8 @@ void IntegratorBase::Integrate(double& t0, double tmax,
       iteration++;
     }
     
+    microsteps=(int) (microsteps*microfactor);
+    
     Unswap();
     
     if(verbose) cout << "] ";
