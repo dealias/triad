@@ -29,7 +29,10 @@ while(nextrun()) {
   
   real[] data0=copy(data);
   data0.delete(0);
-  write("slope="+(string) (data[data.length-1]/a[5][a[5].length-1]));
+  if (a[5].length>1)
+    write("slope="+(string) (data[data.length-1]/a[5][a[5].length-1]));
+  else
+    write("insufficient progress.");
 }
 
 if(n > 1) attach(legend(),point(E),20E);
