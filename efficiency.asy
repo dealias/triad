@@ -38,4 +38,4 @@ while(nextrun()) {
 if(n > 1) attach(legend(),point(E),20E);
 
 xaxis("CPU",BottomTop,LeftTicks);
-yaxis("t",LeftRight,RightTicks(trailingzero));
+yaxis("$t$",LeftRight,RightTicks(trailingzero));

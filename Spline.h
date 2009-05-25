@@ -96,7 +96,7 @@ public:
       Y dy=y[2]-y[1];
       X temp=3.0/(dx+lastdx);
       y2[1]=(dy/dx-lastdy/lastdx)*temp;
-      work[0]=-sixth*dx*temp;
+      if(n > 3) work[0]=-sixth*dx*temp;
       lastdx=dx;
       lastdy=dy;
 	
@@ -110,14 +110,15 @@ public:
 	lastdy=dy;
       }
       
-      dx=x[n-1]-x[n-2];
-      dy=y[n-1]-y[n-2];
-      y2[n-2]=(dy/dx-lastdy/lastdx-sixth*lastdx*y2[n-3])*
-	(3.0/((dx+lastdx)+0.5*lastdx*work[n-4]));
-
-      for(int i=(int)n-4; i >= 0; i--) y2[i+1] += work[i]*y2[i+2];
+      if(n > 3) {
+        dx=x[n-1]-x[n-2];
+        dy=y[n-1]-y[n-2];
+        y2[n-2]=(dy/dx-lastdy/lastdx-sixth*lastdx*y2[n-3])*
+          (3.0/((dx+lastdx)+0.5*lastdx*work[n-4]));
+      
+        for(int i=(int)n-4; i >= 0; i--) y2[i+1] += work[i]*y2[i+2];
+      }
     }
-    return;
   }
   
   Y Interpolate(unsigned int n,

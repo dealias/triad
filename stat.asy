@@ -37,10 +37,12 @@ while(nextrun()) {
 
   real[] data0=copy(data);
   data0.delete(0);
-  write("max=",max(data));
-  write("min=",min(data));
-  write("min0=",min(data0));
-  write("mean=",sum(data)/data.length);
+  write(run+":");
+  write(" max=",max(data));
+  write(" min=",min(data));
+  write(" min0=",min(data0));
+  write(" mean=",sum(data)/data.length);
+  write();
 }
 
 if(n > 1) attach(legend(),point(E),20E);
