@@ -64,55 +64,10 @@ class Complex
   void error(char* msg) const;
 };
 
-
-// non-inline functions
-
-Complex cos(const Complex& x);
-Complex sin(const Complex& x);
-
-Complex cosh(const Complex& x);
-Complex sinh(const Complex& x);
-
-Complex log(const Complex& x);
-
-Complex pow(const Complex& x, int p);
-Complex pow(const Complex& x, const Complex& p);
-Complex pow(const Complex& x, Real y);
-   
-// other functions defined as inlines
-
-inline int operator == (const Complex& x, const Complex& y);
-inline int operator == (const Complex& x, Real y);
-inline int operator != (const Complex& x, const Complex& y);
-inline int operator != (const Complex& x, Real y);
-
-inline Complex operator - (const Complex& x);
-inline Complex operator + (const Complex& x, const Complex& y);
-inline Complex operator + (const Complex& x, Real y);
-inline Complex operator + (Real x, const Complex& y);
-inline Complex operator - (const Complex& x, const Complex& y);
-inline Complex operator - (const Complex& x, Real y);
-inline Complex operator - (Real x, const Complex& y);
-inline Complex operator * (const Complex& x, const Complex& y);
-inline Complex operator * (const Complex& x, Real y);
-inline Complex operator * (Real x, const Complex& y);
-inline Complex operator / (const Complex& x, const Complex& y);
-inline Complex operator / (const Complex& x, Real y);
-inline Complex operator / (Real x, const Complex& y);
-
-inline Complex conj(const Complex& x);
-inline Real real(const Complex& x);
-inline Real imag(const Complex& x);
-inline Real norm(const Complex& x);
-inline Real arg(const Complex& x);
-inline Complex sqrt(const Complex& x);
-
-inline Complex polar(Real r, Real t = 0.0);
-
-
 // inline members
 
 inline const Complex& Complex::operator = (const Complex& y) 
+
 { 
   re = y.re; im = y.im; return *this; 
 } 
@@ -274,19 +229,19 @@ inline Real imag(const Complex& x)
   return x.im;
 }
 
-inline Real norm(const Complex& x)
+inline Real abs2(const Complex& x)
 {
-  return (x.re*x.re+x.im*x.im);
+  return x.re*x.re+x.im*x.im;
 }
 
 inline Real abs(const Complex& x)
 {
-  return sqrt(norm(x));
+  return sqrt(abs2(x));
 }
 
 inline Real arg(const Complex& x)
 {
-  return atan2(x.im, x.re);
+  return x.im != 0.0 ? atan2(x.im, x.re) : 0.0;
 }
 
 // Return the principal branch of the square root (non-negative real part).
@@ -307,6 +262,26 @@ inline Complex sqrt(const Complex& x)
 inline Complex polar(Real r, Real t)
 {
   return Complex(r*cos(t), r*sin(t));
+}
+
+// Complex exponentiation
+inline Complex pow(const Complex& z, const Complex& w)
+{
+  Real u=w.re;
+  Real v=w.im;
+  if(z == 0.0) return w == 0.0 ? 1.0 : 0.0;
+  Real logr=0.5*log(abs2(z));
+  Real th=arg(z);
+  Real phi=logr*v+th*u;
+  return exp(logr*u-th*v)*Complex(cos(phi),sin(phi));
+}
+
+inline Complex pow(const Complex& z, Real u)
+{
+  if(z == 0.0) return u == 0.0 ? 1.0 : 0.0;
+  Real logr=0.5*log(abs2(z));
+  Real theta=u*arg(z);
+  return exp(logr*u)*Complex(cos(theta),sin(theta));
 }
 
 inline istream& operator >> (istream& s, Complex& y)

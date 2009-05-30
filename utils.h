@@ -245,11 +245,6 @@ inline Real abs2(Real x)
   return x*x;
 }
 
-inline Real abs2(const Complex& x)
-{
-  return x.re*x.re+x.im*x.im;
-}
-
 inline Real norm2(Real x)
 {
   return abs2(x);
@@ -433,6 +428,21 @@ inline double drand()
 {			  
   static const double factor=1.0/RAND_MAX;
   return rand()*factor;
+}
+
+inline int rand_sign()
+{			  
+  return rand() % 2 ? 1 : -1;
+}
+
+inline Complex rand_unityroot(int n)
+{			  
+  return expi(twopi*(rand() % n)/n);
+}
+
+inline Complex rand_phase()
+{			  
+  return expi(twopi*drand());
 }
 
 double drand_gauss();
