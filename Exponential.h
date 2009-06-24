@@ -121,7 +121,7 @@ public:
       Nu x=-nuk*this->dt;
       Nu ph1=phi1(x); // (e^x-1)/x
       this->phi0[0][j]=x*ph1+1.0;
-      this->e[0][j][0]=ph1*dt;
+      this->e[0][j][0]=ph1*this->dt;
     }
   }
 };
@@ -142,7 +142,7 @@ public:
       Nu nuk=this->parent->LinearCoeff(j);
       Nu ph0=exp(-nuk*this->dt);
       this->phi0[0][j]=ph0;
-      this->e[0][j][0]=ph0*dt;
+      this->e[0][j][0]=ph0*this->dt;
     }
   }
 };
