@@ -12,12 +12,12 @@ if(fieldname == "dt")
 while(nextrun()) {
   real[][] a;
   real[] data;
-  file fin=line(input(run+"/stat",comment=""));
+  file fin=input(run+"/stat",comment="").line();
   
-  string[] names=word(fin);
+  string[] names=fin.word();
   int field=find(names == fieldname);
   if(field < 0) abort("No such field: "+fieldname);
-  a=dimension(word(fin,false),0,0);
+  a=fin.word(false).dimension(0,0);
   a=transpose(a);
   data=a[field];
 

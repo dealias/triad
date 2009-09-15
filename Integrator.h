@@ -174,8 +174,7 @@ inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0,
   if(isfinite(norm0) && isfinite(diff)) {
     if(initial != 0.0 && pred != initial) {
       static const double epsilon=DBL_MIN/DBL_EPSILON;
-      double denom=max(abs2(norm0),abs2(initial))+epsilon;
-      double error=max(abs2(diff)/denom);
+      double error=max(abs2(diff)/(max(norm2(norm0),norm2(initial))+epsilon));
       if(error > errmax) errmax=error;
     }
   } else errmax=HUGE_VAL;

@@ -6,12 +6,12 @@ size(200,150,IgnoreAspect);
 while(nextrun()) {
   real[][] a;
   real[] data;
-  file fin=line(input(run+"/stat",comment=""));
+  file fin=input(run+"/stat",comment="").line();
   
-  string[] names=word(fin);
+  string[] names=fin.word();
     
   int field=find(names == "t");
-  a=dimension(word(fin,false),0,0);
+  a=fin.word(false).dimension(0,0);
   a=transpose(a);
   data=a[field];
 
