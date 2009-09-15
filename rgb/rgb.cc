@@ -871,14 +871,14 @@ int main(int argc, char *argv[])
       if(f+1 >= nfiles) msg(ERROR, "Too few files specified");
       fieldname << argf[f+1];
       openfield(xin2,argf[f+1],nx2,ny2,nz2);
-      if(nx2 != nx || ny2 != ny && nz2 != nz)
+      if(nx2 != nx || ny2 != ny || nz2 != nz)
 	msg(ERROR,"Inconsistent component image sizes");
     }
     if(vector3) {
       if(f+2 >= nfiles) msg(ERROR, "Too few files specified");
       fieldname << argf[f+2];
       openfield(xin3,argf[f+2],nx,ny,nz);
-      if(nx2 != nx || ny2 != ny && nz2 != nz)
+      if(nx2 != nx || ny2 != ny || nz2 != nz)
 	msg(ERROR,"Inconsistent component image sizes");
     }
     files[mfiles]=strdup(fieldname.str().c_str());
