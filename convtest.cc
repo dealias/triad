@@ -3,6 +3,7 @@
 // Compile with: g++ -I ~/tri convtest.cc fftw++.cc -lfftw3
 
 using std::cout;
+using std::endl;
 
 int main()
 {	

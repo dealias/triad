@@ -1,5 +1,5 @@
 /* Array.h:  A high-performance multi-dimensional C++ array class
-Copyright (C) 1997-2005 John C. Bowman
+Copyright (C) 1997-2009 John C. Bowman
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.41
+#define __ARRAY_H_VERSION__ 1.42
 
 // Defining NDEBUG improves optimization but disables argument checking.
 // Defining __NOARRAY2OPT inhibits special optimization of Array2[].
@@ -101,14 +101,14 @@ inline int posix_memalign0(void **memptr, size_t alignment, size_t size)
 }
 inline void free0(void *p)
 {
- if(p) free(*((void **) p-1));
+  if(p) free(*((void **) p-1));
 }
 #endif
 
 template<class T>
 inline void newAlign(T *&v, size_t len, size_t align)
 {
-  void *mem;
+  void *mem=NULL;
   const char *invalid="Invalid alignment requested";
   const char *nomem="Memory limits exceeded";
 #ifdef HAVE_POSIX_MEMALIGN

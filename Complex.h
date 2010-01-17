@@ -189,6 +189,11 @@ inline Complex operator * (const Complex& x, const Complex& y)
   return Complex(x.re*y.re-x.im*y.im, x.re*y.im+x.im*y.re);
 }
 
+inline Complex multconj(const Complex& x, const Complex& y)
+{
+  return Complex(x.re*y.re+x.im*y.im,x.im*y.re-x.re*y.im);
+}
+
 inline Complex operator * (const Complex& x, Real y)
 {
   return Complex(x.re*y, x.im*y);
