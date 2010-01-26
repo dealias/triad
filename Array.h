@@ -105,6 +105,7 @@ inline void free0(void *p)
 }
 #endif
 
+#ifndef __fftwpp_h__
 template<class T>
 inline void newAlign(T *&v, size_t len, size_t align)
 {
@@ -133,6 +134,7 @@ inline void deleteAlign(T *v, size_t len)
   free0(v);
 #endif  
 }
+#endif
 
 namespace Array {
   
