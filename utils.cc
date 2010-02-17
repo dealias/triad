@@ -57,7 +57,7 @@ char *convert(const char *s, char from, char to, char *s2)
   char *p;
   if(s2==NULL) {s2=strdup(s);}
   p=s2;
-  while((p=strchr((const char *)p,from))) {*p++=to;}
+  while((p=strchr((char *)p,from))) {*p++=to;}
   return s2;
 }
 

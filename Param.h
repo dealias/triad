@@ -270,7 +270,7 @@ inline void Param<T>::get_values(const char *arg, T (*rtn)(const char *))
   char *optarg=strdup(arg);
 
   do {
-    const char *optarg0=strchr(optarg,')');
+    char *optarg0=strchr(optarg,')');
     if(!optarg0) optarg0=optarg;
     ptr=strchr(optarg0,',');
     if(ptr) *ptr=0;

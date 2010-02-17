@@ -189,7 +189,7 @@ class array1 {
       state=unallocated;
     }
   }
-  virtual void Dimension(unsigned int nx0) {size=nx0;}
+  void Dimension(unsigned int nx0) {size=nx0;}
   void Dimension(unsigned int nx0, T *v0) {
     Dimension(nx0); v=v0; clear(allocated);
   }
