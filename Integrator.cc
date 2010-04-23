@@ -143,9 +143,9 @@ void IntegratorBase::SetProblem(ProblemBase& problem)
 
 void IntegratorBase::Alloc(vector2& Y0, vector& y)
 {
-  Allocate(y,ny);
+  Allocate(y,ny,align);
   unsigned int nfields=Y.Size();
-  Allocate(Y0,nfields);
+  Allocate(Y0,nfields,align);
   Var *p=y;
   for(unsigned int i=0; i < nfields; i++) {
     unsigned int n=NY[i];

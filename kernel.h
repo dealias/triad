@@ -74,7 +74,9 @@ class ProblemBase {
   bool stochastic;
   
  public:	
-  ProblemBase() : stochastic(false) {Array::Null(errmask);}
+  size_t align;
+  
+  ProblemBase() : stochastic(false), align(0) {Array::Null(errmask);}
   virtual ~ProblemBase() {}
   void SetAbbrev(const char *abbrev0) {abbrev=abbrev0;}
   const char *Abbrev() {return abbrev;}
@@ -90,13 +92,14 @@ class ProblemBase {
 
   const ivector& ErrorMask() {return errmask;}
   
-  void Allocator() {
+  void Allocator(size_t Align=0) {
+    align=Align;
     nfields=NY.Size();
     Y.Allocate(nfields);
     Allocate(index,nfields);
     ny=0;
     for(unsigned int i=0; i < nfields; i++) ny += NY[i];
-    Allocate(y,ny);
+    Allocate(y,ny,align);
     Var *p=y;
     unsigned int count=0;
     for(unsigned int i=0; i < nfields; i++) {

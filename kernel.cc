@@ -269,7 +269,7 @@ int main(int argc, char *argv[])
   Integrator->SetParam(tolmax,tolmin,stepfactor,stepnoninvert,dtmin,dtmax,
 		       itmax,microsteps,microfactor,verbose,dynamic);
 	
-  Integrator->Allocator(*Problem);
+  Integrator->Allocator(*Problem,Problem->align);
   	
   cout << newl << "INTEGRATING:" << endl;
   set_timer();

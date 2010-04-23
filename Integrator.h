@@ -28,6 +28,7 @@ protected:
   double pgrow, pshrink;
   bool FSAL; // First Same As Last
   bool first;
+  size_t align;
   
 public:	
   
@@ -127,8 +128,9 @@ public:
   virtual void Allocator(const vector2& Y0, DynVector<unsigned int>* NY0,
 			 const ivector& mask);
   virtual void Allocator() {}
-  virtual void Allocator(ProblemBase& problem) {
+  virtual void Allocator(ProblemBase& problem, size_t Align=0) {
     SetProblem(problem);
+    align=Align;
     Allocator(problem.YVector(),problem.Sizes(),problem.ErrorMask());
   }
   
