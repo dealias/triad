@@ -11,6 +11,8 @@
 #include <csignal>
 #endif
 
+using std::ostringstream;
+
 char beep='\a';
 
 int abort_flag=1; 	// If nonzero, abort program after a fatal error.

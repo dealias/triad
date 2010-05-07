@@ -1,5 +1,5 @@
 /* Array.h:  A high-performance multi-dimensional C++ array class
-Copyright (C) 1997-2009 John C. Bowman
+Copyright (C) 1997-2010 John C. Bowman
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.42
+#define __ARRAY_H_VERSION__ 1.43
 
 // Defining NDEBUG improves optimization but disables argument checking.
 // Defining __NOARRAY2OPT inhibits special optimization of Array2[].
@@ -44,24 +44,16 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #endif
 #endif
 
-using std::istream;
-using std::ostream;
-using std::ostringstream;
-using std::cin;
-using std::cerr;
-using std::endl;
-using std::flush;
-
 namespace Array {
   
-inline ostream& _newl(ostream& s) {s << '\n'; return s;}
+inline std::ostream& _newl(std::ostream& s) {s << '\n'; return s;}
 
 inline void ArrayExit(const char *x);
   
 #ifndef __ExternalArrayExit
 inline void ArrayExit(const char *x)
 {
-  cerr << _newl << "ERROR: " << x << "." << endl;
+  std::cerr << _newl << "ERROR: " << x << "." << std::endl;
   exit(1);
 } 
 #endif  
@@ -153,7 +145,7 @@ class array1 {
   }
   void CheckEqual(int a, int b, unsigned int dim, unsigned int m) const {
     if(a != b) {
-      ostringstream buf;
+      std::ostringstream buf;
       buf << "Array" << dim << " index ";
       if(m) buf << m << " ";
       buf << "is incompatible in assignment (" << a << " != " << b << ")";
@@ -175,7 +167,7 @@ class array1 {
   }
   void CheckActivate(int dim, size_t align=0) {
     if (test(allocated)) {
-      ostringstream buf;
+      std::ostringstream buf;
       buf << "Reallocation of Array" << dim
 	  << " attempted (must Deallocate first)";
       ArrayExit(buf.str().c_str());
@@ -226,7 +218,7 @@ class array1 {
   virtual void Check(int i, int n, unsigned int dim, unsigned int m,
 		     int o=0) const {
     if(i < 0 || i >= n) {
-      ostringstream buf;
+      std::ostringstream buf;
       buf << "Array" << dim << " index ";
       if(m) buf << m << " ";
       buf << "is out of bounds (" << i+o;
@@ -281,7 +273,7 @@ class array1 {
     return max;
   }
   
-  istream& Input (istream &s) const {
+  std::istream& Input (std::istream &s) const {
     __checkSize();
     for(unsigned int i=0; i < size; i++) s >> v[i];
     return s;
@@ -406,7 +398,7 @@ void rightshiftarray(T& A, T& B, T& C)
 }
   
 template<class T>
-ostream& operator << (ostream& s, const array1<T>& A)
+std::ostream& operator << (std::ostream& s, const array1<T>& A)
 {
   T *p=A();
   for(unsigned int i=0; i < A.Nx(); i++) {
@@ -416,7 +408,7 @@ ostream& operator << (ostream& s, const array1<T>& A)
 }
 
 template<class T>
-istream& operator >> (istream& s, const array1<T>& A)
+std::istream& operator >> (std::istream& s, const array1<T>& A)
 {
   return A.Input(s);
 }
@@ -522,7 +514,7 @@ class array2 : public array1<T> {
 };
 
 template<class T>
-ostream& operator << (ostream& s, const array2<T>& A)
+std::ostream& operator << (std::ostream& s, const array2<T>& A)
 {
   T *p=A();
   for(unsigned int i=0; i < A.Nx(); i++) {
@@ -531,12 +523,12 @@ ostream& operator << (ostream& s, const array2<T>& A)
     }
     s << _newl;
   }
-  s << flush;
+  s << std::flush;
   return s;
 }
 
 template<class T>
-istream& operator >> (istream& s, const array2<T>& A)
+std::istream& operator >> (std::istream& s, const array2<T>& A)
 {
   return A.Input(s);
 }
@@ -631,7 +623,7 @@ class array3 : public array1<T> {
 };
 
 template<class T>
-ostream& operator << (ostream& s, const array3<T>& A)
+std::ostream& operator << (std::ostream& s, const array3<T>& A)
 {
   T *p=A();
   for(unsigned int i=0; i < A.Nx(); i++) {
@@ -643,12 +635,12 @@ ostream& operator << (ostream& s, const array3<T>& A)
     }
     s << _newl;
   }
-  s << flush;
+  s << std::flush;
   return s;
 }
 
 template<class T>
-istream& operator >> (istream& s, const array3<T>& A)
+std::istream& operator >> (std::istream& s, const array3<T>& A)
 {
   return A.Input(s);
 }
@@ -750,7 +742,7 @@ class array4 : public array1<T> {
 };
 
 template<class T>
-ostream& operator << (ostream& s, const array4<T>& A)
+std::ostream& operator << (std::ostream& s, const array4<T>& A)
 {
   T *p=A;
   for(unsigned int i=0; i < A.Nx(); i++) {
@@ -765,12 +757,12 @@ ostream& operator << (ostream& s, const array4<T>& A)
     }
     s << _newl;
   }	
-  s << flush;
+  s << std::flush;
   return s;
 }
 
 template<class T>
-istream& operator >> (istream& s, const array4<T>& A)
+std::istream& operator >> (std::istream& s, const array4<T>& A)
 {
   return A.Input(s);
 }
@@ -879,7 +871,7 @@ class array5 : public array1<T> {
 };
 
 template<class T>
-ostream& operator << (ostream& s, const array5<T>& A)
+std::ostream& operator << (std::ostream& s, const array5<T>& A)
 {
   T *p=A;
   for(unsigned int i=0; i < A.Nx(); i++) {
@@ -897,12 +889,12 @@ ostream& operator << (ostream& s, const array5<T>& A)
     }
     s << _newl;
   }	
-  s << flush;
+  s << std::flush;
   return s;
 }
 
 template<class T>
-istream& operator >> (istream& s, const array5<T>& A)
+std::istream& operator >> (std::istream& s, const array5<T>& A)
 {
   return A.Input(s);
 }

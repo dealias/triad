@@ -24,6 +24,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <sys/stat.h> // On sun machines this must come after xstream.h
 
 using namespace Array;
+using namespace std;
 
 const char PROGRAM[]="TRIAD";
 const char VERSION[]="1.44";
@@ -144,7 +145,7 @@ void adjust_parameters(double& dt, double& dtmax, double& tmax,
   if(dt == 0.0) {
     if(tmax == 0.0) tmax=1.0;
     if(itmax == -1) itmax=100;
-    dt=abs(tmax/(itmax ? itmax : 1));
+    dt=fabs(tmax/(itmax ? itmax : 1));
   }
 	
   if(tmax == 0.0) tmax=DBL_STD_MAX; 

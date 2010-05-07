@@ -30,6 +30,8 @@ typedef void stack_t;
 
 #include "utils.h"
 
+using std::ostringstream;
+
 extern char* run;
 static const double init_time=time(NULL);
 static const double ticktime=1.0/sysconf(_SC_CLK_TCK);

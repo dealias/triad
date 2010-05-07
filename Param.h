@@ -283,7 +283,7 @@ inline void Param<T>::get_values(const char *arg, T (*rtn)(const char *))
 
       if(InRange(value)) var[i++]=value;
       else if(param_warn) {
-	ostringstream buf;
+	std::ostringstream buf;
 	buf << "Value \"" << value << "\" for "
 	    << name << " is invalid. Limits are "
 	    << min << " to " << max << ends;
