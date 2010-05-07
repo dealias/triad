@@ -56,7 +56,8 @@ inline void ArrayExit(const char *x)
   std::cerr << _newl << "ERROR: " << x << "." << std::endl;
   exit(1);
 } 
-#endif  
+#endif
+
 }
 
 #ifndef HAVE_POSIX_MEMALIGN
@@ -97,6 +98,8 @@ inline void free0(void *p)
 }
 #endif
 
+namespace Array {
+  
 #ifndef __fftwpp_h__
 template<class T>
 inline void newAlign(T *&v, size_t len, size_t align)
@@ -128,8 +131,6 @@ inline void deleteAlign(T *v, size_t len)
 }
 #endif
 
-namespace Array {
-  
 template<class T>
 class array1 {
  protected:
