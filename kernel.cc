@@ -163,6 +163,10 @@ int main(int argc, char *argv[])
 	
   inform=mailuser;
   cout.precision(REAL_DIG);
+  
+  const int nstate=256;
+  static char state[nstate];
+  initstate(1,state,nstate);
 	
   cout << newl << PROGRAM << " version " << VERSION
        << " [(C) John C. Bowman 2000]" << newl;

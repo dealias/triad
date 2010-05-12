@@ -427,17 +427,17 @@ inline void out_curve(S& os, Array::array1<T> f, const char *text,
 inline double drand()
 {			  
   static const double factor=1.0/RAND_MAX;
-  return rand()*factor;
+  return random()*factor;
 }
 
 inline int rand_sign()
 {			  
-  return rand() % 2 ? 1 : -1;
+  return random() % 2 ? 1 : -1;
 }
 
 inline Complex rand_unityroot(int n)
 {			  
-  return expi(twopi*(rand() % n)/n);
+  return expi(twopi*(random() % n)/n);
 }
 
 inline Complex rand_phase()
