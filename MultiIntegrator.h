@@ -74,16 +74,14 @@ class MultiIntegrator : public IntegratorBase {
   Solve_RC Solve();
 };
 
+extern MultiProblem *GMProblem;
+
 void MultiIntegrator::Allocator(ProblemBase& problem,size_t)
 {
   if(Ngrids < 2) msg(ERROR,"Need more grids");
   Allocate(Integrator,Ngrids);
   SetProblem(problem);
-  cout << MProblem << endl;
-  cout << &problem << endl;
-  //MProblem=&problem; // FIXME: this doesn't work.
-  exit(1);
-  
+  MProblem=::GMProblem;
   Nfields=MProblem->nfields;
   saveF=MProblem->saveF;
 
@@ -214,9 +212,5 @@ Solve_RC MultiIntegrator::Solve() {
   }
   return rc;
 }
-
-class Grid {
-  //grid stuff, in the house!
-};
 
 #endif
