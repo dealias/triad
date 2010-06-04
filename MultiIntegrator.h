@@ -15,11 +15,16 @@ class MultiProblem : public ProblemBase {
  public:
   enum Field {Nfields};
   unsigned Ngrids, grid, nfields;
+  vector3 mY; // FIXME: should this be public?
+
+  virtual void InitialConditions(unsigned Ngrids);
+
   // FIXME: Grid base class here?
   virtual void Project(unsigned toG)=0;
-  vector3 mY; // FIXME: should this be public?
-  virtual void InitialConditions(unsigned Ngrids);
+  virtual void Prolong(unsigned toG)=0;
+  //  virtual void Rescale()=0;
 };
+
 void MultiProblem::InitialConditions(unsigned Ngrids0) 
 {
   Ngrids=Ngrids0;
@@ -41,9 +46,9 @@ class MultiIntegrator : public IntegratorBase {
   virtual void Allocator(ProblemBase& problem,size_t);
 
   // These should be provided by the problem class:
-  virtual void Project(unsigned)=0;
-  virtual void Prolong(unsigned)=0;
-  virtual void Rescale()=0; // necessary?
+  //  virtual void Project(unsigned)=0;
+  //  virtual void Prolong(unsigned)=0;
+  
 
   const char *Name() {return "MultiIntegrator";}
 
