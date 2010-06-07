@@ -1,10 +1,12 @@
 MAGIC=magic # Hide default rule from Makefile.
 include Makefile
 
-$(NAME): $(FILES:=.o) $(CFILES:=.o)
+$(NAME)_: $(FILES:=.o) $(CFILES:=.o)
 	$(CXX) $(OPT) -o $(NAME) $(FILES:=.o) $(CFILES:=.o) $(LIB)
 
 include $(FILES:=.$(D))
+
+include $(OTHER:=.$(D))
 
 ifdef CFILES
 include $(CFILES:=.$(D))
