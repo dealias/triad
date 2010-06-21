@@ -46,7 +46,7 @@ class MultiIntegrator : public IntegratorBase {
   unsigned grid;
  public:
   const char *Name() {return "MultiIntegrator";}
-  virtual void Allocator(ProblemBase& problem,size_t);
+  virtual void Allocator(ProblemBase& problem,size_t Align=0);
 
   void Grid(unsigned g) {
     grid=g;
@@ -76,8 +76,9 @@ class MultiIntegrator : public IntegratorBase {
 
 extern MultiProblem *MProblem;
 
-void MultiIntegrator::Allocator(ProblemBase& problem,size_t)
+void MultiIntegrator::Allocator(ProblemBase& problem,size_t Align)
 {
+  align=Align;
   Ngrids=::Ngrids;
   if(Ngrids < 2) msg(ERROR,"Need more grids");
   Allocate(Integrator,Ngrids);
@@ -90,10 +91,7 @@ void MultiIntegrator::Allocator(ProblemBase& problem,size_t)
   // FIXME: if Y gets swapped at any point, we're fucked.
   Dimension(mY,MProblem->mY);
   Allocate(Ysave,Ngrids); // FIXME: should we save more than just one field?
-  
   Allocate(nY,Ngrids);
-
-      
 
   // Assumes that sub-integrators are all the same order
   // TODO: this could just take the lowest order and be fine.
@@ -107,7 +105,7 @@ void MultiIntegrator::Allocator(ProblemBase& problem,size_t)
     integrator=
       dynamic_cast<RK *>(Vocabulary->NewIntegrator(subintegrator));
     if(!integrator) msg(ERROR,"subintegrator must be an RK integrator");
-    
+
     Integrator[i]=integrator;
     Integrator[i]->SetProblem(problem);
     Integrator[i]->SetParam(*this);
@@ -116,21 +114,15 @@ void MultiIntegrator::Allocator(ProblemBase& problem,size_t)
       nY[i][F]=Problem->Size(Nfields*grid+F);
       Dimension(mY[i][F],nY[i][F],Problem->YVector()[Nfields*grid+F]);
     }
-    Integrator[i]->Allocator(mY[i],&nY[i],Problem->ErrorMask());
-    Allocate(Ysave[i],nY[i][saveF]);
+    Integrator[i]->Allocator(mY[i],&nY[i],Problem->ErrorMask(),align);
+    Allocate(Ysave[i],nY[i][saveF],align);
   }
-
-
   
   // this should also give an option for rescaling.
   // I guess adding rescaling options to MultiIntegrator vocab or something?
 
-  // FIXME: Project should be moved out of the Integrator
-  // into the problem class, since it contains a bunch of grids
-
   for (unsigned i=1; i< Ngrids; i++) 
     MProblem->Project(i);
-
 }
 
 Solve_RC MultiIntegrator::Solve() {

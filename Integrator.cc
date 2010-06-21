@@ -162,10 +162,11 @@ void IntegratorBase::Alloc0(vector2& Y, vector& y)
 
 void IntegratorBase::Allocator(const vector2& Y0, 
 			       DynVector<unsigned int>* NY0,
-			       const ivector& errmask0)
+			       const ivector& errmask0, size_t Align)
 {
   check_compatibility(DEBUG);
   
+  align=Align;
   unsigned int nfields=Y0.Size();
   ny=0;
   NY.SetDynVector(*NY0);

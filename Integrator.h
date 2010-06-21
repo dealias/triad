@@ -126,12 +126,12 @@ public:
   unsigned int Stop(int field) {return Problem->Stop(field);}
   
   virtual void Allocator(const vector2& Y0, DynVector<unsigned int>* NY0,
-			 const ivector& mask);
+			 const ivector& mask, size_t Align=0);
   virtual void Allocator() {}
   virtual void Allocator(ProblemBase& problem, size_t Align=0) {
     SetProblem(problem);
     align=Align;
-    Allocator(problem.YVector(),problem.Sizes(),problem.ErrorMask());
+    Allocator(problem.YVector(),problem.Sizes(),problem.ErrorMask(),align);
   }
   
   virtual const char *Name()=0;
@@ -387,8 +387,8 @@ public:
   
   void Allocator(const vector2& Y0, 
 		 DynVector<unsigned int>* NY0,
-		 const ivector& errmask0) {
-    IntegratorBase::Allocator(Y0,NY0,errmask0);
+		 const ivector& errmask0,size_t Align=0) {
+    IntegratorBase::Allocator(Y0,NY0,errmask0,Align);
   }
 
   void Csum() {
