@@ -17,6 +17,7 @@ class MultiProblem : public ProblemBase {
   unsigned Ngrids, grid, nfields;
   vector3 mY;
   unsigned saveF; // index of fields to save
+  unsigned getNfields() {return (unsigned) nfields;};
 
   virtual void InitialConditions(unsigned Ngrids);
   virtual unsigned getnfields(unsigned g)=0;
@@ -43,6 +44,7 @@ class MultiIntegrator : public IntegratorBase {
   unsigned Nfields;
   vector3 mY;
   vector2 Ysave; // for recovery from failed time steps
+  array1<unsigned> nsave;
   bool Ysaved;
   unsigned grid;
  public:
@@ -87,10 +89,11 @@ void MultiIntegrator::Allocator(ProblemBase& problem,size_t Align)
   MProblem=::MProblem;
   saveF=MProblem->saveF;
 
-  Ysaved=0;
+  Ysaved=false;
   // FIXME: if Y gets swapped at any point, we're fucked.
   Dimension(mY,MProblem->mY);
-  Allocate(Ysave,Ngrids); // FIXME: should we save more than just one field?
+  Allocate(Ysave,Ngrids); // should we save more than just one field?
+  Allocate(nsave,Ngrids); 
   Allocate(nY,Ngrids);
 
   // Assumes that sub-integrators are all the same order
@@ -109,18 +112,19 @@ void MultiIntegrator::Allocator(ProblemBase& problem,size_t Align)
     Integrator[g]=integrator;
     Integrator[g]->SetProblem(problem);
     Integrator[g]->SetParam(*this);
-    Nfields=MProblem->getnfields(g);
+    Nfields=MProblem->getNfields();
     mY[g].Allocate(Nfields);
     for (unsigned F=0; F < Nfields; ++F) {
       nY[g][F]=Problem->Size(Nfields*grid+F);
       Dimension(mY[g][F],nY[g][F],Problem->YVector()[Nfields*grid+F]);
     }
     Integrator[g]->Allocator(mY[g],&nY[g],Problem->ErrorMask(),align);
-    Allocate(Ysave[g],nY[g][saveF],align);
+    nsave[g]=nY[g][saveF];
+    Allocate(Ysave[g],nsave[g]);
   }
   
   // this should also give an option for rescaling.
-  // I guess adding rescaling options to MultiIntegrator vocab or something?
+  // Add rescaling options to MultiIntegrator vocab or something?
 
   for (unsigned g=1; g< Ngrids; g++) 
     MProblem->Project(g);
@@ -144,14 +148,17 @@ Solve_RC MultiIntegrator::Solve() {
   Grid(0);
   
   // save a copy of mY[toG] for recovering from failed time steps
-  if (!Ysaved) {
-    for (unsigned j=0; j <= lastgrid; j++) {
-      unsigned stop=nY[j][saveF];
-      for(unsigned i=0; i < stop; i++)
-	Ysave[j][i]= mY[j][MProblem->saveF][i];
+  if(dynamic) {
+    if (!Ysaved) {
+      for (unsigned g=0; g <= lastgrid; g++) {
+	unsigned stop=nsave[g];
+	for(unsigned i=0; i < stop; i++)
+	  Ysave[g][i]= mY[g][MProblem->saveF][i];
+      }
+      Ysaved=1;
     }
-    Ysaved=1;
   }
+
   for (unsigned j=0; j <= lastgrid; j++) {
     if (new_y0) {
       Grid(j);
