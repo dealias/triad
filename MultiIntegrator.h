@@ -19,6 +19,7 @@ class MultiProblem : public ProblemBase {
   unsigned saveF; // index of fields to save
 
   virtual void InitialConditions(unsigned Ngrids);
+  virtual unsigned getnfields(unsigned g)=0;
 
   // FIXME: Grid base class here?
   virtual void Project(unsigned toG)=0;
@@ -54,17 +55,17 @@ class MultiIntegrator : public IntegratorBase {
   }
 
   void TimestepDependence() {
-    for (unsigned i=0; i < Ngrids ; i++) {
-      Grid(i);
-      Integrator[i]->SetTime(t,dt);
-      Integrator[i]->TimestepDependence();
+    for (unsigned g=0; g < Ngrids ; g++) {
+      Grid(g);
+      Integrator[g]->SetTime(t,dt);
+      Integrator[g]->TimestepDependence();
     }
   }
 
   Solve_RC CheckError() {
     bool adjust=true;
-    for (unsigned i=0; i < Ngrids ; i++) {
-      Solve_RC rc=Integrator[i]->CheckError();
+    for (unsigned g=0; g < Ngrids ; g++) {
+      Solve_RC rc=Integrator[g]->CheckError();
       if(rc == UNSUCCESSFUL)
 	return UNSUCCESSFUL;
       adjust &= (rc == ADJUST);
@@ -84,7 +85,6 @@ void MultiIntegrator::Allocator(ProblemBase& problem,size_t Align)
   Allocate(Integrator,Ngrids);
   SetProblem(problem);
   MProblem=::MProblem;
-  Nfields=MProblem->nfields;
   saveF=MProblem->saveF;
 
   Ysaved=0;
@@ -99,30 +99,31 @@ void MultiIntegrator::Allocator(ProblemBase& problem,size_t Align)
   pgrow=(order > 0) ? 0.5/order : 0;
   pshrink=(order > 1) ? 0.5/(order-1) : pgrow;
 
-  for (unsigned i=0; i< Ngrids; i++) {
-    Grid(i);
+  for (unsigned g=0; g < Ngrids; g++) {
+    Grid(g);
     RK *integrator;
     integrator=
       dynamic_cast<RK *>(Vocabulary->NewIntegrator(subintegrator));
     if(!integrator) msg(ERROR,"subintegrator must be an RK integrator");
 
-    Integrator[i]=integrator;
-    Integrator[i]->SetProblem(problem);
-    Integrator[i]->SetParam(*this);
-    mY[i].Allocate(Nfields);
+    Integrator[g]=integrator;
+    Integrator[g]->SetProblem(problem);
+    Integrator[g]->SetParam(*this);
+    Nfields=MProblem->getnfields(g);
+    mY[g].Allocate(Nfields);
     for (unsigned F=0; F < Nfields; ++F) {
-      nY[i][F]=Problem->Size(Nfields*grid+F);
-      Dimension(mY[i][F],nY[i][F],Problem->YVector()[Nfields*grid+F]);
+      nY[g][F]=Problem->Size(Nfields*grid+F);
+      Dimension(mY[g][F],nY[g][F],Problem->YVector()[Nfields*grid+F]);
     }
-    Integrator[i]->Allocator(mY[i],&nY[i],Problem->ErrorMask(),align);
-    Allocate(Ysave[i],nY[i][saveF],align);
+    Integrator[g]->Allocator(mY[g],&nY[g],Problem->ErrorMask(),align);
+    Allocate(Ysave[g],nY[g][saveF],align);
   }
   
   // this should also give an option for rescaling.
   // I guess adding rescaling options to MultiIntegrator vocab or something?
 
-  for (unsigned i=1; i< Ngrids; i++) 
-    MProblem->Project(i);
+  for (unsigned g=1; g< Ngrids; g++) 
+    MProblem->Project(g);
 }
 
 Solve_RC MultiIntegrator::Solve() {
@@ -130,9 +131,9 @@ Solve_RC MultiIntegrator::Solve() {
   errmax=0.0;
   
   // initialize integrators
-  for (unsigned i=0; i < Ngrids; i++) {
-    Integrator[i]->SetTime(t,dt);
-    Integrator[i]->initialize0();
+  for (unsigned g=0; g < Ngrids; g++) {
+    Integrator[g]->SetTime(t,dt);
+    Integrator[g]->initialize0();
     // TODO: put first source calculation here?
   }
   if(dynamic) TimestepDependence();
@@ -172,8 +173,8 @@ Solve_RC MultiIntegrator::Solve() {
 	new_y0=0;
     }
   }
-  for (unsigned i=0; i < Ngrids; i++)  {
-    double err=Integrator[i]->Errmax();
+  for (unsigned g=0; g < Ngrids; g++)  {
+    double err=Integrator[g]->Errmax();
     if(err > errmax) errmax=err;
   }
   
@@ -196,11 +197,11 @@ Solve_RC MultiIntegrator::Solve() {
     }
   }
   
-  for (unsigned i=0; i < Ngrids; i++) {
-    Integrator[i]->setnew_y0(new_y0);
+  for (unsigned g=0; g < Ngrids; g++) {
+    Integrator[g]->setnew_y0(new_y0);
     if(new_y0) {
-      Grid(i);
-      MProblem->Stochastic(mY[i],t,dt);
+      Grid(g);
+      MProblem->Stochastic(mY[g],t,dt);
     }
   }
   return rc;
