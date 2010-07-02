@@ -51,14 +51,14 @@ class MultiIntegrator : public IntegratorBase {
   const char *Name() {return "MultiIntegrator";}
   virtual void Allocator(ProblemBase& problem,size_t Align=0);
 
-  void Grid(unsigned g) {
+  void setGrid(unsigned g) {
     grid=g;
     MProblem->grid=g;
   }
 
   void TimestepDependence() {
     for (unsigned g=0; g < Ngrids ; g++) {
-      Grid(g);
+      setGrid(g);
       Integrator[g]->SetTime(t,dt);
       Integrator[g]->TimestepDependence();
     }
@@ -103,7 +103,7 @@ void MultiIntegrator::Allocator(ProblemBase& problem,size_t Align)
   pshrink=(order > 1) ? 0.5/(order-1) : pgrow;
 
   for (unsigned g=0; g < Ngrids; g++) {
-    Grid(g);
+    setGrid(g);
     RK *integrator;
     integrator=
       dynamic_cast<RK *>(Vocabulary->NewIntegrator(subintegrator));
@@ -145,7 +145,7 @@ Solve_RC MultiIntegrator::Solve() {
   unsigned lastgrid=Ngrids-1;
   
   bool new_y0=1;
-  Grid(0);
+  setGrid(0);
   
   // save a copy of mY[toG] for recovering from failed time steps
   if(dynamic) {
@@ -161,7 +161,7 @@ Solve_RC MultiIntegrator::Solve() {
 
   for (unsigned j=0; j <= lastgrid; j++) {
     if (new_y0) {
-      Grid(j);
+      setGrid(j);
       Integrator[j]->iSource();
       for (unsigned i=0; i < laststage; ++i) {
 	Integrator[j]->PStage(i);
@@ -207,7 +207,7 @@ Solve_RC MultiIntegrator::Solve() {
   for (unsigned g=0; g < Ngrids; g++) {
     Integrator[g]->setnew_y0(new_y0);
     if(new_y0) {
-      Grid(g);
+      setGrid(g);
       MProblem->Stochastic(mY[g],t,dt);
     }
   }
