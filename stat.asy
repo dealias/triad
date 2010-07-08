@@ -15,7 +15,8 @@ while(nextrun()) {
   file fin=input(run+"/stat",comment="").line();
   
   string[] names=fin.word();
-  int field=find(names == fieldname);
+  
+  int field=find(names == fieldname)-1;
   if(field < 0) abort("No such field: "+fieldname);
   a=fin.word(false).dimension(0,0);
   a=transpose(a);
