@@ -99,8 +99,6 @@ void MultiIntegrator::Allocator(ProblemBase& problem,size_t Align)
   // Assumes that sub-integrators are all the same order
   // TODO: this could just take the lowest order and be fine.
   order=Integrator[0]->Order();
-  pgrow=(order > 0) ? 0.5/order : 0;
-  pshrink=(order > 1) ? 0.5/(order-1) : pgrow;
 
   for (unsigned g=0; g < Ngrids; g++) {
     setGrid(g);
@@ -123,6 +121,11 @@ void MultiIntegrator::Allocator(ProblemBase& problem,size_t Align)
     Allocate(Ysave[g],nsave[g]);
   }
   
+  order=Integrator[0]->Order();
+  pgrow=(order > 0) ? 0.5/order : 0;
+  pshrink=(order > 1) ? 0.5/(order-1) : pgrow;
+
+
   // this should also give an option for rescaling.
   // Add rescaling options to MultiIntegrator vocab or something?
 
