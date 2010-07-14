@@ -10,7 +10,7 @@ $(NAME)_$(MAGIC): dependencies
 clean:  FORCE
 	rm -rf *.o *.$(D) *mon.out $(CLEAN)
 
-dependencies: $(FILES:=.$(D))
+dependencies: $(FILES:=.$(D)) $(OTHER:=.$(D))
 
 FORCE:
 
