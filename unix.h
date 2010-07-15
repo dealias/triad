@@ -9,6 +9,8 @@ const char* const dirsep="/";
 
 #include <netdb.h>
 
+#define MATH_EXTENSIONS 0
+
 #ifndef __GNUC__
 extern "C" int getdomainname(char *name, size_t len);
 extern "C" int vsnprintf(char *str, size_t size, const char  *format,
@@ -25,9 +27,14 @@ extern "C" int putenv(char *string);
 #define sgn __sgn
 //#define hypot __hypot
 #else
+
 #include "extensions.h"
+
+#if MATH_EXTENSION
 extern "C" double expm1(double);
 extern "C" double log1p(double);
+#endif
+
 #endif
 
 #ifndef PI

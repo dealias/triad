@@ -5,6 +5,8 @@
  * George Ferguson, ferguson@cs.rochester.edu, 23 Apr 1993.
  */
 
+#if 0
+
 #define ISUPPER(C) ((C) >= 'A' && (C) <= 'Z')
 #define TOLOWER(C) ((C) - 'A' + 'a')
 #define NORMAL(C) (char) (ISUPPER(C) ? TOLOWER(C) : (C))
@@ -42,3 +44,5 @@ int strncasecmp(const char *s1, const char *s2, size_t n)
   }
   return(0);
 }
+
+#endif

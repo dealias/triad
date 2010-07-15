@@ -1,5 +1,8 @@
-CXX = g++ -Wall -ansi
-CC = gcc -Wall -ansi
+#CXX = g++ -Wall -ansi
+#CC = gcc -Wall -ansi
+FLAGS = -ansi-alias -malign-double -fp-model fast=2 -diag-disable 654
+CXX = icpc $(FLAGS)
+CC = icpc $(FLAGS)
 MAKEDEPEND = $(CXX) -M -DDEPEND
 FFT = fftw++
 LIBFFT = -lfftw3

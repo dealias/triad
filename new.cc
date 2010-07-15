@@ -22,7 +22,7 @@ void (*old_new_handler)()=set_new_handler(&my_new_handler);
 void *operator new(size_t size, const std::nothrow_t&) _RWSTD_THROW_SPEC_NULL
 #else
 #define _RWSTD_THROW_SPEC_NULL
-void *operator new(size_t size)
+void *operator new(size_t size) throw (std::bad_alloc)
 #endif
 {
   void *mem=malloc(size);
@@ -39,7 +39,7 @@ void *operator new(size_t size, int len)
   return mem;
 }
 
-void operator delete(void *ptr) _RWSTD_THROW_SPEC_NULL
+void operator delete(void *ptr) throw ()//_RWSTD_THROW_SPEC_NULL
 {
   free(ptr);
 }

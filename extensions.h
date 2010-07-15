@@ -3,6 +3,7 @@
 
 #include <math.h>
 
+#if MATH_EXTENSION
 inline double hypot(double x, double y)
 {
   return sqrt(x*x+y*y);
@@ -23,6 +24,7 @@ inline void sincos(const double x, double *sinx, double *cosx)
 {
   *sinx=sin(x); *cosx=cos(x);
 }
+#endif
 
 inline double sgn(const double x)
 {

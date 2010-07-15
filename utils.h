@@ -149,10 +149,11 @@ char *convert(const char *s, char from, char to, char *s2);
 
 int RealCompare(const void *a, const void *b);
 
+#if 0
 extern "C" char *strdup(const char *);
-
 extern "C" int strcasecmp (const char *s1, const char *s2);
 extern "C" int strncasecmp (const char *s1, const char *s2, size_t n);
+#endif
 
 int strcmpn(const char *s1, const char *s2, size_t n);
 int strcasecmpn(const char *s1, const char *s2, size_t n);

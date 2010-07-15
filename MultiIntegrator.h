@@ -19,6 +19,7 @@ class MultiProblem : public ProblemBase {
   unsigned saveF; // index of fields to save
   unsigned getNfields() {return (unsigned) nfields;};
 
+  void InitialConditions() {}
   virtual void InitialConditions(unsigned Ngrids);
   virtual unsigned getnfields(unsigned g)=0;
 
@@ -79,7 +80,7 @@ class MultiIntegrator : public IntegratorBase {
 
 extern MultiProblem *MProblem;
 
-void MultiIntegrator::Allocator(ProblemBase& problem,size_t Align)
+void MultiIntegrator::Allocator(ProblemBase& problem, size_t Align)
 {
   align=Align;
   Ngrids=::Ngrids;
