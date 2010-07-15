@@ -97,10 +97,6 @@ void MultiIntegrator::Allocator(ProblemBase& problem, size_t Align)
   Allocate(nsave,Ngrids); 
   Allocate(nY,Ngrids);
 
-  // Assumes that sub-integrators are all the same order
-  // TODO: this could just take the lowest order and be fine.
-  order=Integrator[0]->Order();
-
   for (unsigned g=0; g < Ngrids; g++) {
     setGrid(g);
     RK *integrator;
@@ -122,6 +118,8 @@ void MultiIntegrator::Allocator(ProblemBase& problem, size_t Align)
     Allocate(Ysave[g],nsave[g]);
   }
   
+  // Assumes that sub-integrators are all the same order
+  // TODO: this could just take the lowest order and be fine.
   order=Integrator[0]->Order();
   pgrow=(order > 0) ? 0.5/order : 0;
   pshrink=(order > 1) ? 0.5/(order-1) : pgrow;
