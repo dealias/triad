@@ -17,7 +17,7 @@ class MultiProblem : public ProblemBase {
   unsigned Ngrids, grid, nfields;
   vector3 mY;
   unsigned saveF; // index of fields to save
-  unsigned getNfields() {return (unsigned) nfields;};
+  virtual unsigned getNfields(unsigned g) {return (unsigned) nfields;};
 
   void InitialConditions() {}
   virtual void InitialConditions(unsigned Ngrids);
@@ -107,7 +107,7 @@ void MultiIntegrator::Allocator(ProblemBase& problem, size_t Align)
     Integrator[g]=integrator;
     Integrator[g]->SetProblem(problem);
     Integrator[g]->SetParam(*this);
-    Nfields=MProblem->getNfields();
+    Nfields=MProblem->getNfields(g);
     mY[g].Allocate(Nfields);
     for (unsigned F=0; F < Nfields; ++F) {
       nY[g][F]=Problem->Size(Nfields*grid+F);
