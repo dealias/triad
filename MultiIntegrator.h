@@ -127,9 +127,6 @@ void MultiIntegrator::Allocator(ProblemBase& problem, size_t Align)
 
   // this should also give an option for rescaling.
   // Add rescaling options to MultiIntegrator vocab or something?
-
-  for (unsigned g=1; g< Ngrids; g++) 
-    MProblem->Project(g);
 }
 
 Solve_RC MultiIntegrator::Solve() {
