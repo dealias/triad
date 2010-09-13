@@ -23,10 +23,9 @@ class MultiProblem : public ProblemBase {
   virtual void InitialConditions(unsigned Ngrids);
   virtual unsigned getnfields(unsigned g)=0;
 
-  // FIXME: Grid base class here?
   virtual void Project(unsigned toG)=0;
   virtual void Prolong(unsigned toG)=0;
-  //  virtual void Rescale()=0;
+  virtual int Rescale()=0;
 };
 
 void MultiProblem::InitialConditions(unsigned Ngrids0) 
@@ -152,7 +151,7 @@ Solve_RC MultiIntegrator::Solve() {
       for (unsigned g=0; g <= lastgrid; g++) {
 	unsigned stop=nsave[g];
 	for(unsigned i=0; i < stop; i++)
-	  Ysave[g][i]= mY[g][MProblem->saveF][i];
+	  Ysave[g][i]= mY[g][MProblem->saveF][i]; // FIXME: only if not rescale?
       }
       Ysaved=1;
     }
@@ -181,9 +180,15 @@ Solve_RC MultiIntegrator::Solve() {
 	new_y0=0;
     }
   }
-  for (unsigned g=0; g < Ngrids; g++)  {
-    double err=Integrator[g]->Errmax();
-    if(err > errmax) errmax=err;
+
+  if(MProblem->Rescale() > 0) {
+    rc=UNSUCCESSFUL;
+    new_y0=false;
+  } else {
+    for (unsigned g=0; g < Ngrids; g++)  {
+      double err=Integrator[g]->Errmax();
+      if(err > errmax) errmax=err;
+    }
   }
   
   rc=(dynamic ? CheckError() : SUCCESSFUL);
@@ -200,7 +205,7 @@ Solve_RC MultiIntegrator::Solve() {
       unsigned stop=nY[j][saveF];
       for(unsigned i=0; i < stop; i++)
 	mY[j][MProblem->saveF][i]=Ysave[j][i]; 
-    // FIXME: some grids may not have been projected onto, so they
+    // TODO: some grids may not have been projected onto, so they
     // don't need to be reverted
     }
   }
