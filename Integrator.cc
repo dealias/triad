@@ -224,7 +224,7 @@ Solve_RC PC::Solve()
   Predictor(0,ny);
 
   if(Corrector(0,ny)) {
-    flag=(dynamic ? CheckError() : SUCCESSFUL);
+    flag=dynamic ? CheckError() : SUCCESSFUL;
     new_y0=(flag != UNSUCCESSFUL);
   } else {
     flag=NONINVERTIBLE;

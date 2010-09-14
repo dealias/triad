@@ -129,7 +129,7 @@ void MultiIntegrator::Allocator(ProblemBase& problem, size_t Align)
 }
 
 Solve_RC MultiIntegrator::Solve() {
-  Solve_RC rc;
+  Solve_RC flag;
   errmax=0.0;
   
   // initialize integrators
@@ -142,7 +142,7 @@ Solve_RC MultiIntegrator::Solve() {
   unsigned laststage=Integrator[0]->NStages()-1;
   unsigned lastgrid=Ngrids-1;
   
-  bool new_y0=1;
+  bool new_y0;
   setGrid(0);
   
   // save a copy of mY[toG] for recovering from failed time steps
@@ -158,30 +158,38 @@ Solve_RC MultiIntegrator::Solve() {
   }
 
   for (unsigned j=0; j <= lastgrid; j++) {
-    if (new_y0) {
-      setGrid(j);
-      Integrator[j]->iSource();
-      for (unsigned i=0; i < laststage; ++i) {
-        // Need to call Conservative.h : Predictor
-	Integrator[j]->PStage(i);
-	Integrator[j]->Source(i+1);
-      }
+    setGrid(j);
+    Integrator[j]->iSource();
+    for (unsigned i=0; i < laststage; ++i) {
+      // Need to call Conservative.h : Predictor
+      Integrator[j]->PStage(i);
+      Integrator[j]->Source(i+1);
+    }
       
-      Integrator[j]->Corrector(0,Integrator[j]->Ny());
+    if(Integrator[j]->Corrector(0,Integrator[j]->Ny())) {
       double err=Integrator[j]->Errmax();
       if(err > errmax) errmax=err;
-      if (errmax < tolmax2) {
-	if(j < lastgrid) {
-	  MProblem->Project(j+1); 
-	  Integrator[j+1]->initialize0();
-	}
-      } else 
-	new_y0=false;
+      flag=dynamic ? CheckError() : SUCCESSFUL;
+      if(flag == UNSUCCESSFUL) {
+        new_y0=false;
+        break;
+      } else new_y0=true;
+    } else {
+      flag=NONINVERTIBLE;
+      new_y0=false;
+      break;
+    }
+        
+    if(new_y0) {
+      if(j < lastgrid) {
+        MProblem->Project(j+1); 
+        Integrator[j+1]->initialize0();
+      }
     }
   }
 
   if(MProblem->Rescale() > 0) {
-    rc=UNSUCCESSFUL;
+    flag=UNSUCCESSFUL;
     new_y0=false;
   } else {
     for (unsigned g=0; g < Ngrids; g++)  {
@@ -190,14 +198,14 @@ Solve_RC MultiIntegrator::Solve() {
     }
   }
   
-  rc=(dynamic ? CheckError() : SUCCESSFUL);
-  if (new_y0) 
-    new_y0=rc != UNSUCCESSFUL;
-  
   if (new_y0) {
     for (unsigned j=lastgrid; j > 0; j--)
       MProblem->Prolong(j-1);
     Ysaved=0;
+    for (unsigned g=0; g < Ngrids; g++) {
+      setGrid(g);
+      MProblem->Stochastic(mY[g],t,dt);
+    }
   } else {
     // revert completed runs
     for (unsigned j=0; j <= lastgrid; j++) {
@@ -209,14 +217,7 @@ Solve_RC MultiIntegrator::Solve() {
     }
   }
   
-  for (unsigned g=0; g < Ngrids; g++) {
-    Integrator[g]->setnew_y0(new_y0);
-    if(new_y0) {
-      setGrid(g);
-      MProblem->Stochastic(mY[g],t,dt);
-    }
-  }
-  return rc;
+  return flag;
 }
 
 #endif

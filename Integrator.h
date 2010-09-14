@@ -375,8 +375,6 @@ public:
 
   unsigned int NStages() {return nstages;}
     
-  void setnew_y0(bool flag) {new_y0=flag;}
-
   virtual void Source(const vector2& Src, const vector2& Y, double t) {
     Problem->Source(Src,Y,t);
   }
@@ -452,7 +450,8 @@ public:
   }
   
   virtual void Predictor(unsigned int start, unsigned int stop) {
-    for(unsigned int s=0; s < Astages-1; ++s) {
+    unsigned int laststage=Astages-1;
+    for(unsigned int s=0; s < laststage; ++s) {
       Stage(s,start,stop);
       PredictorSource(s);
     }
