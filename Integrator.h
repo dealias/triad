@@ -289,6 +289,8 @@ public:
   const char *Name() {return "Predictor-Corrector";}
   Solve_RC Solve();
 	
+  virtual bool isConservative() {return false;}
+
   void TimestepDependence() {
     halfdt=0.5*dt;
   }

@@ -15,6 +15,8 @@ public:
   C_RK(T *parent, int Order, int nstages, bool FSAL=false) : 
     RK(Order,nstages,FSAL), parent(parent) {}
   
+  bool isConservative() {return true;}
+  
   void Source(const vector2& Src, const vector2& Y, double t) {
     parent->ConservativeSource(Src,Y,t);
   }
@@ -27,7 +29,8 @@ public:
   }
   
   virtual void Predictor(unsigned int, unsigned int) {
-    for(unsigned int s=0; s < Astages-1; ++s) {
+    unsigned int laststage=Astages-1;
+    for(unsigned int s=0; s < laststage; ++s) {
       RK::Stage(s,start,stop);
       if(s < Astages-2) {
 	vector yss=ys[s];
@@ -56,11 +59,12 @@ public:
   }
   
   int Corrector(unsigned int, unsigned int) {
+    unsigned int laststage=Astages-1;
     if(dynamic) {
       if(FSAL) {
 	msg(ERROR,"Sorry; FSAL not yet implemented");
       } else {
-	rvector as=a[Astages-1];
+	rvector as=a[laststage];
 	for(unsigned int j=start; j < stop; j++) {
 	  Var y0j=y0[j];
 	  Var Skj=vsource[0][j];
@@ -68,7 +72,7 @@ public:
 	  Var yS=product(y0j,Skj);
 	  Var discr=as[0]*yS;
 	  unsigned int k;
-	  for(k=1; k < Astages-1; k++) {
+	  for(k=1; k < laststage; k++) {
 	    Var Skj=vsource[k][j];
 	    temp += as[k]*Skj;
 	    Var yS=product(ys[k-1][j],Skj);
@@ -93,14 +97,14 @@ public:
 	}
       }
     } else {
-      rvector as=a[Astages-1];
+      rvector as=a[laststage];
       for(unsigned int j=start; j < stop; j++) {
 	Var y0j=y0[j];
 	Var Skj=vsource[0][j];
 	Var temp=y0j+as[0]*Skj;
 	Var discr=as[0]*product(y0j,Skj);
 	unsigned int k;
-	for(k=1; k < Astages-1; k++) {
+	for(k=1; k < laststage; k++) {
 	  Var Skj=vsource[k][j];
 	  temp += as[k]*Skj;
 	  discr += as[k]*product(ys[k-1][j],Skj);

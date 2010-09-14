@@ -64,16 +64,6 @@ class MultiIntegrator : public IntegratorBase {
     }
   }
 
-  Solve_RC CheckError() {
-    bool adjust=true;
-    for (unsigned g=0; g < Ngrids ; g++) {
-      Solve_RC rc=Integrator[g]->CheckError();
-      if(rc == UNSUCCESSFUL)
-	return UNSUCCESSFUL;
-      adjust &= (rc == ADJUST);
-    }
-    return adjust ? ADJUST : SUCCESSFUL;
-  }
   Solve_RC Solve();
 };
 
@@ -139,14 +129,20 @@ Solve_RC MultiIntegrator::Solve() {
     // TODO: put first source calculation here?
   }
   if(dynamic) TimestepDependence();
-  unsigned laststage=Integrator[0]->NStages()-1;
   unsigned lastgrid=Ngrids-1;
   
   bool new_y0;
   setGrid(0);
   
+  // TODO: Move to initialization
+  bool save=false;
+  for (unsigned g=0; g <= lastgrid; g++) {
+    if(Integrator[g]->isConservative())
+      save=true;
+  }
+  
   // save a copy of mY[toG] for recovering from failed time steps
-  if(dynamic) {
+  if(dynamic || save) {
     if (!Ysaved) {
       for (unsigned g=0; g <= lastgrid; g++) {
 	unsigned stop=nsave[g];
@@ -160,11 +156,7 @@ Solve_RC MultiIntegrator::Solve() {
   for (unsigned j=0; j <= lastgrid; j++) {
     setGrid(j);
     Integrator[j]->iSource();
-    for (unsigned i=0; i < laststage; ++i) {
-      // Need to call Conservative.h : Predictor
-      Integrator[j]->PStage(i);
-      Integrator[j]->Source(i+1);
-    }
+    Integrator[j]->Predictor(0,Integrator[j]->Ny());
       
     if(Integrator[j]->Corrector(0,Integrator[j]->Ny())) {
       double err=Integrator[j]->Errmax();
