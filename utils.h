@@ -226,7 +226,6 @@ inline Real divide0(Real x, Real y)
 inline Real max(Real x)
 {
   return x;
-	
 }
 
 inline Real min(Real x)
