@@ -163,9 +163,8 @@ Solve_RC MultiIntegrator::Solve() {
       Integrator[j]->iSource();
       for (unsigned i=0; i < laststage; ++i) {
         // Need to call Conservative.h : Predictor
-        // Need to understand vSrc[i] vs. vSrc[i+1].
 	Integrator[j]->PStage(i);
-	Integrator[j]->Source(i);
+	Integrator[j]->Source(i+1);
       }
       
       Integrator[j]->Corrector(0,Integrator[j]->Ny());
@@ -177,7 +176,7 @@ Solve_RC MultiIntegrator::Solve() {
 	  Integrator[j+1]->initialize0();
 	}
       } else 
-	new_y0=0;
+	new_y0=false;
     }
   }
 
