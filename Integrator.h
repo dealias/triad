@@ -385,12 +385,6 @@ public:
     Source(vSrc[i],Y,t+C[i]*dt);
   }
   
-  void Allocator(const vector2& Y0, 
-		 DynVector<unsigned int>* NY0,
-		 const ivector& errmask0,size_t Align=0) {
-    IntegratorBase::Allocator(Y0,NY0,errmask0,Align);
-  }
-
   void Csum() {
     for(unsigned int s=0; s < Astages; ++s) {
       Real sum=0.0;
