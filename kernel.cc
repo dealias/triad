@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
       msg(OVERRIDE_GLOBAL,"Parameter file %s could not be opened",
 	  pname); 
     errno=0;
-    mkdir(Vocabulary->FileName("",""),0xFFFF);
+    mkdir(Vocabulary->FileName(dirsep),0xFFFF);
   }
 	
   for(i=1; i < argc; i++) Vocabulary->Assign(argv[i]);
