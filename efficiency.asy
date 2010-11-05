@@ -10,11 +10,11 @@ while(nextrun()) {
   
   string[] names=fin.word();
     
-  int field=find(names == "t");
+  int field=find(names == "t")-1;
   a=fin.word(false).dimension(0,0);
   a=transpose(a);
   data=a[field];
-
+  
   real[] stops;
   for (int i=1; i < a[0].length; ++i) {
     if (a[0][i] == 1) {
@@ -22,7 +22,9 @@ while(nextrun()) {
     }
   }
 
-  draw(graph(a[5],data),p+Pen(n),texify(run));
+  int field2=find(names == "CPU")-1;
+  
+  draw(graph(a[field2],data),p+Pen(n),texify(run));
 
   //  for (int i=0; i < stops.length; ++i)
   //    xequals(stops[i],Pen(n)+dashed);
