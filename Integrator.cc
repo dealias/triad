@@ -25,7 +25,8 @@ void IntegratorBase::Integrate(double& t0, double tmax,
 			       long long& iteration, unsigned long& nout)
   // Don't dump or microprocess if sample is negative.
 {
-  double dtold=0.0, dtorig=0.0;
+//  double dtold=0.0;
+  double dtorig=0.0;
   int it,itx;
   bool cont;
   int final=1;
@@ -99,11 +100,11 @@ void IntegratorBase::Integrate(double& t0, double tmax,
 	  break;
 	case SUCCESSFUL:
 	  t += dt;
-	  if(dtold) {ChangeTimestep(dtold); dtold=0.0;}  
+//	  if(dtold) {ChangeTimestep(dtold); dtold=0.0;}  
 	  cont=false;
 	  break;
 	case NONINVERTIBLE:
-	  if(!dtold) dtold=dtorig ? dtorig : dt;
+//	  if(!dtold) dtold=dtorig ? dtorig : dt;
 	  invert_cnt++;
 	  ChangeTimestep(dt*stepnoninverse);
 	  break;

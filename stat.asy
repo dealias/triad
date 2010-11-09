@@ -5,7 +5,9 @@ size(200,150,IgnoreAspect);
 
 string fieldname=getstring("field","dt");
 
-if(fieldname == "dt")
+bool dt=fieldname == "dt";
+
+if(dt)
   scale(Linear,Log);
 
 
@@ -32,10 +34,11 @@ while(nextrun()) {
     a[0][i] += recount;
   }
 	
-  draw(graph(a[0],data),p+Pen(n),texify(run));
+  draw(graph(a[0],data,dt ? data > 0 : array(data.length,true)),
+       p+Pen(n),texify(run));
   for (int i=1; i < stops.length; ++i)
     xequals(stops[i],Pen(n)+dashed);
-
+  
   real[] data0=copy(data);
   data0.delete(0);
   write(run+":");
