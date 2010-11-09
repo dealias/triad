@@ -423,18 +423,15 @@ Solve_RC Midpoint::Solve()
   Set(y,Y[0]);
   Set(y0,Y0[0]);
   
-  if(verbose > 1) cout << endl;
   Source(Src,Y0,t);
   
   Problem->Transform(Y0,t,dt,YI);
   for(int i=0; i < niterations; i++) {
     for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+halfdt*source[j];
-    if(verbose > 1) cout << y[0] << endl;
     Problem->BackTransform(Y,t+dt,dt,YI);
     Source(Src,Y,t);
   }
   for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+dt*source[j];
-  if(verbose > 1) cout << y[0] << endl;
   Problem->BackTransform(Y,t+dt,dt,YI);
 	
   Problem->Stochastic(Y,t,dt);
