@@ -24,17 +24,29 @@ while(nextrun()) {
 
   int field2=find(names == "CPU")-1;
   
-  draw(graph(a[field2],data),p+Pen(n),texify(run));
-
+  // if there are quite a lot of data points, thin the data for the graph
+  int maxplotlength=1000;
+  int skip = ceil(data.length/maxplotlength);
+  real[] aS, dataS;
+  for(int i=0; i < data.length; ++i) {
+    if(i % skip == 0) {
+      aS.push(a[5][i]);
+      dataS.push(data[i]);
+    }
+  }
+  
   //  for (int i=0; i < stops.length; ++i)
   //    xequals(stops[i],Pen(n)+dashed);
+  //draw(graph(a[field2],data),p+Pen(n),texify(run));
+  draw(graph(aS,dataS),p+Pen(n),texify(run));
+
   
-  real[] data0=copy(data);
-  data0.delete(0);
-  if (a[5].length>1)
+ 
+  if (a[5].length>1) {
     write("slope="+(string) (data[data.length-1]/a[5][a[5].length-1]));
-  else
+  } else
     write("insufficient progress.");
+
 }
 
 if(n > 1) attach(legend(),point(E),20E);

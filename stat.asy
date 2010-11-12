@@ -33,9 +33,22 @@ while(nextrun()) {
     }
     a[0][i] += recount;
   }
-	
-  draw(graph(a[0],data,dt ? data > 0 : array(data.length,true)),
-       p+Pen(n),texify(run));
+
+  // if there are quite a lot of data points, thin the data for the graph
+  int maxplotlength=1000;
+  int skip = ceil(data.length/maxplotlength);
+  real[] aS, dataS;
+  for(int i=0; i < data.length; ++i) {
+    if(i % skip == 0) {
+      aS.push(a[0][i]);
+      dataS.push(data[i]);
+    }
+  }
+
+  bool[] allgood=array(dataS.length,true);
+  draw(graph(aS,dataS,dt ? dataS > 0 : allgood), p+Pen(n),texify(run));
+
+  // draw vertical lines when the run was restarted
   for (int i=1; i < stops.length; ++i)
     xequals(stops[i],Pen(n)+dashed);
   
