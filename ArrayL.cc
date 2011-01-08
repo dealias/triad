@@ -1,4 +1,4 @@
-#include <iostream.h>
+#include <iostream>
 #include "ArrayL.h"
 
 using namespace Array;
@@ -13,7 +13,7 @@ int main()
     for(uint j=0; j <= i; j++) A(i,j)=10*i+j;
   }
 
-  cout << A << endl;
+  std::cout << A << std::endl;
 	
   array2L<double> B(n);
 	
@@ -24,6 +24,6 @@ int main()
     for(uint j=0; j <= i; j++) Bi[j]=10*i+j;
   }
 
-  cout << B << endl;
+  std::cout << B << std::endl;
    
 }   

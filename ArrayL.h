@@ -43,7 +43,7 @@ class array2L : public array1<T> {
   void Dimension(uint n0) {n=n0; this->size=n*(n+1)/2;}
 
   uint index(int i, int j) const {return i*(i+1)/2+j;}
-  int N() const {return n;}
+  uint N() const {return n;}
   
   array2L() {}
   array2L(uint n0, size_t align=0) {n=n0; this->Allocate(n0,align);}
@@ -73,16 +73,16 @@ class array2L : public array1<T> {
 };
   
 template<class T>
-ostream& operator << (ostream& s, const array2L<T>& A)
+  std::ostream& operator << (std::ostream& s, const array2L<T>& A)
 {
   T *p=A();
-  for(unsigned int i=0; i < A.N(); i++) {
-    for(unsigned int j=0; j <= i; j++) {
+  for(uint i=0; i < A.N(); i++) {
+    for(uint j=0; j <= i; j++) {
       s << *(p++) << " ";
     }
     s << _newl;
   }
-  s << flush;
+  s << std::flush;
   return s;
 }
 
