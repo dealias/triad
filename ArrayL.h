@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __ArrayL_h__
 #define __ArrayL_h__ 1
 
-#define __ARRAYL_H_VERSION__ 1.21
+#define __ARRAYL_H_VERSION__ 1.22
 
 // Lower triangular Array class
 
@@ -32,27 +32,26 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #define __check(i,n,dim,m) this->Check(i,n,dim,m)
 #endif
 
-typedef unsigned int uint;
-
 namespace Array {
   
 template<class T>
 class array2L : public array1<T> {
-  uint n;
+  unsigned int n;
  public:
-  void Dimension(uint n0) {n=n0; this->size=n*(n+1)/2;}
+  void Dimension(unsigned int n0) {n=n0; this->size=n*(n+1)/2;}
 
-  uint index(int i, int j) const {return i*(i+1)/2+j;}
-  uint N() const {return n;}
+  unsigned int index(int i, int j) const {return i*(i+1)/2+j;}
+  unsigned int N() const {return n;}
   
   array2L() {}
-  array2L(uint n0, size_t align=0) {n=n0; this->Allocate(n0,align);}
-  array2L(uint n0, T *v0) {n=n0; Dimension(n0,v0);}
+  array2L(unsigned int n0, size_t align=0) {Dimension(n0);
+    this->Allocate(n0,align);}
+  array2L(unsigned int n0, T *v0) {Dimension(n0); Dimension(n0,v0);}
   array2L(const array2L<T>& A) : n(A.n) {
     this->v=A.v; this->size=A.size; this->state=A.test(this->temporary);
   }
 	
-  array1<T> operator [] (uint i) const {
+  array1<T> operator [] (unsigned int i) const {
     __check(i,n,1,1);
     return array1<T>(i+1,this->v+index(i,0));
   }
@@ -62,7 +61,7 @@ class array2L : public array1<T> {
     return array1<T>(i+1,this->v+index(i,0));
   }
 	
-  T& operator () (uint i, uint j) const {
+  T& operator () (unsigned int i, unsigned int j) const {
     __check(i,n,2,1);
     __check(j,i+1,2,1);
     return this->v[index(i,j)];
@@ -76,8 +75,8 @@ template<class T>
   std::ostream& operator << (std::ostream& s, const array2L<T>& A)
 {
   T *p=A();
-  for(uint i=0; i < A.N(); i++) {
-    for(uint j=0; j <= i; j++) {
+  for(unsigned int i=0; i < A.N(); i++) {
+    for(unsigned int j=0; j <= i; j++) {
       s << *(p++) << " ";
     }
     s << _newl;

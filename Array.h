@@ -18,7 +18,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.44
+#define __ARRAY_H_VERSION__ 1.45
 
 // Defining NDEBUG improves optimization but disables argument checking.
 // Defining __NOARRAY2OPT inhibits special optimization of Array2[].
@@ -180,7 +180,7 @@ class array1 {
       state=unallocated;
     }
   }
-  void Dimension(unsigned int nx0) {size=nx0;}
+  virtual void Dimension(unsigned int nx0) {size=nx0;}
   void Dimension(unsigned int nx0, T *v0) {
     Dimension(nx0); v=v0; clear(allocated);
   }
