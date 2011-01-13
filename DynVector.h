@@ -22,6 +22,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 #include <cstdlib>
 #include <iostream>
+#include <algorithm>
 
 using std::cout;
 using std::endl;
@@ -179,6 +180,12 @@ public:
     os << v[size-1] << endl;
     return os;
   }
+
+  void sort() {
+    std::sort(v,v+size);
+  }
+
+
 };
 
 template<class T>
