@@ -8,12 +8,13 @@ using namespace std;
 int main()
 {
   unsigned int m=3;
+  int mi=m;
   unsigned int n=2*m-1;
   array1H<Complex> A(m);
   for(unsigned int i=0; i < m; ++i)
     A(i)=Complex(i,10+i);
 
-  for(int i=1-(int) m; i < (int) m; ++i)
+  for(int i=1-mi; i < mi; ++i)
     cout << A[i] << endl;
 
   /*
