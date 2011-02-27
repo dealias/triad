@@ -7,19 +7,20 @@ using namespace std;
 
 int main()
 {
-  int n=5;
-  int xorigin=(n-1)/2;
-  array1H<Complex> A(n);
-  for(unsigned i=xorigin; i < n; ++ i)
-    A[i]=Complex(i,10+i);
+  unsigned int m=3;
+  unsigned int n=2*m-1;
+  array1H<Complex> A(m);
+  for(unsigned int i=0; i < m; ++i)
+    A(i)=Complex(i,10+i);
 
-  for(unsigned i=0; i < n; ++ i)
-    cout << A.get(i) << endl;
+  for(int i=1-(int) m; i < (int) m; ++i)
+    cout << A[i] << endl;
 
+  /*
   int m=3;
   array2H<Complex> B(n,m);
-  for(int i=0; i < n; ++ i) {
-    for(int j=0; j < m; ++ j) {
+  for(int i=0; i < n; ++i) {
+    for(int j=0; j < m; ++j) {
       //B[i][j]=Complex(10+i,1+j);
       B.set(i,j,Complex(10+i,1+j));
     }
@@ -30,12 +31,13 @@ int main()
   cout << "\nB contains" << endl;
   cout << B << endl;
   cout << "but, expanded, produces" << endl;
-  for(int i=0; i < n; ++ i) {
-    for(int j=-m+1; j < m; ++ j) {
+  for(int i=0; i < n; ++i) {
+    for(int j=-m+1; j < m; ++j) {
       cout << B.get(i,j) << " ";
     }
     cout << endl;
   }
+  */
 
   return 0;
-}   
+}

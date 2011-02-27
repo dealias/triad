@@ -1,5 +1,5 @@
-/* Arrayp.h:  A high-performance periodic multi-dimensional C++ array class
-   Copyright (C) 1999 John C. Bowman
+/* ArrayH.h:  A high-performance multi-dimensional Hermitian C++ array class
+   Copyright (C) 2011 John C. Bowman and Malcolm Roberts
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -30,43 +30,47 @@
 
 #include "Array.h"
 
+#ifdef NDEBUG
+#define __check(i,n,dim,m)
+#else
+#define __check(i,n,dim,m) Check(i,n,dim,m)
+#endif
+
 namespace Array {
-  
-bool noconj(int ix, int xorigin) {
-  if(ix >= xorigin) return true;
-  return false;
-}
   
 template<class T>
 class array1H : public array1<T> {
 private:
-  unsigned xorigin;
+  unsigned nx0m1;
 public:
   array1H() {}
-  array1H(unsigned int nx0) {
-    if(nx0 % 2 == 0) exit(1); // FIXME: improve error message
-    xorigin=(nx0-1)/2;
-    this->Allocate(nx0);
+  array1H(unsigned int mx) {this->Allocate(mx);}
+  array1H(unsigned int mx, T *v0) {this->Dimension(mx,v0);}
+  
+  void Check(int i, int n, unsigned int dim, unsigned int m) const {
+    if(i <= -n || i >= n) {
+      std::ostringstream buf;
+      buf << "ArrayH" << dim << " index ";
+      if(m) buf << m << " ";
+      buf << "is out of bounds (" << i;
+      if(n == 0) buf << " index given to empty array";
+      else {
+	if(i < 0) buf << " < " << 1-n;
+	else buf << " > " << n-1;
+      }
+      buf << ")";
+      ArrayExit(buf.str().c_str());
+    }
   }
-  array1H(unsigned int nx0, T *v0) {
-    xorigin=(nx0-1)/2;
-    this->Dimension(nx0,v0);
-  }
-  T& operator [] (int ix) const {
-    // FIXME: return conjugate if ix < xorigin?
-    return this->v[ix];
+	
+  T get(int ix) const {
+    return ix >= 0 ? this->v[ix] : (ix < 0 ? conj(this->v[-ix]) : this->v[0].re);
   }
     
-  //T& operator () (int ix) const {return this->v[ix];}
-    
-  T get(int ix) {
-    if(ix == xorigin)
-      return 0.5*(this->v[ix]+conj(this->v[ix]));
-    if(noconj(ix,xorigin))
-      return this->v[ix];
-    return conj(this->v[2*xorigin-ix]);
+  T operator [] (int ix) const {
+    __check(ix,this->size,1,1);
+    return get(ix);
   }
-    
   array1H<T>& operator = (T a) {Load(a); return *this;}
 };
   
