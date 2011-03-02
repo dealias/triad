@@ -39,46 +39,60 @@
 namespace Array {
   
 template<class T>
-class array1H : public array1<T> {
-private:
-  unsigned nx0m1;
+class Array1H : public array1<T> {
 public:
-  array1H() {}
-  array1H(unsigned int mx) {this->Allocate(mx);}
-  array1H(unsigned int mx, T *v0) {this->Dimension(mx,v0);}
+  Array1H() {}
+  Array1H(unsigned int mx) {this->Allocate(mx);}
+  Array1H(unsigned int mx, T *v0) {this->Dimension(mx,v0);}
   
-  void Check(int i, int n, unsigned int dim, unsigned int m) const {
-    if(i <= -n || i >= n) {
-      std::ostringstream buf;
-      buf << "ArrayH" << dim << " index ";
-      if(m) buf << m << " ";
-      buf << "is out of bounds (" << i;
-      if(n == 0) buf << " index given to empty array";
-      else {
-	if(i < 0) buf << " < " << 1-n;
-	else buf << " > " << n-1;
-      }
-      buf << ")";
-      ArrayExit(buf.str().c_str());
-    }
+  void set(int ix, T a) const {
+    if(ix >= 0)
+      array1<T>::operator()(ix)=a;
+    else
+      array1<T>::operator()(-ix)=conj(a);
   }
-	
-  T get(int ix) const {
-    return ix >= 0 ? this->v[ix] : (ix < 0 ? conj(this->v[-ix]) : this->v[0].re);
+
+  T operator () (int ix) const {
+    if(ix >= 0)
+      return array1<T>::operator()(ix);
+    else
+      return conj(array1<T>::operator()(-ix));
   }
-    
   T operator [] (int ix) const {
-    __check(ix,this->size,1,1);
-    return get(ix);
+    return operator()(ix);
   }
-  array1H<T>& operator = (T a) {Load(a); return *this;}
+  Array1H<T>& operator = (T a) {Load(a); return *this;}
+};
+  
+#undef __check
+
+#ifdef NDEBUG
+#define __check(i,n,o,dim,m)
+#else
+#define __check(i,n,o,dim,m) Check(i-o,n,dim,m,o)
+#endif
+
+template<class T>
+class Array1HH {
+  typename array1<T>::opt pos,neg;
+public:
+  Array1HH(unsigned int mx, T *vpos, T *vneg) {
+    Dimension(pos,mx,vpos);
+    Dimension(neg,mx,vneg);
+  }
+  
+  T operator () (int ix) const {
+    if(ix >= 0)
+      return pos(ix);
+    else
+      return conj(neg(-ix));
+  }
 };
   
 template<class T>
-class array2H : public array2<T> {
-private:
-  unsigned xorigin;
-    
+class Array2H : public Array2<T> {
+public:
+  
   virtual void CheckH(int ix, int iy) const {
     //Check(ix,this->nx,2,1); // FIXME: segfaults
     if(abs(iy) >= this->ny) {
@@ -96,58 +110,38 @@ private:
       ArrayExit(buf.str().c_str());
     }
   }
+
+  Array2H() {}
+  Array2H(unsigned int mx, unsigned int my) {
+    this->Allocate(2*mx-1,my,1-mx,0);
+  }
+  Array2H(unsigned int mx, unsigned int my, T *v0) {
+    this->Allocate(2*mx-1,my,1-mx,0,v0);
+  }
+
+  void set(int ix, int iy, T a) const {
+    if(iy >= 0)
+      Array2<T>::operator()(ix,iy)=a;
+    if(iy <= 0)
+      Array2<T>::operator()(-ix,-iy)=conj(a);
+  }
+
+  T operator () (int ix, int iy) const {
+    if(iy >= 0)
+      return Array2<T>::operator()(ix,iy);
+    else
+      return conj(Array2<T>::operator()(-ix,-iy));
+  }
   
-
-public:
-  array2H() {}
-  array2H(unsigned int nx0, unsigned int ny0) {
-    xorigin=(nx0-1)/2;
-    this->Allocate(nx0,ny0);
-  }
-  array2H(unsigned int nx0, unsigned int ny0, T *v0) {
-    xorigin=(nx0-1)/2;
-    this->Dimension(nx0,ny0,v0);
-  }
-  array1H<T> operator [] (int ix) const {
-    // FIXME: return cc for certain cases?
-    return array1H<T>(this->ny,this->v+ix*this->ny);
-  }
-    
-  T& operator () (int ix, int iy) const {
-    // FIXME: return cc for certain cases?
-    return this->v[ix*this->ny+iy];
-  }
-    
-  T get(int ix, int iy) {
-    __checkH(ix,iy);
-    if(iy > 0)
-      return this->v[ix*this->ny+iy];
-    if(iy == 0) {
-      if(ix < xorigin) return conj(this->v[(2*xorigin-ix)*this->ny]);
-      if(ix > xorigin) return this->v[ix*this->ny];
-      return this->v[(2*xorigin-ix)*this->ny].re;
-    }
-    return conj(this->v[(2*xorigin-ix)*this->ny-iy]);
+  Array1HH<T> operator [] (int ix) const {
+    __check(ix,this->nx,this->ox,2,1);
+    return Array1HH<T>(this->ny,
+                       this->vtemp+ix*(int) this->ny,
+                       this->vtemp-ix*(int) this->ny);
   }
 
-  void set(int ix, int iy, T a) {
-    __checkH(ix,iy);
-    if(iy > 0) {this->v[ix*this->ny+iy]=a; return;}
-    if(iy == 0) {
-      if(ix == xorigin) {
-        this->v[(2*xorigin-ix)*this->ny] = a.re; // FIXME: should be .re
-      } else {
-        this->v[(2*xorigin-ix)*this->ny]=conj(a);
-        this->v[ix*this->ny] = a;
-      }
-      return;
-    }
-    this->v[(2*xorigin-ix)*this->ny-iy]=conj(a);
-  }
-
-  array2H<T>& operator = (T a) {Load(a); return *this;}
+  Array2H<T>& operator = (T a) {Load(a); return *this;}
 };
-  
 
 }
 
