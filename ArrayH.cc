@@ -9,7 +9,6 @@ int main()
 {
   unsigned int m=3;
   int mi=m;
-  unsigned int n=2*m-1;
   Array1H<Complex> A(m);
   
   for(unsigned int i=0; i < m; ++i)
@@ -23,8 +22,9 @@ int main()
 
   Array2H<Complex> B(mi,mi);
   for(int i=-mi+1; i < mi; ++i) {
+    Array1HH<Complex> Bi=B[i];
     for(int j=0; j < mi; ++j) {
-      B.set(i,j,Complex(10+i,j));
+      Bi.set(j,Complex(10+i,j));
     }
   }
   

@@ -22,19 +22,7 @@
 
 // Defining NDEBUG improves optimization.
 
-#ifdef NDEBUG
-#define __checkH(ix,iy)
-#else
-#define __checkH(ix,iy) this->CheckH(ix,iy)
-#endif
-
 #include "Array.h"
-
-#ifdef NDEBUG
-#define __check(i,n,dim,m)
-#else
-#define __check(i,n,dim,m) Check(i,n,dim,m)
-#endif
 
 namespace Array {
   
@@ -81,6 +69,13 @@ public:
     Dimension(neg,mx,vneg);
   }
   
+  void set(int ix, T a) const {
+    if(ix >= 0)
+      pos(ix)=a;
+    if(ix <= 0)
+      neg(-ix)=conj(a);
+  }
+
   T operator () (int ix) const {
     if(ix >= 0)
       return pos(ix);
@@ -92,25 +87,6 @@ public:
 template<class T>
 class Array2H : public Array2<T> {
 public:
-  
-  virtual void CheckH(int ix, int iy) const {
-    //Check(ix,this->nx,2,1); // FIXME: segfaults
-    if(abs(iy) >= this->ny) {
-      std::ostringstream buf;
-      buf << "Array2H index ";
-      if(this->ny) buf << this->ny << " ";
-      buf << "is out of bounds (" << iy;
-      if(this->ny == 0) 
-        buf << " index given to empty array";
-      else {
-        if(iy > 0) buf << ">" << this->ny;
-        else buf << "<" << -(int) (this->ny-1);
-      }
-      buf << ")";
-      ArrayExit(buf.str().c_str());
-    }
-  }
-
   Array2H() {}
   Array2H(unsigned int mx, unsigned int my) {
     this->Allocate(2*mx-1,my,1-mx,0);
