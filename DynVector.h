@@ -110,6 +110,8 @@ public:
   T& operator [] (int i) {
     return (*this)[(unsigned int) i];
   }
+
+  T get(unsigned i) {return v[i];}
 	
   T *operator + (unsigned int i) {return v+i;}
   T *operator + (int i) {return v+i;}
