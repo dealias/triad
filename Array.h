@@ -180,7 +180,7 @@ class array1 {
       state=unallocated;
     }
   }
-  virtual void Dimension(unsigned int nx0) {size=nx0;}
+  void Dimension(unsigned int nx0) {size=nx0;}
   void Dimension(unsigned int nx0, T *v0) {
     Dimension(nx0); v=v0; clear(allocated);
   }
@@ -188,9 +188,13 @@ class array1 {
     Dimension(A.size,A.v); state=A.test(temporary);
   }
 
+  void CheckActivate(size_t align=0) {
+    __checkActivate(1,align);
+  }
+  
   void Allocate(unsigned int nx0, size_t align=0) {
     Dimension(nx0);
-    __checkActivate(1,align);
+    CheckActivate(align);
   }
   
   void Reallocate(unsigned int nx0, size_t align=0) {

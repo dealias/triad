@@ -44,8 +44,10 @@ class array2L : public array1<T> {
   unsigned int N() const {return n;}
   
   array2L() {}
-  array2L(unsigned int n0, size_t align=0) {Dimension(n0);
-    this->Allocate(n0,align);}
+  array2L(unsigned int n0, size_t align=0) {
+    Dimension(n0);
+    this->CheckActivate(align);
+  }
   array2L(unsigned int n0, T *v0) {Dimension(n0); Dimension(n0,v0);}
   array2L(const array2L<T>& A) : n(A.n) {
     this->v=A.v; this->size=A.size; this->state=A.test(this->temporary);
