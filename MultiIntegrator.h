@@ -16,6 +16,7 @@ class MultiProblem : public ProblemBase {
   enum Field {Nfields};
   unsigned Ngrids, grid, nfields;
   vector3 mY;
+  vector y0; // saved data
   virtual unsigned getNfields(unsigned g) {return (unsigned) nfields;};
 
   void InitialConditions() {}
@@ -34,10 +35,11 @@ void MultiProblem::InitialConditions(unsigned Ngrids0)
 }
 
 class MultiIntegrator : public IntegratorBase {
+ public:
+  vector y0;
  private:
  protected:
   bool new_y0;
-  vector y0;
   Array1<RK *> Integrator;
   Array1<DynVector<unsigned> > nY; //NB: ProblemBase has a variable NY.
   MultiProblem *MProblem;
@@ -90,6 +92,8 @@ void MultiIntegrator::Allocator(ProblemBase& problem, size_t Align)
   Allocate(Integrator,Ngrids);
   
   Dimension(mY,MProblem->mY);
+  Set(MProblem->y0,y0);
+  Dimension(MProblem->y0,ny);
   Allocate(nY,Ngrids);
 
   for (unsigned g=0; g < Ngrids; g++) {
