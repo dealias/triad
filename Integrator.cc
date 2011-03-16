@@ -142,12 +142,12 @@ void IntegratorBase::SetProblem(ProblemBase& problem)
   Problem=&problem;
 }
 
-void IntegratorBase::Alloc(vector2& Y0, vector& y)
+void IntegratorBase::Alloc(vector2& Y0, vector& y0)
 {
-  Allocate(y,ny,align);
+  Allocate(y0,ny,align);
   unsigned int nfields=Y.Size();
   Allocate(Y0,nfields,align);
-  Var *p=y;
+  Var *p=y0;
   for(unsigned int i=0; i < nfields; i++) {
     unsigned int n=NY[i];
     Dimension(Y0[i],n,p);

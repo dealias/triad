@@ -16,7 +16,6 @@ class MultiProblem : public ProblemBase {
   enum Field {Nfields};
   unsigned Ngrids, grid, nfields;
   vector3 mY;
-  unsigned saveF; // index of fields to save
   virtual unsigned getNfields(unsigned g) {return (unsigned) nfields;};
 
   void InitialConditions() {}
@@ -36,16 +35,14 @@ void MultiProblem::InitialConditions(unsigned Ngrids0)
 
 class MultiIntegrator : public IntegratorBase {
  private:
-  unsigned saveF;
  protected:
+  bool new_y0;
+  vector y0;
   Array1<RK *> Integrator;
   Array1<DynVector<unsigned> > nY; //NB: ProblemBase has a variable NY.
   MultiProblem *MProblem;
   unsigned Nfields;
   vector3 mY;
-  vector2 Ysave; // for recovery from failed time steps
-  array1<unsigned> nsave;
-  bool Ysaved;
   unsigned grid;
  public:
   const char *Name() {return "MultiIntegrator";}
@@ -71,26 +68,33 @@ extern MultiProblem *MProblem;
 
 void MultiIntegrator::Allocator(ProblemBase& problem, size_t Align)
 {
+  const vector2& YP=problem.YVector();
+  DynVector<unsigned int>* NYP=problem.Sizes();
   align=Align;
+  
+  ny=0;
+  NY.SetDynVector(*NYP);
+  unsigned int nfields=YP.Size();
+  for(unsigned int i=0; i < nfields; i++)
+    ny += NY[i];
+  
+  Dimension(Y,YP);
+  Dimension(y,ny,(Var *) (YP[0]));
+  Allocate(y0,ny,align);
+  
   Ngrids=::Ngrids;
   if(Ngrids < 2) msg(ERROR,"Need more grids");
-  Allocate(Integrator,Ngrids);
-  SetProblem(problem);
+  
   MProblem=::MProblem;
-  saveF=MProblem->saveF;
-
-  Ysaved=false;
-  // FIXME: if Y gets swapped at any point, we're fucked.
+  SetProblem(problem);
+  Allocate(Integrator,Ngrids);
+  
   Dimension(mY,MProblem->mY);
-  Allocate(Ysave,Ngrids); // should we save more than just one field?
-  Allocate(nsave,Ngrids); 
   Allocate(nY,Ngrids);
 
   for (unsigned g=0; g < Ngrids; g++) {
     setGrid(g);
-    RK *integrator;
-    integrator=
-      dynamic_cast<RK *>(Vocabulary->NewIntegrator(subintegrator));
+    RK *integrator=dynamic_cast<RK *>(Vocabulary->NewIntegrator(subintegrator));
     if(!integrator) msg(ERROR,"subintegrator must be an RK integrator");
 
     Integrator[g]=integrator;
@@ -99,14 +103,14 @@ void MultiIntegrator::Allocator(ProblemBase& problem, size_t Align)
     Nfields=MProblem->getNfields(g);
     mY[g].Allocate(Nfields);
     for (unsigned F=0; F < Nfields; ++F) {
-      nY[g][F]=Problem->Size(Nfields*grid+F);
-      Dimension(mY[g][F],nY[g][F],Problem->YVector()[Nfields*grid+F]);
+      nY[g][F]=Problem->Size(Nfields*g+F);
+      Dimension(mY[g][F],nY[g][F],Problem->YVector()[Nfields*g+F]);
     }
     Integrator[g]->Allocator(mY[g],&nY[g],Problem->ErrorMask(),align);
-    nsave[g]=nY[g][saveF];
-    Allocate(Ysave[g],nsave[g]);
   }
   
+  new_y0=true;
+    
   // Assumes that sub-integrators are all the same order
   // TODO: this could just take the lowest order and be fine.
   order=Integrator[0]->Order();
@@ -120,52 +124,28 @@ void MultiIntegrator::Allocator(ProblemBase& problem, size_t Align)
 
 Solve_RC MultiIntegrator::Solve() {
   Solve_RC flag;
+  
   errmax=0.0;
   
-  // initialize integrators
-  for (unsigned g=0; g < Ngrids; g++) {
-    Integrator[g]->SetTime(t,dt);
-    Integrator[g]->initialize0();
-    // TODO: put first source calculation here?
-  }
-  if(dynamic) TimestepDependence();
+  if(new_y0)
+    for(unsigned i=0; i < ny; ++i) y0[i]=y[i]; // Save the initial data.
+  else
+    for(unsigned i=0; i < ny; ++i) y[i]=y0[i]; // Reload the initial data.
+  
+  TimestepDependence();
   unsigned lastgrid=Ngrids-1;
   
-  bool new_y0;
-  setGrid(0);
-  
-  // TODO: Move to initialization
-  bool save=false;
   for (unsigned g=0; g <= lastgrid; g++) {
-    if(Integrator[g]->isConservative())
-      save=true;
-  }
-  
-  // save a copy of mY[toG] for recovering from failed time steps
-  if(dynamic || save) {
-    if (!Ysaved) {
-      for (unsigned g=0; g <= lastgrid; g++) {
-	unsigned stop=nsave[g];
-	for(unsigned i=0; i < stop; i++)
-	  Ysave[g][i]= mY[g][MProblem->saveF][i]; // FIXME: only if not rescale?
-      }
-      Ysaved=1;
-    }
-  }
-
-  for (unsigned j=0; j <= lastgrid; j++) {
-    setGrid(j);
-    Integrator[j]->iSource();
-    Integrator[j]->Predictor(0,Integrator[j]->Ny());
+    setGrid(g);
+    Integrator[g]->initialize0();
+    Integrator[g]->iSource();
+    Integrator[g]->Predictor(0,Integrator[g]->Ny());
       
-    if(Integrator[j]->Corrector(0,Integrator[j]->Ny())) {
-      double err=Integrator[j]->Errmax();
+    if(Integrator[g]->Corrector(0,Integrator[g]->Ny())) {
+      double err=Integrator[g]->Errmax();
       if(err > errmax) errmax=err;
       flag=dynamic ? CheckError() : SUCCESSFUL;
-      if(flag == UNSUCCESSFUL) {
-        new_y0=false;
-        break;
-      } else new_y0=true;
+      new_y0=(flag != UNSUCCESSFUL);
     } else {
       flag=NONINVERTIBLE;
       new_y0=false;
@@ -173,39 +153,24 @@ Solve_RC MultiIntegrator::Solve() {
     }
         
     if(new_y0) {
-      if(j < lastgrid) {
-        MProblem->Project(j+1); 
-        Integrator[j+1]->initialize0();
-      }
+      if(g < lastgrid)
+        MProblem->Project(g+1); 
     }
   }
 
+ /*  
   if(MProblem->Rescale() > 0) {
     flag=UNSUCCESSFUL;
     new_y0=false;
-  } else {
-    for (unsigned g=0; g < Ngrids; g++)  {
-      double err=Integrator[g]->Errmax();
-      if(err > errmax) errmax=err;
-    }
   }
+*/
   
   if (new_y0) {
-    for (unsigned j=lastgrid; j > 0; j--)
-      MProblem->Prolong(j-1);
-    Ysaved=0;
+    for (unsigned g=lastgrid; g > 0; g--)
+      MProblem->Prolong(g-1);
     for (unsigned g=0; g < Ngrids; g++) {
       setGrid(g);
       MProblem->Stochastic(mY[g],t,dt);
-    }
-  } else {
-    // revert completed runs
-    for (unsigned j=0; j <= lastgrid; j++) {
-      unsigned stop=nY[j][saveF];
-      for(unsigned i=0; i < stop; i++)
-	mY[j][MProblem->saveF][i]=Ysave[j][i]; 
-    // TODO: some grids may not have been projected onto, so they
-    // don't need to be reverted
     }
   }
   

@@ -65,7 +65,7 @@ class ProblemBase {
  protected:
   vector y; // Array of all field data
   DynVector<unsigned int> NY; // number of variables in each field
-  array1<vector > Y; // array of dependent fields
+  array1<vector> Y; // array of dependent fields
   uvector index; // array of offsets to start of each field
   unsigned int ny;
   const char *abbrev;

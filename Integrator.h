@@ -295,6 +295,10 @@ public:
     halfdt=0.5*dt;
   }
   
+  void iSource() {
+    Source(Src0,Y0,t);
+  }
+
   void initialize0() {
     errmax=0.0;
     Set(y,Y[0]);
@@ -303,10 +307,6 @@ public:
       y0[i]=y[i];
   }
   
-  void iSource() {
-    Source(Src0,Y0,t);
-  }
-
   void initialize() {
     errmax=0.0;
     if(new_y0) {
@@ -381,14 +381,15 @@ public:
     Problem->Source(Src,Y,t);
   }
   
+
   void Source(unsigned int i) {
     Source(vSrc[i],Y,t+C[i]*dt);
   }
   
-  void Allocator(const vector2& Y0, 
-		 DynVector<unsigned int>* NY0,
+  void Allocator(const vector2& YP, 
+		 DynVector<unsigned int>* NYP,
 		 const ivector& errmask0,size_t Align=0) {
-    IntegratorBase::Allocator(Y0,NY0,errmask0,Align);
+    IntegratorBase::Allocator(YP,NYP,errmask0,Align);
   }
 
   void Csum() {
