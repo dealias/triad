@@ -422,6 +422,8 @@ class array2 : public array1<T> {
   unsigned int nx;
   unsigned int ny;
  public:
+  using array1<T>::Dimension;
+  
   void Dimension(unsigned int nx0, unsigned int ny0) {
     nx=nx0; ny=ny0;
     this->size=nx*ny;
@@ -544,6 +546,8 @@ class array3 : public array1<T> {
   unsigned int nz;
   unsigned int nyz;
  public:
+  using array1<T>::Dimension;
+  
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0) {
     nx=nx0; ny=ny0; nz=nz0; nyz=ny*nz;
     this->size=nx*nyz;
@@ -659,6 +663,8 @@ class array4 : public array1<T> {
   unsigned int nzw;
   unsigned int nyzw;
  public:
+  using array1<T>::Dimension;
+  
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 unsigned int nw0) {
     nx=nx0; ny=ny0; nz=nz0; nw=nw0; nzw=nz*nw; nyzw=ny*nzw;
@@ -782,6 +788,8 @@ class array5 : public array1<T> {
   unsigned int nzwv;
   unsigned int nyzwv;
  public:
+  using array1<T>::Dimension;
+  
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 unsigned int nw0, unsigned int nv0) {
     nx=nx0; ny=ny0; nz=nz0; nw=nw0; nv=nv0; nwv=nw*nv; nzwv=nz*nwv;
@@ -919,6 +927,8 @@ class Array1 : public array1<T> {
   void Offsets() {
     voff=this->v-ox;
   }
+  using array1<T>::Dimension;
+  
   void Dimension(unsigned int nx0, int ox0=0) {
     this->size=nx0;
     ox=ox0;
@@ -999,6 +1009,8 @@ class Array2 : public array2<T> {
     vtemp=this->v-ox*(int) this->ny;
     voff=vtemp-oy;
   }
+  using array1<T>::Dimension;
+  
   void Dimension(unsigned int nx0, unsigned int ny0, int ox0=0, int oy0=0) {
     this->nx=nx0; this->ny=ny0;
     this->size=this->nx*this->ny;
@@ -1087,6 +1099,8 @@ class Array3 : public array3<T> {
     vtemp=this->v-ox*(int) this->nyz;
     voff=vtemp-oy*(int) this->nz-oz;
   }
+  using array1<T>::Dimension;
+  
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 int ox0=0, int oy0=0, int oz0=0) {
     this->nx=nx0; this->ny=ny0; this->nz=nz0; this->nyz=this->ny*this->nz;
@@ -1176,6 +1190,8 @@ class Array4 : public array4<T> {
     vtemp=this->v-ox*(int) this->nyzw;
     voff=vtemp-oy*(int) this->nzw-oz*(int) this->nw-ow;
   }
+  using array1<T>::Dimension;
+  
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 unsigned int nw0, 
 		 int ox0=0, int oy0=0, int oz0=0, int ow0=0) {
@@ -1282,6 +1298,8 @@ class Array5 : public array5<T> {
     vtemp=this->v-ox*(int) this->nyzwv;
     voff=vtemp-oy*(int) this->nzwv-oz*(int) this->nwv-ow*(int) this->nv-ov;
   }
+  using array1<T>::Dimension;
+  
   void Dimension(unsigned int nx0, unsigned int ny0, unsigned int nz0,
 		 unsigned int nw0,  unsigned int nv0,
 		 int ox0=0, int oy0=0, int oz0=0, int ow0=0, int ov0=0) {
