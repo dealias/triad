@@ -164,11 +164,10 @@ Solve_RC MultiIntegrator::Solve() {
 
 
   if(MProblem->Rescale() > 0) {
-    flag=UNSUCCESSFUL;
+    flag=NONINVERTIBLE;
     new_y0=false;
   }
 
-  
   if (new_y0) {
     for (unsigned g=lastgrid; g > 0; g--)
       MProblem->Prolong(g-1);
