@@ -2,12 +2,12 @@
 #include <cmath>
 
 #include "newton.h"
-
+#include "precision.h"
 using namespace std;
 
 // Root solve by Newton-Raphson
 bool newton(Real &x, Real (*f)(Real x), Real (*dfdx)(Real x),
-	    bool verbose=false, unsigned int MaxIterations=100)
+	    bool verbose, unsigned int MaxIterations)
 {
   static const Real epsilon=1000.0*DBL_EPSILON;
 
@@ -30,7 +30,7 @@ bool newton(Real &x, Real (*f)(Real x), Real (*dfdx)(Real x),
     
     diff=fabs(x-x0);
     if(++i == MaxIterations) {
-      cerr << "WARNING: Newton-Raphson iteration did not converge." << endl;
+	cerr << "WARNING: Newton-Raphson iteration did not converge." << endl;
       return false;
     }
   } while (diff != 0.0 && (diff < lastdiff || diff > epsilon*fabs(x)));
@@ -41,8 +41,8 @@ bool newton(Real &x, Real (*f)(Real x), Real (*dfdx)(Real x),
 
 // Root solve by Newton-Raphson bisection
 
-bool newton(Real &x1, Real x2, Real (*f)(Real x), Real (*dfdx)(Real x),
-	    bool verbose=false, unsigned int MaxIterations=100)
+bool newtonbisect(Real &x1, Real x2, Real (*f)(Real x), Real (*dfdx)(Real x),
+		  bool verbose, unsigned int MaxIterations)
 {
   static const Real epsilon=1000.0*DBL_EPSILON;
   cerr.precision(16);
@@ -97,26 +97,3 @@ bool newton(Real &x1, Real x2, Real (*f)(Real x), Real (*dfdx)(Real x),
   cerr << "WARNING: Newton-Raphson bisection did not converge." << endl;
   return false;
 }
-
-
-#ifdef TEST
-Real f(Real x) 
-{
-  return x*x*x-1.0;
-}
-
-Real dfdx(Real x)
-{
-  return 3.0*x*x;
-}
-
-int main()
-{
-  Real x=1.0;
-  cin >> x;
-  newton(x,2.0,f,dfdx,true);
-  return 0;
-}
-#endif
-
-
