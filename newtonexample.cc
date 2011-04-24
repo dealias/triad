@@ -26,13 +26,13 @@ int main()
   cout << "enter a guess:" << endl;
   cin >> x;
   Real xguess=x;
-  Real xr=2.0;
   
   // bisect:
+  //Real xr=2.0;
   //newtonbisect(x,xr,f,dfdx,true,100);
 
   // newton-rhapson:
-  //newton(x,f,dfdx,true,100);
+  newton(x,f,dfdx,true,100);
 
   if(x != xguess)
     cout << "you were wrong." << endl;
