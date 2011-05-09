@@ -41,8 +41,8 @@ bool newton(Real &x, Real (*f)(Real x), Real (*dfdx)(Real x),
 
 // Root solve by Newton-Raphson bisection
 
-bool newtonbisect(Real &x1, Real x2, Real (*f)(Real x), Real (*dfdx)(Real x),
-		  bool verbose, unsigned int MaxIterations)
+bool newton(Real &x1, Real x2, Real (*f)(Real x), Real (*dfdx)(Real x),
+            bool verbose, unsigned int MaxIterations)
 {
   static const Real epsilon=1000.0*DBL_EPSILON;
   cerr.precision(16);
