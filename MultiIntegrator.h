@@ -26,6 +26,7 @@ class MultiProblem : public ProblemBase {
   virtual void Project(unsigned toG)=0;
   virtual void Prolong(unsigned toG)=0;
   virtual int Rescale()=0;
+  virtual void doifnewy0() {};
 };
 
 void MultiProblem::InitialConditions(unsigned Ngrids0) 
@@ -162,13 +163,16 @@ Solve_RC MultiIntegrator::Solve() {
     }
   }
 
-
-  if(MProblem->Rescale() > 0) {
-    flag=NONINVERTIBLE;
-    new_y0=false;
+  if(new_y0) {
+    if(MProblem->Rescale() > 0) {
+      flag=NONINVERTIBLE;
+      new_y0=false;
+    }
   }
 
   if (new_y0) {
+    //cout << "newy0" << endl;
+    MProblem->doifnewy0();
     for (unsigned g=lastgrid; g > 0; g--)
       MProblem->Prolong(g-1);
     for (unsigned g=0; g < Ngrids; g++) {
