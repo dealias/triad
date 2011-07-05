@@ -163,11 +163,9 @@ Solve_RC MultiIntegrator::Solve() {
     }
   }
 
-  if(new_y0) {
-    if(MProblem->Rescale() > 0) {
+  if(new_y0 && MProblem->Rescale() > 0) {
       flag=NONINVERTIBLE;
       new_y0=false;
-    }
   }
 
   if (new_y0) {
