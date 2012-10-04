@@ -134,7 +134,7 @@ public:
     if(dynamic) {
       for(unsigned int j=startM; j < stopM; j++) {
 	Var val=y0[j]+halfdt*(source0[j]+source[j]);
-	if(!Active(this->errmask) || this->errmask[j])
+	if(!Array::Active(this->errmask) || this->errmask[j])
 	  CalcError(y0[j],val,y0[j]+this->dt*source0[j],val);
 	y[j]=val;
       }
