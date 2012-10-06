@@ -17,6 +17,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
+#include <omp.h>
+
 #include "options.h"
 #include "kernel.h"
 #include "fpu.h"
@@ -27,7 +29,7 @@ using namespace Array;
 using namespace std;
 
 const char PROGRAM[]="TRIAD";
-const char VERSION[]="1.44";
+const char VERSION[]="1.45";
 const int RestartVersion=3;
 Real RestartProblemVersion=0;
 
@@ -76,6 +78,7 @@ int override=0;
 int verbose=1;
 int checkpoint=0;
 int oldversion=0;
+int threads=0;
 
 // Local vocabulary declarations and default values
 int microsteps=1;
@@ -111,6 +114,7 @@ VocabularyBase::VocabularyBase()
   VOCAB_NODUMP(clobber,0,1,"");
   VOCAB_NODUMP(override,0,1,"");
   VOCAB_NODUMP(verbose,0,4,"");
+  VOCAB_NODUMP(threads,0,INT_MAX,"");
   VOCAB_NODUMP(run,null,null,"");
   VOCAB_NODUMP(oldversion,0,1,"Read in old version of restart");
   VOCAB(checkpoint,0,INT_MAX,"");
@@ -254,6 +258,8 @@ int main(int argc, char *argv[])
   }
 					
   SaveParameters();
+  if(threads == 0) threads=omp_get_max_threads();
+  cout << newl << "THREADS: " << threads << endl;
   t=0.0; nout=0;
   Problem->InitialConditions();
   

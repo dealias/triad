@@ -429,6 +429,7 @@ public:
   
   virtual void Stage(unsigned int s, unsigned int start, unsigned int stop) {
     rvector as=a[s];
+#pragma omp parallel for num_threads(8)
     for(unsigned int j=start; j < stop; j++) {
       Var sum=y0[j];
       for(unsigned int k=0; k <= s; k++)
@@ -571,16 +572,19 @@ public:
 
   void Predictor(unsigned int start, unsigned int stop) {
     Real a00=a[0][0];
+#pragma omp parallel for num_threads(threads)
     for(unsigned int j=start; j < stop; j++)
       y[j]=y0[j]+a00*vsource[0][j];
     PredictorSource(0);
     
     Real a11=a[1][1];
+#pragma omp parallel for num_threads(threads)
     for(unsigned int j=start; j < stop; j++)
       y[j]=y0[j]+a11*vsource[1][j];
     PredictorSource(1);
     
     Real a22=a[2][2];
+#pragma omp parallel for num_threads(threads)
     for(unsigned int j=start; j < stop; j++)
       y[j]=y0[j]+a22*vsource[2][j];
     PredictorSource(2);
@@ -589,6 +593,7 @@ public:
       rvector a3=a[3];
       Real a30=a3[0];
       Real a31=a3[1];
+#pragma omp parallel for num_threads(threads)
       for(unsigned int j=start; j < stop; j++)
 	y[j]=y0[j]+a30*vsource[0][j]+a31*vsource[1][j];
       PredictorSource(3);
@@ -598,6 +603,7 @@ public:
   int Corrector(unsigned int start, unsigned int stop) {
     if(dynamic) {
       rvector as=a[4];
+#pragma omp parallel for num_threads(threads)
       for(unsigned int j=start; j < stop; j++) {
 	Var sum0=y0[j];
 	Var sum=sum0+as[0]*vsource[0][j]+as[1]*vsource[1][j]+
@@ -610,6 +616,7 @@ public:
       }
     } else {
       rvector as=a[4];
+#pragma omp parallel for num_threads(threads)
       for(unsigned int j=start; j < stop; j++) {
 	y[j]=y0[j]+as[0]*vsource[0][j]+as[1]*vsource[1][j]+
 	  as[2]*vsource[2][j]+as[3]*vsource[3][j];
@@ -648,6 +655,7 @@ public:
   int Corrector(unsigned int start, unsigned int stop) {
     if(dynamic) {
       rvector as=a[5];
+#pragma omp parallel for num_threads(threads)
       for(unsigned int j=start; j < stop; j++) {
 	Var sum0=y0[j];
 	Var sum=sum0+as[0]*vsource[0][j]+as[2]*vsource[2][j]+
@@ -660,6 +668,7 @@ public:
       }
     } else {
       rvector as=a[5];
+#pragma omp parallel for num_threads(threads)
       for(unsigned int j=start; j < stop; j++) {
 	y[j]=y0[j]+as[0]*vsource[0][j]+as[2]*vsource[2][j]+
 	  as[3]*vsource[3][j]+as[5]*vsource[5][j];

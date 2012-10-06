@@ -245,6 +245,7 @@ Solve_RC PC::Solve()
 
 void PC::Predictor(unsigned int start, unsigned int stop)
 {
+#pragma omp parallel for num_threads(threads)
   for(unsigned int j=start; j < stop; j++) y[j]=y0[j]+dt*source0[j];
   Problem->BackTransform(Y,t+dt,dt,YI);
 }
@@ -253,14 +254,18 @@ int PC::Corrector(unsigned int start, unsigned int stop)
 {
   CSource(Src,Y,t+dt);
   if(dynamic) {
+#pragma omp parallel for num_threads(threads)
     for(unsigned int j=start; j < stop; j++) {
       Var val=y0[j]+halfdt*(source0[j]+source[j]);
       if(!Active(errmask) || errmask[j])
 	CalcError(y0[j],val,y0[j]+dt*source0[j],val);
       y[j]=val;
     }
-  } else for(unsigned int j=start; j < stop; j++) {
-    y[j]=y0[j]+halfdt*(source0[j]+source[j]);
+  } else {
+#pragma omp parallel for num_threads(threads)
+    for(unsigned int j=start; j < stop; j++) {
+      y[j]=y0[j]+halfdt*(source0[j]+source[j]);
+    }
   }
 	
   return 1;
@@ -268,6 +273,7 @@ int PC::Corrector(unsigned int start, unsigned int stop)
 
 void SYM2::Predictor(unsigned int start, unsigned int stop)
 {
+#pragma omp parallel for num_threads(threads)
   for(unsigned int j=start; j < stop; j++) {
     y[j]=y0[j]+halfdt*source0[j];
     if(++j < stop) y[j]=y0[j];
@@ -284,13 +290,16 @@ int SYM2::Corrector(unsigned int start, unsigned int stop)
 {
   CSource(Src,Y,t+dt);
   if(dynamic) {
+#pragma omp parallel for num_threads(threads)
     for(unsigned int j=start; j < stop; j += 2) {
       y[j] += halfdt*source[j];
       if(!Active(errmask) || errmask[j])
 	CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
     }
-  } else for(unsigned int j=start; j < stop; j += 2) {
-    y[j] += halfdt*source[j];
+  } else {
+#pragma omp parallel for num_threads(threads)
+    for(unsigned int j=start; j < stop; j += 2)
+      y[j] += halfdt*source[j];
   }
 	
   return 1;
@@ -445,6 +454,7 @@ void LeapFrog::Predictor(unsigned int start, unsigned int stop)
   else yp=yp0;
   double dtprime=halfdt+oldhalfdt;
   Problem->Transform(YP,t-oldhalfdt,dtprime,YP0);
+#pragma omp parallel for num_threads(threads)
   for(unsigned int j=start; j < stop; j++) yp[j] += dtprime*source0[j];
   Problem->BackTransform(YP,t+halfdt,dtprime,YP0);
   lasthalfdt=halfdt;
@@ -454,14 +464,18 @@ int LeapFrog::Corrector(unsigned int start, unsigned int stop)
 {
   CSource(Src,YP,t+halfdt);
   if(dynamic) {
+#pragma omp parallel for num_threads(threads)
     for(unsigned int j=start; j < stop; j++) {
       Var val=y0[j]+dt*source[j];
       if(!Active(errmask) || errmask[j]) 
 	CalcError(y0[j],val,y0[j]+dt*source0[j],val);
       y[j]=val;
     }
-  } else for(unsigned int j=start; j < stop; j++)
-    y[j]=y0[j]+dt*source[j];
+  } else {
+#pragma omp parallel for num_threads(threads)
+    for(unsigned int j=start; j < stop; j++)
+      y[j]=y0[j]+dt*source[j];
+  }
 
   return 1;
 }
@@ -471,6 +485,7 @@ int RK::Corrector(unsigned int start, unsigned int stop) {
     if(FSAL) {
       RK::Stage(Astages-1,start,stop);
       Source(vSrc[Astages],Y,t+dt);
+#pragma omp parallel for num_threads(threads)
       for(unsigned int j=start; j < stop; j++) {
 	Var pred=y0[j];
 	for(unsigned int k=0; k < nstages; k++)
@@ -480,6 +495,7 @@ int RK::Corrector(unsigned int start, unsigned int stop) {
       }
     } else {
       rvector as=a[Astages-1];
+#pragma omp parallel for num_threads(threads)
       for(unsigned int j=start; j < stop; j++) {
 	Var sum0=y0[j];
 	Var sum=sum0;

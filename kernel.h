@@ -44,6 +44,7 @@ extern int output;
 extern int hybrid;
 extern int override;
 extern int verbose;
+extern int threads;
 
 using Array::array1;
 using Array::Allocate;
