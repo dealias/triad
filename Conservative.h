@@ -34,6 +34,7 @@ public:
       RK::Stage(s,start,stop);
       if(s < Astages-2) {
 	vector yss=ys[s];
+#pragma omp parallel for num_threads(threads)
 	for(unsigned int j=start; j < stop; j++)
 	  yss[j]=y[j];
       }
@@ -65,61 +66,71 @@ public:
 	msg(ERROR,"Sorry; FSAL not yet implemented");
       } else {
 	rvector as=a[laststage];
+        bool cont=true;
+#pragma omp parallel for num_threads(threads)
 	for(unsigned int j=start; j < stop; j++) {
-	  Var y0j=y0[j];
-	  Var Skj=vsource[0][j];
-	  Var temp=y0j+as[0]*Skj;
-	  Var yS=product(y0j,Skj);
-	  Var discr=as[0]*yS;
-	  unsigned int k;
-	  for(k=1; k < laststage; k++) {
-	    Var Skj=vsource[k][j];
-	    temp += as[k]*Skj;
-	    Var yS=product(ys[k-1][j],Skj);
-	    discr += as[k]*yS;
-	  }
-	  Skj=vsource[k][j];
-	  temp += as[k]*Skj;
-	  yS=product(y[j],Skj);
-	  discr=product(y0j,y0j)+2.0*(discr+as[k]*yS);
-	  Var val;
-	  if(nonnegative(discr))
-	    val=signedsquareRoot(discr,temp);
-	  else {
-	    if(hybrid) {
-	      val=temp;
-	      discr=product(temp,temp);
-	    } else return 0;
-	  }
-	  if(!Array::Active(errmask) || errmask[j])
-	    CalcError(y0j,val,y[j],val);
-	  y[j]=val;
+          if(cont) {
+            Var y0j=y0[j];
+            Var Skj=vsource[0][j];
+            Var temp=y0j+as[0]*Skj;
+            Var yS=product(y0j,Skj);
+            Var discr=as[0]*yS;
+            unsigned int k;
+            for(k=1; k < laststage; k++) {
+              Var Skj=vsource[k][j];
+              temp += as[k]*Skj;
+              Var yS=product(ys[k-1][j],Skj);
+              discr += as[k]*yS;
+            }
+            Skj=vsource[k][j];
+            temp += as[k]*Skj;
+            yS=product(y[j],Skj);
+            discr=product(y0j,y0j)+2.0*(discr+as[k]*yS);
+            Var val;
+            if(nonnegative(discr))
+              val=signedsquareRoot(discr,temp);
+            else {
+              if(hybrid) {
+                val=temp;
+                discr=product(temp,temp);
+              } else {cont=false; continue;}
+            }
+            if(!Array::Active(errmask) || errmask[j])
+              CalcError(y0j,val,y[j],val);
+            y[j]=val;
+          }
 	}
+        if(!cont) return 0;
       }
     } else {
       rvector as=a[laststage];
+        bool cont=true;
+#pragma omp parallel for num_threads(threads)
       for(unsigned int j=start; j < stop; j++) {
-	Var y0j=y0[j];
-	Var Skj=vsource[0][j];
-	Var temp=y0j+as[0]*Skj;
-	Var discr=as[0]*product(y0j,Skj);
-	unsigned int k;
-	for(k=1; k < laststage; k++) {
-	  Var Skj=vsource[k][j];
-	  temp += as[k]*Skj;
-	  discr += as[k]*product(ys[k-1][j],Skj);
-	}
-	Skj=vsource[k][j];
-	temp += as[k]*Skj;
-	discr=product(y0j,y0j)+2.0*(discr+as[k]*product(y[j],Skj));
-	if(nonnegative(discr))
-	  y[j]=signedsquareRoot(discr,temp);
-	else {
-	  if(hybrid)
-	    y[j]=temp;
-	  else return 0;
-	}
+        if(cont) {
+          Var y0j=y0[j];
+          Var Skj=vsource[0][j];
+          Var temp=y0j+as[0]*Skj;
+          Var discr=as[0]*product(y0j,Skj);
+          unsigned int k;
+          for(k=1; k < laststage; k++) {
+            Var Skj=vsource[k][j];
+            temp += as[k]*Skj;
+            discr += as[k]*product(ys[k-1][j],Skj);
+          }
+          Skj=vsource[k][j];
+          temp += as[k]*Skj;
+          discr=product(y0j,y0j)+2.0*(discr+as[k]*product(y[j],Skj));
+          if(nonnegative(discr))
+            y[j]=signedsquareRoot(discr,temp);
+          else {
+            if(hybrid)
+              y[j]=temp;
+            cont=false;
+          }
+        }
       }
+      if(!cont) return 0;
     }
     
     RK::Corrector(startT,stopT);
@@ -132,14 +143,18 @@ public:
     double halfdt=0.5*this->dt;
     
     if(dynamic) {
+#pragma omp parallel for num_threads(threads)
       for(unsigned int j=startM; j < stopM; j++) {
 	Var val=y0[j]+halfdt*(source0[j]+source[j]);
 	if(!Array::Active(this->errmask) || this->errmask[j])
 	  CalcError(y0[j],val,y0[j]+this->dt*source0[j],val);
 	y[j]=val;
       }
-    } else for(unsigned int j=startM; j < stopM; j++)
+    } else {
+#pragma omp parallel for num_threads(threads)      
+      for(unsigned int j=startM; j < stopM; j++)
 	y[j]=y0[j]+halfdt*(source0[j]+source[j]);
+    }
     return 1;
   }
   

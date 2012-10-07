@@ -41,6 +41,7 @@ public:
   void Stage(unsigned int s, unsigned int start, unsigned int stop) {
     NuVector phi0s=phi0[s];
     Array::array2<double> es=e[s];
+#pragma omp parallel for num_threads(threads)
     for(unsigned int j=start; j < stop; j++) {
       Var sum=phi0s[j]*y0[j];
       rvector esj=es[j];
@@ -68,6 +69,7 @@ public:
       if(FSAL) {
 	Stage(Astages-1,start,stop);
 	RK::Corrector(startN,stopN);
+#pragma omp parallel for num_threads(threads)
 	for(unsigned int j=start; j < stop; j++) {
 	  rvector fj=f[j];
 	  Var sum0=y0[j];
@@ -79,6 +81,7 @@ public:
 	}
       } else {
 	Array::array2<double> es=e[Astages-1];
+#pragma omp parallel for num_threads(threads)
 	for(unsigned int j=start; j < stop; j++) {
 	  rvector esj=es[j];
 	  rvector fj=f[j];
