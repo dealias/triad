@@ -429,7 +429,7 @@ public:
   
   virtual void Stage(unsigned int s, unsigned int start, unsigned int stop) {
     rvector as=a[s];
-#pragma omp parallel for num_threads(8)
+#pragma omp parallel for num_threads(threads)
     for(unsigned int j=start; j < stop; j++) {
       Var sum=y0[j];
       for(unsigned int k=0; k <= s; k++)
