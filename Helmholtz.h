@@ -60,7 +60,7 @@ namespace Array {
   template<class T>
   void Helmholtz2<T>::Smooth(const Array2<T>& u, const Array2<T>& f)
   {
-    RedBlack(u,f);
+    this->RedBlack(u,f);
   }
 
 }

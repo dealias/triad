@@ -54,12 +54,12 @@ class Grid3 : public Grid<Array3<T>,T> {
   Real Hz() {return hz;}
 
   void Allocate(int allocate=1) {
-    Mesh(x,XMeshRange(),nx,nx1bc,nxbc,hx,hxinv,hx2,hx2inv,rx,
-	 offx,ox,i1,i1p,i2,i2p);
-    Mesh(y,YMeshRange(),ny,ny1bc,nybc,hy,hyinv,hy2,hy2inv,ry,
-	 offy,oy,j1,j1p,j2,j2p);
-    Mesh(z,ZMeshRange(),nz,nz1bc,nzbc,hz,hzinv,hz2,hz2inv,rz,
-	 offz,oz,k1,k1p,k2,k2p);
+    this->Mesh(x,XMeshRange(),nx,nx1bc,nxbc,hx,hxinv,hx2,hx2inv,rx,
+               offx,ox,i1,i1p,i2,i2p);
+    this->Mesh(y,YMeshRange(),ny,ny1bc,nybc,hy,hyinv,hy2,hy2inv,ry,
+               offy,oy,j1,j1p,j2,j2p);
+    this->Mesh(z,ZMeshRange(),nz,nz1bc,nzbc,hz,hzinv,hz2,hz2inv,rz,
+               offz,oz,k1,k1p,k2,k2p);
     hxyinv=1.0/(hx*hy); hxzinv=1.0/(hx*hz); hyzinv=1.0/(hy*hz);
     if(!allocate) return;
     this->d.Allocate(nxbc,nybc,nzbc,ox,oy,oz);

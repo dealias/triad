@@ -39,7 +39,7 @@ class array1p : public array1<T> {
   array1p(unsigned int nx0, T *v0) {this->Dimension(nx0,v0);}
   T& operator [] (int ix) const {Mod(ix,this->size); return this->v[ix];}
   T& operator () (int ix) const {Mod(ix,this->size); return this->v[ix];}
-  array1p<T>& operator = (T a) {Load(a); return *this;}
+  array1p<T>& operator = (T a) {this->Load(a); return *this;}
 };
 
 template<class T>
@@ -62,7 +62,7 @@ class array2p : public array2<T> {
     Mod(i,this->size);
     return this->v[i];
   }
-  array2p<T>& operator = (T a) {Load(a); return *this;}
+  array2p<T>& operator = (T a) {this->Load(a); return *this;}
 };
 
 template<class T>

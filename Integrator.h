@@ -650,7 +650,7 @@ public:
 
 class RK5 : public RK {
 public:
-  const char *Name() {return "Fifth-Order Runge-Kutta";}
+  const char *Name() {return "Fifth-Order Cash-Karp Runge-Kutta";}
   
   int Corrector(unsigned int start, unsigned int stop) {
     if(dynamic) {

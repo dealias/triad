@@ -29,6 +29,7 @@ typedef void stack_t;
 #endif
 
 #include "utils.h"
+#include "seconds.h"
 
 using std::ostringstream;
 
@@ -52,6 +53,7 @@ void cputime(double *cpu)
   cpu[1] = ((double) buf.tms_cutime)*ticktime;
   cpu[2] = ((double) (buf.tms_stime+buf.tms_cstime))*ticktime;
 #endif
+  cpu[0]=totalseconds();
 }
 
 // Don't notify user about runs shorter than this many seconds.

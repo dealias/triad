@@ -29,8 +29,8 @@ class Grid1 : public Grid<Array1<T>,T> {
   Real Hx() {return hx;}
 	
   void Allocate(int allocate=1) {
-    Mesh(x,XMeshRange(),nx,nx1bc,nxbc,hx,hxinv,hx2,hx2inv,rx,
-	 offx,ox,i1,i1p,i2,i2p);
+    this->Mesh(x,XMeshRange(),nx,nx1bc,nxbc,hx,hxinv,hx2,hx2inv,rx,
+               offx,ox,i1,i1p,i2,i2p);
     if(!allocate) return;
     this->d.Allocate(nxbc,ox);
     if(this->level > 0) {
