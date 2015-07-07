@@ -4,7 +4,7 @@ FLAGS = -ansi-alias -malign-double -fp-model fast=2 -diag-disable 654
 CXX = icpc $(FLAGS)
 CC = icpc $(FLAGS)
 else
-CXX = g++ -Wall -ansi -fsized-deallocation
+CXX = g++ -Wall -ansi
 CC = gcc -Wall -ansi
 endif
 
