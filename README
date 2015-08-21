@@ -54,38 +54,39 @@ parameter file. The default run name is "test".
 Examples:
 
 triad itmax=10
-	This evolves run test 10 time steps, producing whatever output files
-are specified by the problem-dependent portion of the code, along with
-restart and statistics files and a parameter file in a format suitable for
-a graphics program (such as sm). On each run, the parameter file is
-overwritten with the current values, so that the program effectively
-"remembers" previous command-line settings.
+	This evolves run test 10 time steps, producing whatever output
+        files are specified by the problem-dependent portion of the code,
+        along with restart and statistics files and a parameter file in a
+        format suitable for a graphics program (such as sm). On each run,
+        the parameter file is overwritten with the current values, so that
+        the program effectively "remembers" previous command-line settings.
 	
 triad itmax=10 restart=1
 	This restarts a previous run ("test") and executes an additional 10
-time steps.
+        time steps.
 
 triad itmax=10 init=1
 	This evolves run test 10 time steps, using as initial values the final
-values computed the last time this case was run. 
+        values computed the last time this case was run. 
 
 triad itmax=10 clobber=1
 	This evolves run test 10 time steps, overwriting a previous restart
-file.
+        file.
 
 triad itmax=10 dynamic=1 tolmax=.5 tolmin=.05
 	A typical example of dynamic time-stepping parameters that lead
-to efficient computation without numerical instability.
+        to efficient computation without numerical instability.
 
 triad itmax=10 tmax=2.0
-	This evolves run test for 10 time steps or for 2.0 time units, whichever
-is less. This is useful when dynamic time stepping is enabled and it is
-desired to terminate computation at a fixed time.
+	This evolves run test for 10 time steps or for 2.0 time units,
+        whichever is less. This is useful when dynamic time stepping is
+        enabled and it is desired to terminate computation at a fixed time.
 
 triad itmax=10 sample=1.0
 	This evolves run test for 10 time steps, producing output files at
-exactly at ever 1.0 time units. This is useful when dynamic time stepping is
-enabled and it is desired to produce uniformly spaced output values.
+        exactly at ever 1.0 time units. This is useful when dynamic time
+        stepping is enabled and it is desired to produce uniformly spaced
+        output values.
 
 triad itmax=10 dynamic=0
 	This disables the dynamic time-stepping mechanism.
