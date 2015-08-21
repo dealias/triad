@@ -69,6 +69,10 @@ triad itmax=10 init=1
 	This evolves run test 10 time steps, using as initial values the final
 values computed the last time this case was run. 
 
+triad itmax=10 clobber=1
+	This evolves run test 10 time steps, overwriting a previous restart
+file.
+
 triad itmax=10 dynamic=1 tolmax=.5 tolmin=.05
 	A typical example of dynamic time-stepping parameters that lead
 to efficient computation without numerical instability.
