@@ -22,12 +22,12 @@
 
 #include <new>
 void *operator new(size_t size, int);
-void *operator new(size_t size, size_t align);
 void *operator new(size_t size, void *ptr, int new_len);
 size_t memory();
 
 #include "precision.h"
 #include "Complex.h"
+
 #include "pow.h"
 
 #define __ArrayExtensions
