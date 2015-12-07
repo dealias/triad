@@ -40,11 +40,11 @@ public:
   
   void Stage(unsigned int s, unsigned int start, unsigned int stop) {
     NuVector phi0s=phi0[s];
-    Array::array2<double> es=e[s];
+    Array::Array2<Nu> es=e[s];
 #pragma omp parallel for num_threads(threads)
     for(unsigned int j=start; j < stop; j++) {
       Var sum=phi0s[j]*y0[j];
-      rvector esj=es[j];
+      NuVector esj=es[j];
       for(unsigned int k=0; k <= s; k++)
 	sum += esj[k]*vsource[k][j];
       y[j]=sum;
@@ -71,7 +71,7 @@ public:
 	RK::Corrector(startN,stopN);
 #pragma omp parallel for num_threads(threads)
 	for(unsigned int j=start; j < stop; j++) {
-	  rvector fj=f[j];
+	  NuVector fj=f[j];
 	  Var sum0=y0[j];
 	  Var pred=phi0s[j]*sum0;
 	  for(unsigned int k=0; k < nstages; k++)
@@ -80,11 +80,11 @@ public:
 	    CalcError(sum0,y[j],pred,y[j]);
 	}
       } else {
-	Array::array2<double> es=e[Astages-1];
+	Array::Array2<Nu> es=e[Astages-1];
 #pragma omp parallel for num_threads(threads)
 	for(unsigned int j=start; j < stop; j++) {
-	  rvector esj=es[j];
-	  rvector fj=f[j];
+	  NuVector esj=es[j];
+	  NuVector fj=f[j];
 	  Var sum0=y0[j];
 	  Var sum=phi0s[j]*sum0;
 	  Var pred=sum;

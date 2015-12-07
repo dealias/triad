@@ -33,7 +33,7 @@ public:
     for(unsigned int s=0; s < laststage; ++s) {
       RK::Stage(s,start,stop);
       if(s < Astages-2) {
-	vector yss=ys[s];
+        Array::Array1<Var>::opt yss=ys[s];
 #pragma omp parallel for num_threads(threads)
 	for(unsigned int j=start; j < stop; j++)
 	  yss[j]=y[j];
