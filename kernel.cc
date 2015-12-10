@@ -382,7 +382,7 @@ void dump(double t, int it, int final, double tmax)
      t > last_dump) {
     lock();
     Problem->Output(it); last_dump=t;
-    Problem->SetOutput(false);
+    Problem->PrepareOutput(false);
     unlock();
   }
 }

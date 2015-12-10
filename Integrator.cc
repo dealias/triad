@@ -90,7 +90,7 @@ void IntegratorBase::Integrate(double& t0, double tmax,
 	itx=microsteps-1; // This is the final iteration.
       }
       if(itx == microsteps-1)
-        Problem->SetOutput(true);
+        Problem->PrepareOutput(true);
       cont=true;
       do {
 	switch(Solve()) {

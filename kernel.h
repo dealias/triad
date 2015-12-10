@@ -73,12 +73,12 @@ class ProblemBase {
   ivector errmask;
   unsigned int nfields;
   bool stochastic;
-  bool output;
+  bool prepareOutput;
   
  public:	
   size_t align;
   
-  ProblemBase() : stochastic(false), output(false), align(0) {
+  ProblemBase() : stochastic(false), prepareOutput(false), align(0) {
     Array::Null(errmask);
   }
   virtual ~ProblemBase() {}
@@ -128,10 +128,10 @@ class ProblemBase {
   virtual void FinalOutput() {}
   virtual int Microprocess() {return 0;}
 	
-  virtual void InitialConditions() {}
-  virtual void Output(int) {}
-  virtual void SetOutput(bool b) {output=b;}
-  virtual bool Output() {return output;}
+  virtual void InitialConditions() {};
+  virtual void Output(int) {};
+  virtual void PrepareOutput(bool b) {prepareOutput=b;}
+  virtual bool PrepareOutput() {return prepareOutput;}
 };
 	
 Compare_t ProblemCompare;
