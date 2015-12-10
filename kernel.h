@@ -73,11 +73,14 @@ class ProblemBase {
   ivector errmask;
   unsigned int nfields;
   bool stochastic;
+  bool output;
   
  public:	
   size_t align;
   
-  ProblemBase() : stochastic(false), align(0) {Array::Null(errmask);}
+  ProblemBase() : stochastic(false), output(false), align(0) {
+    Array::Null(errmask);
+  }
   virtual ~ProblemBase() {}
   void SetAbbrev(const char *abbrev0) {abbrev=abbrev0;}
   const char *Abbrev() {return abbrev;}
@@ -125,8 +128,10 @@ class ProblemBase {
   virtual void FinalOutput() {}
   virtual int Microprocess() {return 0;}
 	
-  virtual void InitialConditions() {};
-  virtual void Output(int) {};
+  virtual void InitialConditions() {}
+  virtual void Output(int) {}
+  virtual void SetOutput(bool b) {output=b;}
+  virtual bool Output() {return output;}
 };
 	
 Compare_t ProblemCompare;
