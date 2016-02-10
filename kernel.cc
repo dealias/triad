@@ -211,7 +211,8 @@ int main(int argc, char *argv[])
     while(getline(fparam,s)) {
       buf << s << " ";
     }
-    Vocabulary->Parse((char *) buf.str().c_str());
+    const string& S=buf.str();
+    Vocabulary->Parse((char *) S.c_str());
     fparam.close();
   } else {
     if(!testing)
@@ -254,7 +255,8 @@ int main(int argc, char *argv[])
   if(checkpoint && tmpdir) {
     ostringstream buf;
     buf << tmpdir << dirsep << Vocabulary->FileName("","");
-    mkdir(buf.str().c_str(),0xFFFF);
+    const string& s=buf.str();
+    mkdir(s.c_str(),0xFFFF);
   }
 					
   SaveParameters();
@@ -450,10 +452,10 @@ void statistics(double t, double dt, int it)
 	ostringstream rcheck;
 	if(tmpdir) rcheck << tmpdir << dirsep;
 	rcheck << rname << "." << last_iter;
-	if(tmpdir ? copy(rname,rcheck.str().c_str()) : 
-	   rename(rname,rcheck.str().c_str()))
+        const string& s=rcheck.str();
+	if(tmpdir ? copy(rname,s.c_str()) : rename(rname,s.c_str()))
 	  msg(WARNING,"Cannot copy %s to checkpoint file %s",
-	      rname,rcheck.str().c_str());
+	      rname,s.c_str());
       }
       last_iter=iter;
       if(rename(rtemp,rname))
@@ -492,7 +494,8 @@ const char *VocabularyBase::FileName(const char* delimiter, const char *suffix)
   buf << Directory();
   if(*delimiter) buf << run << delimiter;
   buf << suffix;
-  return strdup(buf.str().c_str());
+  const string& s=buf.str();
+  return strdup(s.c_str());
 }
 
 void check_compatibility(const bool debug)

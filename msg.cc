@@ -3,7 +3,7 @@
 #include <cctype>
 #include <iostream>
 #include <cerrno>
-#include <ctime>
+#include <cstring>
 #include <sstream>
 
 #if __unix
@@ -12,6 +12,7 @@
 #endif
 
 using std::ostringstream;
+using std::string;
 
 char beep='\a';
 
@@ -100,7 +101,8 @@ void msg(int severity, const char *file, int line, const char *format,...)
 	if(text) buf << " " << text << ".";
       }
       buf << ends;
-      (*inform)(buf.str().c_str());
+      const string& s=buf.str();
+      (*inform)(s.c_str());
     }
     if(severity == SLEEP_ && __unix) {
 #if __unix			

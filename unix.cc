@@ -32,6 +32,7 @@ typedef void stack_t;
 #include "seconds.h"
 
 using std::ostringstream;
+using std::string;
 
 extern char* run;
 static const double init_time=time(NULL);
@@ -39,21 +40,21 @@ static const double ticktime=1.0/sysconf(_SC_CLK_TCK);
 
 void cputime(double *cpu)
 {
+  cpu[0]=totalseconds();
 #if defined(_CRAY) && !defined(_CRAYMPP)
   struct jtab jbuf;
   getjtab(&jbuf);
 	
-  cpu[0] = ((double) jbuf.j_ucputime)*ticktime;
+//  cpu[0] = ((double) jbuf.j_ucputime)*ticktime;
   cpu[1] = 0.0;
   cpu[2] = ((double) jbuf.j_scputime)*ticktime;
 #else
   struct tms buf;
   times(&buf);
-  cpu[0] = ((double) buf.tms_utime)*ticktime;
+//  cpu[0] = ((double) buf.tms_utime)*ticktime;
   cpu[1] = ((double) buf.tms_cutime)*ticktime;
   cpu[2] = ((double) (buf.tms_stime+buf.tms_cstime))*ticktime;
 #endif
-  cpu[0]=totalseconds();
 }
 
 // Don't notify user about runs shorter than this many seconds.
@@ -72,7 +73,8 @@ void mailuser(const char *text)
   ostringstream buf;
   buf << mail_cmd << " -s 'Run " << run << " " << text << ".' "
       << getpwuid(getuid())->pw_name << " < /dev/null > /dev/null" << ends;
-  system(buf.str().c_str());
+  const string& s=buf.str();
+  system(s.c_str());
 }
 
 static char rmrf_cmd[]="rm -rf";
@@ -82,7 +84,8 @@ void remove_dir(const char *text)
 {
   ostringstream buf;
   buf << rmrf_cmd << " " << text << ends;
-  system(buf.str().c_str());
+  const string& s=buf.str();
+  system(s.c_str());
 }
 
 static char copy_cmd[]="cp -rf";
@@ -92,7 +95,8 @@ int copy(const char *oldname, const char *newname)
 {
   ostringstream buf;
   buf << copy_cmd << " " << oldname << " " << newname << ends;
-  return system(buf.str().c_str());
+  const string& s=buf.str();
+  return system(s.c_str());
 }
 
 static struct utsname platform;
@@ -107,7 +111,8 @@ const char *machine()
   ostringstream buf;
   buf << platform.nodename << ((*domain) ? "." : "") << domain << " ("
       << platform.machine << ")" << ends;
-  return strdup(buf.str().c_str());
+  const string& s=buf.str();
+  return strdup(s.c_str());
 }
 
 const int ndate=64;

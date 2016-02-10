@@ -287,7 +287,8 @@ inline void Param<T>::get_values(const char *arg, T (*rtn)(const char *))
 	buf << "Value \"" << value << "\" for "
 	    << name << " is invalid. Limits are "
 	    << min << " to " << max << ends;
-	msg(OVERRIDE_GLOBAL,"%s",buf.str().c_str());
+        const std::string& s=buf.str();
+	msg(OVERRIDE_GLOBAL,"%s",s.c_str());
       }
     }	
   } while ((ptr == optarg) ? 0 : (optarg=ptr+1));
