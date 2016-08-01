@@ -133,7 +133,7 @@ class Param : public ParamBase {
   void Display(ostream& os) {
     if(dump == 2) return; // Don't display obsolete parameters
     os << name << "=";
-    for(int i=0; i < nvar-1; i++) os << var[i] << ", ";
+    for(int i=0; i < nvar-1; i++) os << var[i] << ",";
     os << var[nvar-1] << endl;
   }
 	
