@@ -566,6 +566,25 @@ public:
   }
 };
 
+class RK4C : public RK {
+public:
+  const char *Name() {return "Fouth-Order Classical Runge-Kutta";}
+  
+  RK4C() : RK(4,4) {
+    allocate();
+    A[0][0]=0.5;
+
+    A[1][1]=0.5;
+    
+    A[2][2]=1.0;
+    
+    A[3][0]=1.0/6.0;
+    A[3][1]=1.0/3.0;
+    A[3][2]=1.0/3.0;
+    A[3][3]=1.0/6.0;
+  }
+};
+
 class RK4 : public RK {
 public:
   const char *Name() {return "Fourth-Order Runge-Kutta";}
