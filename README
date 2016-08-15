@@ -1,10 +1,10 @@
                               T R I A D 
-          Copyright (C) 2015 John C. Bowman (bowman@math.ualberta.ca)
+          Copyright (C) 2000-2016 John C. Bowman (bowman@math.ualberta.ca)
 
 INTRODUCTION
 ============
 
-Triad is an object-oriented C++ package for integrating initial value problems.
+Triad is an object-oriented C++ kernel for integrating initial value problems.
 
 Design priorities, in order of priority:
 
