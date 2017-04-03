@@ -60,12 +60,12 @@ extern char beep;
 inline ostream& newl(ostream& s) {s << '\n'; return s;}
 inline oxstream& newl(oxstream& s) {return s;}
 
-inline Real sgn1(const Real x)
+inline Real sgn1(Real x)
 {
   return x >= 0.0 ? 1.0 : -1.0;
 }
 
-inline int isgn(const Real x)
+inline int isgn(Real x)
 {
   return x == 0.0 ? 0 : (x > 0.0 ? 1 : -1);
 }
