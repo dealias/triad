@@ -18,7 +18,7 @@
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.51
+#define __ARRAY_H_VERSION__ 1.52
 
 // Defining NDEBUG improves optimization but disables argument checking.
 // Defining __NOARRAY2OPT inhibits special optimization of Array2[].
@@ -696,7 +696,7 @@ public:
 
   unsigned int Nx() const {return nx;}
   unsigned int Ny() const {return ny;}
-  unsigned int Nz() const {return ny;}
+  unsigned int Nz() const {return nz;}
   unsigned int N4() const {return nw;}
 
   array3<T> operator [] (int ix) const {
