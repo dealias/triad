@@ -933,20 +933,18 @@ inline void Exp(array2<T>& B, const array2<U>& A)
 	
   double Amax=0.0;
   for(unsigned int j=0; j < n2; j++) {
-    T value=abs2(A(j));
+    double value=abs2(A(j));
     if(value > Amax) Amax=value;
   }
-  Amax=sqrt(Amax);
 	
-  unsigned int j=1+((int) (floor(log2(Amax))+0.5));
+  unsigned int j=1+((int) (floor(0.5*log2(Amax))+0.5));
   if(j < 0) j=0;
   double scale=1.0/(1 << j);
   B=A*scale;
   A.Purge();
 	
   unsigned int q=1;
-  //	double delta=DBL_EPSILON;
-  double delta=1.0e-11; // JCB
+  double delta=DBL_EPSILON;
   double epsilon=8.0;
   while (epsilon > delta) {
     epsilon /= 8*(4*q*q-1);
