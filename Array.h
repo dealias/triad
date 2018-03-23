@@ -18,7 +18,7 @@
 #ifndef __Array_h__
 #define __Array_h__ 1
 
-#define __ARRAY_H_VERSION__ 1.53
+#define __ARRAY_H_VERSION__ 1.55
 
 // Defining NDEBUG improves optimization but disables argument checking.
 // Defining __NOARRAY2OPT inhibits special optimization of Array2[].
@@ -166,13 +166,7 @@ public:
     }
   }
   void CheckActivate(int dim, size_t align=0) {
-    if (test(allocated)) {
-      std::ostringstream buf;
-      buf << "Reallocation of Array" << dim
-          << " attempted (must Deallocate first)";
-      const std::string& s=buf.str();
-      ArrayExit(s.c_str());
-    }
+    Deallocate();
     Activate(align);
   }
   void Deallocate() const {
@@ -204,7 +198,7 @@ public:
     Allocate(nx0,align);
   }
   
-  array1() : size(0), state(unallocated) {}
+  array1() : v(NULL), size(0), state(unallocated) {}
   array1(const void *) : size(0), state(unallocated) {}
   array1(unsigned int nx0, size_t align=0) : state(unallocated) {
     Allocate(nx0,align);
@@ -288,7 +282,10 @@ public:
   array1<T>& operator = (T a) {Load(a); return *this;}
   array1<T>& operator = (const T *a) {Load(a); return *this;}
   array1<T>& operator = (const array1<T>& A) {
-    __checkEqual(size,A.Size(),1,1);
+    if(size != A.Size()) {
+      Deallocate();
+      Allocate(A.Size());
+    }
     Load(A());
     A.Purge();
     return *this;
