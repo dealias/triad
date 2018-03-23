@@ -1,5 +1,5 @@
-CXX = g++ -Wall -ansi
-CC = gcc -Wall -ansi
+CXX = g++ -Wall -std=c++11
+CC = gcc -Wall -std=c++11
 LIB = $(LFLAGS) -lm -L/local_shared/fftw/lib
 MAKEDEPEND = $(CXX) -M -DDEPEND
 INCL = -I. -I $(TRI) -I/local_shared/fftw/include

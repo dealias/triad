@@ -1,3 +1,5 @@
+#include <cmath>
+
 static const long double Coeff[]={1.0,1.0/2.0,1.0/6.0,1.0/24.0,1.0/120.0,
 				  1.0/720.0,1.0/5040.0,1.0/40320.0,
 				  1.0/362880.0,1.0/3628800.0,1.0/39916800.0,
@@ -13,7 +15,8 @@ static const long double Coeff[]={1.0,1.0/2.0,1.0/6.0,1.0/24.0,1.0/120.0,
 
 // phi1(x)=(exp(x)-1)/x
 
-#ifndef NEED_EXPM
+//#ifndef NEED_EXPM
+#if 1
 inline double phi1(double x)
 {
   return (x != 0.0) ? expm1(x)/x : 1.0;
@@ -21,18 +24,16 @@ inline double phi1(double x)
 #else
 inline double phi1(double x)
 {
-  if(fabs(x) > 1.0) return (exp(x)-1.0)/x;
-  x *= 0.0625;
+  if(fabs(x) >= 0.78) return (exp(x)-1.0)/x;
+  x *= 0.125;
   register long double x2=x*x;
   register long double x3=x2*x;
   register long double x4=x2*x2;
-  register long double
-    sum=1+x*Coeff[1]+x2*Coeff[2]+x3*Coeff[3]+x4*Coeff[4]+x4*x*Coeff[5]
-    +x4*x2*Coeff[6]+x4*x3*Coeff[7]+x4*x4*Coeff[8];
-  register long double y=sum+1.0;
-  register long double y2=y*y;
-  register long double y4=y2*y2;
-  return sum*(y+1.0)*(y2+1.0)*(y4+1.0)*(y4*y4+1.0);
+  register long double y=1+x*Coeff[1]+x2*Coeff[2]+x3*Coeff[3]+x4*Coeff[4]+
+    x4*x*Coeff[5]+x4*x2*Coeff[6]+x4*x3*Coeff[7]+x4*x4*Coeff[8];
+  y *= 1.0+0.5*x*y;
+  y *= 1.0+x*y;
+  return y*(1.0+2.0*x*y);
 }
 #endif
 

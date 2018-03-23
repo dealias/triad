@@ -1,11 +1,11 @@
 a:=$(shell which icpc 2>&1 | tail -c5)
 ifeq ($(a),icpc)
-FLAGS = -ansi-alias -malign-double -fp-model fast=2 -diag-disable 654
+FLAGS = --std=c++11-alias -malign-double -fp-model fast=2 -diag-disable 654
 CXX = icpc $(FLAGS)
 CC = icpc $(FLAGS)
 else
-CXX = g++ -Wall -ansi
-CC = gcc -Wall -ansi
+CXX = g++ -Wall --std=c++11
+CC = gcc -Wall --std=c++11
 endif
 
 MAKEDEPEND = $(CXX) -M -DDEPEND

@@ -1,5 +1,5 @@
-CXX = g++ -Wall -ansi
-CC = gcc -Wall -ansi
+CXX = g++ -Wall --std=c++11
+CC = gcc -Wall --std=c++11
 MAKEDEPEND = $(CXX) -M -DDEPEND
 FFT = fftw++
 LIBFFT = -lfftw3

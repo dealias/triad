@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <new>
+#include <cmath>
 
 // #include <mem_test_user>
 
@@ -22,7 +23,7 @@ void (*old_new_handler)()=set_new_handler(&my_new_handler);
 void *operator new(size_t size, const std::nothrow_t&) _RWSTD_THROW_SPEC_NULL
 #else
 #define _RWSTD_THROW_SPEC_NULL
-void *operator new(size_t size) throw (std::bad_alloc)
+void *operator new(size_t size)
 #endif
 {
   void *mem=malloc(size);

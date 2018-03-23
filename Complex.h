@@ -21,7 +21,7 @@
 #define __ATT_complex__
 
 #include <iostream>
-#include <cmath>
+#include <math.h>
 #include "precision.h"
 
 using std::istream;

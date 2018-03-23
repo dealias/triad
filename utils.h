@@ -51,9 +51,11 @@ using std::setw;
 using std::setfill;
 using std::setprecision;
 
+namespace triad {
 extern const double pi;
 extern const double twopi;
 extern const double twopi2;
+}
 
 extern char beep;
 
@@ -233,7 +235,8 @@ inline Real min(Real x)
   return x;
 }
 
-#if !defined(_AIX) || defined(__GNUC__)
+
+#if !defined(_AIX) && !defined(__GNUC__)
 inline Real abs(Real x)
 {
   return fabs(x);
@@ -437,12 +440,12 @@ inline int rand_sign()
 
 inline Complex rand_unityroot(int n)
 {			  
-  return expi(twopi*(random() % n)/n);
+  return expi(triad::twopi*(random() % n)/n);
 }
 
 inline Complex rand_phase()
 {			  
-  return expi(twopi*drand());
+  return expi(triad::twopi*drand());
 }
 
 double drand_gauss();

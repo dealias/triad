@@ -400,7 +400,6 @@ public:
 	sum += As[k];
       C[s]=sum;
     }
-    
     for(unsigned int k=0; k < nstages; k++)
       if(B[k] != 0.0) return;
     dynamic=0;
@@ -550,7 +549,7 @@ public:
 
 class RK3C : public RK {
 public:
-  const char *Name() {return "Third-Order Classical Runge-Kutta";}
+  const char *Name() {return "Third-Order Kutta";}
   
   RK3C() : RK(3,3) {
     allocate();

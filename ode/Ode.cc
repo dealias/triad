@@ -157,12 +157,13 @@ void Ode::Output(int)
 }
 
 unsigned int count=0;
-void Ode::NonLinearSource(const vector2& Src, const vector2& Y, double)
+void Ode::NonLinearSource(const vector2& Src, const vector2& Y, double t)
 {
   count++;
   vector source=Src[0];
   vector y=Y[0];
-  source[0]=cos(y[0]);
+//  source[0]=cos(y[0]);
+  source[0]=-y[0]*tan(t);
 //  source[0]=cos(t)*y[0];
 //  source[0]=-A*y[0]-B*y[0]*y[0];
 //    source[0]=-A*y[0]-B*exp(y[0].re);
