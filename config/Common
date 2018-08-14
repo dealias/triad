@@ -1,8 +1,8 @@
 NAME = triad
 D = d
-LIB = -fopenmp $(LFLAGS) -L. -lm 
+LIB = -fopenmp $(LFLAGS) -L. -lm -ltirpc
 OPT = -g $(CFLAGS) -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
-INCL = -fopenmp -I. -I$(TRI)
+INCL = -fopenmp -I. -I$(TRI) -I/usr/include/tirpc
 
 vpath %.cc $(TRI)
 vpath %.c $(TRI)

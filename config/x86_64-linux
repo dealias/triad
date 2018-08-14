@@ -2,7 +2,7 @@ CXX = g++ -Wall -std=c++11
 CC = gcc -Wall -std=c++11
 LIB = $(LFLAGS) -lm -L/local_shared/fftw/lib
 MAKEDEPEND = $(CXX) -M -DDEPEND
-INCL = -I. -I $(TRI) -I/local_shared/fftw/include
+INCL = -I. -I $(TRI) -I/local_shared/fftw/include -I/usr/include/tirpc
 FFT = fftw++
 LIBFFT = -lfftw3
 
