@@ -250,7 +250,6 @@ public:
       
       Nu ph1=phi1(x)*this->dt;
       Nu ph2=phi2(x)*this->dt;
-      Nu ph3=phi3(x)*this->dt;
       
       Nu ph1h=phi1(xh)*this->dt;
       Nu ph2h=phi2(xh)*this->dt;
