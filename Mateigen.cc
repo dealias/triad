@@ -7,6 +7,8 @@ extern "C" void zgees_(const char& jobvs, const char& sort, void (*select)(),
 		       Complex *vs, const int& ldvs, Complex *work, const int& lwork, 
 		       Real *rwork, char *bwork, int *info);
 
+using namespace std;
+
 namespace Array {
   
 // Compute the eigenvalues of a square complex matrix

@@ -82,3 +82,27 @@ inline double phi3(double x)
       +x16*x*Coeff[19]+x16*x2*Coeff[20];
   }
 }
+
+inline double phi4(double x)
+{
+  register long double sixth=1.0/6.0;
+  register long double x2=x*x;
+  register long double x3=x2*x;
+  register long double x4=x2*x2;
+  if(fabs(x) > 1.2) return (exp(x)-sixth*x3-0.5*x2-x-1)/x4;
+  register long double x5=x2*x3;
+    if(fabs(x) < 0.1) 
+    return Coeff[3]+x*Coeff[4]+x2*Coeff[5]+x3*Coeff[6]
+      +x4*Coeff[7]+x5*Coeff[8]+x3*x3*Coeff[9]+x5*x2*Coeff[10]
+      +x4*x4*Coeff[11];
+    else {
+      register long double x7=x5*x2;
+      register long double x8=x7*x;
+      register long double x16=x8*x8;
+      return Coeff[3]+x*Coeff[4]+x2*Coeff[5]+x3*Coeff[6]
+        +x2*x2*Coeff[7]+x5*Coeff[8]+x3*x3*Coeff[9]+x5*x2*Coeff[10]
+        +x5*x3*Coeff[11]+x8*x*Coeff[12]
+        +x5*x5*Coeff[13]+x8*x3*Coeff[14]+x7*x5*Coeff[15]
+        +x8*x5*Coeff[16]+x7*x7*Coeff[17]+x8*x7*Coeff[18]+x16*Coeff[19];
+    }
+}
