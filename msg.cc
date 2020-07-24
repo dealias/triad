@@ -21,6 +21,10 @@ int beep_enabled=1; // If nonzero, enable terminal beep for errors.
 int msg_override=0;
 void (*inform)(const char *)=NULL;
 
+#ifndef __unix
+#define __unix 0
+#endif
+
 #if __unix
 void wakeup(int)
 {

@@ -10,16 +10,17 @@
 #include <cmath>
 #include <memory>
 #include <cerrno>
+#include <cstring>
 
 #include "xstream.h"
 
-#ifdef _MAC
+#ifdef __APPLE__
 #include "mac.h"
-#else // !_MAC
+#else // !__APPLE__
 
 #include "unix.h"
 
-#endif // _MAC
+#endif // __APPLE__
 
 #include <new>
 void *operator new(size_t size, int);

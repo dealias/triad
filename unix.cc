@@ -38,6 +38,10 @@ extern char* run;
 static const double init_time=time(NULL);
 static const double ticktime=1.0/sysconf(_SC_CLK_TCK);
 
+#ifndef PI
+const double PI=acos(-1);
+#endif
+
 void cputime(double *cpu)
 {
   cpu[0]=totalseconds();

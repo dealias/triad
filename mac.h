@@ -1,12 +1,21 @@
 #ifndef __mac_h__
 #define __mac_h__ 1
 
-char* const dirsep=":";
+const char* const dirsep="/";
 
 #include "extensions.h"
 
+#ifndef PI
+extern const double PI;
+#endif
+
 inline void setup_fpu()
 {
+}
+
+inline void sincos(const double x, double *sinx, double *cosx)
+{
+  *sinx=sin(x); *cosx=cos(x);
 }
 
 inline double log1p(const double x) {return logl(x)+1.0;} // Improve

@@ -5,4 +5,4 @@ MAKEDEPEND = $(CXX) -M -DDEPEND
 INCL = -I. -I $(TRI) -I/local_shared/fftw/include -I/usr/include/tirpc
 FFT = fftw++
 LIBFFT = -lfftw3
-
+LIB += -ltirpc
