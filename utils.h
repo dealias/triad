@@ -1,7 +1,6 @@
 #ifndef __utils_h__
 #define __utils_h__ 1
 
-#include "xstream.h"
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -11,6 +10,8 @@
 #include <cmath>
 #include <memory>
 #include <cerrno>
+
+#include "xstream.h"
 
 #ifdef _MAC
 #include "mac.h"
