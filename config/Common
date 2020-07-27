@@ -1,6 +1,12 @@
 NAME = triad
 D = d
-LIB = -fopenmp $(LFLAGS) -L. -lm -ltirpc
+
+LIB = -fopenmp $(LFLAGS) -L. -lm
+
+ifeq ($(shell uname -s),Linux)
+LIB += -ltirpc
+endif
+
 OPT = -g $(CFLAGS) -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 INCL = -fopenmp -I. -I$(TRI) -I/usr/include/tirpc
 
