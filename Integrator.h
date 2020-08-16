@@ -1,8 +1,6 @@
 #ifndef __Integrator_h__
 #define __Integrator_h__ 1
 
-#include <atomic>
-
 class IntegratorBase {
 protected:
   const char *abbrev;
@@ -14,7 +12,7 @@ protected:
   double t;
   double dt;
   double sample;
-  std::atomic<double> errmax;
+  double errmax;
   ivector errmask;
   double tolmax2,tolmin2;
   double stepfactor,stepinverse,stepnoninverse;
@@ -171,14 +169,6 @@ extern IntegratorBase *Integrator;
 #define INTEGRATOR(key)						\
   {(void) new Entry<key,IntegratorBase>(#key,IntegratorTable);}
 
-
-template<typename T>
-void update_maximum(std::atomic<T>& max, T const& value) noexcept
-{
-    T prev=max;
-    while(prev < value && !max.compare_exchange_weak(prev,value));
-}
-
 inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0, 
 				      const Var& pred, const Var& corr)
 {
@@ -187,8 +177,7 @@ inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0,
     if(initial != 0.0 && pred != initial) {
       static const double epsilon=DBL_MIN/DBL_EPSILON;
       double error=max(abs2(diff)/(max(norm2(norm0),norm2(initial))+epsilon));
-      update_maximum(errmax,error);
-      
+      if(error > errmax) errmax=error;
     }
   } else errmax=HUGE_VAL;
 }
