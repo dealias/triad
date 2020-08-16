@@ -45,7 +45,7 @@ ProblemBase *Problem;
 IntegratorBase *Integrator;
 
 // Kernel variables
-static vector y;
+static ::vector y;
 static int ny;
 static int explicit_dt=0;
 static int testing=0;
