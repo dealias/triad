@@ -509,7 +509,7 @@ int RK::Corrector(unsigned int start, unsigned int stop) {
 	}
 	if(!Array::Active(errmask) || errmask[j])
 	  CalcError(sum0,sum,pred,sum);
-	y[j]=sum;
+	y[j]=sum*(Complex(1.0,1.0)+pem*crand_uniform());
       }
     }
   } else RK::Stage(Astages-1,start,stop);

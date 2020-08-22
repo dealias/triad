@@ -45,6 +45,7 @@ extern int hybrid;
 extern int override;
 extern int verbose;
 extern int threads;
+extern Real pem; //Precision Error Magnitude
 
 using Array::array1;
 using Array::Allocate;

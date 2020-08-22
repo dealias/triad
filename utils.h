@@ -434,6 +434,16 @@ inline double drand()
   return random()*factor;
 }
 
+inline double drand_uniform()
+{
+  return 2.0*drand()-1.0;
+}
+
+inline Complex crand_uniform()
+{
+  return (drand_uniform(),drand_uniform());
+}
+
 inline int rand_sign()
 {			  
   return random() % 2 ? 1 : -1;

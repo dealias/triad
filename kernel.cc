@@ -88,6 +88,8 @@ static int initialize=0;
 static int clobber=0;
 static const char *tmpdir=tempdir();
 
+Real pem=0.0;
+
 VocabularyBase::VocabularyBase()
 {
   Vocabulary=this;
@@ -121,7 +123,9 @@ VocabularyBase::VocabularyBase()
   VOCAB(output,0,1,"");
   VOCAB_NOLIMIT(method,"");
   VOCAB_NOLIMIT(integrator,"");
-	
+
+  VOCAB(pem,0.0,REAL_MAX,"Precision Error Magnitude");  // For FP noise test
+
   ProblemTable=new Table<ProblemBase>("method");
   IntegratorTable=new Table<IntegratorBase>("integrator");
 	
