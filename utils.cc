@@ -183,7 +183,7 @@ char *atos(const char *s)
   const int n=100;
   char *s2;
 	
-  s2=new char[n];
+  s2=new char[n+1];
   strncpy(s2,s,n);
   return s2;
 }
