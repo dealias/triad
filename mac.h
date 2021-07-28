@@ -13,11 +13,6 @@ inline void setup_fpu()
 {
 }
 
-inline void sincos(const double x, double *sinx, double *cosx)
-{
-  *sinx=sin(x); *cosx=cos(x);
-}
-
 inline double log1p(const double x) {return logl(x)+1.0;} // Improve
 inline double expm1(const double x) {return expl(x)-1.0;} // Improve
 
