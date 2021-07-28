@@ -310,6 +310,7 @@ inline Real imag(Real)
   return 0.0;
 }
 
+/*
 inline Complex exp(const Complex& z)
 {
   double cosy,siny;
@@ -344,6 +345,7 @@ inline Complex expi(Real phase)
   sincos(phase,&siny,&cosy);
   return Complex(cosy,siny);
 }
+*/
 
 inline void LeastSquaresFit(unsigned n, Real *x, Real *y, Real &m, Real &b) 
 {
