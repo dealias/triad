@@ -25,6 +25,10 @@ public:
     RK::Allocator();
     unsigned int stop0,start0; // Unused
     parent->IndexLimits(start,stop,startN,stop0,start0,stopN);
+    this->start=start;
+    this->stop=stop;
+    this->startN=startN;
+    this->stopN=stopN;
     unsigned int ny=stop-start;
     phi0.Allocate(Astages,ny,0,(int) start);
     phi0=0.0;
