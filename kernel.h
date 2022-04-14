@@ -32,7 +32,7 @@ extern const char *method;
 extern const char *integrator;
 
 // Global vocabulary
-extern long long itmax; 
+extern long long itmax;
 extern double tmax;
 extern double dt;
 extern double tprecision;
@@ -74,10 +74,10 @@ class ProblemBase {
   unsigned int nfields;
   bool stochastic;
   bool prepareOutput;
-  
- public:	
+
+ public:
   size_t align;
-  
+
   ProblemBase() : stochastic(false), prepareOutput(false), align(0) {
     Array::Null(errmask);
   }
@@ -91,11 +91,11 @@ class ProblemBase {
   unsigned int Start(unsigned int field) {return field < nfields ? index[field] : 0;}
   unsigned int Stop(unsigned int field) {return field < nfields ? index[field]+NY[field] : 0;}
   DynVector<unsigned int>* Sizes() {return &NY;}
-  
+
   unsigned int NFields() {return nfields;}
 
   const ivector& ErrorMask() {return errmask;}
-  
+
   void Allocator(size_t Align=0) {
     align=Align;
     nfields=NY.Size();
@@ -114,9 +114,9 @@ class ProblemBase {
       p += n;
     }
   }
-	
+
   virtual const char *Name() {return "";}
-	
+
   virtual void Source(const vector2& Src, const vector2& Y, double t)=0;
   virtual void Transform(const vector2&, double, double, vector2&) {}
   virtual void BackTransform(const vector2&, double, double, const vector2&) {}
@@ -127,13 +127,13 @@ class ProblemBase {
   virtual void Setup() {}
   virtual void FinalOutput() {}
   virtual int Microprocess() {return 0;}
-	
+
   virtual void InitialConditions() {};
   virtual void Output(int) {};
   virtual void PrepareOutput(bool b) {prepareOutput=b;}
   virtual bool PrepareOutput() {return prepareOutput;}
 };
-	
+
 Compare_t ProblemCompare;
 KeyCompare_t ProblemKeyCompare;
 extern ProblemBase *Problem;
@@ -147,7 +147,7 @@ void unlock();
 void testlock();
 void dump(double t, int it, int final, double tmax);
 void SaveParameters();
-  
+
 #include "Param.h"
 
 #endif

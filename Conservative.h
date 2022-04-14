@@ -11,12 +11,12 @@ protected:
   unsigned int start,stop;
   unsigned int startT,stopT;
   unsigned int startM,stopM;
-public:  
-  C_RK(T *parent, int Order, int nstages, bool FSAL=false) : 
+public:
+  C_RK(T *parent, int Order, int nstages, bool FSAL=false) :
     RK(Order,nstages,FSAL), parent(parent) {}
-  
+
   bool isConservative() {return true;}
-  
+
   void Source(const vector2& Src, const vector2& Y, double t) {
     parent->ConservativeSource(Src,Y,t);
   }
@@ -27,7 +27,7 @@ public:
     unsigned int ny=stop-start;
     ys.Allocate(nstages-2,ny,0,start);
   }
-  
+
   virtual void Predictor(unsigned int, unsigned int) {
     unsigned int laststage=Astages-1;
     for(unsigned int s=0; s < laststage; ++s) {
@@ -42,7 +42,7 @@ public:
       PredictorSource(s);
     }
   }
-  
+
   inline Real signedsquareRoot(Real x, Real ref) {
     return sgn(ref)*sqrt(x);
   }
@@ -54,11 +54,11 @@ public:
   inline bool nonnegative(Real x) {
     return x >= 0.0;
   }
-  
+
   inline bool nonnegative(const Complex& x) {
     return x.re >= 0.0 && x.im >= 0.0;
   }
-  
+
   int Corrector(unsigned int, unsigned int) {
     unsigned int laststage=Astages-1;
     if(dynamic) {
@@ -132,16 +132,16 @@ public:
       }
       if(!cont) return 0;
     }
-    
+
     RK::Corrector(startT,stopT);
-    
+
     // Average the conservative moments with a trapezoidal rule
     parent->NonConservativeSource(vSrc[0],Y0,t);
     parent->NonConservativeSource(vSrc[1],Y,t+this->dt);
-    vector source0=vsource[0];
-    vector source=vsource[1];
+    ::vector source0=vsource[0];
+    ::vector source=vsource[1];
     double halfdt=0.5*this->dt;
-    
+
     if(dynamic) {
 #pragma omp parallel for num_threads(threads)
       for(unsigned int j=startM; j < stopM; j++) {
@@ -151,64 +151,64 @@ public:
 	y[j]=val;
       }
     } else {
-#pragma omp parallel for num_threads(threads)      
+#pragma omp parallel for num_threads(threads)
       for(unsigned int j=startM; j < stopM; j++)
 	y[j]=y0[j]+halfdt*(source0[j]+source[j]);
     }
     return 1;
   }
-  
-};  
+
+};
 
 template<class T>
 class C_PC : public C_RK<T> {
 protected:
 public:
   const char *Name() {return "Conservative Predictor-Corrector";}
-  
+
   C_PC(T *parent) : C_RK<T>(parent,2,2) {
     RK::allocate();
     this->A[0][0]=1.0;
-    
+
     this->A[1][0]=0.5;
     this->A[1][1]=0.5;
-    
+
     this->B[0]=1.0;
   }
 };
-  
+
 template<class T>
 class C_RK2 : public C_RK<T> {
 protected:
 public:
   const char *Name() {return "Conservative Second-Order Runge-Kutta";}
-  
+
   C_RK2(T *parent) : C_RK<T>(parent,2,2) {
     RK::allocate();
-    
+
     this->A[0][0]=0.5;
-    
+
     this->A[1][1]=1.0;
-    
+
     this->B[0]=1.0;
   }
 };
-  
+
 template<class T>
 class C_RK4 : public C_RK<T> {
 protected:
 public:
   const char *Name() {return "Conservative Fourth-Order Runge-Kutta";}
-  
+
   C_RK4(T *parent) : C_RK<T>(parent,4,5) {
     RK::allocate();
-    
+
     this->A[0][0]=0.5;
 
     this->A[1][1]=0.5;
-    
+
     this->A[2][2]=1.0;
-    
+
     this->A[3][0]=-1.0;
     this->A[3][1]=2.0;
 
@@ -222,32 +222,32 @@ public:
     this->B[4]=1.0/6.0;
   }
 };
-  
+
 template<class T>
 class C_RK5 : public C_RK<T> {
 protected:
 public:
   const char *Name() {return "Conservative Fifth-Order Runge-Kutta";}
-  
+
   C_RK5(T *parent) : C_RK<T>(parent,5,6) {
     RK::allocate();
-    
+
     this->A[0][0]=0.2;
     this->A[1][0]=3.0/40.0; this->A[1][1]=9.0/40.0;
-    
+
     this->A[2][0]=0.3; this->A[2][1]=-0.9; this->A[2][2]=1.2;
-    
+
     this->A[3][0]=-11.0/54.0; this->A[3][1]=2.5; this->A[3][2]=-70.0/27.0;
     this->A[3][3]=35.0/27.0;
-  
+
     this->A[4][0]=1631.0/55296.0; this->A[4][1]=175.0/512.0;
     this->A[4][2]=575.0/13824.0;
     this->A[4][3]=44275.0/110592.0; this->A[4][4]=253.0/4096.0;
-  
+
     this->A[5][0]=37.0/378.0; this->A[5][2]=250.0/621.0;
     this->A[5][3]=125.0/594.0;
     this->A[5][5]=512.0/1771.0;
-								  
+
     this->B[0]=2825.0/27648.0; this->B[2]=18575.0/48384.0;
     this->B[3]=13525.0/55296.0;
     this->B[4]=277.0/14336.0; this->B[5]=0.25;
