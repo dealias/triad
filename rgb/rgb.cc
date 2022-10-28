@@ -36,6 +36,7 @@ const char VERSION[]="1.26";
 
 using namespace Array;
 using namespace xdr;
+using std::ostringstream;
 
 const double pi=PI;
 const double twopi=2.0*PI;
@@ -63,7 +64,7 @@ static int pointsize=0;
 static int grey=0;
 
 // Flag to produce scaled YUV (CCIR-601 YCbCr 4:2:0) instead of RGB output
-static int yuv=0;   
+static int yuv=0;
 static unsigned char YBlack=YByte(0.0);
 static unsigned char BW=UVByte(0.0);
 
@@ -130,8 +131,8 @@ int yslice=8;
 int zslice=8;
 
 int begin=0;
-int skip=1; 
-	
+int skip=1;
+
 const int Undefined=-2;
 int background=Undefined;
 unsigned int labelcnt=0;
@@ -179,14 +180,14 @@ void openfield(T& fin, const char *fieldname, int& nx, int& ny, int& nz)
       cleanup(); msg(ERROR,"End of file during processing");
     }
   }
-	
+
   div_t d;
   d=div(nx1,sx);
   nx=(d.rem == 0) ? d.quot : d.quot+1;
   d=div(ny1,sy);
   ny=(d.rem == 0) ? d.quot : d.quot+1;
   nz=nz1;
-				
+
 }
 
 int readframe(ixstream& xin, int nx, int ny, int nz, array3<double> value,
@@ -195,7 +196,7 @@ int readframe(ixstream& xin, int nx, int ny, int nz, array3<double> value,
   gmin=DBL_MAX; gmax=-DBL_MAX;
   double vmin=DBL_MAX, vmax=-DBL_MAX;
   int j0;
-	
+
   errno=0;
   for(int k=0; k < nz; k++) {
     if(floating_section) {vmin=DBL_MAX; vmax=-DBL_MAX;}
@@ -212,23 +213,23 @@ int readframe(ixstream& xin, int nx, int ny, int nz, array3<double> value,
       incr=1;
       j0=-1;
     }
-		
+
     int rx=div(nx1,sx).rem;
     int ry=div(ny1,sy).rem;
     Real weightx=1.0/sx;
     Real weighty=1.0/sy;
     Real rweightx,rweighty;
-		
+
     rweightx = (rx == 0.0) ? 1.0 : 1.0/rx;
     rweighty = (ry == 0.0) ? 1.0 : 1.0/ry;
-		
+
     for(int j=start; j != stop; j += incr) {
-			
+
       int init=0;
       if((j-start) % sy == 0) {j0 += incr; init=1;}
       array1<double>::opt valuekj=valuek[j0];
       if(init) for(int i0=0; i0 < nx; i0++) valuekj[i0]=0.0;
-			
+
       Real sumv=0.0;
       int i0=0;
       for(int i=0; i < nx1; i++) {
@@ -245,26 +246,26 @@ int readframe(ixstream& xin, int nx, int ny, int nz, array3<double> value,
 	    xin >> v0;
 	    v=v0;
 	  }
-	}		
-	
+	}
+
 	if(xin.eof()) {
 	  if(implicit || i > 0)
 	    msg(WARNING,"End of file during processing");
 	  return EOF;
 	}
-				
+
 	if(v > maximum) v=maximum;
 	if(v < minimum) v=minimum;
-	
+
 	sumv += v*(i < nx1-rx ? weightx : rweightx)*
 	  ((j-start)*incr < ny1-ry ? weighty : rweighty);
-				
+
 	if((i+1) % sx == 0 || (i+1) == nx1) {
 	  sumv += valuekj[i0];
 	  valuekj[i0++]=sumv;
 	  if((j-start+incr) % sy == 0
 	     && i >= xstart && i < xstop
-	     && j >= ystart && j < ystop 
+	     && j >= ystart && j < ystop
 	     && k >= lower && k <= upper) {
 	    if(sumv < vmin) vmin=sumv;
 	    if(sumv > vmax) vmax=sumv;
@@ -273,7 +274,7 @@ int readframe(ixstream& xin, int nx, int ny, int nz, array3<double> value,
 	}
       }
     }
-		
+
     if(symmetric && vmin < 0 && vmax > 0) {
       vmax=max(-vmin,vmax);
       vmin=-vmax;
@@ -283,12 +284,12 @@ int readframe(ixstream& xin, int nx, int ny, int nz, array3<double> value,
     if(vmin < gmin) gmin=vmin;
     if(vmax > gmax) gmax=vmax;
   }
-	
+
   if(symmetric && gmin < 0 && gmax > 0) {
     gmax=max(-gmin,gmax);
     gmin=-gmax;
   }
-	
+
   if(implicit) {
     int nx0,ny0,nz0;
     if(backwards) xin >> nx0 >> ny0 >> nz0;
@@ -309,7 +310,7 @@ void identify(int argc, int n, const char *type, int& xsize, int& ysize);
 void mpeg(int n, const char *inname, const char *type, int xsize, int ysize);
 void animate(const char *filename, int n, const char *type,
 	     const char *pattern, int xsize, int ysize);
-	
+
 void usage(const char *program)
 {
   cerr << PROGRAM << " version " << VERSION
@@ -352,39 +353,39 @@ void options()
   cerr << "-backwards\t size information is stored backwards"
        << endl;
   cerr << "-pointsize size\t point size to use with labels" << endl;
-  cerr << "-avgx points\t number of data points per pixel in x direction " 
+  cerr << "-avgx points\t number of data points per pixel in x direction "
        << "[default " << sx << "]" << endl;
-  cerr << "-avgy points\t number of data points per pixel in y direction " 
+  cerr << "-avgy points\t number of data points per pixel in y direction "
        << "[default " << sy << "]" << endl;
   cerr << "-symmetric\t make color palette symmetric about zero"
        << " (if possible)" << endl;
   cerr << "-bar n\t\t thickess of palette bar in pixels" << endl;
   cerr << "-band n\t\t thickess of palette separator band in pixels" << endl;
   cerr << "-bandcolor n\t color of palette separator band" << endl;
-  cerr << "-extract format\t extract individual images as tiff, gif, etc." 
+  cerr << "-extract format\t extract individual images as tiff, gif, etc."
        << endl;
   cerr << "-crop geometry\t crop to specified X geometry"
        << " (specify 0 to invoke xv)" << endl;
-  cerr << "-rescale\t rescale palette to cropped region" << endl; 
-  cerr << "-xrange x1,x2\t limit x-range to [x1,x2]" << endl; 
-  cerr << "-yrange y1,y2\t limit y-range to [y1,y2]" << endl; 
-  cerr << "-zrange z1,z2\t limit z-range to [z1,z1]" << endl; 
-  cerr << "-minimum min\t minimum threshold" << endl; 
-  cerr << "-maximum max\t maximum threshold" << endl; 
+  cerr << "-rescale\t rescale palette to cropped region" << endl;
+  cerr << "-xrange x1,x2\t limit x-range to [x1,x2]" << endl;
+  cerr << "-yrange y1,y2\t limit y-range to [y1,y2]" << endl;
+  cerr << "-zrange z1,z2\t limit z-range to [z1,z1]" << endl;
+  cerr << "-minimum min\t minimum threshold" << endl;
+  cerr << "-maximum max\t maximum threshold" << endl;
   cerr << "-vector\t\t plot 2 components using spectral intensity gradients"
-       << endl; 
-  cerr << "-vector2\t plot 2 components as red--blue values" << endl; 
-  cerr << "-vector3\t plot 3 components as red--green--blue values" << endl; 
+       << endl;
+  cerr << "-vector2\t plot 2 components as red--blue values" << endl;
+  cerr << "-vector3\t plot 3 components as red--green--blue values" << endl;
   cerr << "-reverse\t reverse palette direction" << endl;
   cerr << "-ncolors n\t maximum number of colors to generate (default 65536)"
-       << endl; 
+       << endl;
   cerr << "-view\t\t view single frame with xv" << endl;
-  cerr << "-background n\t background color" << endl; 
-  cerr << "-gradient\t apply intensity gradient to spectral palettes" 
-       << endl; 
-  cerr << "-damp\t\t apply color intensity damping" << endl; 
-  cerr << "-2\t\t double spectral palettes and apply intensity gradient" 
-       << endl; 
+  cerr << "-background n\t background color" << endl;
+  cerr << "-gradient\t apply intensity gradient to spectral palettes"
+       << endl;
+  cerr << "-damp\t\t apply color intensity damping" << endl;
+  cerr << "-2\t\t double spectral palettes and apply intensity gradient"
+       << endl;
   cerr << endl;
   cerr << "Standard Color Palettes:" << endl;
   cerr << "-bwrainbow\t black+rainbow+white spectrum [default]"
@@ -424,9 +425,9 @@ void options()
        << "]" << endl;
   cerr << "-cutoff radians\t cutoff for toroidal angle [default " << cutoff
        << "]" << endl;
-  cerr << "-yxaspect ratio\t Y/X aspect ratio [default " << yxaspect 
+  cerr << "-yxaspect ratio\t Y/X aspect ratio [default " << yxaspect
        << "]" << endl;
-  cerr << "-zxaspect ratio\t Z/X aspect ratio [default " << zxaspect 
+  cerr << "-zxaspect ratio\t Z/X aspect ratio [default " << zxaspect
        << "]" << endl;
 }
 
@@ -440,7 +441,7 @@ void openfile(ofstream& f, const std::string& name)
 }
 
 bool htoggle,vtoggle;
-      
+
 void outrgb(unsigned char r, unsigned char g, unsigned char b)
 {
   if(yuv) {
@@ -457,12 +458,12 @@ void outrgb(unsigned char r, unsigned char g, unsigned char b)
   } else fout << r << g << b;
 }
 
-void outpixel(int index) 
+void outpixel(int index)
 {
   if(yuv) {
     if(grey) fout << (unsigned char) index;
     else fout << Y[index];
-    
+
     if(htoggle && vtoggle) {
       if(grey) {
 	uout << BW;
@@ -486,12 +487,12 @@ int main(int argc, char *argv[])
   int bar=5;
   int band=2;
   int bandcolor=BLACK;
-	
+
   int syntax=0;
   extern int optind;
   extern char *optarg;
   int option_index = 0;
-	
+
   static struct option long_options[] =
   {
     {"verbose", 0, 0, 'v'},
@@ -559,10 +560,10 @@ int main(int argc, char *argv[])
     {"maximum", 1, 0, MAXIMUM},
     {0, 0, 0, 0}
   };
-	
-#ifdef __GNUC__	
+
+#ifdef __GNUC__
   optind=0;
-#endif	
+#endif
   int croparg=-1;
   errno=0;
   for (;;) {
@@ -571,7 +572,7 @@ int main(int argc, char *argv[])
 			     long_options,&option_index);
     if (c == -1) break;
     int nargs;
-		
+
     switch (c) {
     case 0:
       break;
@@ -790,7 +791,7 @@ int main(int argc, char *argv[])
       syntax=1;
     }
   }
-	
+
   errno=0;
   unsigned int nfiles=argc-optind;
 
@@ -801,14 +802,14 @@ int main(int argc, char *argv[])
 	 << " -h' for a descriptions of options." << endl;
     exit(1);
   }
-	
+
   if(croparg == 0) {
     mx=my=1;
     lower=upper=0;
-  }	
-	
+  }
+
   char **argf=argv+optind;
-		
+
   if(!floating_scale) {
     vminf=new double[nfiles];
     vmaxf=new double[nfiles];
@@ -817,7 +818,7 @@ int main(int argc, char *argv[])
     vminf3=new double[nfiles];
     vmaxf3=new double[nfiles];
   }
-	
+
   ostringstream dirbuf;
   rgbdir=getenv("RGB_DIR");
   if(rgbdir) dirbuf << rgbdir;
@@ -826,30 +827,30 @@ int main(int argc, char *argv[])
   dirbuf << "/rgb." << process;
   rgbdirbuf << dirbuf.str() << "/";
   ostringstream buf;
-  buf << "mkdirhier " << dirbuf.str();
+  buf << "mkdir -p " << dirbuf.str();
   char *cmd=strdup(buf.str().c_str());
   if(verbose) cout << cmd << endl;
   System(cmd);
   rgbdir=strdup(rgbdirbuf.str().c_str());
-	
+
   if(palette == -1) palette=vector ? RAINBOW : BWRAINBOW; //Default palette
-	
+
   if(vector3) vector2=1;
   if(vector2) vector=1;
   if(vector) grey=0;
-  
+
   if(!grey && !vector3) MakePalette(palette);
-  
+
   if(nfiles > (vector ? (vector3 ? 3 : 2) : 1)) yuv=0;
-  
+
   const char *format=grey ? "gray" : "rgb";
   int PaletteMin=(grey || vector2) ? ((yuv && grey) ? 16 : 0) : FirstColor;
   int PaletteRange=(grey || vector2) ? ((yuv && grey) ? 219 : 255) : NColors-1;
   int PaletteMax=PaletteMin+PaletteRange;
   if(background == Undefined) background=grey ? PaletteMax : BLACK;
-	
+
   int sign,offset;
-  
+
   if(reverse) {
     sign=-1;
     offset=PaletteMax;
@@ -857,7 +858,7 @@ int main(int argc, char *argv[])
     sign=1;
     offset=PaletteMin;
   }
-	
+
   char **files=new char*[nfiles];
   int mfiles=0;
   for(unsigned int f=0; f < nfiles; f++) {
@@ -865,7 +866,7 @@ int main(int argc, char *argv[])
     fieldname << argf[f];
     ixstream xin,xin2,xin3;
     openfield(xin,argf[f],nx,ny,nz);
-    
+
     int nx2,ny2,nz2;
     if(vector) {
       if(f+1 >= nfiles) msg(ERROR, "Too few files specified");
@@ -882,37 +883,37 @@ int main(int argc, char *argv[])
 	msg(ERROR,"Inconsistent component image sizes");
     }
     files[mfiles]=strdup(fieldname.str().c_str());
-    
+
     if(vector3) bar=0;
     if((lower == upper || nz == 1) && bar == 0) band=0;
-  
+
     double *vmink,*vmaxk;
     double *vmink2=NULL,*vmaxk2=NULL;
     double *vmink3=NULL,*vmaxk3=NULL;
-    
+
     vmink=new double [nz]; vmaxk=new double [nz];
     if(vector) vmink2=new double [nz]; vmaxk2=new double [nz];
     if(vector3) vmink3=new double [nz]; vmaxk3=new double [nz];
-		
+
     kmin=0;
     kmax=nz-1;
-    if(upper < lower || lower < 0) 
+    if(upper < lower || lower < 0)
       msg(ERROR, "Invalid section range (%d,%d)",lower,upper);
 
     if(kmin < lower) kmin=lower;
     if(kmax > upper) kmax=upper;
-		
+
     int mpal=bar*my;
     int msep=band*my;
-		
-    if(rescale && trans != IDENTITY) 
+
+    if(rescale && trans != IDENTITY)
       msg(ERROR, "Rescale for transforms not yet implemented");
-			
+
     switch(trans) {
-    case IDENTITY: 
+    case IDENTITY:
       Nx=nx; Ny=ny;
       break;
-    case CIRCLE: 
+    case CIRCLE:
       a0=(int) (ceil(ny/twopi)+0.5);
       a=a0+nx;
       Nx=Ny=2*a+1;
@@ -929,15 +930,15 @@ int main(int argc, char *argv[])
       Nx=Ny=(2*Rp+1)*5/4;
       break;
     }
-		
+
     int nz0=kmax-kmin+1;
     array2<Ivec> Index;
-		
+
     if(trans) {
       Index.Allocate(Nx,Ny);
       transform[trans](Index);
     }
-		
+
     if(!crop) {
       istart=0;
       istop=Nx;
@@ -949,30 +950,30 @@ int main(int argc, char *argv[])
       if(jstart < 0) jstart=0;
       if(jstop > Ny) jstop=Ny;
     }
-		
+
     if(istart < xstart) istart=xstart;
     if(istop > xstop) istop=xstop;
-		
+
     if(jstart < ystart) jstart=ystart;
     if(jstop > ystop) jstop=ystop;
-						
+
     if(rescale) {
       xstart=istart;
       xstop=istop;
       ystart=jstart;
       ystop=jstop;
     }
-		
+
     if(istop <= istart || jstop <= jstart) msg(ERROR,"Image out of range");
-			
+
     int mpalsize;
     if(bar == 0) mpalsize=0;
     else if(vector) mpalsize = (jstop-jstart)*my;
     else mpalsize=mpal;
-    
+
     xsize=mx*(istop-istart);
     ysize=my*(jstop-jstart)*nz0+msep*nz0+mpalsize;
-    
+
     bool padx=false;
     bool pady=false;
     if(yuv) {
@@ -980,21 +981,21 @@ int main(int argc, char *argv[])
       if(xsize % 2) {xsize++; padx=true;}
       if(ysize % 2) {ysize++; pady=true;}
     }
-		
-    if(verbose) cerr << "Producing image of dimensions " << xsize << " x " 
+
+    if(verbose) cerr << "Producing image of dimensions " << xsize << " x "
 		     << ysize << "." << endl;
-    
+
     array3<double> value,value2,value3;
     value.Allocate(nz,ny,nx);
     if(vector) value2.Allocate(nz,ny,nx);
     if(vector3) value3.Allocate(nz,ny,nx);
-    
+
     double gmin=DBL_MAX, gmax=-DBL_MAX; // Global min and max
     double gmin2=DBL_MAX, gmax2=-DBL_MAX;
     double gmin3=DBL_MAX, gmax3=-DBL_MAX;
-		
+
     if(display) floating_scale=1;
-		
+
     if(!floating_scale || begin < 0 || end < 0)	{
       n=0;
       int rc;
@@ -1004,19 +1005,19 @@ int main(int argc, char *argv[])
 	double vmin,vmax;
 	rc=readframe(xin,nx,ny,nz,value,vmin,vmax,vmink,vmaxk);
 	if(rc == EOF) break;
-	
+
 	double vmin2,vmax2;
 	if(vector) {
 	  rc=readframe(xin2,nx,ny,nz,value2,vmin2,vmax2,vmink2,vmaxk2);
 	  if(rc == EOF) break;
 	}
-	
+
 	double vmin3,vmax3;
 	if(vector3) {
 	  rc=readframe(xin3,nx,ny,nz,value3,vmin3,vmax3,vmink3,vmaxk3);
 	  if(rc == EOF) break;
 	}
-	
+
 	if(n < begin) continue;
 	if(--s) continue;
 	s=skip;
@@ -1033,7 +1034,7 @@ int main(int argc, char *argv[])
 	set++;
       } while ((n++ < end || end < 0) && rc == 0);
       nset=nset ? min(nset,set) : set;
-			
+
       if(!floating_scale) {
  	if(symmetric && gmin < 0 && gmax > 0) {
 	  gmax=max(-gmin,gmax);
@@ -1041,7 +1042,7 @@ int main(int argc, char *argv[])
 	}
 	vminf[f]=gmin;
 	vmaxf[f]=gmax;
-	
+
  	if(symmetric && gmin2 < 0 && gmax2 > 0) {
 	  gmax2=max(-gmin2,gmax2);
 	  gmin2=-gmax2;
@@ -1067,11 +1068,11 @@ int main(int argc, char *argv[])
 	openfield(xin3,argf[f+2],nx,ny,nz);
       }
     }
-		
+
     if(begin < 0) begin += nset;
     if(end < 0) end += nset;
     if(display) {end=begin;}
-		
+
     n=0;
     int rc;
     int s=1;
@@ -1080,27 +1081,27 @@ int main(int argc, char *argv[])
       double vmin,vmax;
       rc=readframe(xin,nx,ny,nz,value,vmin,vmax,vmink,vmaxk);
       if(rc == EOF) break;
-      
+
       double vmin2,vmax2;
       if(vector) {
 	rc=readframe(xin2,nx,ny,nz,value2,vmin2,vmax2,vmink2,vmaxk2);
 	if(rc == EOF) break;
       }
-      
+
       double vmin3,vmax3;
       if(vector3) {
 	rc=readframe(xin3,nx,ny,nz,value3,vmin3,vmax3,vmink3,vmaxk3);
 	if(rc == EOF) break;
       }
-      
+
       if(n < begin) continue;
       if(--s) continue;
       s=skip;
-			
+
       if(!floating_scale) {vmin=gmin; vmax=gmax;}
       if(!floating_scale) {vmin2=gmin2; vmax2=gmax2;}
       if(!floating_scale) {vmin3=gmin3; vmax3=gmax3;}
-			
+
       ostringstream prefix;
       prefix << rgbdir << fieldname.str() << set << ".";
 
@@ -1109,7 +1110,7 @@ int main(int argc, char *argv[])
 	openfile(uout,prefix.str()+"U");
 	openfile(vout,prefix.str()+"V");
       } else openfile(fout,prefix.str()+format);
-      
+
       htoggle=vtoggle=true;
       for(int k=kmin; k <= kmax; k++) {
 	if(floating_section) {
@@ -1132,12 +1133,12 @@ int main(int argc, char *argv[])
 	      Ivec x;
 	      int index, indexg=0, indexb=0;
 	      Real factor=0;
-	      
+
 	      if(trans) {
 		x=Index(i,j);
-							
+
 		if (step == 0.0 ||
-		    x.i == Undefined || 
+		    x.i == Undefined ||
 		    x.j == Undefined ||
 		    x.k == Undefined) index=background;
 		else {
@@ -1145,25 +1146,25 @@ int main(int argc, char *argv[])
 		  int ci=(int) floor(x.i);
 		  int cj=(int) floor(x.j);
 		  int ck=(int) floor(x.k);
-								
+
 		  if(ci < -1 || ci >= nx ||
 		     cj < -1 || cj >= ny ||
 		     ck < -1 || ck >= nz)
 		    msg(ERROR,"%s: %g,%g,%g (%d,%d,%d)",
 			"Index out of range",
 			x.i,x.j,x.k,nx,ny,nz);
-								
+
 		  int x1,x2,y1,y2,z1,z2;
-								
+
 		  if(ci == -1 || ci == nx-1) {x1=nx-1; x2=0;}
 		  else {x1=ci; x2=ci+1;}
-								
+
 		  if(cj == -1 || cj == ny-1) {y1=ny-1; y2=0;}
 		  else {y1=cj; y2=cj+1;}
-								
+
 		  if(ck == -1 || ck == nz-1) {z1=nz-1; z2=0;}
 		  else {z1=ck; z2=ck+1;}
-								
+
 		  val=(ck+1-x.k)*((cj+1-x.j)*((ci+1-x.i)*
 					      value(z1,y1,x1)+
 					      (x.i-ci)*
@@ -1220,11 +1221,11 @@ int main(int argc, char *argv[])
 	    }
 	  vtoggle=!vtoggle;
 	}
-	
+
       }
-			
+
       double step=((double) PaletteRange)/xsize;
-      
+
       if(!vector3) {
 	if(vector && mpalsize) {
 	  double step2=((double) PaletteRange)/mpalsize;
@@ -1254,15 +1255,15 @@ int main(int argc, char *argv[])
 	  }
 	}
       }
-	  
+
       if(pady) for(int i=0; i < xsize; i++)  fout << YBlack;
-      
+
       fout.close();
       if(yuv) {
 	uout.close();
 	vout.close();
       }
-      
+
       set++;
       if(nset && set >= nset) break;
     } while (n++ < end && rc == 0);
@@ -1280,10 +1281,10 @@ int main(int argc, char *argv[])
     if(vector3) f++;
     mfiles++;
   }
-  
+
   if(outname == NULL) outname=files[0];
   convertprog=(mfiles > 1 || label) ? "montage" : "convert";
-	
+
   if((remote || !label) && make_mpeg) putenv(strdup("DISPLAY="));
 
   if(nset) {
@@ -1301,9 +1302,9 @@ int main(int argc, char *argv[])
 	  montage(mfiles,files,n,format,extract);
       }
     } else {
-      if(mfiles > 1 || label) { 
+      if(mfiles > 1 || label) {
 	if(make_mpeg) montage(mfiles,files,0,format,"miff");
-	for(n=0; n < nset; n++) 
+	for(n=0; n < nset; n++)
 	  montage(mfiles,files,n,format,make_mpeg ? "yuv" : "miff");
 	identify(mfiles,0,"miff",xsize,ysize);
 	if(make_mpeg) {
@@ -1314,11 +1315,11 @@ int main(int argc, char *argv[])
 	else animate(outname,nset-1,"miff","%d",xsize,ysize);
       } else {
 	if(make_mpeg) mpeg(nset,files[0],"mpg",xsize,ysize);
-	else animate(files[0],nset-1,format,"%d",xsize,ysize); 
+	else animate(files[0],nset-1,format,"%d",xsize,ysize);
       }
     }
   }
-	
+
   cleanup();
 }
 
@@ -1339,7 +1340,7 @@ const char *separator="_______________________________________________";
 const char *separator="                                               ";
 #endif
 
-void ramp(int index, Real x, u_char& r, u_char& g, u_char& b) 
+void ramp(int index, Real x, u_char& r, u_char& g, u_char& b)
 {
   static const Real fivethirds=5.0/3.0;
   Real factor=fivethirds*(x-0.5);
@@ -1360,8 +1361,8 @@ void montage(unsigned int nfiles, char *argf[], int n, const char *format,
 {
   ostringstream buf;
   int frame;
-	
-  buf << convertprog << " -size " << xsize << "x" << ysize << 
+
+  buf << convertprog << " -size " << xsize << "x" << ysize <<
     " -depth 8 -geometry " << xsize << "x" << ysize;
   buf << option.str() << " -interlace none ";
   if(pointsize) buf << "-pointsize " << pointsize << " ";
@@ -1370,7 +1371,7 @@ void montage(unsigned int nfiles, char *argf[], int n, const char *format,
     const char *text=(f < labelcnt ? Label[f] : fieldname);
     if(label) {
       buf << " -label \"";
-      if(!(floating_scale || byte)) 
+      if(!(floating_scale || byte))
 	buf << setprecision(2) << vminf[f]
 	    << separator << setprecision(2) << vmaxf[f] << "\\n";
       buf << text << "\" ";
@@ -1381,17 +1382,17 @@ void montage(unsigned int nfiles, char *argf[], int n, const char *format,
   if(make_mpeg) buf << " -interlace partition ";
   buf << type << ":";
   if(extract || display) frame=begin+n*skip;
-  else {					
+  else {
     frame=n;
     buf << rgbdir;
   }
-  
+
   buf << outname << frame << "." << type;
   if(!verbose) buf << ">& /dev/null";
   char *cmd=strdup(buf.str().c_str());
   if(verbose) cout << cmd << endl;
   System(cmd);
-	
+
   if(n > 0 && !preserve) {
     ostringstream buf;
     buf << "rm -f ";
@@ -1444,7 +1445,7 @@ void mpeg(int n, const char *inname, const char *type, int xsize, int ysize)
   System(cmd);
 }
 
-void animate(const char *filename, int n, const char *type, 
+void animate(const char *filename, int n, const char *type,
 	     const char *pattern, int xsize, int ysize)
 {
   ostringstream buf;
@@ -1458,7 +1459,7 @@ void animate(const char *filename, int n, const char *type,
 
 extern char **environ;
 
-int System(char *command) 
+int System(char *command)
 {
   int pid;
   static bool cleaning=false;
@@ -1475,7 +1476,7 @@ int System(char *command)
     execve("/bin/sh",argv,environ);
     exit(127);
   }
-	
+
   for(;;) {
     int status;
     if (waitpid(pid, &status, 0) == -1) {
@@ -1502,7 +1503,7 @@ void Circle(array2<Ivec>& Index)
       Index(u,v)=Ivec(Undefined,Undefined,Undefined);
     }
   }
-	
+
   for(int u=0; u < Nx; u++)  {
     for(int v=0; v < Ny; v++)  {
       int i=u-a;
@@ -1517,7 +1518,7 @@ void Circle(array2<Ivec>& Index)
   }
 }
 
-	
+
 Real deltax,deltaz;
 Real yfactor;
 Real uoffset,voffset;
@@ -1541,7 +1542,7 @@ public:
   Toroidal() {}
   Toroidal(Real r_, Real phi_, Real theta_) : r(r_), phi(phi_), theta(theta_)
   {}
-	
+
   void SetCartesian(Real x, Real y, Real z) {
     Real rp=sqrt(x*x+y*y)-R0;
     r=sqrt(rp*rp+z*z);
@@ -1550,7 +1551,7 @@ public:
     theta=atan2(z,rp);
     if(theta < 0) theta += twopi;
   }
-	
+
   void Map() {
     r -= a0;
     if(alpha) {
@@ -1559,27 +1560,27 @@ public:
       while (theta >= twopi) theta -= twopi;
     }
   }
-	
+
   int InR() {
     return (0 <= r && r <= nx-1);
   }
-	
+
   int InPhi() {
     return (phi <= cutoff);
   }
-	
+
   int InRange() {
     return InR() && InPhi();
   }
-	
+
   Real Distance() {
     Real x=InR() ? 0.0 : min(-r,r-(nx-1));
     Real y=InPhi() ? 0.0 : min(twopi-phi,phi-cutoff);
     return x*x+y*y;
   }
-	
+
   Toroidal(Cartesian P) {SetCartesian(P.x,P.y,P.z);}
-	
+
   operator Cartesian() const {
     Real rp=R0+r*cos(theta);
     return Cartesian(rp*cos(phi),rp*sin(phi),r*sin(theta));
@@ -1602,41 +1603,41 @@ void Torus(array2<Ivec>& Index)
       Index(u,v)=Ivec(Undefined,Undefined,Undefined);
     }
   }
-	
+
   index0.Dimension(Nx,Ny);
   index0.Set(Index());
-	
+
   twopibyny=twopi/ny;
   twopibynz=twopi/nz;
-	
+
   maxz.Allocate(Nx,Ny);
   maxz=-REAL_MAX;
-	
+
   Real cosPhi,sinPhi;
   Real cosTheta,sinTheta;
   sincos(Phi,&sinPhi,&cosPhi);
   sincos(Theta,&sinTheta,&cosTheta);
-	
+
   //	cutoff=0.0;
   //	cutoff=1.95*pi;
   //	cutoff=1.75*pi;
 
   uoffset=0.5+Rp*1.2;
   voffset=0.5+Rp*1.5;
-	
+
   deltax=(xmax-xmin)/nx;
   deltaz=(zmax-zmin)/nz;
-	
+
   yfactor=twopi/(ymax-ymin);
-	
+
   // Rotate about z axis by -Phi, then about new x axis by -Theta.
-	
+
   Axx=cosPhi;          Axy=sinPhi;         Axz=0.0;
   Ayx=-cosTheta*sinPhi; Ayy=cosTheta*cosPhi; Ayz=sinTheta;
   Azx=sinTheta*sinPhi; Azy=-sinTheta*cosPhi; Azz=cosTheta;
-	
+
   int maxk=cutoff ? min(nz,(int) ((cutoff/twopibynz)+1.5)) : nz;
-	
+
   for(int i=0; i < nx; i += nx-1)  {
     for(int j=-1; j < ny; j++)  {
       for(int k=cutoff ? 0 : -1; k < maxk; k++) {
@@ -1677,7 +1678,7 @@ void Torus(array2<Ivec>& Index)
       }
     }
   }
-	
+
   for(int k=cutoff ? 0 : -1; k < maxk; k += cutoff ? maxk-1 : maxk) {
     for(int i=0; i < nx; i++)  {
       for(int j=-1; j < ny; j++)  {
@@ -1735,11 +1736,11 @@ int Project(double xi, double xj, double xk)
     Real x=rperp*cosphi;
     Real y=rperp*sinphi;
     Real z=r*sintheta;
-							
+
     Real xp=Axx*x+Axy*y+Axz*z;
     Real yp=Ayx*x+Ayy*y+Ayz*z;
     Real zp=Azx*x+Azy*y+Azz*z;
-							
+
     Real projection=Pz/(Pz-zp);
     int u=(int)(xp*projection+uoffset);
     int v=Ny-((int)(yp*projection+voffset));
@@ -1749,7 +1750,7 @@ int Project(double xi, double xj, double xk)
       maxz(u,v)=zp;
       index0(u,v)=Ivec(xi,xj,xk);
       return (Maxz == -REAL_MAX) ? 1 : 2;
-    }	
+    }
   }
   return 0;
 }
