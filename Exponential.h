@@ -118,7 +118,7 @@ public:
   const char *Name() {return "Exponential Euler";}
   E_Euler(T *parent) : E_RK<T>(parent,1,1) {
     RK::allocate();
-    this->A[0][0]=1.0;
+//    this->A[0][0]=1.0;
   }
 
   inline void TimestepDependence() {
@@ -140,7 +140,7 @@ public:
   const char *Name() {return "Integrating Factor Euler";}
   I_Euler(T *parent) : E_RK<T>(parent,1,1) {
     RK::allocate();
-    this->A[0][0]=1.0;
+//    this->A[0][0]=1.0;
   }
 
   inline void TimestepDependence() {
@@ -162,12 +162,14 @@ public:
 
   E_PC(T *parent) : E_RK<T>(parent,2,2) {
     RK::allocate();
+    /*
     this->A[0][0]=1.0;
 
     this->A[1][0]=0.5;
     this->A[1][1]=0.5;
 
     this->B[0]=1.0;
+    */
   }
 
   inline void TimestepDependence() {
@@ -194,10 +196,12 @@ public:
   E_RK2(T *parent) : E_RK<T>(parent,2,2) {
     RK::allocate();
 
+    /*
     this->A[0][0]=0.5;
     this->A[1][1]=1.0;
 
     this->B[0]=1.0;
+    */
   }
 
   inline void TimestepDependence() {
@@ -230,6 +234,7 @@ public:
   E_RK3(T *parent) : E_RK<T>(parent,3,4,true) {
     RK::allocate();
 
+    /*
     this->A[0][0]=0.5;
 
     this->A[1][1]=0.75;
@@ -242,6 +247,7 @@ public:
     this->B[1]=0.25;
     this->B[2]=1.0/3.0;
     this->B[3]=0.125;
+    */
   }
 
   inline void TimestepDependence() {
@@ -297,6 +303,7 @@ public:
   E_RK3BP(T *parent) : E_RK<T>(parent,3,4,true) {
     RK::allocate();
 
+    /*
     this->A[0][0]=0.5;
 
     this->A[1][1]=0.75;
@@ -309,6 +316,7 @@ public:
     this->B[1]=0.25;
     this->B[2]=1.0/3.0;
     this->B[3]=0.125;
+    */
   }
 
   inline void TimestepDependence() {
@@ -357,31 +365,34 @@ public:
     return "Fourth-Order Five-Stage Embedded Exponential Runge-Kutta";
   }
 
-  E_RK43ZB(T *parent) : E_RK<T>(parent,4,5,true) {
+  E_RK43ZB(T *parent) : E_RK<T>(parent,4,5,false) {
     RK::allocate();
 
+    /*
     this->A[0][0]=1.0/6.0;
 
-    this->A[1][1]=0.0;
+    this->A[1][0]=1.0/3.0;
+    this->A[1][1]=
 
-    this->A[2][0]=0.0;
-    this->A[2][1]=0.0;
-    this->A[2][2]=0.0;
+    this->A[2][0]=
+    this->A[2][1]=
+    this->A[2][2]=
 
-    this->A[3][0]=0.0;
-    this->A[3][1]=0.0;
-    this->A[3][2]=0.0;
-    this->A[3][3]=0.0;
+    this->A[3][0]=
+    this->A[3][1]=
+    this->A[3][2]=
+    this->A[3][3]=
 
-    this->A[4][0]=0.0;
-    this->A[4][1]=0.0;
-    this->A[4][2]=0.0;
-    this->A[4][3]=0.0;
-    this->A[4][4]=0.0;
+    this->A[4][0]=
+    this->A[4][1]=
+    this->A[4][2]=
+    this->A[4][3]=
+    this->A[4][4]=
 
     for(int i=0; i < 4; ++i)
       this->B[i]=this->A[3][i];
     this->B[4]=0.0;
+    */
   }
 
   inline void TimestepDependence() {
@@ -398,28 +409,30 @@ public:
       Nu e2=exp(x2);
       this->phi0[1][j]=e2;
       this->phi0[2][j]=e2;
-      this->phi0[3][j]=exp(x);
+      Nu e=exp(x);
+      this->phi0[3][j]=e;
+      this->phi0[4][j]=e;
 
-      Nu w1_1=phi1(x/6)*this->dt;
-      Nu w2_1=phi2(x/6)*this->dt;
+      Nu w1_1=phi1(x1)*this->dt;
+      Nu w2_1=phi2(x1)*this->dt;
 
-      Nu w1_2=phi1(0.5*x)*this->dt;
-      Nu w2_2=phi2(0.5*x)*this->dt;
-      Nu w3_2=phi3(0.5*x)*this->dt;
+      Nu w1_2=phi1(x2)*this->dt;
+      Nu w2_2=phi2(x2)*this->dt;
+      Nu w3_2=phi3(x2)*this->dt;
 
       Nu w1=phi1(x)*this->dt;
       Nu w2=phi2(x)*this->dt;
       Nu w3=phi3(x)*this->dt;
 
-      this->e[0][j][0]=w1_1/6.0;
+      this->e[0][j][0]=sixth*w1_1;
 
       Nu a1_1=1.5*w2_2+0.5*w2_1;
 
       this->e[1][j][0]=0.5*w1_2-a1_1;
       this->e[1][j][1]=a1_1;
 
-      Nu a2_1=(19/60)*w1+0.5*w1_2+0.5*w1_1+2*w2_2+(13/6)*w2_1+0.6*w3_2;
-      Nu a2_2=-(19/180)*w1-(1/6)*w1_2-(1/6)*w1_1-(1/6)*w2_2+(1/9)*w2_1-0.2*w3_2;
+      Nu a2_1=(19.0/60.0)*w1+0.5*w1_2+0.5*w1_1+2*w2_2+(13.0/6.0)*w2_1+0.6*w3_2;
+      Nu a2_2=-(19.0/180.0)*w1-sixth*(w1_2+w1_1+w2_2)+(1.0/9.0)*w2_1-0.2*w3_2;
       this->e[2][j][0]=0.5*w1_2-a2_1-a2_2;
       this->e[2][j][1]=a2_1;
       this->e[2][j][2]=a2_2;
@@ -434,11 +447,11 @@ public:
       this->e[3][j][3]=a3_3;
 
       // High-order approximation
-      this->e[4][j][0]=w1-(67/9)*w2+(52/3)*w3;
-      this->e[4][j][1]=8*w2-24*w3;
-      this->e[4][j][2]=(26/3)*w3-(11/9)*w2;
-      this->e[4][j][3]=(7/9)*w2-(10/3)*w3;
-      this->e[4][j][4]=(4/3)*w3-(1/9)*w2;
+      this->e[4][j][0]=w1-(67.0/9.0)*w2+(52.0/3.0)*w3;
+      this->e[4][j][1]=8.0*w2-24.0*w3;
+      this->e[4][j][2]=(26.0/3.0)*w3-(11.0/9.0)*w2;
+      this->e[4][j][3]=(7.0/9.0)*w2-(10.0/3.0)*w3;
+      this->e[4][j][4]=(4.0/3.0)*w3-(1.0/9.0)*w2;
 
       // Low-order approximation
       for(int i=0; i < 4; ++i)
