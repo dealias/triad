@@ -31,11 +31,11 @@ protected:
   bool FSAL; // First Same As Last
   bool first;
   size_t align;
-  
-public:	
-  
+
+public:
+
   IntegratorBase(int order=0, bool fsal=false) : order(order), FSAL(fsal) {}
-  
+
   virtual ~IntegratorBase() {}
   void SetAbbrev(const char *abbrev0) {abbrev=abbrev0;}
   const char *Abbrev() {return abbrev;}
@@ -43,7 +43,7 @@ public:
 		double stepnoninverse0, double dtmin0, double dtmax0,
 		long long itmax0, int microsteps0, Real microfactor0,
 		int verbose0, int dynamic0) {
-    if(tolmax < tolmin) msg(ERROR_GLOBAL,"tolmax < tolmin"); 
+    if(tolmax < tolmin) msg(ERROR_GLOBAL,"tolmax < tolmin");
     tolmax2=tolmax*tolmax;
     tolmin2=tolmin*tolmin;
     growfactor=stepfactor=stepfactor0;
@@ -73,27 +73,27 @@ public:
   void Integrate(double& t0, double tmax, double& dt0, double sample0,
 		 long long& iteration, unsigned long& nout);
   void ChangeTimestep(double dtnew);
-	
+
   virtual void Source(const vector2& Src, const vector2& Y, double t) {
     Problem->Source(Src,Y,t);
   }
-	
+
   virtual void PSource(const vector2& Src, const vector2& Y, double t) {
     Source(Src,Y,t);
   }
-	
+
   virtual void CSource(const vector2& Src, const vector2& Y, double t) {
     Source(Src,Y,t);
   }
-  
+
   void CalcError(const Var& initial, const Var& norm, const Var& pred,
 		 const Var& corr);
   virtual Solve_RC CheckError();
-  
+
   double Errmax() {
     return errmax;
   }
-  
+
   int Order() {
     return order;
   }
@@ -103,7 +103,7 @@ public:
   unsigned int Ny() {
     return ny;
   }
-  
+
   // Add tolgood to inhibit time step adjustment.
   virtual void ExtrapolateTimestep () {
     if(errmax < tolmin2) {
@@ -113,20 +113,20 @@ public:
     shrinkfactor=max(shrinkfactor,stepinverse);
     if(errmax <= tolmax2) errmax=0.0; // Force a time step adjustment.
   }
-  
+
   void Alloc0(vector2& Y, vector& y);
   void Alloc(vector2& Y, vector& y);
-  
+
   void Alloc(vector2& A, vector& a, const vector2& B, const vector& b) {
     A.Dimension(B);
     Dimension(a,b);
   }
-  
+
   void SetProblem(ProblemBase& problem);
-  
+
   unsigned int Start(int field) {return Problem->Start(field);}
   unsigned int Stop(int field) {return Problem->Stop(field);}
-  
+
   virtual void Allocator(const vector2& Y0, DynVector<unsigned int>* NY0,
 			 const ivector& mask, size_t Align=0);
   virtual void Allocator() {}
@@ -135,30 +135,30 @@ public:
     align=Align;
     Allocator(problem.YVector(),problem.Sizes(),problem.ErrorMask(),align);
   }
-  
+
   virtual const char *Name()=0;
   virtual Solve_RC Solve()=0;
   virtual int Microfactor() {return 1;}
   virtual void TimestepDependence() {}
-  
+
   virtual void Unswap() {
     if(Yout.Size() && Yout != Y) set(Yout[0],Y[0],ny);
   }
-  
+
   void SetTime(double t0, double dt0) {
     t=t0;
     dt=dt0;
   }
-  
+
   void SetTime(double t0, double dt0, double errmax0) {
     SetTime(t0,dt0);
     errmax=errmax0;
   }
-  
+
   const vector2& YVector() const {
     return Y;
   }
-  
+
   void Sync(IntegratorBase *I) {
     Set(Y,I->YVector());
   }
@@ -179,7 +179,7 @@ void update_maximum(std::atomic<T>& max, T const& value) noexcept
     while(prev < value && !max.compare_exchange_weak(prev,value));
 }
 
-inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0, 
+inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0,
 				      const Var& pred, const Var& corr)
 {
   Var diff=corr-pred;
@@ -188,7 +188,7 @@ inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0,
       static const double epsilon=DBL_MIN/DBL_EPSILON;
       double error=max(abs2(diff)/(max(norm2(norm0),norm2(initial))+epsilon));
       update_maximum(errmax,error);
-      
+
     }
   } else errmax=HUGE_VAL;
 }
@@ -222,7 +222,7 @@ public:
 };
 
 class Midpoint : public IntegratorBase {
-protected:	
+protected:
   vector y0;
   vector2 Y0;
   double halfdt;
@@ -299,13 +299,13 @@ public:
   }
   const char *Name() {return "Predictor-Corrector";}
   Solve_RC Solve();
-	
+
   virtual bool isConservative() {return false;}
 
   void TimestepDependence() {
     halfdt=0.5*dt;
   }
-  
+
   void iSource() {
     Source(Src0,Y0,t);
   }
@@ -317,7 +317,7 @@ public:
     for(unsigned int i=0; i < ny; ++i)
       y0[i]=y[i];
   }
-  
+
   void initialize() {
     errmax=0.0;
     if(new_y0) {
@@ -330,7 +330,7 @@ public:
       }
     }
   }
-  
+
   virtual void Predictor(unsigned int n0, unsigned int ny);
   virtual int Corrector(unsigned int n0, unsigned int ny);
 };
@@ -341,7 +341,7 @@ class LeapFrog : public PC {
   double oldhalfdt,lasthalfdt;
 public:
   void Allocator() {
-    PC::Allocator(); 
+    PC::Allocator();
     Alloc(YP,yp);
     Alloc(YP0,yp0);
     lasthalfdt=0.0;
@@ -367,7 +367,7 @@ public:
 };
 
 class RK : public PC {
-protected:  
+protected:
   Array::array2<double> a,A;   // source coefficients for each stage
   Array::array1<double>::opt b,B,C; // b=error coefficients, C=time coefficients
   const unsigned int nstages;
@@ -378,7 +378,7 @@ public:
 
   RK(int order, int nstages, bool fsal=false) :
     PC(order,fsal), nstages(nstages), Astages(fsal ? nstages-1 : nstages) {}
-    
+
   Var getvsource(unsigned int stage, unsigned int i) {
     return vsource[stage][i];
   }
@@ -387,17 +387,17 @@ public:
   }
 
   unsigned int NStages() {return nstages;}
-    
+
   virtual void Source(const vector2& Src, const vector2& Y, double t) {
     Problem->Source(Src,Y,t);
   }
-  
+
 
   void Source(unsigned int i) {
     Source(vSrc[i],Y,t+C[i]*dt);
   }
-  
-  void Allocator(const vector2& YP, 
+
+  void Allocator(const vector2& YP,
 		 DynVector<unsigned int>* NYP,
 		 const ivector& errmask0,size_t Align=0) {
     IntegratorBase::Allocator(YP,NYP,errmask0,Align);
@@ -413,9 +413,8 @@ public:
     }
     for(unsigned int k=0; k < nstages; k++)
       if(B[k] != 0.0) return;
-    dynamic=0;
   }
-  
+
   void Allocator() {
     Alloc(Y0,y0);
     vSrc.Allocate(nstages);
@@ -426,7 +425,7 @@ public:
     new_y0=true;
     Csum();
   }
-  
+
   bool fsal() {
     if(dynamic && FSAL) {
       swaparray(vSrc[0],vSrc[Astages]);
@@ -436,7 +435,7 @@ public:
     }
     return false;
   }
-  
+
   virtual void Stage(unsigned int s, unsigned int start, unsigned int stop) {
     rvector as=a[s];
 #pragma omp parallel for num_threads(threads)
@@ -447,11 +446,11 @@ public:
       y[j]=sum;
     }
   }
-  
+
   void Stage(unsigned int s, int start=0) {
     Stage(s,start,ny);
   }
-  
+
   virtual void PStage(unsigned int s) {
     Stage(s);
   }
@@ -462,7 +461,7 @@ public:
     Source(vSrc[s+1],Y,t+cs);
     if(Array::Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
   }
-  
+
   virtual void Predictor(unsigned int start, unsigned int stop) {
     unsigned int laststage=Astages-1;
     for(unsigned int s=0; s < laststage; ++s) {
@@ -470,22 +469,22 @@ public:
       PredictorSource(s);
     }
   }
-  
+
   virtual int Corrector(unsigned int start, unsigned int stop);
-  
+
   void allocate() {
     A.Allocate(Astages,Astages);
     a.Allocate(Astages,Astages);
     A=0.0;
-    
+
     Allocate(B,nstages);
     Allocate(b,nstages);
     for(unsigned int i=0; i < nstages; ++i)
       B[i]=0.0;
-    
+
     Allocate(C,Astages);
   }
-    
+
   virtual void TimestepDependence() {
     for(unsigned int s=0; s < Astages; ++s) {
       rvector as=a[s];
@@ -497,7 +496,7 @@ public:
       b[k]=dt*B[k];
   }
 };
-  
+
 class RK1 : public RK {
 public:
   const char *Name() {return "First-Order Runge-Kutta";}
@@ -510,13 +509,13 @@ public:
 class RK2 : public RK {
 public:
   const char *Name() {return "Second-Order Runge-Kutta";}
-  
+
   RK2() : RK(2,2) {
     allocate();
     A[0][0]=0.5;
-    
+
     A[1][1]=1.0;
-    
+
     B[0]=1.0;
   }
 };
@@ -524,15 +523,15 @@ public:
 class RKPC : public RK {
 public:
   const char *Name() {return "Predictor-Corrector";}
-  
+
   RKPC() : RK(2,2) {
     allocate();
-    
+
     A[0][0]=1.0;
-    
+
     A[1][0]=0.5;
     A[1][1]=0.5;
-    
+
     B[0]=1.0;
   }
 };
@@ -540,17 +539,17 @@ public:
 class RK3 : public RK {
 public:
   const char *Name() {return "Third-Order Bogacki-Shampine Runge-Kutta";}
-  
+
   RK3() : RK(3,4,true) {
     allocate();
     A[0][0]=0.5;
-    
+
     A[1][1]=0.75;
-    
+
     A[2][0]=2.0/9.0;
     A[2][1]=1.0/3.0;
     A[2][2]=4.0/9.0;
-    
+
     B[0]=7.0/24.0;
     B[1]=0.25;
     B[2]=1.0/3.0;
@@ -561,17 +560,17 @@ public:
 class RK3C : public RK {
 public:
   const char *Name() {return "Third-Order Kutta";}
-  
+
   RK3C() : RK(3,3) {
     allocate();
     A[0][0]=0.5;
-    
+
     A[1][0]=-1.0; A[1][1]=2.0;
-    
+
     A[2][0]=1.0/6.0;
     A[2][1]=2.0/3.0;
     A[2][2]=1.0/6.0;
-    
+
     B[1]=1.0;
   }
 };
@@ -586,19 +585,19 @@ public:
     for(unsigned int j=start; j < stop; j++)
       y[j]=y0[j]+a00*vsource[0][j];
     PredictorSource(0);
-    
+
     Real a11=a[1][1];
 #pragma omp parallel for num_threads(threads)
     for(unsigned int j=start; j < stop; j++)
       y[j]=y0[j]+a11*vsource[1][j];
     PredictorSource(1);
-    
+
     Real a22=a[2][2];
 #pragma omp parallel for num_threads(threads)
     for(unsigned int j=start; j < stop; j++)
       y[j]=y0[j]+a22*vsource[2][j];
     PredictorSource(2);
-    
+
     if(dynamic) {
       rvector a3=a[3];
       Real a30=a3[0];
@@ -634,15 +633,15 @@ public:
     }
     return 1;
   };
-  
+
   RK4() : RK(4,5) {
     allocate();
     A[0][0]=0.5;
 
     A[1][1]=0.5;
-    
+
     A[2][2]=1.0;
-    
+
     A[3][0]=-1.0;
     A[3][1]=2.0;
 
@@ -661,7 +660,7 @@ public:
 class RK5 : public RK {
 public:
   const char *Name() {return "Fifth-Order Cash-Karp Runge-Kutta";}
-  
+
   int Corrector(unsigned int start, unsigned int stop) {
     if(dynamic) {
       rvector as=a[5];
@@ -686,23 +685,23 @@ public:
     }
     return 1;
   };
-  
+
   RK5() : RK(5,6) {
     allocate();
-    
+
     A[0][0]=0.2;
     A[1][0]=3.0/40.0; A[1][1]=9.0/40.0;
-    
+
     A[2][0]=0.3; A[2][1]=-0.9; A[2][2]=1.2;
-    
+
     A[3][0]=-11.0/54.0; A[3][1]=2.5; A[3][2]=-70.0/27.0; A[3][3]=35.0/27.0;
-  
+
     A[4][0]=1631.0/55296.0; A[4][1]=175.0/512.0; A[4][2]=575.0/13824.0;
     A[4][3]=44275.0/110592.0; A[4][4]=253.0/4096.0;
-  
+
     A[5][0]=37.0/378.0; A[5][2]=250.0/621.0; A[5][3]=125.0/594.0;
     A[5][5]=512.0/1771.0;
-								  
+
     B[0]=2825.0/27648.0; B[2]=18575.0/48384.0; B[3]=13525.0/55296.0;
     B[4]=277.0/14336.0; B[5]=0.25;
   }
