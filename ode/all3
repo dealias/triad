@@ -1,6 +1,5 @@
 #!/bin/sh
 testcase exact $*
 #testcase implicit $*
-#testcase i-pc $*
 testcase e_rk3 $*
 testcase e_rk43zb $*

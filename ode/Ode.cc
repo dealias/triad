@@ -37,14 +37,14 @@ public:
   void Initialize();
   void Output(int it);
   void FinalOutput();
-	
+
   Nu LinearCoeff(unsigned int i) {
     return nu[i];
   }
 
   void NonLinearSource(const vector2& Src, const vector2& Y, double t);
   void LinearSource(const vector2& Src, const vector2& Y, double t);
-  
+
   void ConservativeSource(const vector2& Src, const vector2& Y, double t) {
     NonLinearSource(Src,Y,t);
     LinearSource(Src,Y,t);
@@ -58,12 +58,12 @@ public:
     ConservativeSource(Src,Y,t);
     NonConservativeSource(Src,Y,t);
   }
-  
+
   Ode() {
     ExponentialIntegrators(Ode_Vocabulary.IntegratorTable,this);
     ConservativeIntegrators(Ode_Vocabulary.IntegratorTable,this);
   }
-  
+
   void IndexLimits(unsigned int& start, unsigned int& stop,
 		   unsigned int& startT, unsigned int& stopT,
 		   unsigned int& startM, unsigned int& stopM) {
@@ -74,7 +74,7 @@ public:
     startM=1;
     stopM=1;
   }
-  
+
 };
 
 Ode *OdeProblem;
@@ -83,7 +83,7 @@ Ode *OdeProblem;
 
 class TestIntegrator : public IntegratorBase {
   IntegratorBase *Integrator, *Integrator1, *Integrator2;
-public:  
+public:
   const char *Name() {return "Test";}
   void Unswap() {Integrator->Unswap();}
   void Allocator() {
@@ -101,7 +101,7 @@ public:
     Solve_RC rc=I->Solve();
     return rc;
   }
-  
+
   Solve_RC Solve() {
     Solve_RC rc=Solve(Integrator1);
     if(rc == SUCCESSFUL || rc == ADJUST) rc=Solve(Integrator2);
@@ -112,21 +112,21 @@ public:
 OdeVocabulary::OdeVocabulary()
 {
   Vocabulary=this;
-	
+
   VOCAB(nu0,(Real) 0.0,(Real) 0.0,"linear damping");
   VOCAB(A,(Var) 0.0,(Var) 0.0,"coefficient A");
   VOCAB(B,(Var) 0.0,(Var) 0.0,"coefficient B");
-	
+
   METHOD(Ode);
-	
+
   // Specialized integrators:
-  
+
   INTEGRATOR(TestIntegrator);
-#if 0  
+#if 0
   INTEGRATOR(RB1);
   INTEGRATOR(I_PC);
   INTEGRATOR(Implicit);
-#endif  
+#endif
 }
 
 ofstream fout;
@@ -136,13 +136,13 @@ void Ode::InitialConditions()
   OdeProblem=this;
   NY[0]=1;
   Allocator();
-  
+
   Allocate(nu,ny);
-	
+
   vector y=Y[0];
   y[0]=1.0;
   nu[0]=nu0;
-	
+
   open_output(fout,dirsep,downcase(undashify(Integrator->Abbrev())));
 }
 
@@ -162,8 +162,8 @@ void Ode::NonLinearSource(const vector2& Src, const vector2& Y, double t)
   count++;
   vector source=Src[0];
   vector y=Y[0];
-//  source[0]=cos(y[0]);
-  source[0]=-y[0]*tan(t);
+  source[0]=cos(y[0]);
+//  source[0]=-y[0]*tan(t);
 //  source[0]=cos(t)*y[0];
 //  source[0]=-A*y[0]-B*y[0]*y[0];
 //    source[0]=-A*y[0]-B*exp(y[0].re);
