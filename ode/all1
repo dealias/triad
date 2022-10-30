@@ -1,8 +1,7 @@
-#!/bin/csh -f
+#!/bin/sh
 testcase exact $*
 testcase euler $*
 testcase i-euler $*
 testcase e-euler $*
 #testcase rb1 $*
 #testcase implicit $*
-
