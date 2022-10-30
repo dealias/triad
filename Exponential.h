@@ -293,71 +293,6 @@ public:
 };
 
 template<class T>
-class E_RK3BP : public E_RK<T> {
-protected:
-public:
-  const char *Name() {
-    return "Third-Order Exponential Bogacki-Shampine Runge-Kutta BP";
-  }
-
-  E_RK3BP(T *parent) : E_RK<T>(parent,3,4,true) {
-    RK::allocate();
-
-    /*
-    this->A[0][0]=0.5;
-
-    this->A[1][1]=0.75;
-
-    this->A[2][0]=2.0/9.0;
-    this->A[2][1]=1.0/3.0;
-    this->A[2][2]=4.0/9.0;
-
-    this->B[0]=7.0/24.0;
-    this->B[1]=0.25;
-    this->B[2]=1.0/3.0;
-    this->B[3]=0.125;
-    */
-  }
-
-  inline void TimestepDependence() {
-    if(this->startN < this->stopN) RK::TimestepDependence();
-    for(unsigned int j=this->start; j < this->stop; j++) {
-      Nu nuk=this->parent->LinearCoeff(j);
-      Nu x=-nuk*this->dt;
-      Nu xh=0.5*x;
-      Nu xi=0.75*x;
-
-      Nu ph1=phi1(x)*this->dt;
-      Nu ph2=phi2(x)*this->dt;
-      Nu ph3=phi3(x)*this->dt;
-
-      Nu ph1h=phi1(xh)*this->dt;
-
-      Nu ph1i=phi1(xi)*this->dt;
-      Nu ph2i=phi2(xi)*this->dt;
-
-      this->phi0[0][j]=exp(xh);
-      this->phi0[1][j]=exp(xi);
-      this->phi0[2][j]=exp(x);
-
-      this->e[0][j][0]=0.5*ph1h;
-
-      this->e[1][j][0]=0.75*ph1i-1.5*ph2i;
-      this->e[1][j][1]=1.5*ph2i;
-
-      this->e[2][j][0]=ph1-2.0*ph2+4.0/3.0*ph3;
-      this->e[2][j][1]=2.0*ph2-4.0*ph3;
-      this->e[2][j][2]=8.0*ph3/3;
-
-      this->f[j][0]=ph1-17.0/12.0*ph2;
-      this->f[j][1]=0.5*ph2;
-      this->f[j][2]=2.0/3.0*ph2;
-      this->f[j][3]=0.25*ph2;
-    }
-  }
-};
-
-template<class T>
 class E_RK43ZB : public E_RK<T> {
 protected:
 public:
@@ -431,10 +366,8 @@ public:
       this->e[1][j][0]=0.5*w1_2-a1_1;
       this->e[1][j][1]=a1_1;
 
-      Nu a2_1=(19.0/60.0)*w1+0.5*w1_2+0.5*w1_1+2.0*w2_2+(13.0/6.0)*w2_1+
-        0.6*w3_2;
-      Nu a2_2=-(19.0/180.0)*w1-sixth*(w1_2+w1_1+w2_2)+(1.0/9.0)*w2_1-
-        0.2*w3_2;
+      Nu a2_1=19.0/60.0*w1+0.5*w1_2+0.5*w1_1+2.0*w2_2+13.0/6.0*w2_1+0.6*w3_2;
+      Nu a2_2=-19.0/180.0*w1-sixth*(w1_2+w1_1+w2_2)+1.0/9.0*w2_1-0.2*w3_2;
       this->e[2][j][0]=0.5*w1_2-a2_1-a2_2;
       this->e[2][j][1]=a2_1;
       this->e[2][j][2]=a2_2;
@@ -443,10 +376,14 @@ public:
       Nu a3_1=3.0*w2-4.5*w2_2-2.5*w2_1+6.0*a3_3+a2_1;
       Nu a3_2=6.0*w3+3.0*w3_2-2.0*a3_3+a2_2;
 
-      this->e[3][j][0]=w1-a3_1-a3_2-a3_3;
-      this->e[3][j][1]=a3_1;
-      this->e[3][j][2]=a3_2;
-      this->e[3][j][3]=a3_3;
+      // Low-order approximation
+      this->f[j][0]=w1-a3_1-a3_2-a3_3;
+      this->f[j][1]=a3_1;
+      this->f[j][2]=a3_2;
+      this->f[j][3]=a3_3;
+      this->f[j][4]=0;
+
+      this->e[3][j]=this->f[j];
 
       // High-order approximation
       this->e[4][j][0]=w1-(67.0/9.0)*w2+(52.0/3.0)*w3;
@@ -454,11 +391,6 @@ public:
       this->e[4][j][2]=(26.0/3.0)*w3-(11.0/9.0)*w2;
       this->e[4][j][3]=(7.0/9.0)*w2-(10.0/3.0)*w3;
       this->e[4][j][4]=(4.0/3.0)*w3-(1.0/9.0)*w2;
-
-      // Low-order approximation
-      for(int i=0; i < 4; ++i)
-        this->f[j][i]=this->e[3][j][i];
-      this->f[j][4]=0;
     }
   }
 };
@@ -470,7 +402,6 @@ void ExponentialIntegrators(Table<IntegratorBase> *t, T *parent) {
   new entry<E_PC<T>,IntegratorBase,T>("E_PC",t,parent);
   new entry<E_RK2<T>,IntegratorBase,T>("E_RK2",t,parent);
   new entry<E_RK3<T>,IntegratorBase,T>("E_RK3",t,parent);
-  new entry<E_RK3BP<T>,IntegratorBase,T>("E_RK3BP",t,parent);
   new entry<E_RK43ZB<T>,IntegratorBase,T>("E_RK43ZB",t,parent);
 }
 

@@ -1,2 +1,3 @@
 #!/bin/csh -f
-triad nu0=2 dt=0.05 itmax=100 dynamic=1 tmax=2 int=$*
+#triad nu0=2 dt=0.05 itmax=100 dynamic=1 tmax=2 int=$*
+triad nu0=2 dt=0.05 itmax=100 dynamic=0 tmax=0 int=$*
