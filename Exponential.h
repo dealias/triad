@@ -383,7 +383,8 @@ public:
       this->f[j][3]=a3_3;
       this->f[j][4]=0;
 
-      this->e[3]=this->f;
+      for(int i=0; i < 4; ++i)
+        this->e[3][j][i]=this->f[j][i];
 
       // High-order approximation
       this->e[4][j][0]=w1-(67.0/9.0)*w2+(52.0/3.0)*w3;
