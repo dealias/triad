@@ -118,7 +118,7 @@ public:
   const char *Name() {return "Exponential Euler";}
   E_Euler(T *parent) : E_RK<T>(parent,1,1) {
     RK::allocate();
-//    this->A[0][0]=1.0;
+    this->A[0][0]=1.0;
   }
 
   inline void TimestepDependence() {
@@ -140,7 +140,7 @@ public:
   const char *Name() {return "Integrating Factor Euler";}
   I_Euler(T *parent) : E_RK<T>(parent,1,1) {
     RK::allocate();
-//    this->A[0][0]=1.0;
+    this->A[0][0]=1.0;
   }
 
   inline void TimestepDependence() {
@@ -162,14 +162,13 @@ public:
 
   E_PC(T *parent) : E_RK<T>(parent,2,2) {
     RK::allocate();
-    /*
+
     this->A[0][0]=1.0;
 
     this->A[1][0]=0.5;
     this->A[1][1]=0.5;
 
     this->B[0]=1.0;
-    */
   }
 
   inline void TimestepDependence() {
@@ -196,12 +195,10 @@ public:
   E_RK2(T *parent) : E_RK<T>(parent,2,2) {
     RK::allocate();
 
-    /*
     this->A[0][0]=0.5;
     this->A[1][1]=1.0;
 
     this->B[0]=1.0;
-    */
   }
 
   inline void TimestepDependence() {
@@ -234,7 +231,6 @@ public:
   E_RK3(T *parent) : E_RK<T>(parent,3,4,true) {
     RK::allocate();
 
-    /*
     this->A[0][0]=0.5;
 
     this->A[1][1]=0.75;
@@ -247,7 +243,6 @@ public:
     this->B[1]=0.25;
     this->B[2]=1.0/3.0;
     this->B[3]=0.125;
-    */
   }
 
   inline void TimestepDependence() {
@@ -303,31 +298,29 @@ public:
   E_RK43ZB(T *parent) : E_RK<T>(parent,4,5,false) {
     RK::allocate();
 
-    /*
     this->A[0][0]=1.0/6.0;
 
-    this->A[1][0]=1.0/3.0;
-    this->A[1][1]=
+    this->A[1][0]=-0.5;
+    this->A[1][1]=1.0;
 
-    this->A[2][0]=
-    this->A[2][1]=
-    this->A[2][2]=
+    this->A[2][0]=-2.5;
+    this->A[2][1]=3.5;
+    this->A[2][2]=-0.5;
 
-    this->A[3][0]=
-    this->A[3][1]=
-    this->A[3][2]=
-    this->A[3][3]=
+    this->A[3][0]=1.0;
+    this->A[3][1]=-1.5;
+    this->A[3][2]=2.0;
+    this->A[3][3]=-0.5;
 
-    this->A[4][0]=
-    this->A[4][1]=
-    this->A[4][2]=
-    this->A[4][3]=
-    this->A[4][4]=
+    this->A[4][0]=1.0/6.0;
+    this->A[4][1]=0.0;
+    this->A[4][2]=5.0/6.0;
+    this->A[4][3]=-1.0/6.0;
+    this->A[4][4]=1.0/6.0;
 
     for(int i=0; i < 4; ++i)
       this->B[i]=this->A[3][i];
     this->B[4]=0.0;
-    */
   }
 
   inline void TimestepDependence() {

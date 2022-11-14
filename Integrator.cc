@@ -7,9 +7,9 @@ inline void IntegratorBase::ChangeTimestep(double dtnew)
 {
   // New time step must be <= sample.
   if(sample > 0.0 && dtnew > sample) dtnew=sample;
-	
+
   if(abs(dt-dtnew) <= tprecision*abs(dt)) return; // Don't adjust time step.
-	
+
   if(verbose > 1) cout << newl << "Time step changed from " << dt <<
 		    " to " << dtnew << " at t=" << t << "." << endl;
   if(dtnew < DBL_MIN) msg(ERROR,"Zero time step encountered");
@@ -20,7 +20,7 @@ inline void IntegratorBase::ChangeTimestep(double dtnew)
 static clock_t realtime,lasttime=0;
 static const int nperline=10;
 
-void IntegratorBase::Integrate(double& t0, double tmax, 
+void IntegratorBase::Integrate(double& t0, double tmax,
 			       double& dt0, double sample0,
 			       long long& iteration, unsigned long& nout)
   // Don't dump or microprocess if sample is negative.
@@ -30,31 +30,31 @@ void IntegratorBase::Integrate(double& t0, double tmax,
   int it,itx;
   bool cont;
   int final=1;
-  
+
   t=t0;
   sample=sample0;
-  
+
   const int forwards=(tmax >= t);
   const double sign=(forwards ? 1.0 : -1.0);
-	
+
   double tstop=((sample > 0.0) ? 0.0 : tmax);
   dt=min(dt0/Microfactor(),dtmax);
   dt *= sign;
   if(dt == 0.0) msg(ERROR,"Zero time step encountered");
-	
+
   TimestepDependence();
   microprocess=(sample >= 0.0) ? Problem->Microprocess() : 0;
-	
+
   first=true;
-  
+
   // Main integration loop
   for(it=0; it < itmax && (forwards ? t < tmax : t > tmax); it++) {
-		
+
     if(verbose) {
       if((it % nperline) == 0) cout << newl;
       cout << "[" << it << flush;
     }
-		
+
     unsigned long count=nout;
     if(sample == 0.0) dump(t0=t,it,0,tmax);
     else if(sample > 0) {
@@ -68,10 +68,10 @@ void IntegratorBase::Integrate(double& t0, double tmax,
 	if(dtorig) {ChangeTimestep(dtorig); dtorig=0.0;}
       }
     }
-		
+
     statistics(t,dt,it);
     nout=count;
-		
+
     for(itx=0; itx < microsteps; itx++) {
       if(microprocess) Problem->Microprocess();
       if(polltime) {
@@ -81,7 +81,7 @@ void IntegratorBase::Integrate(double& t0, double tmax,
 	  lasttime=realtime;
 	}
       }
-			
+
       if(forwards ? t+dt > tstop : t+dt < tstop) {
 	if(abs(tstop-t) <= tprecision*abs(tstop)) t=tstop;
 	if(t >= tstop) break;
@@ -102,7 +102,7 @@ void IntegratorBase::Integrate(double& t0, double tmax,
 	  break;
 	case SUCCESSFUL:
 	  t += dt;
-//	  if(dtold) {ChangeTimestep(dtold); dtold=0.0;}  
+//	  if(dtold) {ChangeTimestep(dtold); dtold=0.0;}
 	  cont=false;
 	  break;
 	case NONINVERTIBLE:
@@ -112,23 +112,23 @@ void IntegratorBase::Integrate(double& t0, double tmax,
 	  break;
 	case UNSUCCESSFUL:
 	  ExtrapolateTimestep();
-	  if(sign*dt <= dtmin) 
+	  if(sign*dt <= dtmin)
 	    msg(ERROR,"Minimum timestep restriction violated");
 	  ChangeTimestep(sign*max(sign*dt*shrinkfactor,dtmin));
 	}
       } while(cont);
       iteration++;
     }
-    
+
     microsteps=(int) (microsteps*microfactor);
-    
+
     Unswap();
-    
+
     if(verbose) cout << "] ";
   }
 
   cout << newl;
-  
+
   if(verbose && forwards ? t >= tmax : t <= tmax)
     cout << newl << "REACHED t=" << t << "." << endl;
 
@@ -137,7 +137,7 @@ void IntegratorBase::Integrate(double& t0, double tmax,
   if(sample >= 0.0) dump(t0,it,final,tmax);
   dt0=dt*sign;
   statistics(t0,dt0,it);
-}	
+}
 
 void IntegratorBase::SetProblem(ProblemBase& problem)
 {
@@ -163,31 +163,31 @@ void IntegratorBase::Alloc0(vector2& Y, vector& y)
   for(unsigned int i=0; i < ny; i++) y[i]=0.0;
 }
 
-void IntegratorBase::Allocator(const vector2& Y0, 
+void IntegratorBase::Allocator(const vector2& Y0,
 			       DynVector<unsigned int>* NY0,
 			       const ivector& errmask0, size_t Align)
 {
   check_compatibility(DEBUG);
-  
+
   align=Align;
   unsigned int nfields=Y0.Size();
   ny=0;
   NY.SetDynVector(*NY0);
   for(unsigned int i=0; i < nfields; i++)
     ny += NY[i];
-  
+
   Dimension(Y,Y0);
   Alloc0(Src,source);
-  
+
   Dimension(errmask,errmask0);
   Dimension(Yout,Y0);
   Dimension(y,ny,(Var *) (Y0[0]));
-  
+
   pgrow=(order > 0) ? 0.5/order : 0;
   pshrink=(order > 1) ? 0.5/(order-1) : pgrow;
-  
+
   Allocator();
-  
+
   if(Problem->Stochastic())
     FSAL=false;
 }
@@ -219,11 +219,11 @@ Solve_RC SYM1::Solve()
 Solve_RC PC::Solve()
 {
   Solve_RC flag;
-  
+
   initialize();
-  
+
   Problem->Transform(Y0,t,dt,YI);
-	
+
   Predictor(0,ny);
 
   if(Corrector(0,ny)) {
@@ -233,7 +233,7 @@ Solve_RC PC::Solve()
     flag=NONINVERTIBLE;
     new_y0=false;
   }
-  
+
   if(new_y0) {
     Problem->BackTransform(Y,t+dt,dt,YI);
     Problem->Stochastic(Y,t,dt);
@@ -241,7 +241,7 @@ Solve_RC PC::Solve()
     swaparray(Y0,YI);
     Set(y0,Y0[0]);
   }
-  
+
   return flag;
 }
 
@@ -269,7 +269,7 @@ int PC::Corrector(unsigned int start, unsigned int stop)
       y[j]=y0[j]+halfdt*(source0[j]+source[j]);
     }
   }
-	
+
   return 1;
 }
 
@@ -303,7 +303,7 @@ int SYM2::Corrector(unsigned int start, unsigned int stop)
     for(unsigned int j=start; j < stop; j += 2)
       y[j] += halfdt*source[j];
   }
-	
+
   return 1;
 }
 
@@ -311,11 +311,11 @@ Solve_RC AB2::Solve()
 {
   Solve_RC flag=UNSUCCESSFUL;
   errmax=0.0;
-  
+
   swaparray(Y0,Y);
   Set(y,Y[0]);
   Set(y0,Y0[0]);
-  
+
   switch(init) {
   case 0:
     {
@@ -351,7 +351,7 @@ Solve_RC AB2::Solve()
     Problem->BackTransform(Y,t+dt,dt,YI);
     Source(Src,Y,t);
     double halfdt=0.5*dt;
-    for(unsigned int j=0; j < ny; j++) 
+    for(unsigned int j=0; j < ny; j++)
       y[j]=y0[j]+halfdt*(source0[j]+source[j]);
     Problem->BackTransform(Y,t+dt,dt,YI);
     flag=SUCCESSFUL;
@@ -359,7 +359,7 @@ Solve_RC AB2::Solve()
     break;
     }
   }
-  
+
   Problem->Stochastic(Y,t,dt);
   return flag;
 }
@@ -368,11 +368,11 @@ Solve_RC ABM3::Solve()
 {
   Solve_RC flag=UNSUCCESSFUL;
   errmax=0.0;
-  
+
   swaparray(Y0,Y);
   Set(y,Y[0]);
   Set(y0,Y0[0]);
-  
+
   switch(init) {
   case 0:
     {
@@ -382,7 +382,7 @@ Solve_RC ABM3::Solve()
     Set(source,Src[0]);
     Source(Src0,Y0,t);
     Problem->Transform(Y0,t,dt,YI);
-    for(unsigned int j=0; j < ny; j++) 
+    for(unsigned int j=0; j < ny; j++)
       y[j]=y0[j]+a0*source0[j]+a1*source1[j]+a2*source[j];
     Problem->BackTransform(Y,t+dt,dt,YI);
     Source(Src,Y,t);
@@ -415,7 +415,7 @@ Solve_RC ABM3::Solve()
     Problem->BackTransform(Y,t+dt,dt,YI);
     Source(Src,Y,t);
     double halfdt=0.5*dt;
-    for(unsigned int j=0; j < ny; j++) 
+    for(unsigned int j=0; j < ny; j++)
       y[j]=y0[j]+halfdt*(source0[j]+source[j]);
     Problem->BackTransform(Y,t+dt,dt,YI);
     flag=SUCCESSFUL;
@@ -423,7 +423,7 @@ Solve_RC ABM3::Solve()
     break;
     }
   }
-  
+
   Problem->Stochastic(Y,t,dt);
   return flag;
 }
@@ -434,9 +434,9 @@ Solve_RC Midpoint::Solve()
   swaparray(Y0,Y);
   Set(y,Y[0]);
   Set(y0,Y0[0]);
-  
+
   Source(Src,Y0,t);
-  
+
   Problem->Transform(Y0,t,dt,YI);
   for(int i=0; i < niterations; i++) {
     for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+halfdt*source[j];
@@ -445,7 +445,7 @@ Solve_RC Midpoint::Solve()
   }
   for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+dt*source[j];
   Problem->BackTransform(Y,t+dt,dt,YI);
-	
+
   Problem->Stochastic(Y,t,dt);
   return SUCCESSFUL;
 }
@@ -461,7 +461,7 @@ void LeapFrog::Predictor(unsigned int start, unsigned int stop)
   Problem->BackTransform(YP,t+halfdt,dtprime,YP0);
   lasthalfdt=halfdt;
 }
-	
+
 int LeapFrog::Corrector(unsigned int start, unsigned int stop)
 {
   CSource(Src,YP,t+halfdt);
@@ -469,7 +469,7 @@ int LeapFrog::Corrector(unsigned int start, unsigned int stop)
 #pragma omp parallel for num_threads(threads)
     for(unsigned int j=start; j < stop; j++) {
       Var val=y0[j]+dt*source[j];
-      if(!Active(errmask) || errmask[j]) 
+      if(!Active(errmask) || errmask[j])
 	CalcError(y0[j],val,y0[j]+dt*source0[j],val);
       y[j]=val;
     }
@@ -483,6 +483,7 @@ int LeapFrog::Corrector(unsigned int start, unsigned int stop)
 }
 
 int RK::Corrector(unsigned int start, unsigned int stop) {
+
   if(dynamic) {
     if(FSAL) {
       RK::Stage(Astages-1,start,stop);
