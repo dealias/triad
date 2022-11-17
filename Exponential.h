@@ -21,6 +21,8 @@ public:
   E_RK(T *parent, int order, int nstages, bool fsal=false) :
     RK(order,nstages,fsal), parent(parent) {}
 
+  bool Exponential() {return true;}
+
   void Allocator() {
     RK::Allocator();
     unsigned int stop0,start0; // Unused

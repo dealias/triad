@@ -100,6 +100,8 @@ public:
 
   virtual bool fsal() {return FSAL;}
 
+  virtual bool Exponential() {return false;}
+
   unsigned int Ny() {
     return ny;
   }
