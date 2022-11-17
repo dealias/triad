@@ -25,14 +25,14 @@
 #include "Array.h"
 
 namespace Array {
-  
+
 template<class T>
 class Array1H : public array1<T> {
 public:
   Array1H() {}
   Array1H(unsigned int mx) {this->Allocate(mx);}
   Array1H(unsigned int mx, T *v0) {this->Dimension(mx,v0);}
-  
+
   void set(int ix, T a) const {
     if(ix >= 0)
       array1<T>::operator()(ix)=a;
@@ -51,13 +51,13 @@ public:
   }
   Array1H<T>& operator = (T a) {Load(a); return *this;}
 };
-  
+
 #undef __check
 
 #ifdef NDEBUG
 #define __check(i,n,o,dim,m)
 #else
-#define __check(i,n,o,dim,m) Check(i-o,n,dim,m,o)
+#define __check(i,n,o,dim,m) this->Check(i-o,n,dim,m,o)
 #endif
 
 template<class T>
@@ -68,7 +68,7 @@ public:
     Dimension(pos,mx,vpos);
     Dimension(neg,mx,vneg);
   }
-  
+
   void set(int ix, T a) const {
     if(ix >= 0)
       pos(ix)=a;
@@ -83,7 +83,7 @@ public:
       return conj(neg(-ix));
   }
 };
-  
+
 template<class T>
 class Array2H : public Array2<T> {
 public:
@@ -108,7 +108,7 @@ public:
     else
       return conj(Array2<T>::operator()(-ix,-iy));
   }
-  
+
   Array1HH<T> operator [] (int ix) const {
     __check(ix,this->nx,this->ox,2,1);
     return Array1HH<T>(this->ny,
