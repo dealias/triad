@@ -36,8 +36,7 @@ namespace Array {
 #define __checkActivate(i,align) this->CheckActivate(i,align)
 #endif
 
-// 2*(nx+1)*ny Array corresponding to compact 2D Hermitian "half
-// plane", excluding origin.
+// Container for storing compact 2D Hermitian "half plane", excluding origin.
 template<class T>
 class array2h : public array1<T> {
 protected:
