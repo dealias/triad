@@ -158,7 +158,7 @@ int check_match(int match_type, const char *object, const char *key, int warn)
   return 1;
 }
 
-unsigned int atou(const char *s)
+size_t atou(const char *s)
 {
   return atoi(s);
 }
@@ -232,6 +232,6 @@ char *output_filename(char *basename, char *suffix)
 }
 
 Complex *out_base;
-Real out_re(unsigned int i) {return out_base[i].re;}
-Real out_im(unsigned int i) {return out_base[i].im;}
+Real out_re(size_t i) {return out_base[i].re;}
+Real out_im(size_t i) {return out_base[i].im;}
 

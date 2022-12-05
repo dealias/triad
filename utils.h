@@ -134,12 +134,12 @@ inline int max(int a, int b)
   return (a > b) ? a : b;
 }
 
-inline unsigned int min(unsigned int a, unsigned int b)
+inline size_t min(size_t a, size_t b)
 {
   return (a < b) ? a : b;
 }
 
-inline unsigned int max(unsigned int a, unsigned int b)
+inline size_t max(size_t a, size_t b)
 {
   return (a > b) ? a : b;
 }
@@ -362,17 +362,17 @@ inline void LeastSquaresFit(unsigned n, Real *x, Real *y, Real &m, Real &b)
 
 char *atos(const char *s);
 Complex atoc(const char *s);
-unsigned int atou(const char *s);
+size_t atou(const char *s);
 
 const int default_nperline=4;
 
 const char *const outerror="Cannot write %s to output stream";
 
 template<class T>	
-inline void out_curve(ofstream& os, T *f, const char *text, unsigned int n=1,
+inline void out_curve(ofstream& os, T *f, const char *text, size_t n=1,
 		      int nperline=default_nperline)
 {
-  unsigned int i;
+  size_t i;
   os << "# " << text << newl;
   if(n == 0) return;
   for(i=0; i < n-1;) {
@@ -384,19 +384,19 @@ inline void out_curve(ofstream& os, T *f, const char *text, unsigned int n=1,
 }
 
 template<class T>	
-inline void out_curve(oxstream& os, T *f, const char *text, unsigned int n=1,
+inline void out_curve(oxstream& os, T *f, const char *text, size_t n=1,
 		      int=default_nperline)
 {
   os << n;
-  for(unsigned int i=0; i < n; i++) os << f[i];
+  for(size_t i=0; i < n; i++) os << f[i];
   if(!os) msg(WARNING,outerror,text);
 }
 
 template<class T>
-inline void out_curve(ofstream& os, T (*f)(unsigned int), const char *text,
-		      unsigned int n, int nperline=default_nperline)
+inline void out_curve(ofstream& os, T (*f)(size_t), const char *text,
+		      size_t n, int nperline=default_nperline)
 {
-  unsigned int i;
+  size_t i;
   os << "# " << text << newl;
   if(n == 0) return;
   for(i=0; i < n-1;) {
@@ -408,11 +408,11 @@ inline void out_curve(ofstream& os, T (*f)(unsigned int), const char *text,
 }
 
 template<class T>
-inline void out_curve(oxstream& os, T (*f)(unsigned int), const char *text,
-		      unsigned int n, int=default_nperline) 
+inline void out_curve(oxstream& os, T (*f)(size_t), const char *text,
+		      size_t n, int=default_nperline) 
 {
   os << n;
-  for(unsigned int i=0; i < n; i++) os << (*f)(i);
+  for(size_t i=0; i < n; i++) os << (*f)(i);
   if(!os) msg(WARNING,outerror,text);
 }
 

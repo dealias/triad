@@ -24,7 +24,7 @@ class Table {
   const char *name;
   Compare_t *Compare;
   KeyCompare_t *KeyCompare;
-  unsigned int n;
+  size_t n;
   DynVector<EntryBase<B> *>list;
  public:
   static int DefaultCompare(const void *a, const void *b) {
@@ -41,11 +41,11 @@ class Table {
   Table(const char *name) : name(name), Compare(DefaultCompare),
 			    KeyCompare(DefaultKeyCompare), n(0) {}
   void Add(EntryBase<B> *ptr) {list[n++]=ptr;}
-  unsigned int Size() {return n;}
+  size_t Size() {return n;}
   EntryBase<B> **Base() {return list;}
-  EntryBase<B> *Entry(unsigned int i) {return list[i];}
+  EntryBase<B> *Entry(size_t i) {return list[i];}
   void List(ostream& os) {
-    for(unsigned int i=0; i < Size(); i++) os << Entry(i)->Key() << newl;
+    for(size_t i=0; i < Size(); i++) os << Entry(i)->Key() << newl;
     os << flush;
   }
   B *Locate (const char *& key) {

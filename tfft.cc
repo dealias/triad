@@ -10,22 +10,22 @@ extern "C" void CCFFT(const int& isign, const int& n, const Real& scale,
 typedef int *pint;
 typedef Real *pReal;
 
-void fft(Complex *data, unsigned int log2n, int isign, Real scale, int)
+void fft(Complex *data, size_t log2n, int isign, Real scale, int)
 {
   static int TableSize=0;
-  static unsigned int *nTable=NULL;
+  static size_t *nTable=NULL;
   static Real **table=NULL,**work=NULL;
   const int isys=0;
   const int zero=0;
   int j;
 	
-  unsigned int n=1 << log2n;
+  size_t n=1 << log2n;
 	
   for(j=0; j < TableSize; j++) if(n == nTable[j]) break;
 	
   if(j == TableSize) {
     TableSize++;
-    nTable=new(nTable,TableSize) unsigned int;
+    nTable=new(nTable,TableSize) size_t;
     table=new(table,TableSize) pReal;
     work=new(work,TableSize) pReal;
     nTable[j]=n;
@@ -48,10 +48,10 @@ void fft(Complex *data, unsigned int log2n, int isign, Real scale, int)
 // On exit:  data contains the n Complex Fourier values for each k=0,...,nk-1.
 // Note: When computing an inverse transform, the result must be divided by n.
 
-void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
-	  unsigned int inc1, unsigned int inc2, Real scale, int)
+void mfft(Complex *data, size_t log2n, int isign, size_t nk,
+	  size_t inc1, size_t inc2, Real scale, int)
 {
-  static unsigned int data2size=0;
+  static size_t data2size=0;
   static Complex *data2=NULL;
 	
   if(inc1 == 1) {
@@ -62,11 +62,11 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 	
   if(inc1 == 0) inc1=nk;
 	
-  unsigned int n=1 << log2n;
+  size_t n=1 << log2n;
   if(n > data2size) data2=new(data2,data2size=n) Complex;
 
-  unsigned int kstop=nk*inc2;
-  for(unsigned int k=0; k < kstop; k += inc2) {
+  size_t kstop=nk*inc2;
+  for(size_t k=0; k < kstop; k += inc2) {
     Complex *p,*p0=data+k;
     Complex *q,*qstop=data2+n;
     for(p=p0, q=data2; q < qstop; p += inc1) *(q++)=*p;
@@ -75,15 +75,15 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
   }
 }
 
-void mrcfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
-	    unsigned int inc1, unsigned int inc2, Real scale, int bitreverse)
+void mrcfft(Complex *data, size_t log2n, int isign, size_t nk,
+	    size_t inc1, size_t inc2, Real scale, int bitreverse)
 {		 
   assert(inc1 == 1);
   mrcfft0(data,log2n,isign,nk,inc1,inc2,scale,bitreverse);
 }
 
-void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
-	    unsigned int inc1, unsigned int inc2, Real scale, int bitreverse)
+void mcrfft(Complex *data, size_t log2n, int isign, size_t nk,
+	    size_t inc1, size_t inc2, Real scale, int bitreverse)
 {		 
   assert(inc1 == 1);
   mcrfft0(data,log2n,isign,nk,inc1,inc2,scale,bitreverse);

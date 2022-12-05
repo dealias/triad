@@ -72,13 +72,13 @@ extern MultiProblem *MProblem;
 void MultiIntegrator::Allocator(ProblemBase& problem, size_t Align)
 {
   const vector2& YP=problem.YVector();
-  DynVector<unsigned int>* NYP=problem.Sizes();
+  DynVector<size_t>* NYP=problem.Sizes();
   align=Align;
   
   ny=0;
   NY.SetDynVector(*NYP);
-  unsigned int nfields=YP.Size();
-  for(unsigned int i=0; i < nfields; i++)
+  size_t nfields=YP.Size();
+  for(size_t i=0; i < nfields; i++)
     ny += NY[i];
   
   Dimension(Y,YP);

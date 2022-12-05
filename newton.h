@@ -4,9 +4,9 @@
 #include "precision.h"
 
 bool newton(Real &x, Real (*f)(Real x), Real (*dfdx)(Real x),
-	    bool verbose=false, unsigned int MaxIterations=100);
+	    bool verbose=false, size_t MaxIterations=100);
 
 bool newton(Real &x1, Real x2, Real (*f)(Real x), Real (*dfdx)(Real x),
-	    bool verbose=false, unsigned int MaxIterations=100);
+	    bool verbose=false, size_t MaxIterations=100);
 
 #endif

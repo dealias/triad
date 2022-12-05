@@ -14,7 +14,7 @@ namespace Array {
 // Compute the eigenvalues of a square complex matrix
 const Array1<Complex> eigen(const Array2<Complex>& A)
 {
-  unsigned int n=A.Nx();
+  size_t n=A.Nx();
   assert(n == A.Ny());
 	
   Array2<Complex> B(n,n);

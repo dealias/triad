@@ -6,7 +6,7 @@
 namespace Array {
   
 template<class T, class S>
-inline void CheckReallocate(T& A, S& B, unsigned int n, unsigned int& old)
+inline void CheckReallocate(T& A, S& B, size_t n, size_t& old)
 {
   if(n > old) {Reallocate(A,n); Reallocate(B,n); old=n;}
 }
@@ -14,7 +14,7 @@ inline void CheckReallocate(T& A, S& B, unsigned int n, unsigned int& old)
 
 template<class T, class S, class U>
 inline void CheckReallocate(T& A, S& B, U& C,
-			    unsigned int n, unsigned int& old)
+			    size_t n, size_t& old)
 {
   if(n > old) {Reallocate(A,n); Reallocate(B,n); Reallocate(C,n); old=n;}
 }
@@ -34,7 +34,7 @@ inline void CheckReallocate(T& A, S& B, U& C,
 // Note: u and f need not be distinct.
 
 template<class T, class C>
-inline void tridiagonal(unsigned int n,
+inline void tridiagonal(size_t n,
 			const typename array1<T>::opt& u,
 			const typename array1<T>::opt& f,
 			const typename array1<C>::opt& c,
@@ -48,17 +48,17 @@ inline void tridiagonal(unsigned int n,
   u[1]=(f[1]-c[1]*u[0])*temp;
   work[1]=-b[1]*temp;
 	
-  for(unsigned int i=2; i <= n; i++) {
+  for(size_t i=2; i <= n; i++) {
     C temp=1.0/(a[i]+c[i]*work[i-1]);
     u[i]=(f[i]-c[i]*u[i-1])*temp;
     work[i]=-b[i]*temp;
   }
 
-  for(unsigned int i=n; i >= 1; i--) u[i] += work[i]*u[i+1];
+  for(size_t i=n; i >= 1; i--) u[i] += work[i]*u[i+1];
 }
 
 template<class T, class C>
-inline void tridiagonal(unsigned int n,
+inline void tridiagonal(size_t n,
 			const typename array1<T>::opt& u,
 			const typename array1<T>::opt& f,
 			const typename array1<C>::opt& c,
@@ -66,7 +66,7 @@ inline void tridiagonal(unsigned int n,
 			const typename array1<C>::opt& b)
 {
   static typename array1<C>::opt work;
-  static unsigned int size=0;
+  static size_t size=0;
   CheckReallocate(work,n+1,size);
   tridiagonal<T,C>(n,u,f,c,a,b,work);
 }
@@ -90,20 +90,20 @@ inline void tridiagonal(unsigned int n,
 // Note: u and f need not be distinct.
 
 template<class T, class C>
-inline void mtridiagonal(unsigned int n,
+inline void mtridiagonal(size_t n,
 			 const typename array1<T>::opt& u,
 			 const typename array1<T>::opt& f,
 			 const typename array1<C>::opt& c,
 			 const typename array1<C>::opt& a,
 			 const typename array1<C>::opt& b,
-			 unsigned int m, unsigned int inc1, unsigned int inc2,
+			 size_t m, size_t inc1, size_t inc2,
 			 const typename array1<C>::opt& work)
 {
-  unsigned int jstop=m*inc2;
+  size_t jstop=m*inc2;
 		
 #ifndef _CRAYMVP
   if(inc1 == 1) {
-    for(unsigned int j=0; j < jstop; j += inc2) 
+    for(size_t j=0; j < jstop; j += inc2) 
       tridiagonal<T,C>(n,u+j,f+j,c+j,a+j,b+j,work);
     return;
   }
@@ -113,18 +113,18 @@ inline void mtridiagonal(unsigned int n,
 
   typename array1<C>::opt ai=a+inc1, bi=b+inc1, ci=c+inc1, worki=work+inc1;
   typename array1<T>::opt fi=f+inc1, ui=u+inc1;
-  for(unsigned int j=0; j < jstop; j += inc2) {
+  for(size_t j=0; j < jstop; j += inc2) {
     C temp=1.0/ai[j];
     ui[j]=(fi[j]-ci[j]*u[j])*temp;
     worki[j]=-bi[j]*temp;
   }
 	
-  for(unsigned int i=2; i <= n; i++) {
+  for(size_t i=2; i <= n; i++) {
     ai += inc1; bi += inc1; ci += inc1;
     typename array1<C>::opt workim1=worki;
     typename array1<T>::opt uim1=ui;
     worki += inc1; ui += inc1; fi += inc1;
-    for(unsigned int j=0; j < jstop; j += inc2) {
+    for(size_t j=0; j < jstop; j += inc2) {
       C temp=1.0/(ai[j]+ci[j]*workim1[j]);
       ui[j]=(fi[j]-ci[j]*uim1[j])*temp;
       worki[j]=-bi[j]*temp;
@@ -132,8 +132,8 @@ inline void mtridiagonal(unsigned int n,
   }
 
   typename array1<T>::opt uip1=ui+inc1;
-  for(unsigned int i=n; i >= 1; i--) {
-    for(unsigned int j=0; j < jstop; j += inc2) {
+  for(size_t i=n; i >= 1; i--) {
+    for(size_t j=0; j < jstop; j += inc2) {
       ui[j] += worki[j]*uip1[j];
     }
     worki -= inc1; uip1=ui; ui -= inc1;
@@ -141,16 +141,16 @@ inline void mtridiagonal(unsigned int n,
 }
 
 template<class T, class C>
-inline void mtridiagonal(unsigned int n,
+inline void mtridiagonal(size_t n,
 			 const typename array1<T>::opt& u,
 			 const typename array1<T>::opt& f,
 			 const typename array1<C>::opt& c,
 			 const typename array1<C>::opt& a,
 			 const typename array1<C>::opt& b,
-			 unsigned int m, unsigned int inc1, unsigned int inc2)
+			 size_t m, size_t inc1, size_t inc2)
 {
   static typename array1<C>::opt work;
-  static unsigned int size=0;
+  static size_t size=0;
   CheckReallocate(work,n*inc1+m*inc2,size);
   mtridiagonal<T,C>(n,u,f,c,a,b,m,inc1,inc2,work);
 }
@@ -171,7 +171,7 @@ inline void mtridiagonal(unsigned int n,
 // Note: u and f need not be distinct.
 
 template<class T, class C>
-inline void tridiagonalp(unsigned int n,
+inline void tridiagonalp(size_t n,
 			 const typename array1<T>::opt& u,
 			 const typename array1<T>::opt& f,
 			 const typename array1<C>::opt& c,
@@ -198,7 +198,7 @@ inline void tridiagonalp(unsigned int n,
   T fn=f[n]-beta*u[1];
   C alpha=a[n]-beta*delta[1];
 
-  for(unsigned int i=2; i <= n-2; i++)	{
+  for(size_t i=2; i <= n-2; i++)	{
     C alphainv=1/(a[i]-c[i]*gamma[i-1]);
     beta *= -gamma[i-1];
     gamma[i]=b[i]*alphainv;
@@ -215,12 +215,12 @@ inline void tridiagonalp(unsigned int n,
   T temp=u[0]=u[n]=(fn-beta*u[n-1])/(alpha-beta*dnm1);
   u[n-1] -= dnm1*temp;
 	
-  for(unsigned int i=n-2; i >= 1; i--) u[i] -= gamma[i]*u[i+1]+delta[i]*temp;
+  for(size_t i=n-2; i >= 1; i--) u[i] -= gamma[i]*u[i+1]+delta[i]*temp;
   u[n+1]=u[1];
 }
 
 template<class T, class C>
-inline void tridiagonalp(unsigned int n,
+inline void tridiagonalp(size_t n,
 			 const typename array1<T>::opt& u,
 			 const typename array1<T>::opt& f,
 			 const typename array1<C>::opt& c,
@@ -229,7 +229,7 @@ inline void tridiagonalp(unsigned int n,
 {
   if(n < 1) ArrayExit("Invalid matrix size");
   static typename array1<C>::opt gamma,delta;
-  static unsigned int size=0;
+  static size_t size=0;
   CheckReallocate(gamma,delta,n-1,size);
   tridiagonalp<T,C>(n,u,f,c,a,b,gamma,delta);
 }
@@ -255,7 +255,7 @@ inline void tridiagonalp(unsigned int n,
 // Note: u and f need not be distinct.
 
 template<class T, class C>
-inline void tridiagonalP(unsigned int n,
+inline void tridiagonalP(size_t n,
 			 const typename array1<T>::opt& u,
 			 const typename array1<T>::opt& f,
 			 const typename array1<C>::opt& c,
@@ -280,7 +280,7 @@ inline void tridiagonalP(unsigned int n,
   C beta=b[n];
   C alpha=a[n]-beta*delta;
 
-  for(unsigned int i=2; i <= n-2; i++)	{
+  for(size_t i=2; i <= n-2; i++)	{
     C alphainv=1/(a[i]-c[i]*gamma[i-1]);
     beta *= -gamma[i-1];
     gamma[i]=b[i]*alphainv;
@@ -292,12 +292,12 @@ inline void tridiagonalP(unsigned int n,
   u[n]=u[0]=0.0;
   u[n-1]=(f[n-1]-c[n-1]*u[n-2])/(a[n-1]-c[n-1]*gamma[n-2]);
 	
-  for(unsigned int i=n-2; i >= 1; i--) u[i] -= gamma[i]*u[i+1];
+  for(size_t i=n-2; i >= 1; i--) u[i] -= gamma[i]*u[i+1];
   u[n+1]=u[1];
 }
 
 template<class T, class C>
-inline void tridiagonalP(unsigned int n,
+inline void tridiagonalP(size_t n,
 			 const typename array1<T>::opt& u,
 			 const typename array1<T>::opt& f,
 			 const typename array1<C>::opt& c,
@@ -306,7 +306,7 @@ inline void tridiagonalP(unsigned int n,
 {
   if(n < 1) ArrayExit("Invalid matrix size");
   static typename array1<C>::opt gamma;
-  static unsigned int size=0;
+  static size_t size=0;
   CheckReallocate(gamma,n-1,size);
   tridiagonalP<T,C>(n,u,f,c,a,b,gamma);
 }
@@ -337,24 +337,24 @@ inline void tridiagonalP(unsigned int n,
 // Note: u and f need not be distinct.
 
 template<class T, class C>
-inline void mtridiagonalp(unsigned int n,
+inline void mtridiagonalp(size_t n,
 			  const typename array1<T>::opt& u,
 			  const typename array1<T>::opt& f,
 			  const typename array1<C>::opt& c,
 			  const typename array1<C>::opt& a,
 			  const typename array1<C>::opt& b,
-			  unsigned int m, unsigned int inc1, unsigned int inc2,
+			  size_t m, size_t inc1, size_t inc2,
 			  const typename array1<T>::opt& Fn,
 			  const typename array1<C>::opt& alpha,
 			  const typename array1<C>::opt& beta,
 			  const typename array1<C>::opt& gamma,
 			  const typename array1<C>::opt& delta)
 {
-  unsigned int jstop=m*inc2;
+  size_t jstop=m*inc2;
 		
 #ifndef _CRAYMVP
   if(inc1 == 1) {
-    for(unsigned int j=0; j < jstop; j += inc2)
+    for(size_t j=0; j < jstop; j += inc2)
       tridiagonalp<T,C>(n,u+j,f+j,c+j,a+j,b+j,gamma,delta);
     return;
   }
@@ -365,7 +365,7 @@ inline void mtridiagonalp(unsigned int n,
   if(n == 1) {
     typename array1<C>::opt a1=a+inc1;
     typename array1<T>::opt u1=u+inc1, u2=u1+inc1, f1=f+inc1;
-    for(unsigned int j=0; j < jstop; j += inc2) u2[j]=u1[j]=u[j]=f1[j]/a1[j];
+    for(size_t j=0; j < jstop; j += inc2) u2[j]=u1[j]=u[j]=f1[j]/a1[j];
     return;
   }
 	
@@ -373,7 +373,7 @@ inline void mtridiagonalp(unsigned int n,
     typename array1<T>::opt u1=u+inc1, u2=u1+inc1, u3=u2+inc1;
     typename array1<T>::opt f1=f+inc1, f2=f1+inc1;
     typename array1<C>::opt a1=a+inc1, a2=a1+inc1, c1=c+inc1, b2=b+2*inc1;
-    for(unsigned int j=0; j < jstop; j += inc2) {
+    for(size_t j=0; j < jstop; j += inc2) {
       C factor=1.0/(a1[j]*a2[j]-c1[j]*b2[j]);
       T temp=(a2[j]*f1[j]-c1[j]*f2[j])*factor;
       u2[j]=u[j]=(a1[j]*f2[j]-b2[j]*f1[j])*factor;
@@ -382,13 +382,13 @@ inline void mtridiagonalp(unsigned int n,
     return;
   }
 	
-  unsigned int ninc1=n*inc1;
+  size_t ninc1=n*inc1;
   typename array1<C>::opt an=a+ninc1, bn=b+ninc1, cn=c+ninc1, fn=f+ninc1;
   typename array1<C>::opt ai=a+inc1, bi=b+inc1, ci=c+inc1;
   typename array1<C>::opt gammai=gamma+inc1, deltai=delta+inc1;
   typename array1<T>::opt ui=u+inc1, fi=f+inc1;
 	
-  for(unsigned int j=0, k=0; j < jstop; j += inc2, k++) {
+  for(size_t j=0, k=0; j < jstop; j += inc2, k++) {
     C ainv=1.0/ai[j];
     gammai[j]=bi[j]*ainv;
     deltai[j]=ci[j]*ainv;
@@ -398,12 +398,12 @@ inline void mtridiagonalp(unsigned int n,
     alpha[k]=an[j]-beta0*deltai[j];
   }
 
-  for(unsigned int i=2; i <= n-2; i++) {
+  for(size_t i=2; i <= n-2; i++) {
     ai += inc1; bi += inc1; ci += inc1;
     typename array1<C>::opt gammaim1=gammai, deltaim1=deltai;
     typename array1<T>::opt uim1=ui;
     gammai += inc1; deltai += inc1; ui += inc1; fi += inc1;
-    for(unsigned int j=0, k=0; j < jstop; j += inc2, k++) {
+    for(size_t j=0, k=0; j < jstop; j += inc2, k++) {
       C alphainv=1/(ai[j]-ci[j]*gammaim1[j]);
       beta[k] *= -gammaim1[j];
       gammai[j]=bi[j]*alphainv;
@@ -416,7 +416,7 @@ inline void mtridiagonalp(unsigned int n,
 	
   typename array1<T>::opt unm1=ui+inc1, un=unm1+inc1, fnm1=fi+inc1;
   typename array1<C>::opt anm1=ai+inc1, bnm1=bi+inc1, cnm1=ci+inc1;
-  for(unsigned int j=0, k=0; j < jstop; j += inc2, k++) {
+  for(size_t j=0, k=0; j < jstop; j += inc2, k++) {
     C alphainv=1.0/(anm1[j]-cnm1[j]*gammai[j]);
     unm1[j]=(fnm1[j]-cnm1[j]*ui[j])*alphainv;
     C beta0=cn[j]-beta[k]*gammai[j];
@@ -426,31 +426,31 @@ inline void mtridiagonalp(unsigned int n,
   }
 	
   typename array1<T>::opt uip1=unm1;
-  for(unsigned int i=n-2; i >= 1; i--) {
-    for(unsigned int j=0; j < jstop; j += inc2) {
+  for(size_t i=n-2; i >= 1; i--) {
+    for(size_t j=0; j < jstop; j += inc2) {
       ui[j] -= gammai[j]*uip1[j]+deltai[j]*u[j];
     }
     gammai -= inc1; deltai -= inc1; uip1=ui; ui -= inc1;
   }
   typename array1<T>::opt u1=u+inc1, unp1=un+inc1;
-  for(unsigned int j=0; j < jstop; j += inc2) unp1[j]=u1[j];
+  for(size_t j=0; j < jstop; j += inc2) unp1[j]=u1[j];
 }
 
 template<class T, class C>
-inline void mtridiagonalp(unsigned int n,
+inline void mtridiagonalp(size_t n,
 			  const typename array1<T>::opt& u,
 			  const typename array1<T>::opt& f,
 			  const typename array1<C>::opt& c,
 			  const typename array1<C>::opt& a,
 			  const typename array1<C>::opt& b,
-			  unsigned int m, unsigned int inc1, unsigned int inc2)
+			  size_t m, size_t inc1, size_t inc2)
 {
   if(n < 1) ArrayExit("Invalid matrix size");
   static typename array1<T>::opt Fn;
   static typename array1<C>::opt alpha,beta;
-  static unsigned int msize=0;
+  static size_t msize=0;
   static typename array1<C>::opt gamma,delta;
-  static unsigned int size=0;
+  static size_t size=0;
   if(n > 2) {
     CheckReallocate(Fn,alpha,beta,m,msize);
     CheckReallocate(gamma,delta,(n-2)*inc1+m*inc2,size);
@@ -474,7 +474,7 @@ inline void mtridiagonalp(unsigned int n,
 // Note: u and f need not be distinct.
 
 template<class T, class C>
-inline void Poisson1(unsigned int n,
+inline void Poisson1(size_t n,
 		     const typename array1<T>::opt& u,
 		     const typename array1<T>::opt& f,
 		     const C& b, const C& a,
@@ -487,23 +487,23 @@ inline void Poisson1(unsigned int n,
   C binv=1.0/b;
   u[1]=(f[1]*binv-u[0])*temp;
 	
-  for(unsigned int i=2; i <= n; i++)	{
+  for(size_t i=2; i <= n; i++)	{
     C temp=b/(a+b*work[i-1]);
     work[i]=-temp;
     u[i]=(f[i]*binv-u[i-1])*temp;
   }
 
-  for(unsigned int i=n; i >= 1; i--) u[i] += work[i]*u[i+1];
+  for(size_t i=n; i >= 1; i--) u[i] += work[i]*u[i+1];
 }
 
 template<class T, class C>
-inline void Poisson1(unsigned int n,
+inline void Poisson1(size_t n,
 		     const typename array1<T>::opt& u,
 		     const typename array1<T>::opt& f,
 		     const C& b, const C& a)
 {
   static typename array1<C>::opt work;
-  static unsigned int size=0;
+  static size_t size=0;
   CheckReallocate(work,n+1,size);
   Poisson1<T,C>(n,u,f,b,a,work);
 }
@@ -524,7 +524,7 @@ inline void Poisson1(unsigned int n,
 // Note: u and f need not be distinct.
 
 template<class T, class C>
-inline void Poisson1p(unsigned int n,
+inline void Poisson1p(size_t n,
 		      const typename array1<T>::opt& u,
 		      const typename array1<T>::opt& f,
 		      const C& b, const C& a,
@@ -549,7 +549,7 @@ inline void Poisson1p(unsigned int n,
   T fn=f[n]-b*u[1];
   C beta=b;
 
-  for(unsigned int i=2; i <= n-2; i++) {
+  for(size_t i=2; i <= n-2; i++) {
     C alphainv=b/(a-b*gamma[i-1]);
     beta *= -gamma[i-1];
     gamma[i]=alphainv;
@@ -566,21 +566,21 @@ inline void Poisson1p(unsigned int n,
   T temp=u[0]=u[n]=(fn-beta*u[n-1])/(alpha-beta*dnm1);
   u[n-1] -= dnm1*temp;
 	
-  for(unsigned int i=n-2; i >= 1; i--) 
+  for(size_t i=n-2; i >= 1; i--) 
     u[i] -= gamma[i]*u[i+1]+delta[i]*temp;
 
   u[n+1]=u[1];
 }
 
 template<class T, class C>
-inline void Poisson1p(unsigned int n,
+inline void Poisson1p(size_t n,
 		      const typename array1<T>::opt& u,
 		      const typename array1<T>::opt& f,
 		      const C& b, const C& a)
 {
   if(n < 1) ArrayExit("Invalid matrix size");
   static typename array1<C>::opt gamma,delta;
-  static unsigned int size=0;
+  static size_t size=0;
   CheckReallocate(gamma,delta,n-1,size);
   Poisson1p<T,C>(n,u,f,b,a,gamma,delta);
 }
@@ -604,7 +604,7 @@ inline void Poisson1p(unsigned int n,
 // Note: u and f need not be distinct.
 
 template<class T, class C>
-inline void Poisson1P(unsigned int n,
+inline void Poisson1P(size_t n,
 		      const typename array1<T>::opt& u,
 		      const typename array1<T>::opt& f,
 		      C b, const typename array1<C>::opt& gamma)
@@ -627,7 +627,7 @@ inline void Poisson1P(unsigned int n,
 	
   u[1]=-0.5*f[1]*binv;
 
-  for(unsigned int i=2; i <= n-2; i++)	{
+  for(size_t i=2; i <= n-2; i++)	{
     beta *= alphainv;
     gamma[i]=alphainv=1.0/(2.0-alphainv);
     u[i]=(u[i-1]-f[i]*binv)*alphainv;
@@ -638,19 +638,19 @@ inline void Poisson1P(unsigned int n,
   u[n]=u[0]=0.0;
   u[n-1]=(u[n-2]-f[n-1]*binv)/(2.0-alphainv);
 	
-  for(unsigned int i=n-2; i >= 2; i--) u[i] += gamma[i]*u[i+1];
+  for(size_t i=n-2; i >= 2; i--) u[i] += gamma[i]*u[i+1];
   u[1] += 0.5*u[2];
   u[n+1]=u[1];
 }
 
 template<class T, class C>
-inline void Poisson1P(unsigned int n,
+inline void Poisson1P(size_t n,
 		      const typename array1<T>::opt& u,
 		      const typename array1<T>::opt& f, const C& b)
 {
   if(n < 1) ArrayExit("Invalid matrix size");
   static typename array1<C>::opt gamma;
-  static unsigned int size=0;
+  static size_t size=0;
   CheckReallocate(gamma,n-1,size);
   Poisson1P<T,C>(n,u,f,b,gamma);
 }
@@ -667,7 +667,7 @@ inline void Poisson1P(unsigned int n,
 // work is an optional work array of size n-1, which may be set to a or b.
 
 template<class T, class C>
-inline void Tridiagonal(unsigned int n, 
+inline void Tridiagonal(size_t n, 
 			const typename array1<T>::opt& u,
 			const typename array1<T>::opt& f,
 			const typename array1<C>::opt& c,
@@ -684,7 +684,7 @@ inline void Tridiagonal(unsigned int n,
   
   work[0]=-b[0]*temp;
 	
-  for(unsigned int i=1; i < n-1; i++) {
+  for(size_t i=1; i < n-1; i++) {
     C temp=1.0/(a[i]+c[i]*work[i-1]);
     u[i]=(f[i]-c[i]*u[i-1])*temp;
     work[i]=-b[i]*temp;
@@ -697,7 +697,7 @@ inline void Tridiagonal(unsigned int n,
 }
 
 template<class T, class C>
-inline void Tridiagonal(unsigned int n, 
+inline void Tridiagonal(size_t n, 
 			const typename array1<T>::opt& u,
 			const typename array1<T>::opt& f,
 			const typename array1<C>::opt& c,
@@ -706,7 +706,7 @@ inline void Tridiagonal(unsigned int n,
 {
   if(n < 1) ArrayExit("Invalid matrix size");
   static typename array1<C>::opt work;
-  static unsigned int worksize=0;
+  static size_t worksize=0;
   CheckReallocate(work,n-1,worksize);
   Tridiagonal<T,C>(n,u,f,c,a,b,work);
 }

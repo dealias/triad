@@ -29,16 +29,16 @@ using namespace Array;
 using namespace std;
 
 const char PROGRAM[]="TRIAD";
-const char VERSION[]="1.45";
-const int RestartVersion=3;
+const char VERSION[]="1.46";
+const int RestartVersion=4;
 Real RestartProblemVersion=0;
 
 // Global variables
-unsigned long nout;
+size_t nout;
 double t;
 double last_dump=-1.0;
-long long iteration=0;
-int invert_cnt=0;
+size_t iteration=0;
+size_t invert_cnt=0;
 
 VocabularyBase *Vocabulary;
 ProblemBase *Problem;
@@ -46,22 +46,22 @@ IntegratorBase *Integrator;
 
 // Kernel variables
 static ::vector y;
-static int ny;
-static int explicit_dt=0;
-static int testing=0;
+static size_t ny;
+static bool explicit_dt=0;
+static bool testing=0;
 static double cpu[ncputime],cpu0[ncputime],cpu_restart[ncputime];
-static long long final_iteration=0;
-static int total_invert_cnt=0;
+static size_t final_iteration=0;
+static size_t total_invert_cnt=0;
 
 static const char *pname,*rname,*ptemp,*rtemp,*lname;
 static ifstream fparam,fin;
 static ofstream gparam,fdump,fstats,flock;
 
 // Global vocabulary declarations and default values
-long long itmax=-1;
+size_t itmax=0;
+size_t checkpoint=0;
 double tmax=0.0;
 double dt=0.0;
-int dynamic=1;
 double tolmax=0.005;
 double tolmin=0.003;
 double stepfactor=2.0;
@@ -69,35 +69,34 @@ double stepnoninvert=stepfactor;
 double dtmin=0.0;
 double dtmax=0.0;
 double tprecision=0.0;
-int digits=REAL_DIG;
-int restart=0;
 double polltime=0.0;
-int output=0;
-int hybrid=0;
-int override=0;
-int verbose=1;
-int checkpoint=0;
-int oldversion=0;
-int threads=0;
+size_t dynamic=1;
+size_t digits=REAL_DIG;
+size_t restart=0;
+size_t output=0;
+size_t hybrid=0;
+size_t override=0;
+size_t verbose=1;
+size_t threads=0;
 
 // Local vocabulary declarations and default values
-int microsteps=1;
+size_t microsteps=1;
 Real microfactor=1.0;
 static double sample=0.0;
-static int initialize=0;
-static int clobber=0;
+static size_t initialize=0;
+static size_t clobber=0;
 static const char *tmpdir=tempdir();
 
 VocabularyBase::VocabularyBase()
 {
   Vocabulary=this;
 
-  VOCAB(itmax,(long long) 0,LLONG_MAX,"Maximum number of iterations");
-  VOCAB(microsteps,1,INT_MAX,"Number of iterations per output step");
+  VOCAB(itmax,(size_t) 0,SIZE_MAX,"Maximum number of iterations");
+  VOCAB(microsteps,(size_t) 1,SIZE_MAX,"Number of iterations per output step");
   VOCAB(microfactor,0.0,REAL_MAX,"Microstep growth factor per output step");
   VOCAB(tmax,0.0,DBL_STD_MAX,"");
   VOCAB(dt,0.0,DBL_STD_MAX,"");
-  VOCAB(dynamic,-INT_MAX,1,"");
+  VOCAB(dynamic,0,1,"");
   VOCAB(tolmax,0.0,DBL_STD_MAX,"");
   VOCAB(tolmin,0.0,DBL_STD_MAX,"");
   VOCAB(stepfactor,1.0,DBL_STD_MAX,"");
@@ -108,16 +107,15 @@ VocabularyBase::VocabularyBase()
   VOCAB(sample,0.0,DBL_STD_MAX,"Number of time units per output step");
   VOCAB(polltime,0.0,DBL_STD_MAX,"");
   VOCAB(hybrid,0,1,"");
-  VOCAB(digits,1,INT_MAX,"");
+  VOCAB(digits,1,SIZE_MAX,"");
   VOCAB_NODUMP(restart,0,1,"");
   VOCAB_NODUMP(initialize,0,1,"");
   VOCAB_NODUMP(clobber,0,1,"");
   VOCAB_NODUMP(override,0,1,"");
   VOCAB_NODUMP(verbose,0,4,"");
-  VOCAB_NODUMP(threads,0,INT_MAX,"");
+  VOCAB_NODUMP(threads,0,SIZE_MAX,"");
   VOCAB_NODUMP(run,null,null,"");
-  VOCAB_NODUMP(oldversion,0,1,"Read in old version of restart");
-  VOCAB(checkpoint,0,INT_MAX,"");
+  VOCAB(checkpoint,(size_t) 0,SIZE_MAX,"");
   VOCAB(output,0,1,"");
   VOCAB_NOLIMIT(method,"");
   VOCAB_NOLIMIT(integrator,"");
@@ -145,16 +143,14 @@ VocabularyBase::VocabularyBase()
 }
 
 void adjust_parameters(double& dt, double& dtmax, double& tmax,
-		       long long& itmax)
+		       size_t& itmax)
 {
   if(dt == 0.0) {
     if(tmax == 0.0) tmax=1.0;
-    if(itmax == -1) itmax=100;
     dt=fabs(tmax/(itmax ? itmax : 1));
   }
 
   if(tmax == 0.0) tmax=DBL_STD_MAX;
-  if(itmax == -1) itmax=LLONG_MAX;
 
   if(dtmax == 0.0) dtmax=DBL_STD_MAX;
 
@@ -164,14 +160,8 @@ void adjust_parameters(double& dt, double& dtmax, double& tmax,
 
 int main(int argc, char *argv[])
 {
-  int i;
-
   inform=mailuser;
   cout.precision(REAL_DIG);
-
-  const int nstate=256;
-  static char state[nstate];
-  initstate(1,state,nstate);
 
   cout << newl << PROGRAM << " version " << VERSION
        << " [(C) John C. Bowman 2000]" << newl;
@@ -182,7 +172,7 @@ int main(int argc, char *argv[])
        << ProblemVersion << ")" << newl;
 
   cout << newl << "COMMAND LINE: ";
-  for(i=1; i < argc; i++) cout << argv[i] << " ";
+  for(int i=1; i < argc; i++) cout << argv[i] << " ";
   cout << endl;
 
   fpu_trap();
@@ -190,7 +180,7 @@ int main(int argc, char *argv[])
   Vocabulary->Sort();
 
   // Do a preliminary parse of command line to obtain parameter file name.
-  for(i=1; i < argc; i++) Vocabulary->Assign(argv[i],0);
+  for(int i=1; i < argc; i++) Vocabulary->Assign(argv[i],0);
   msg_override=override;
 
   // Allow time step to be overridden from command line (even on restarts).
@@ -223,7 +213,7 @@ int main(int argc, char *argv[])
     mkdir(Vocabulary->FileName(dirsep),0xFFFF);
   }
 
-  for(i=1; i < argc; i++) Vocabulary->Assign(argv[i]);
+  for(int i=1; i < argc; i++) Vocabulary->Assign(argv[i]);
   adjust_parameters(dt,dtmax,tmax,itmax);
   cout << newl << "PARAMETERS:" << newl << newl;
   Vocabulary->List(cout);
@@ -270,10 +260,9 @@ int main(int argc, char *argv[])
   ny=Problem->Size();
 
   if(restart || initialize) read_init();
-  if(restart && dynamic < 0) dynamic=1;
   if(!restart) Problem->Initialize();
 
-  for(int i=0; i < 2; ++i) {
+  for(size_t i=0; i < 2; ++i) {
     open_output(gparam,(i == 0 ? "" : dirsep),"param.asy",0);
     Vocabulary->GraphicsDump(gparam,i);
     gparam.close();
@@ -314,18 +303,17 @@ int main(int argc, char *argv[])
 
 void read_init()
 {
-  int i,ny0;
-  unsigned long nout0;
+  size_t i,ny0,nout0;
   double t0,dt0;
   const char *type=restart ? "restart" : "initialization";
   const char *ny_msg=
-    "Current value of ny (%d) disagrees with value (%d) in file\n%s. Perhaps you need to specify oldversion=%d";
-  int init_version=0;
+    "Current value of ny (%d) disagrees with value (%d) in file\n%s.";
+  size_t init_version=0;
 
   ixstream finit(rname);
   if(finit) {
     cout << newl << "READING " << upcase(type) << " DATA FROM FILE " << rname;
-    if(!oldversion) finit >> init_version >> nout0;
+    finit >> init_version >> nout0;
     if(init_version > 1) {
       finit >> RestartProblemVersion;
       cout << " (version " << RestartProblemVersion << ")";
@@ -334,14 +322,14 @@ void read_init()
     finit >> t0 >> dt0;
 
     if(init_version < 3) {
-      int final_iteration0;
+      size_t final_iteration0;
       finit >> final_iteration0;
       final_iteration=final_iteration0;
     } else finit >> final_iteration;
 
     for(i=0; i < ncputime; i++) finit >> cpu_restart[i];
     finit >> ny0;
-    if(ny0 != ny) msg(OVERRIDE_GLOBAL,ny_msg,ny,ny0,rname,!oldversion);
+    if(ny0 != ny) msg(OVERRIDE_GLOBAL,ny_msg,ny,ny0,rname);
     for(i=0; i < min(ny,ny0); i++) finit >> y[i];
     if(!finit)	msg(ERROR,"Cannot read from %s file %s",type,rname);
   } else msg(ERROR,"Could not open %s file %s",type,rname);
@@ -379,7 +367,7 @@ void testlock()
   } else errno=0;
 }
 
-void dump(double t, int it, int final, double tmax)
+void dump(double t, size_t it, size_t final, double tmax)
 {
   if((!restart || it > 0) && (tmax-t >= tprecision*tmax || final) &&
      t > last_dump) {
@@ -402,8 +390,8 @@ void SaveParameters() {
   else msg(WARNING,"Cannot write to parameter file %s",ptemp);
 }
 
-static const int w=10;
-static int e;
+static const size_t w=10;
+static size_t e;
 
 void set_timer()
 {
@@ -411,7 +399,7 @@ void set_timer()
   open_output(fstats,dirsep,"stat");
   cputime(cpu0);
   if(!restart) {
-    for(int i=0; i < ncputime; i++) cpu_restart[i]=0.0;
+    for(size_t i=0; i < ncputime; i++) cpu_restart[i]=0.0;
     fstats << "#" << setw(w) << "it"
 	   << " " << setw(w) << "iteration"
 	   << " " << setw(e) << "t"
@@ -425,28 +413,25 @@ void set_timer()
   }
 }
 
-void statistics(double t, double dt, int it)
+void statistics(double t, double dt, size_t it)
 {
-  int i;
   if(restart && it == 0) return;
   static double lastcputime=0.0;
 
-
-  static int last_iter=0;
-  long long iter=final_iteration+iteration;
+  static size_t last_iter=0;
+  size_t iter=final_iteration+iteration;
 
   cputime(cpu);
-  for(i=0; i < ncputime; i++) cpu[i] -= cpu0[i];
+  for(size_t i=0; i < ncputime; i++) cpu[i] -= cpu0[i];
 
   oxstream frestart(rtemp);
   if(frestart) {
-    int i;
     frestart << RestartVersion << newl << nout << newl
 	     << ProblemVersion << newl
 	     << t << newl << dt << newl << iter << newl;
-    for(i=0; i < ncputime; i++) frestart << cpu_restart[i]+cpu[i] << newl;
+    for(size_t i=0; i < ncputime; i++) frestart << cpu_restart[i]+cpu[i] << newl;
     frestart << ny << newl;
-    for(i=0; i < ny; i++) frestart << y[i] << newl;
+    for(size_t i=0; i < ny; i++) frestart << y[i] << newl;
     frestart.close();
     if(frestart) {
       if(checkpoint && it > 0 && (it-1) % checkpoint == 0) {
@@ -478,7 +463,7 @@ void statistics(double t, double dt, int it)
   total_invert_cnt += invert_cnt;
   invert_cnt=0;
 
-  for(i=0; i < ncputime; i++) {
+  for(size_t i=0; i < ncputime; i++) {
     fstats << setw(e) << cpu_restart[i]+cpu[i] << " ";
   }
   fstats << setw(w) << memory() << " "

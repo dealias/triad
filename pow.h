@@ -35,7 +35,7 @@ inline double pow(double x, int p)
   }
 }
 
-inline double pow(double x, unsigned int p)
+inline double pow(double x, size_t p)
 {
   if(p == 0) return 1.0;
   if(x == 0.0) return 0.0;
@@ -62,12 +62,12 @@ inline int pow(int x, int p)
   }
 }
 
-inline unsigned int pow(unsigned int x, unsigned int p)
+inline size_t pow(size_t x, size_t p)
 {
   if(p == 0) return 1;
   if(x == 0) return 0;
 	
-  unsigned int r = 1;
+  size_t r = 1;
   for(;;) {
     if(p & 1) r *= x;
     if((p >>= 1) == 0)	return r;

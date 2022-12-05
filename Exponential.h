@@ -13,26 +13,26 @@ template<class T>
 class E_RK : public RK {
 protected:
   T *parent;
-  unsigned int start,stop;
-  unsigned int startN,stopN;
+  size_t start,stop;
+  size_t startN,stopN;
   Array::Array3<Nu> e;
   Array::Array2<Nu> f,phi0;
 public:
-  E_RK(T *parent, int order, int nstages, bool fsal=false) :
+  E_RK(T *parent, size_t order, size_t nstages, bool fsal=false) :
     RK(order,nstages,fsal), parent(parent) {}
 
   bool Exponential() {return true;}
 
   void Allocator() {
     RK::Allocator();
-    unsigned int stop0,start0; // Unused
+    size_t stop0,start0; // Unused
     parent->IndexLimits(start,stop,startN,stop0,start0,stopN);
     this->start=start;
     this->stop=stop;
     this->startN=startN;
     this->stopN=stopN;
-    unsigned int ny=stop-start;
-    phi0.Allocate(Astages,ny,0,(int) start);
+    size_t ny=stop-start;
+    phi0.Allocate(Astages,ny,0,start);
     phi0=0.0;
     e.Allocate(Astages,ny,Astages,0,start,0);
     e=0.0;
@@ -44,43 +44,43 @@ public:
     parent->ExponentialSource(Src,Y,t);
   }
 
-  void Stage(unsigned int s, unsigned int start, unsigned int stop) {
+  void Stage(size_t s, size_t start, size_t stop) {
     NuVector phi0s=phi0[s];
     Array::Array2<Nu> es=e[s];
 #pragma omp parallel for num_threads(threads)
-    for(unsigned int j=start; j < stop; j++) {
+    for(size_t j=start; j < stop; j++) {
       Var sum=phi0s[j]*y0[j];
       NuVector esj=es[j];
-      for(unsigned int k=0; k <= s; k++)
+      for(size_t k=0; k <= s; k++)
 	sum += esj[k]*vsource[k][j];
       y[j]=sum;
     }
   }
 
-  virtual void PStage(unsigned int s) {
+  virtual void PStage(size_t s) {
     Stage(s,start,stop);
     RK::Stage(s,startN,stopN);
   }
 
-  void Predictor(unsigned int, unsigned int) {
-    for(unsigned int s=0; s < Astages-1; ++s) {
+  void Predictor(size_t, size_t) {
+    for(size_t s=0; s < Astages-1; ++s) {
       PStage(s);
       PredictorSource(s);
     }
   }
 
-  int Corrector(unsigned int, unsigned int) {
+  int Corrector(size_t, size_t) {
     if(dynamic) {
       NuVector phi0s=phi0[Astages-1];
       if(FSAL) {
 	Stage(Astages-1,start,stop);
 	RK::Corrector(startN,stopN);
 #pragma omp parallel for num_threads(threads)
-	for(unsigned int j=start; j < stop; j++) {
+	for(size_t j=start; j < stop; j++) {
 	  NuVector fj=f[j];
 	  Var sum0=y0[j];
 	  Var pred=phi0s[j]*sum0;
-	  for(unsigned int k=0; k < nstages; k++)
+	  for(size_t k=0; k < nstages; k++)
 	    pred += fj[k]*vsource[k][j];
 	  if(!Array::Active(errmask) || errmask[j])
 	    CalcError(sum0,y[j],pred,y[j]);
@@ -88,13 +88,13 @@ public:
       } else {
 	Array::Array2<Nu> es=e[Astages-1];
 #pragma omp parallel for num_threads(threads)
-	for(unsigned int j=start; j < stop; j++) {
+	for(size_t j=start; j < stop; j++) {
 	  NuVector esj=es[j];
 	  NuVector fj=f[j];
 	  Var sum0=y0[j];
 	  Var sum=phi0s[j]*sum0;
 	  Var pred=sum;
-	  for(unsigned int k=0; k < Astages; k++) {
+	  for(size_t k=0; k < Astages; k++) {
 	    Var Skj=vsource[k][j];
 	    sum += esj[k]*Skj;
 	    pred += fj[k]*Skj;
@@ -125,7 +125,7 @@ public:
 
   inline void TimestepDependence() {
     if(this->startN < this->stopN) RK::TimestepDependence();
-    for(unsigned int j=this->start; j < this->stop; j++) {
+    for(size_t j=this->start; j < this->stop; j++) {
       Nu nuk=this->parent->LinearCoeff(j);
       Nu x=-nuk*this->dt;
       Nu ph1=phi1(x); // (e^x-1)/x
@@ -147,7 +147,7 @@ public:
 
   inline void TimestepDependence() {
     if(this->startN < this->stopN) RK::TimestepDependence();
-    for(unsigned int j=this->start; j < this->stop; j++) {
+    for(size_t j=this->start; j < this->stop; j++) {
       Nu nuk=this->parent->LinearCoeff(j);
       Nu ph0=exp(-nuk*this->dt);
       this->phi0[0][j]=ph0;
@@ -175,7 +175,7 @@ public:
 
   inline void TimestepDependence() {
     if(this->startN < this->stopN) RK::TimestepDependence();
-    for(unsigned int j=this->start; j < this->stop; j++) {
+    for(size_t j=this->start; j < this->stop; j++) {
       Nu nuk=this->parent->LinearCoeff(j);
       Nu x=-nuk*this->dt;
       Nu ph1=phi1(x); // (e^x-1)/x
@@ -205,7 +205,7 @@ public:
 
   inline void TimestepDependence() {
     if(this->startN < this->stopN) RK::TimestepDependence();
-    for(unsigned int j=this->start; j < this->stop; j++) {
+    for(size_t j=this->start; j < this->stop; j++) {
       Nu nuk=this->parent->LinearCoeff(j);
       Nu x=-nuk*this->dt;
       Nu xh=0.5*x;
@@ -249,7 +249,7 @@ public:
 
   inline void TimestepDependence() {
     if(this->startN < this->stopN) RK::TimestepDependence();
-    for(unsigned int j=this->start; j < this->stop; j++) {
+    for(size_t j=this->start; j < this->stop; j++) {
       Nu nuk=this->parent->LinearCoeff(j);
       Nu x=-nuk*this->dt;
       Nu xh=0.5*x;
@@ -320,7 +320,7 @@ public:
     this->A[4][3]=-1.0/6.0;
     this->A[4][4]=1.0/6.0;
 
-    for(int i=0; i < 4; ++i)
+    for(size_t i=0; i < 4; ++i)
       this->B[i]=this->A[3][i];
     this->B[4]=0.0;
   }
@@ -328,7 +328,7 @@ public:
   inline void TimestepDependence() {
     const double sixth=1.0/6.0;
     if(this->startN < this->stopN) RK::TimestepDependence();
-    for(unsigned int j=this->start; j < this->stop; j++) {
+    for(size_t j=this->start; j < this->stop; j++) {
       Nu nuk=this->parent->LinearCoeff(j);
       Nu x=-nuk*this->dt;
       Nu x1=sixth*x;
@@ -378,7 +378,7 @@ public:
       this->f[j][3]=a3_3;
       this->f[j][4]=0;
 
-      for(int i=0; i < 4; ++i)
+      for(size_t i=0; i < 4; ++i)
         this->e[3][j][i]=this->f[j][i];
 
       // High-order approximation

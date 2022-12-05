@@ -7,11 +7,11 @@ using namespace Array;
 
 int main()
 {
-  unsigned int m=3;
+  size_t m=3;
   int mi=m;
   Array1H<Complex> A(m);
   
-  for(unsigned int i=0; i < m; ++i)
+  for(size_t i=0; i < m; ++i)
     A.set(i,Complex(10+i,i));
   
 //  for(int i=1-mi; i <= 0; ++i)

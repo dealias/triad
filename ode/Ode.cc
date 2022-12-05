@@ -38,7 +38,7 @@ public:
   void Output(int it);
   void FinalOutput();
 
-  Nu LinearCoeff(unsigned int i) {
+  Nu LinearCoeff(size_t i) {
     return nu[i];
   }
 
@@ -64,9 +64,9 @@ public:
     ConservativeIntegrators(Ode_Vocabulary.IntegratorTable,this);
   }
 
-  void IndexLimits(unsigned int& start, unsigned int& stop,
-		   unsigned int& startT, unsigned int& stopT,
-		   unsigned int& startM, unsigned int& stopM) {
+  void IndexLimits(size_t& start, size_t& stop,
+		   size_t& startT, size_t& stopT,
+		   size_t& startM, size_t& stopM) {
     start=0;
     stop=1;
     startT=1;
@@ -156,7 +156,7 @@ void Ode::Output(int)
   fout << t << "\t" << abs(y[0]) << "\t" << endl;
 }
 
-unsigned int count=0;
+size_t count=0;
 void Ode::NonLinearSource(const vector2& Src, const vector2& Y, double t)
 {
   count++;

@@ -10,16 +10,16 @@ namespace Array {
 // endpoint of the matching interval, n-1 if the key is greater than or
 // equal to the last element, or n if the key is less than the first element.
 template<class X>
-unsigned int bintsearch(X key, unsigned int n, const typename array1<X>::opt x)
+size_t bintsearch(X key, size_t n, const typename array1<X>::opt x)
 {
   if(n == 0) return 0;
   if(key < x[0]) return n;
-  unsigned int u=n-1;
+  size_t u=n-1;
   if(key >= x[u]) return u;
-  unsigned int l=0;
+  size_t l=0;
 	
   while (l < u) {
-    unsigned int i=(l+u)/2;
+    size_t i=(l+u)/2;
     if(x[i] <= key && key < x[i+1]) return i;
     if(key < x[i]) u=i;
     else l=i+1;
@@ -33,9 +33,9 @@ unsigned int bintsearch(X key, unsigned int n, const typename array1<X>::opt x)
 // extrapolated using the first derivative at the nearest endpoint. 
   
 template<class X, class Y>
-Y LinearInterpolate(unsigned int n,
+Y LinearInterpolate(size_t n,
 		    const typename array1<X>::opt x,
-		    const typename array1<Y>::opt y, X x0, unsigned int i) 
+		    const typename array1<Y>::opt y, X x0, size_t i) 
 {
   if(n == 0) ArrayExit("Zero data points in linear interpolation");
   if(n == 1) return y[0];
@@ -55,7 +55,7 @@ Y LinearInterpolate(unsigned int n,
 }
     
 template<class X, class Y>
-Y LinearInterpolate(unsigned int n,
+Y LinearInterpolate(size_t n,
 		    const typename array1<X>::opt x,
 		    const typename array1<Y>::opt y, X x0) 
 {
@@ -75,10 +75,10 @@ protected:
   static double sixth;
   static typename array1<X>::opt work;
   static typename array1<Y>::opt y2;
-  static unsigned int size;
+  static size_t size;
 public:
   CubicSpline() {size=0;}
-  CubicSpline(unsigned int n,
+  CubicSpline(size_t n,
 	      const typename array1<X>::opt x,
 	      const typename array1<Y>::opt y) {
     if(n < 2) return;
@@ -100,7 +100,7 @@ public:
       lastdx=dx;
       lastdy=dy;
 	
-      for(unsigned int i=1; i < n-3; i++) {
+      for(size_t i=1; i < n-3; i++) {
 	X dx=x[i+2]-x[i+1];
 	Y dy=y[i+2]-y[i+1];
 	X temp=3.0/((dx+lastdx)+0.5*lastdx*work[i-1]);
@@ -121,9 +121,9 @@ public:
     }
   }
   
-  Y Interpolate(unsigned int n,
+  Y Interpolate(size_t n,
 		const typename array1<X>::opt x,
-		const typename array1<Y>::opt y, X x0, unsigned int i) {
+		const typename array1<Y>::opt y, X x0, size_t i) {
     if(n == 0) ArrayExit("Zero data points in cubic spline");
     if(n == 1) return y[0];
     if(i >= n) {
@@ -144,7 +144,7 @@ public:
     return A*y[i]+B*y[i+1]+C*y2[i]+D*y2[i+1];
   }
   
-  Y Interpolate(unsigned int n,
+  Y Interpolate(size_t n,
 		const typename array1<X>::opt x,
 		const typename array1<Y>::opt y, X x0) {
     return Interpolate(n,x,y,x0,bintsearch(x0,n,x));
@@ -155,7 +155,7 @@ template<class X, class Y>
 double CubicSpline<X,Y>::sixth=1.0/6.0;
   
 template<class X, class Y>
-unsigned int CubicSpline<X,Y>::size=0;
+size_t CubicSpline<X,Y>::size=0;
 
 template<class X, class Y>
 typename array1<X>::opt CubicSpline<X,Y>::work;

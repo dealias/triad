@@ -14,11 +14,11 @@ const int bitreverse=1; // Use faster bit-reversed FFT's if available
 // Array H[n/2+1] can coincide with either F or g, in which case the output H
 // subsumes F or g, respectively.
 
-void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
+void convolve0(Complex *H, Complex *F, Complex *g, size_t m, unsigned
 	       int log2n)
 {
-  const unsigned int n=1 << log2n, n2=n/2;
-  unsigned int i;
+  const size_t n=1 << log2n, n2=n/2;
+  size_t i;
 
   //#pragma ivdep	
   for(i=m; i < n2+1; i++) F[i]=0.0;
@@ -44,11 +44,11 @@ void convolve0(Complex *H, Complex *F, Complex *g, unsigned int m, unsigned
 // Array H[n/2+1] can coincide with either F or G, in which case the output H
 // subsumes f or g, respectively.
 
-void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
+void convolve(Complex *H, Complex *F, Complex *G, size_t m, unsigned
 	      int log2n)
 {
-  unsigned int n=1 << log2n;
-  unsigned int i;
+  size_t n=1 << log2n;
+  size_t i;
 
   //#pragma ivdep	
   for(i=m; i < n/2+1; i++) G[i]=0.0;
@@ -66,9 +66,9 @@ void convolve(Complex *H, Complex *F, Complex *G, unsigned int m, unsigned
 //
 // Array H[m] must be distinct from F[m] and G[m].
 
-void convolve_direct(Complex *H, Complex *F, Complex *G, unsigned int m)
+void convolve_direct(Complex *H, Complex *F, Complex *G, size_t m)
 {
-  unsigned int i,j;
+  size_t i,j;
   for(i=0; i < m; i++) {
     Complex sum=0.0;
     //#pragma ivdep	

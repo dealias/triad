@@ -41,54 +41,54 @@ namespace Array {
 template<class T>
 class array2h : public array1<T> {
 protected:
-  unsigned int nx;
-  unsigned int ny;
+  size_t nx;
+  size_t ny;
 public:
   using array1<T>::Dimension;
 
-  void Dimension(unsigned int nx0, unsigned int ny0) {
+  void Dimension(size_t nx0, size_t ny0) {
     nx=nx0; ny=ny0;
     this->size=2*nx*ny-nx-ny;
   }
-  void Dimension(unsigned int nx0, unsigned int ny0, T *v0) {
+  void Dimension(size_t nx0, size_t ny0, T *v0) {
     Dimension(nx0,ny0);
     this->v=v0;
     this->clear(this->allocated);
   }
   void Dimension(const array1<T> &A) {ArrayExit("Operation not implemented");}
 
-  void Allocate(unsigned int nx0, unsigned int ny0, size_t align=0) {
+  void Allocate(size_t nx0, size_t ny0, size_t align=0) {
     Dimension(nx0,ny0);
     __checkActivate(2,align);
   }
 
   array2h() : nx(0), ny(0) {}
-  array2h(unsigned int nx0, unsigned int ny0, size_t align=0) {
+  array2h(size_t nx0, size_t ny0, size_t align=0) {
     Allocate(nx0,ny0,align);
   }
-  array2h(unsigned int nx0, unsigned int ny0, T *v0) {Dimension(nx0,ny0,v0);}
+  array2h(size_t nx0, size_t ny0, T *v0) {Dimension(nx0,ny0,v0);}
 
-  unsigned int Nx() const {return 2*nx-1;}
-  unsigned int Ny() const {return ny;}
+  size_t Nx() const {return 2*nx-1;}
+  size_t Ny() const {return ny;}
 
 #ifndef __NOARRAY2OPT
-  T *operator [] (int ix) const {
+  T *operator [] (ptrdiff_t ix) const {
     return ix <= 0 ? this->v+(nx+ix)*(ny-1)-ny : this->v+(nx+ix)*ny-nx-ny;
   }
 #else
-  array1<T> operator [] (int ix) const {
+  array1<T> operator [] (ptrdiff_t ix) const {
     __check(ix,Nx(),-nx+1,2,1);
     return array1<T>(ny,ix <= 0 ?
                      this->v+(nx+ix)*(ny-1)-ny :
                      this->v+(nx+ix)*ny-nx-ny);
   }
 #endif
-  T& operator () (int ix, int iy) const {
+  T& operator () (ptrdiff_t ix, ptrdiff_t iy) const {
     __check(ix,Nx(),-nx+1,2,1);
     __check(iy,ny,ix <= 0,2,2);
     return this->v[ix <= 0 ? (nx+ix)*(ny-1)-ny+iy : (nx+ix)*ny-nx-ny+iy];
   }
-  T& operator () (int i) const {
+  T& operator () (ptrdiff_t i) const {
     __check(i,this->size,0,2,0);
     return this->v[i];
   }

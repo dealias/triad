@@ -26,7 +26,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 namespace Array {
   
-inline void Mod(int& i, unsigned int n) {
+inline void Mod(int& i, size_t n) {
   i %= (int) n;
   if(i < 0) i += (int) n;
 }
@@ -35,8 +35,8 @@ template<class T>
 class array1p : public array1<T> {
  public:
   array1p() {}
-  array1p(unsigned int nx0) {this->Allocate(nx0);}
-  array1p(unsigned int nx0, T *v0) {this->Dimension(nx0,v0);}
+  array1p(size_t nx0) {this->Allocate(nx0);}
+  array1p(size_t nx0, T *v0) {this->Dimension(nx0,v0);}
   T& operator [] (int ix) const {Mod(ix,this->size); return this->v[ix];}
   T& operator () (int ix) const {Mod(ix,this->size); return this->v[ix];}
   array1p<T>& operator = (T a) {this->Load(a); return *this;}
@@ -46,8 +46,8 @@ template<class T>
 class array2p : public array2<T> {
  public:
   array2p() {}
-  array2p(unsigned int nx0, unsigned int ny0) {this->Allocate(nx0,ny0);}
-  array2p(unsigned int nx0, unsigned int ny0, T *v0) {
+  array2p(size_t nx0, size_t ny0) {this->Allocate(nx0,ny0);}
+  array2p(size_t nx0, size_t ny0, T *v0) {
     this->Dimension(nx0,ny0,v0);}
   array1p<T> operator [] (int ix) const {
     Mod(ix,this->nx);
@@ -69,10 +69,10 @@ template<class T>
 class array3p : public array3<T> {
  public:	
   array3p() {}
-  array3p(unsigned int nx0, unsigned int ny0, unsigned int nz0) {
+  array3p(size_t nx0, size_t ny0, size_t nz0) {
     this->Allocate(nx0,ny0,nz0);
   }
-  array3p(unsigned int nx0, unsigned int ny0, unsigned int nz0, T *v0) {
+  array3p(size_t nx0, size_t ny0, size_t nz0, T *v0) {
     this->Dimension(nx0,ny0,nz0,v0);
   }
   array2p<T> operator [] (int ix) const {
@@ -95,12 +95,12 @@ template<class T>
 class array4p : public array4<T> {
  public:	
   array4p() {}
-  array4p(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-	  unsigned int nw0) {
+  array4p(size_t nx0, size_t ny0, size_t nz0,
+	  size_t nw0) {
     this->Allocate(nx0,ny0,nz0,nw0);
   }
-  array4p(unsigned int nx0, unsigned int ny0, unsigned int nz0,
-	  unsigned int nw0, T *v0) {
+  array4p(size_t nx0, size_t ny0, size_t nz0,
+	  size_t nw0, T *v0) {
     this->Dimension(nx0,ny0,nz0,nw0,v0);
   }
   array3p<T> operator [] (int ix) const {

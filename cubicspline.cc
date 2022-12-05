@@ -8,7 +8,7 @@ typedef array1<double>::opt vector;
 
 int main()
 {
-  unsigned int n=7;
+  size_t n=7;
   vector x(n),y(n);
   
   x[0]=0.0;

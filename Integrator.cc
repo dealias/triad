@@ -22,19 +22,18 @@ static const int nperline=10;
 
 void IntegratorBase::Integrate(double& t0, double tmax,
 			       double& dt0, double sample0,
-			       long long& iteration, unsigned long& nout)
+			       size_t& iteration, size_t& nout)
   // Don't dump or microprocess if sample is negative.
 {
 //  double dtold=0.0;
   double dtorig=0.0;
-  int it,itx;
+  size_t it,itx;
   bool cont;
-  int final=1;
 
   t=t0;
   sample=sample0;
 
-  const int forwards=(tmax >= t);
+  const bool forwards=(tmax >= t);
   const double sign=(forwards ? 1.0 : -1.0);
 
   double tstop=((sample > 0.0) ? 0.0 : tmax);
@@ -55,8 +54,8 @@ void IntegratorBase::Integrate(double& t0, double tmax,
       cout << "[" << it << flush;
     }
 
-    unsigned long count=nout;
-    if(sample == 0.0) dump(t0=t,it,0,tmax);
+    size_t count=nout;
+    if(sample == 0.0) dump(t0=t,it,false,tmax);
     else if(sample > 0) {
       if(abs(tstop-t) <= tprecision*abs(tstop)) tstop=t;
       if (forwards ? t >= tstop : t <= tstop) {
@@ -64,7 +63,7 @@ void IntegratorBase::Integrate(double& t0, double tmax,
 	tstop=sign*count*sample;
 	if((forwards ? tstop > tmax : tstop < tmax) ||
 	   abs(tmax-tstop) <= tprecision*abs(tmax)) tmax=tstop=t;
-	else dump(t0=t,it,0,tmax);
+	else dump(t0=t,it,false,tmax);
 	if(dtorig) {ChangeTimestep(dtorig); dtorig=0.0;}
       }
     }
@@ -120,7 +119,7 @@ void IntegratorBase::Integrate(double& t0, double tmax,
       iteration++;
     }
 
-    microsteps=(int) (microsteps*microfactor);
+    microsteps=(size_t) (microsteps*microfactor);
 
     Unswap();
 
@@ -134,7 +133,7 @@ void IntegratorBase::Integrate(double& t0, double tmax,
 
   if(dtorig) ChangeTimestep(dtorig);
   t0=t;
-  if(sample >= 0.0) dump(t0,it,final,tmax);
+  if(sample >= 0.0) dump(t0,it,true,tmax);
   dt0=dt*sign;
   statistics(t0,dt0,it);
 }
@@ -147,11 +146,11 @@ void IntegratorBase::SetProblem(ProblemBase& problem)
 void IntegratorBase::Alloc(vector2& Y0, vector& y0)
 {
   Allocate(y0,ny,align);
-  unsigned int nfields=Y.Size();
+  size_t nfields=Y.Size();
   Allocate(Y0,nfields,align);
   Var *p=y0;
-  for(unsigned int i=0; i < nfields; i++) {
-    unsigned int n=NY[i];
+  for(size_t i=0; i < nfields; i++) {
+    size_t n=NY[i];
     Dimension(Y0[i],n,p);
     p += n;
   }
@@ -160,20 +159,20 @@ void IntegratorBase::Alloc(vector2& Y0, vector& y0)
 void IntegratorBase::Alloc0(vector2& Y, vector& y)
 {
   Alloc(Y,y);
-  for(unsigned int i=0; i < ny; i++) y[i]=0.0;
+  for(size_t i=0; i < ny; i++) y[i]=0.0;
 }
 
 void IntegratorBase::Allocator(const vector2& Y0,
-			       DynVector<unsigned int>* NY0,
-			       const ivector& errmask0, size_t Align)
+			       DynVector<size_t>* NY0,
+			       const uvector& errmask0, size_t Align)
 {
   check_compatibility(DEBUG);
 
   align=Align;
-  unsigned int nfields=Y0.Size();
+  size_t nfields=Y0.Size();
   ny=0;
   NY.SetDynVector(*NY0);
-  for(unsigned int i=0; i < nfields; i++)
+  for(size_t i=0; i < nfields; i++)
     ny += NY[i];
 
   Dimension(Y,Y0);
@@ -206,11 +205,11 @@ Solve_RC SYM1::Solve()
 {
   Source(Src,Y,t);
   Problem->Transform(Y,t,dt,YI);
-  for(unsigned int j=0; j < ny; j += 2) y[j] += dt*source[j];
+  for(size_t j=0; j < ny; j += 2) y[j] += dt*source[j];
   Problem->BackTransform(Y,t+dt,dt,YI);
   Source(Src,Y,t);
   Problem->Transform(Y,t,dt,YI);
-  for(unsigned int j=1; j < ny; j += 2) y[j] += dt*source[j];
+  for(size_t j=1; j < ny; j += 2) y[j] += dt*source[j];
   Problem->BackTransform(Y,t+dt,dt,YI);
   Problem->Stochastic(Y,t,dt);
   return SUCCESSFUL;
@@ -245,19 +244,19 @@ Solve_RC PC::Solve()
   return flag;
 }
 
-void PC::Predictor(unsigned int start, unsigned int stop)
+void PC::Predictor(size_t start, size_t stop)
 {
 #pragma omp parallel for num_threads(threads)
-  for(unsigned int j=start; j < stop; j++) y[j]=y0[j]+dt*source0[j];
+  for(size_t j=start; j < stop; j++) y[j]=y0[j]+dt*source0[j];
   Problem->BackTransform(Y,t+dt,dt,YI);
 }
 
-int PC::Corrector(unsigned int start, unsigned int stop)
+int PC::Corrector(size_t start, size_t stop)
 {
   CSource(Src,Y,t+dt);
   if(dynamic) {
 #pragma omp parallel for num_threads(threads)
-    for(unsigned int j=start; j < stop; j++) {
+    for(size_t j=start; j < stop; j++) {
       Var val=y0[j]+halfdt*(source0[j]+source[j]);
       if(!Active(errmask) || errmask[j])
 	CalcError(y0[j],val,y0[j]+dt*source0[j],val);
@@ -265,7 +264,7 @@ int PC::Corrector(unsigned int start, unsigned int stop)
     }
   } else {
 #pragma omp parallel for num_threads(threads)
-    for(unsigned int j=start; j < stop; j++) {
+    for(size_t j=start; j < stop; j++) {
       y[j]=y0[j]+halfdt*(source0[j]+source[j]);
     }
   }
@@ -273,34 +272,34 @@ int PC::Corrector(unsigned int start, unsigned int stop)
   return 1;
 }
 
-void SYM2::Predictor(unsigned int start, unsigned int stop)
+void SYM2::Predictor(size_t start, size_t stop)
 {
 #pragma omp parallel for num_threads(threads)
-  for(unsigned int j=start; j < stop; j++) {
+  for(size_t j=start; j < stop; j++) {
     y[j]=y0[j]+halfdt*source0[j];
     if(++j < stop) y[j]=y0[j];
   }
   Problem->BackTransform(Y,t+dt,dt,YI);
   PSource(Src,Y,t+halfdt);
-  for(unsigned int j=1; j < stop; j += 2) {
+  for(size_t j=1; j < stop; j += 2) {
     y[j] += dt*source[j];
   }
   Problem->BackTransform(Y,t+dt,dt,YI);
 }
 
-int SYM2::Corrector(unsigned int start, unsigned int stop)
+int SYM2::Corrector(size_t start, size_t stop)
 {
   CSource(Src,Y,t+dt);
   if(dynamic) {
 #pragma omp parallel for num_threads(threads)
-    for(unsigned int j=start; j < stop; j += 2) {
+    for(size_t j=start; j < stop; j += 2) {
       y[j] += halfdt*source[j];
       if(!Active(errmask) || errmask[j])
 	CalcError(y0[j],y[j],y0[j]+dt*source0[j],y[j]);
     }
   } else {
 #pragma omp parallel for num_threads(threads)
-    for(unsigned int j=start; j < stop; j += 2)
+    for(size_t j=start; j < stop; j += 2)
       y[j] += halfdt*source[j];
   }
 
@@ -322,14 +321,14 @@ Solve_RC AB2::Solve()
     Source(Src0,Y0,t);
     Problem->Transform(Y0,t,dt,YI);
     if(dynamic) {
-      for(unsigned int j=0; j < ny; j++) {
+      for(size_t j=0; j < ny; j++) {
 	Var val=y0[j]+a0*source0[j]+a1*source[j];
 	CalcError(y0[j],val,y0[j]+dt*source0[j],val);
 	y[j]=val;
       }
       flag=CheckError();
     } else {
-      for(unsigned int j=0; j < ny; j++) {
+      for(size_t j=0; j < ny; j++) {
 	y[j]=y0[j]+a0*source0[j]+a1*source[j];
       }
       flag=SUCCESSFUL;
@@ -347,11 +346,11 @@ Solve_RC AB2::Solve()
     // Initialize with 2nd-order predictor-corrector
     Source(Src0,Y0,t);
     Problem->Transform(Y0,t,dt,YI);
-    for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+dt*source0[j];
+    for(size_t j=0; j < ny; j++) y[j]=y0[j]+dt*source0[j];
     Problem->BackTransform(Y,t+dt,dt,YI);
     Source(Src,Y,t);
     double halfdt=0.5*dt;
-    for(unsigned int j=0; j < ny; j++)
+    for(size_t j=0; j < ny; j++)
       y[j]=y0[j]+halfdt*(source0[j]+source[j]);
     Problem->BackTransform(Y,t+dt,dt,YI);
     flag=SUCCESSFUL;
@@ -382,19 +381,19 @@ Solve_RC ABM3::Solve()
     Set(source,Src[0]);
     Source(Src0,Y0,t);
     Problem->Transform(Y0,t,dt,YI);
-    for(unsigned int j=0; j < ny; j++)
+    for(size_t j=0; j < ny; j++)
       y[j]=y0[j]+a0*source0[j]+a1*source1[j]+a2*source[j];
     Problem->BackTransform(Y,t+dt,dt,YI);
     Source(Src,Y,t);
     if(dynamic) {
-      for(unsigned int j=0; j < ny; j++) {
+      for(size_t j=0; j < ny; j++) {
 	Var val=y0[j]+b0*source[j]+b1*source0[j]+b2*source1[j];
 	CalcError(y0[j],val,y[j],val);
 	y[j]=val;
       }
       flag=CheckError();
     } else {
-      for(unsigned int j=0; j < ny; j++) {
+      for(size_t j=0; j < ny; j++) {
 	y[j]=y0[j]+b0*source[j]+b1*source0[j]+b2*source1[j];
       }
       flag=SUCCESSFUL;
@@ -411,11 +410,11 @@ Solve_RC ABM3::Solve()
     // Initialize with 2nd-order predictor-corrector **IMPROVE: USE RK3C?**
     Source(Src0,Y0,t);
     Problem->Transform(Y0,t,dt,YI);
-    for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+dt*source0[j];
+    for(size_t j=0; j < ny; j++) y[j]=y0[j]+dt*source0[j];
     Problem->BackTransform(Y,t+dt,dt,YI);
     Source(Src,Y,t);
     double halfdt=0.5*dt;
-    for(unsigned int j=0; j < ny; j++)
+    for(size_t j=0; j < ny; j++)
       y[j]=y0[j]+halfdt*(source0[j]+source[j]);
     Problem->BackTransform(Y,t+dt,dt,YI);
     flag=SUCCESSFUL;
@@ -430,7 +429,7 @@ Solve_RC ABM3::Solve()
 
 Solve_RC Midpoint::Solve()
 {
-  int niterations=10;
+  size_t niterations=10;
   swaparray(Y0,Y);
   Set(y,Y[0]);
   Set(y0,Y0[0]);
@@ -438,36 +437,36 @@ Solve_RC Midpoint::Solve()
   Source(Src,Y0,t);
 
   Problem->Transform(Y0,t,dt,YI);
-  for(int i=0; i < niterations; i++) {
-    for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+halfdt*source[j];
+  for(size_t i=0; i < niterations; i++) {
+    for(size_t j=0; j < ny; j++) y[j]=y0[j]+halfdt*source[j];
     Problem->BackTransform(Y,t+dt,dt,YI);
     Source(Src,Y,t);
   }
-  for(unsigned int j=0; j < ny; j++) y[j]=y0[j]+dt*source[j];
+  for(size_t j=0; j < ny; j++) y[j]=y0[j]+dt*source[j];
   Problem->BackTransform(Y,t+dt,dt,YI);
 
   Problem->Stochastic(Y,t,dt);
   return SUCCESSFUL;
 }
 
-void LeapFrog::Predictor(unsigned int start, unsigned int stop)
+void LeapFrog::Predictor(size_t start, size_t stop)
 {
   if(new_y0) {oldhalfdt=lasthalfdt;}
   else yp=yp0;
   double dtprime=halfdt+oldhalfdt;
   Problem->Transform(YP,t-oldhalfdt,dtprime,YP0);
 #pragma omp parallel for num_threads(threads)
-  for(unsigned int j=start; j < stop; j++) yp[j] += dtprime*source0[j];
+  for(size_t j=start; j < stop; j++) yp[j] += dtprime*source0[j];
   Problem->BackTransform(YP,t+halfdt,dtprime,YP0);
   lasthalfdt=halfdt;
 }
 
-int LeapFrog::Corrector(unsigned int start, unsigned int stop)
+int LeapFrog::Corrector(size_t start, size_t stop)
 {
   CSource(Src,YP,t+halfdt);
   if(dynamic) {
 #pragma omp parallel for num_threads(threads)
-    for(unsigned int j=start; j < stop; j++) {
+    for(size_t j=start; j < stop; j++) {
       Var val=y0[j]+dt*source[j];
       if(!Active(errmask) || errmask[j])
 	CalcError(y0[j],val,y0[j]+dt*source0[j],val);
@@ -475,23 +474,23 @@ int LeapFrog::Corrector(unsigned int start, unsigned int stop)
     }
   } else {
 #pragma omp parallel for num_threads(threads)
-    for(unsigned int j=start; j < stop; j++)
+    for(size_t j=start; j < stop; j++)
       y[j]=y0[j]+dt*source[j];
   }
 
   return 1;
 }
 
-int RK::Corrector(unsigned int start, unsigned int stop) {
+int RK::Corrector(size_t start, size_t stop) {
 
   if(dynamic) {
     if(FSAL) {
       RK::Stage(Astages-1,start,stop);
       Source(vSrc[Astages],Y,t+dt);
 #pragma omp parallel for num_threads(threads)
-      for(unsigned int j=start; j < stop; j++) {
+      for(size_t j=start; j < stop; j++) {
 	Var pred=y0[j];
-	for(unsigned int k=0; k < nstages; k++)
+	for(size_t k=0; k < nstages; k++)
 	  pred += b[k]*vsource[k][j];
 	if(!Array::Active(errmask) || errmask[j])
 	  CalcError(y0[j],y[j],pred,y[j]);
@@ -499,11 +498,11 @@ int RK::Corrector(unsigned int start, unsigned int stop) {
     } else {
       rvector as=a[Astages-1];
 #pragma omp parallel for num_threads(threads)
-      for(unsigned int j=start; j < stop; j++) {
+      for(size_t j=start; j < stop; j++) {
 	Var sum0=y0[j];
 	Var sum=sum0;
 	Var pred=sum0;
-	for(unsigned int k=0; k < Astages; k++) {
+	for(size_t k=0; k < Astages; k++) {
 	  Var Skj=vsource[k][j];
 	  sum += as[k]*Skj;
 	  pred += b[k]*Skj;

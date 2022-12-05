@@ -36,24 +36,24 @@ namespace Array {
   
 template<class T>
 class array2L : public array1<T> {
-  unsigned int n;
+  size_t n;
  public:
-  void Dimension(unsigned int n0) {n=n0; this->size=n*(n+1)/2;}
+  void Dimension(size_t n0) {n=n0; this->size=n*(n+1)/2;}
 
-  unsigned int index(int i, int j) const {return i*(i+1)/2+j;}
-  unsigned int N() const {return n;}
+  size_t index(int i, int j) const {return i*(i+1)/2+j;}
+  size_t N() const {return n;}
   
   array2L() {}
-  array2L(unsigned int n0, size_t align=0) {
+  array2L(size_t n0, size_t align=0) {
     Dimension(n0);
     this->CheckActivate(align);
   }
-  array2L(unsigned int n0, T *v0) {Dimension(n0); Dimension(n0,v0);}
+  array2L(size_t n0, T *v0) {Dimension(n0); Dimension(n0,v0);}
   array2L(const array2L<T>& A) : n(A.n) {
     this->v=A.v; this->size=A.size; this->state=A.test(this->temporary);
   }
 	
-  array1<T> operator [] (unsigned int i) const {
+  array1<T> operator [] (size_t i) const {
     __check(i,n,1,1);
     return array1<T>(i+1,this->v+index(i,0));
   }
@@ -63,7 +63,7 @@ class array2L : public array1<T> {
     return array1<T>(i+1,this->v+index(i,0));
   }
 	
-  T& operator () (unsigned int i, unsigned int j) const {
+  T& operator () (size_t i, size_t j) const {
     __check(i,n,2,1);
     __check(j,i+1,2,1);
     return this->v[index(i,j)];
@@ -77,8 +77,8 @@ template<class T>
   std::ostream& operator << (std::ostream& s, const array2L<T>& A)
 {
   T *p=A();
-  for(unsigned int i=0; i < A.N(); i++) {
-    for(unsigned int j=0; j <= i; j++) {
+  for(size_t i=0; i < A.N(); i++) {
+    for(size_t j=0; j <= i; j++) {
       s << *(p++) << " ";
     }
     s << _newl;

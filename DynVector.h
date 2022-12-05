@@ -41,12 +41,12 @@ class DynVector
 {
 protected:	
   T *v;
-  mutable unsigned int size;
-  mutable unsigned int alloc;
+  mutable size_t size;
+  mutable size_t alloc;
   mutable int state;
 public:
   enum alloc_state {unallocated=0, allocated=1, temporary=2};
-  void Allocate(unsigned int s) {
+  void Allocate(size_t s) {
     v=new T[alloc=s]; size=0; set(allocated);
   }
   void Deallocate() const {
@@ -62,7 +62,7 @@ public:
   void SetDynVector(const DynVector<T>& A) {v=A.v; size=A.size;
                                      alloc=A.alloc; state=A.test(temporary);}
   DynVector(const DynVector<T>& A) {SetDynVector(A);}
-  DynVector(unsigned int s) {Allocate(s);}
+  DynVector(size_t s) {Allocate(s);}
   virtual ~DynVector() {Deallocate();}
 
   void Freeze() {state=unallocated;}
@@ -71,10 +71,10 @@ public:
     if(test(temporary)) {Deallocate(); state=unallocated;}
   }
 	
-  unsigned int Alloc() const {return alloc;}
-  unsigned int Size() const {return size;}
+  size_t Alloc() const {return alloc;}
+  size_t Size() const {return size;}
   
-  void Realloc(unsigned int i) {
+  void Realloc(size_t i) {
     if (i == 0 && alloc && test(allocated)) {
       delete [] v;
       clear(allocated);
@@ -82,7 +82,7 @@ public:
       T *v0=v;
       v=new T[i];
       if (size) {
-	for(unsigned int j=0; j < size; j++) v[j]=v0[j];
+	for(size_t j=0; j < size; j++) v[j]=v0[j];
 	if(test(allocated)) delete [] v0;
       }
       set(allocated);
@@ -91,7 +91,7 @@ public:
     if(size > alloc) size=alloc;
   }
   
-  void Size(unsigned int i) {
+  void Size(size_t i) {
     if(i > alloc) Realloc(i);
     size=i;
   }
@@ -101,19 +101,19 @@ public:
     return (a > b) ? a : b;
   }
 
-  T& operator [] (unsigned int i) {
+  T& operator [] (size_t i) {
     if (i >= alloc) Realloc(max(i+1,2*alloc));
     if (i >= size) size=i+1;
     return v[i];
   }
 	
   T& operator [] (int i) {
-    return (*this)[(unsigned int) i];
+    return (*this)[(size_t) i];
   }
 
   T get(unsigned i) {return v[i];}
 	
-  T *operator + (unsigned int i) {return v+i;}
+  T *operator + (size_t i) {return v+i;}
   T *operator + (int i) {return v+i;}
   T *operator () () const {return v;}
   operator T* () const {return v;}
@@ -139,10 +139,10 @@ public:
   }
   
   // Pop v[i], close up, and return.
-  int Pop(T& value, unsigned int i) {
+  int Pop(T& value, size_t i) {
     if(size) {
       value=v[i];
-      for (unsigned int j=i+1; j < size; j++) v[j-1]=v[j];
+      for (size_t j=i+1; j < size; j++) v[j-1]=v[j];
       size--;
       return 0;
     } else return -1;
@@ -157,12 +157,12 @@ public:
     else return NULL;
   }
   
-  void Expand(unsigned int i) {if (i > alloc) Realloc(i);}
+  void Expand(size_t i) {if (i > alloc) Realloc(i);}
 
-  void Load(T a) const {for(unsigned int i=0; i < size; i++) v[i]=a;}
+  void Load(T a) const {for(size_t i=0; i < size; i++) v[i]=a;}
   void Load(const T *a) const {memcpy(v,a,size*sizeof(T));}
   void Store(T *a) const {memcpy(a,v,size*sizeof(T));}
-  void Set(T *a, unsigned int n) {v=a; alloc=n; clear(allocated);}
+  void Set(T *a, size_t n) {v=a; alloc=n; clear(allocated);}
 	
   DynVector<T>& operator = (T a) {Load(a); return *this;}
   DynVector<T>& operator = (const T *a) {Load(a); return *this;}
@@ -175,7 +175,7 @@ public:
   }
 
   ostream& List(ostream& os, int nperline=1) {
-    for(unsigned int i=0; i < size-1;) {
+    for(size_t i=0; i < size-1;) {
       os << v[i];
       if((++i % nperline) == 0) os << endl;
     }
@@ -195,16 +195,16 @@ class StackVector : public DynVector<T> {
 public:
   StackVector() {}
   StackVector(const DynVector<T>& A) {DynVector<T>::SetDynVector(A);}
-  StackVector(unsigned int s) {this->Allocate(s);}
+  StackVector(size_t s) {this->Allocate(s);}
   
-  T& operator [] (unsigned int i) {
+  T& operator [] (size_t i) {
     if (i >= this->size) 
       DynVectorExit("Attempt to access past end of StackVector");
     return this->v[i];
   }
 	
   T& operator [] (int i) {
-    return (*this)[(unsigned int) i];
+    return (*this)[(size_t) i];
   }
 	
   StackVector<T>& operator = (T a) {Load(a); return *this;}
@@ -220,7 +220,7 @@ template<class T>
 ostream& operator << (ostream& s, const DynVector<T>& A)
 {
   T *p=A();
-  for(unsigned int i=0; i < A.Size(); i++) {
+  for(size_t i=0; i < A.Size(); i++) {
     s << *(p++) << " ";
   }
   return s;

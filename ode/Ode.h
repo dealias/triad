@@ -7,18 +7,18 @@ class Exponential0 {
 protected:
   Nuvector nu_inv, expinv, onemexpinv;
 public:
-  void Allocator(unsigned int n) {
+  void Allocator(size_t n) {
     Allocate(expinv,n);
     Allocate(onemexpinv,n);
     Allocate(nu_inv,n);
-    
-    for(unsigned int j=0; j < n; j++) {
+
+    for(size_t j=0; j < n; j++) {
       if(nu[j] != 0.0) nu_inv[j]=1.0/nu[j];
     }
   }
 
-  void TimestepDependence(double dt, unsigned int n) {
-    for(unsigned int j=0; j < n; j++) {
+  void TimestepDependence(double dt, size_t n) {
+    for(size_t j=0; j < n; j++) {
       Nu temp=-expm1(-nu[j]*dt);
       expinv[j]=1.0-temp;
       if(nu[j] == 0.0) onemexpinv[j]=dt;
@@ -31,12 +31,12 @@ class IntegratingFactor {
 protected:
   Nuvector expinv;
 public:
-  void Allocator(unsigned int n) {Allocate(expinv,n);}
-  void TimestepDependence(double dt, unsigned int n) {
-    for(unsigned int j=0; j < n; j++) expinv[j]=exp(-nu[j]*dt);
+  void Allocator(size_t n) {Allocate(expinv,n);}
+  void TimestepDependence(double dt, size_t n) {
+    for(size_t j=0; j < n; j++) expinv[j]=exp(-nu[j]*dt);
   }
 };
-	
+
 class Implicit : public IntegratorBase {
 public:
   void Allocator() {IntegratorBase::Allocator();}
@@ -113,13 +113,13 @@ public:
 
 Solve_RC E_Euler::Solve(const Duvector& Fields)
 {
-  unsigned int nFields=Fields.Size();
+  size_t nFields=Fields.Size();
   Source(Src,Y,t);
   Problem->Transform(Y,t,dt,YI);
-  for(unsigned int s=0; s < nFields; s++) {
-    unsigned int f=Fields[s]; vector y=Y[f]; vector source=Src[f];
-    unsigned int ny=y.Size();
-    for(unsigned int j=0; j < ny; j++)
+  for(size_t s=0; s < nFields; s++) {
+    size_t f=Fields[s]; vector y=Y[f]; vector source=Src[f];
+    size_t ny=y.Size();
+    for(size_t j=0; j < ny; j++)
       y[j]=expinv[j]*y[j]+onemexpinv[j]*source[j];
   }
   Problem->BackTransform(Y,t+dt,dt,YI);
@@ -128,13 +128,13 @@ Solve_RC E_Euler::Solve(const Duvector& Fields)
 
 Solve_RC I_Euler::Solve(const Duvector& Fields)
 {
-  unsigned int nFields=Fields.Size();
+  size_t nFields=Fields.Size();
   Source(Src,Y,t);
   Problem->Transform(Y,t,dt,YI);
-  for(unsigned int s=0; s < nFields; s++) {
-    unsigned int f=Fields[s]; vector y=Y[f]; vector source=Src[f];
-    unsigned int ny=y.Size();
-    for(unsigned int j=0; j < ny; j++)
+  for(size_t s=0; s < nFields; s++) {
+    size_t f=Fields[s]; vector y=Y[f]; vector source=Src[f];
+    size_t ny=y.Size();
+    for(size_t j=0; j < ny; j++)
       y[j]=(y[j]+dt*source[j])*expinv[j];
   }
   Problem->BackTransform(Y,t+dt,dt,YI);
@@ -143,23 +143,23 @@ Solve_RC I_Euler::Solve(const Duvector& Fields)
 
 Solve_RC RB1::Solve(const Duvector& Fields)
 {
-#if 0	 // ** JCB 
+#if 0	 // ** JCB
   Source(Src,Y,t);
   Problem->Transform(Y,t,dt,YI);
   for(int j=0; j < ny; j++)
     y[j] += dt*source[0]/(1.0-dt*(-sin(y[j])-nu[0]));
   Problem->BackTransform(Y0,t+dt,dt,YI);
-#endif	
+#endif
   return SUCCESSFUL;
 }
 
 void I_PC::Predictor()
 {
-  for(unsigned int s=0; s < nFields; s++) {
-    unsigned int f=Fields[s]; vector y0=Y0[f]; vector source0=Src0[f];
+  for(size_t s=0; s < nFields; s++) {
+    size_t f=Fields[s]; vector y0=Y0[f]; vector source0=Src0[f];
     vector y=Y[f];
-    unsigned int ny=y.Size();
-    for(unsigned int j=0; j < ny; j++)
+    size_t ny=y.Size();
+    for(size_t j=0; j < ny; j++)
       y[j]=(y0[j]+dt*source0[j])*expinv[j];
   }
 }
@@ -167,18 +167,18 @@ void I_PC::Predictor()
 int I_PC::Corrector()
 {
   Source(Src,Y,t+dt);
-  for(unsigned int s=0; s < nFields; s++) {
-    unsigned int f=Fields[s]; vector y0=Y0[f]; vector source0=Src0[f];
+  for(size_t s=0; s < nFields; s++) {
+    size_t f=Fields[s]; vector y0=Y0[f]; vector source0=Src0[f];
     vector y=Y[f]; vector source=Src[f];
-    unsigned int ny=y.Size();
+    size_t ny=y.Size();
     if(dynamic) {
-      for(unsigned int j=0; j < ny; j++) {
+      for(size_t j=0; j < ny; j++) {
 	Var pred=y[j];
 	y[j]=y0[j]*expinv[j]+halfdt*(source0[j]*expinv[j]+source[j]);
 	if(!Active(errmask) || errmask[j])
 	  CalcError(y0[j]*expinv[j],y[j],pred,y[j]);
       }
-  } else for(unsigned int j=0; j < ny; j++)
+  } else for(size_t j=0; j < ny; j++)
     y[j]=y0[j]*expinv[j]+halfdt*(source0[j]*expinv[j]+source[j]);
   }
   return 1;
@@ -191,7 +191,7 @@ void LE_PC::Predictor()
   nu[0]=(y0[0] != 0.0) ? -source0[0]/y0[0] : 0.0;
   source0[0] += nu[0]*y0[0];
   TimestepDependence();
-  for(unsigned int j=0; j < ny; j++)
+  for(size_t j=0; j < ny; j++)
     y[j]=expinv[j]*y0[j]+onemexpinv[j]*source0[j];
 }
 
@@ -199,38 +199,38 @@ int LE_PC::Corrector()
 {
   Source(Src,Y,t+dt);
   source[0] += nu[0]*y0[0];
-  for(unsigned int s=0; s < nFields; s++) {
-    unsigned int f=Fields[s]; vector y0=Y0[f]; vector source0=Src0[f];
+  for(size_t s=0; s < nFields; s++) {
+    size_t f=Fields[s]; vector y0=Y0[f]; vector source0=Src0[f];
     vector y=Y[f]; vector source=Src[f];
-    unsigned int ny=y.Size();
+    size_t ny=y.Size();
     if(dynamic) {
-      for(unsigned int j=0; j < ny; j++) {
+      for(size_t j=0; j < ny; j++) {
 	source[j]=0.5*(source0[j]+source[j]);
 	y[j]=expinv[j]*y0[j]+onemexpinv[j]*source[j];
       }
-      for(unsigned int j=0; j < ny; j++)
+      for(size_t j=0; j < ny; j++)
 	if(!Active(errmask) || errmask[j])
 	  CalcError(y0[j]*dtinv,source[j],source0[j],source[j]);
-    } else for(unsigned int j=0; j < ny; j++)
+    } else for(size_t j=0; j < ny; j++)
       y[j]=expinv[j]*y0[j]+onemexpinv[j]*0.5*(source0[j]+source[j]);
   }
-		
+
   return 1;
 }
 #endif
 
 Solve_RC Implicit::Solve(const Duvector& Fields)
 {
-  unsigned int nFields=Fields.Size();
+  size_t nFields=Fields.Size();
   Source(Src,Y,t);
   cout << endl;
-  
-  for(unsigned int s=0; s < nFields; s++) {
-    unsigned int f=Fields[s]; vector y=Y[f];
-    unsigned int ny=y.Size();
-    for(unsigned int j=0; j < ny; j++) {
-#if 0		
-      // Implicit midpoint rule		
+
+  for(size_t s=0; s < nFields; s++) {
+    size_t f=Fields[s]; vector y=Y[f];
+    size_t ny=y.Size();
+    for(size_t j=0; j < ny; j++) {
+#if 0
+      // Implicit midpoint rule
       Var a=0.25*dt*B;
       Var b=dt*(B*y[j]+0.5*A)+1.0;
       Var c=(dt*(0.25*B*y[j]+0.5*A)-1.0)*y[j];
@@ -239,7 +239,7 @@ Solve_RC Implicit::Solve(const Duvector& Fields)
       }
       else y[j]=-c/b;
 #endif
-		
+
 #if 0
       // Backward Euler
       Var a=dt*B;
@@ -248,23 +248,23 @@ Solve_RC Implicit::Solve(const Duvector& Fields)
       if(a != 0.0) y[j]=(-b+sqrt(b*b-4.0*a*c))/(2.0*a);
       else y[j]=-c/b;
 #endif
-		
-		
+
+
 #if 1
       // Linearized Backward Euler
       y[j]=y[j]+dt*source[j]/(1.0-dt*(-A-2.0*B*y[j]));
       //		Complex s=-A-2.0*B*y[j];
       //		y[j]=exp(s*dt)*(y[j]+dt*(source[j]-s*y[j])/(1.0-dt*(-A-2.0*B*y[j]-s)));
 #endif
-		
+
 #if 0
       // Linearized Trapezoidal
       y[j]=y[j]+dt*source[j]/(1.0-0.5*dt*(-A-2.0*B*y[j]));
-#endif		
+#endif
       cout << y[j] << endl;
     }
   }
-	
+
   return SUCCESSFUL;
 }
 

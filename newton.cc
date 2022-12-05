@@ -7,11 +7,11 @@ using namespace std;
 
 // Root solve by Newton-Raphson
 bool newton(Real &x, Real (*f)(Real x), Real (*dfdx)(Real x),
-	    bool verbose, unsigned int MaxIterations)
+	    bool verbose, size_t MaxIterations)
 {
   static const Real epsilon=1000.0*DBL_EPSILON;
 
-  unsigned int i=0;
+  size_t i=0;
   if(verbose) {
     cerr.precision(16);
     cerr << endl << "newton0: " << x << endl;
@@ -42,7 +42,7 @@ bool newton(Real &x, Real (*f)(Real x), Real (*dfdx)(Real x),
 // Root solve by Newton-Raphson bisection
 
 bool newton(Real &x1, Real x2, Real (*f)(Real x), Real (*dfdx)(Real x),
-            bool verbose, unsigned int MaxIterations)
+            bool verbose, size_t MaxIterations)
 {
   static const Real epsilon=1000.0*DBL_EPSILON;
   cerr.precision(16);
@@ -73,7 +73,7 @@ bool newton(Real &x1, Real x2, Real (*f)(Real x), Real (*dfdx)(Real x),
   Real dx=dxold;
   Real y=(*f)(x);
   Real dy=(*dfdx)(x);
-  for(unsigned int j=1; j <= MaxIterations; j++) {
+  for(size_t j=1; j <= MaxIterations; j++) {
     if(((x-x2)*dy-y)*((x-x1)*dy-y) >= 0.0 || fabs(2.0*y) > fabs(dxold*dy)) {
       dxold=dx;
       dx=0.5*(x2-x1);

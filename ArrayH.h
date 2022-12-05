@@ -30,8 +30,8 @@ template<class T>
 class Array1H : public array1<T> {
 public:
   Array1H() {}
-  Array1H(unsigned int mx) {this->Allocate(mx);}
-  Array1H(unsigned int mx, T *v0) {this->Dimension(mx,v0);}
+  Array1H(size_t mx) {this->Allocate(mx);}
+  Array1H(size_t mx, T *v0) {this->Dimension(mx,v0);}
 
   void set(int ix, T a) const {
     if(ix >= 0)
@@ -64,7 +64,7 @@ template<class T>
 class Array1HH {
   typename array1<T>::opt pos,neg;
 public:
-  Array1HH(unsigned int mx, T *vpos, T *vneg) {
+  Array1HH(size_t mx, T *vpos, T *vneg) {
     Dimension(pos,mx,vpos);
     Dimension(neg,mx,vneg);
   }
@@ -88,10 +88,10 @@ template<class T>
 class Array2H : public Array2<T> {
 public:
   Array2H() {}
-  Array2H(unsigned int mx, unsigned int my) {
+  Array2H(size_t mx, size_t my) {
     this->Allocate(2*mx-1,my,1-mx,0);
   }
-  Array2H(unsigned int mx, unsigned int my, T *v0) {
+  Array2H(size_t mx, size_t my, T *v0) {
     this->Allocate(2*mx-1,my,1-mx,0,v0);
   }
 

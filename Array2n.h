@@ -25,7 +25,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 #include "Array.h"
 #include "Arrayp.h"
 
-typedef unsigned int uint;
+typedef size_t uint;
 
 namespace Array {
   

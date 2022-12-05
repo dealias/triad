@@ -31,16 +31,16 @@ static ofstream ofwisdom;
 static const char *wisdom_name="wisdom.txt";
 
 static fftw_plan *plan=NULL, *planinv=NULL;
-static unsigned int nplan=0;
+static size_t nplan=0;
 
 static rfftwnd_plan *crplan=NULL;
-static unsigned int ncrplan=0;
+static size_t ncrplan=0;
 
 static rfftwnd_plan *rcplan=NULL;
-static unsigned int nrcplan=0;
+static size_t nrcplan=0;
 
 // Create plans for size n
-static int init_plan(unsigned int n, int)
+static int init_plan(size_t n, int)
 {
   nplan++;
   plan=new(plan,nplan) fftw_plan;
@@ -62,7 +62,7 @@ static int init_plan(unsigned int n, int)
 }
 
 // Create complex_to_real plans for size n
-static int init_crplan(unsigned int n)
+static int init_crplan(size_t n)
 {
   ncrplan++;
   crplan=new(crplan,ncrplan) rfftwnd_plan;
@@ -83,7 +83,7 @@ static int init_crplan(unsigned int n)
 }
 
 // Create real_to_complex plans for size n
-static int init_rcplan(unsigned int n)
+static int init_rcplan(size_t n)
 {
   nrcplan++;
   rcplan=new(rcplan,nrcplan) rfftwnd_plan;
@@ -103,12 +103,12 @@ static int init_rcplan(unsigned int n)
   return nrcplan;
 }
 
-void scalefft(Complex *data, unsigned int n, unsigned int nk,
-	      unsigned int inc1, unsigned int inc2, Real scale)
+void scalefft(Complex *data, size_t n, size_t nk,
+	      size_t inc1, size_t inc2, Real scale)
 {
-  unsigned int kstop=nk*inc2;
+  size_t kstop=nk*inc2;
   if(inc1 == 1) {
-    for(unsigned int k=0; k < kstop; k += inc2) {
+    for(size_t k=0; k < kstop; k += inc2) {
       Complex *p0=data+k, *pstop=p0+n;
       //#pragma ivdep			
       for(Complex *p=p0; p < pstop; p++) {
@@ -120,7 +120,7 @@ void scalefft(Complex *data, unsigned int n, unsigned int nk,
     Complex *pstop=data+n*inc1;
     for(Complex *p=data; p < pstop; p += inc1) {
       //#pragma ivdep			
-      for(unsigned int k=0; k < kstop; k += inc2) {
+      for(size_t k=0; k < kstop; k += inc2) {
 	p[k].re *= scale;
 	p[k].im *= scale;
       }
@@ -128,14 +128,14 @@ void scalefft(Complex *data, unsigned int n, unsigned int nk,
   }
 }
 
-void signscalefft(Complex *data, unsigned int n, int isign, unsigned int nk,
-		  unsigned int inc1, unsigned int inc2, Real scale)
+void signscalefft(Complex *data, size_t n, int isign, size_t nk,
+		  size_t inc1, size_t inc2, Real scale)
 {
   if(scale == 1.0) {
     if(isign != 1.0) {
-      unsigned int kstop=nk*inc2;
+      size_t kstop=nk*inc2;
       if(inc1 == 1) {
-	for(unsigned int k=0; k < kstop; k += inc2) {
+	for(size_t k=0; k < kstop; k += inc2) {
 	  Complex *p0=data+k, *pstop=p0+n;
 	  //#pragma ivdep			
 	  for(Complex *p=p0; p < pstop; p++) {
@@ -146,7 +146,7 @@ void signscalefft(Complex *data, unsigned int n, int isign, unsigned int nk,
 	Complex *pstop=data+n*inc1;
 	for(Complex *p=data; p < pstop; p += inc1) {
 	  //#pragma ivdep			
-	  for(unsigned int k=0; k < kstop; k += inc2) {
+	  for(size_t k=0; k < kstop; k += inc2) {
 	    p[k].im=-p[k].im;
 	  }
 	}
@@ -155,9 +155,9 @@ void signscalefft(Complex *data, unsigned int n, int isign, unsigned int nk,
   } else {
     if(isign == 1.0) scalefft(data,n,nk,inc1,inc2,scale);
     else {
-      unsigned int kstop=nk*inc2;
+      size_t kstop=nk*inc2;
       if(inc1 == 1) {
-	for(unsigned int k=0; k < kstop; k += inc2) {
+	for(size_t k=0; k < kstop; k += inc2) {
 	  Complex *p0=data+k, *pstop=p0+n;
 	  //#pragma ivdep			
 	  for(Complex *p=p0; p < pstop; p++) {
@@ -169,7 +169,7 @@ void signscalefft(Complex *data, unsigned int n, int isign, unsigned int nk,
 	Complex *pstop=data+n*inc1;
 	for(Complex *p=data; p < pstop; p += inc1) {
 	  //#pragma ivdep			
-	  for(unsigned int k=0; k < kstop; k += inc2) {
+	  for(size_t k=0; k < kstop; k += inc2) {
 	    p[k].re *= scale;
 	    p[k].im *= -scale;
 	  }
@@ -179,21 +179,21 @@ void signscalefft(Complex *data, unsigned int n, int isign, unsigned int nk,
   }
 }
 
-void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
-	  unsigned int inc1, unsigned int inc2, Real scale, int)
+void mfft(Complex *data, size_t log2n, int isign, size_t nk,
+	  size_t inc1, size_t inc2, Real scale, int)
 {
-  static unsigned int TableSize=0;
-  static unsigned int *Table=NULL;
+  static size_t TableSize=0;
+  static size_t *Table=NULL;
 	
-  unsigned int n=1 << log2n;
+  size_t n=1 << log2n;
 	
   if(inc1 == 0) inc1=nk;
 	
   if(n > TableSize) {
-    unsigned int nold=TableSize;
+    size_t nold=TableSize;
     TableSize=n;
-    Table=new(Table,TableSize) unsigned int;
-    for(unsigned int i=nold; i < TableSize; i++) Table[i]=0;
+    Table=new(Table,TableSize) size_t;
+    for(size_t i=nold; i < TableSize; i++) Table[i]=0;
   }
 	
   if(Table[n-1] == 0) Table[n-1]=init_plan(n,inc1);
@@ -205,7 +205,7 @@ void mfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
   if(scale != 1.0) scalefft(data,n,nk,inc1,inc2,scale);
 }
 
-void fft(Complex *data, unsigned int log2n, int isign, Real scale, int)
+void fft(Complex *data, size_t log2n, int isign, Real scale, int)
 {
   mfft(data,log2n,isign,1,1,1,scale);
 }
@@ -229,23 +229,23 @@ void fft(Complex *data, unsigned int log2n, int isign, Real scale, int)
 //
 // Note: To compute a true inverse transform, set scale=1.0/n.
 
-void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
-	    unsigned int inc1, unsigned int inc2, Real scale, int)
+void mcrfft(Complex *data, size_t log2n, int isign, size_t nk,
+	    size_t inc1, size_t inc2, Real scale, int)
 {		 
-  static unsigned int TableSize=0;
-  static unsigned int *Table=NULL;
+  static size_t TableSize=0;
+  static size_t *Table=NULL;
 	
-  unsigned int n=1 << log2n;
+  size_t n=1 << log2n;
   if(log2n == 0) return;
   if(inc1 == 0) inc1=nk;
 	
   signscalefft(data,n/2+1,isign,nk,inc1,inc2,scale);
 
   if(n > TableSize) {
-    unsigned int nold=TableSize;
+    size_t nold=TableSize;
     TableSize=n;
-    Table=new(Table,TableSize) unsigned int;
-    for(unsigned int i=nold; i < TableSize; i++) Table[i]=0;
+    Table=new(Table,TableSize) size_t;
+    for(size_t i=nold; i < TableSize; i++) Table[i]=0;
   }
 	
   if(Table[n-1] == 0) Table[n-1]=init_crplan(n);
@@ -270,21 +270,21 @@ void mcrfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
 //                         -1 for a bit-reversed fft of data (faster).]
 // On exit:  data contains the nk*(n/2+1) Complex Fourier values.
 
-void mrcfft(Complex *data, unsigned int log2n, int isign, unsigned int nk,
-	    unsigned int inc1, unsigned int inc2, Real scale, int)
+void mrcfft(Complex *data, size_t log2n, int isign, size_t nk,
+	    size_t inc1, size_t inc2, Real scale, int)
 {		 
-  static unsigned int TableSize=0;
-  static unsigned int *Table=NULL;
+  static size_t TableSize=0;
+  static size_t *Table=NULL;
 	
-  unsigned int n=1 << log2n;
+  size_t n=1 << log2n;
   if(log2n == 0) return;
   if(inc1 == 0) inc1=nk;
 	
   if(n > TableSize) {
-    unsigned int nold=TableSize;
+    size_t nold=TableSize;
     TableSize=n;
-    Table=new(Table,TableSize) unsigned int;
-    for(unsigned int i=nold; i < TableSize; i++) Table[i]=0;
+    Table=new(Table,TableSize) size_t;
+    for(size_t i=nold; i < TableSize; i++) Table[i]=0;
   }
 	
   if(Table[n-1] == 0) Table[n-1]=init_rcplan(n);

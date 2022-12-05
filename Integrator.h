@@ -7,26 +7,26 @@ class IntegratorBase {
 protected:
   const char *abbrev;
   ProblemBase *Problem;
-  unsigned int ny;
+  size_t ny;
   vector y,source;
   vector2 Y,Src,YI,Yout; // arrays of dependent fields
-  DynVector<unsigned int> NY; // number of variables in each field
+  DynVector<size_t> NY; // number of variables in each field
   double t;
   double dt;
   double sample;
   std::atomic<double> errmax;
-  ivector errmask;
+  uvector errmask;
   double tolmax2,tolmin2;
   double stepfactor,stepinverse,stepnoninverse;
   double growfactor,shrinkfactor;
   double dtmin,dtmax;
-  long long itmax;
-  int microsteps;
+  size_t itmax;
+  size_t microsteps;
   Real microfactor;
-  int microprocess;
-  int verbose;
-  int dynamic;
-  int order;
+  bool microprocess;
+  size_t verbose;
+  size_t dynamic;
+  size_t order;
   double pgrow, pshrink;
   bool FSAL; // First Same As Last
   bool first;
@@ -41,8 +41,8 @@ public:
   const char *Abbrev() {return abbrev;}
   void SetParam(double tolmax, double tolmin, double stepfactor0,
 		double stepnoninverse0, double dtmin0, double dtmax0,
-		long long itmax0, int microsteps0, Real microfactor0,
-		int verbose0, int dynamic0) {
+		size_t itmax0, size_t microsteps0, Real microfactor0,
+		size_t verbose0, size_t dynamic0) {
     if(tolmax < tolmin) msg(ERROR_GLOBAL,"tolmax < tolmin");
     tolmax2=tolmax*tolmax;
     tolmin2=tolmin*tolmin;
@@ -71,7 +71,7 @@ public:
     dynamic=I.dynamic;
   }
   void Integrate(double& t0, double tmax, double& dt0, double sample0,
-		 long long& iteration, unsigned long& nout);
+		 size_t& iteration, size_t& nout);
   void ChangeTimestep(double dtnew);
 
   virtual void Source(const vector2& Src, const vector2& Y, double t) {
@@ -94,7 +94,7 @@ public:
     return errmax;
   }
 
-  int Order() {
+  size_t Order() {
     return order;
   }
 
@@ -102,7 +102,7 @@ public:
 
   virtual bool Exponential() {return false;}
 
-  unsigned int Ny() {
+  size_t Ny() {
     return ny;
   }
 
@@ -126,11 +126,11 @@ public:
 
   void SetProblem(ProblemBase& problem);
 
-  unsigned int Start(int field) {return Problem->Start(field);}
-  unsigned int Stop(int field) {return Problem->Stop(field);}
+  size_t Start(size_t field) {return Problem->Start(field);}
+  size_t Stop(size_t field) {return Problem->Stop(field);}
 
-  virtual void Allocator(const vector2& Y0, DynVector<unsigned int>* NY0,
-			 const ivector& mask, size_t Align=0);
+  virtual void Allocator(const vector2& Y0, DynVector<size_t>* NY0,
+			 const uvector& mask, size_t Align=0);
   virtual void Allocator() {}
   virtual void Allocator(ProblemBase& problem, size_t Align=0) {
     SetProblem(problem);
@@ -140,7 +140,7 @@ public:
 
   virtual const char *Name()=0;
   virtual Solve_RC Solve()=0;
-  virtual int Microfactor() {return 1;}
+  virtual size_t Microfactor() {return 1;}
   virtual void TimestepDependence() {}
 
   virtual void Unswap() {
@@ -197,14 +197,12 @@ inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0,
 
 inline Solve_RC IntegratorBase::CheckError()
 {
-  if(dynamic >= 0) {
-    if(errmax > tolmax2) {
-      return UNSUCCESSFUL;
-    }
-    if(errmax < tolmin2) {
-      return ADJUST;
-    }
-  } else if(++dynamic == 0) dynamic=1;
+  if(errmax > tolmax2) {
+    return UNSUCCESSFUL;
+  }
+  if(errmax < tolmin2) {
+    return ADJUST;
+  }
   return SUCCESSFUL;
 }
 
@@ -212,8 +210,8 @@ class Euler : public IntegratorBase {
 public:
   const char *Name() {return "Euler";}
   Solve_RC Solve();
-  virtual void Predictor(unsigned int n0, unsigned int ny) {
-    for(unsigned int j=n0; j < ny; j++) y[j] += dt*source[j];
+  virtual void Predictor(size_t n0, size_t ny) {
+    for(size_t j=n0; j < ny; j++) y[j] += dt*source[j];
   }
 };
 
@@ -244,7 +242,7 @@ class AB2 : public IntegratorBase {
   vector y0,source0,source1;
   vector2 Y0,Src0,Src1;
   double a0,a1;
-  int init;
+  size_t init;
 public:
   AB2() : IntegratorBase(2) {}
   void Allocator() {
@@ -266,7 +264,7 @@ class ABM3 : public IntegratorBase {
   vector2 Y0,Src0,Src1;
   double a0,a1,a2;
   double b0,b1,b2;
-  int init;
+  size_t init;
 public:
   ABM3() : IntegratorBase(3) {}
   void Allocator() {
@@ -293,7 +291,7 @@ protected:
   vector2 Y0,Src0;
   double halfdt;
 public:
-  PC(int order=2, bool fsal=false) : IntegratorBase(order,fsal) {}
+  PC(size_t order=2, bool fsal=false) : IntegratorBase(order,fsal) {}
   void Allocator() {
     Alloc(Y0,y0);
     Alloc0(Src0,source0);
@@ -316,7 +314,7 @@ public:
     errmax=0.0;
     Set(y,Y[0]);
     Set(y0,Y0[0]);
-    for(unsigned int i=0; i < ny; ++i)
+    for(size_t i=0; i < ny; ++i)
       y0[i]=y[i];
   }
 
@@ -333,8 +331,8 @@ public:
     }
   }
 
-  virtual void Predictor(unsigned int n0, unsigned int ny);
-  virtual int Corrector(unsigned int n0, unsigned int ny);
+  virtual void Predictor(size_t n0, size_t ny);
+  virtual int Corrector(size_t n0, size_t ny);
 };
 
 class LeapFrog : public PC {
@@ -353,67 +351,67 @@ public:
     if(lasthalfdt == 0.0) {
       Set(yp,YP[0]);
       Set(y,Y[0]);
-      for(unsigned int j=0; j < ny; j++) yp[j] = y[j];
+      for(size_t j=0; j < ny; j++) yp[j] = y[j];
     }
     halfdt=0.5*dt;
   }
-  void Predictor(unsigned int n0, unsigned int ny);
-  int Corrector(unsigned int n0, unsigned int ny);
+  void Predictor(size_t n0, size_t ny);
+  int Corrector(size_t n0, size_t ny);
 };
 
 class SYM2 : public PC {
 public:
   const char *Name() {return "Second-Order Symplectic";}
-  void Predictor(unsigned int n0, unsigned int ny);
-  int Corrector(unsigned int n0, unsigned int ny);
+  void Predictor(size_t n0, size_t ny);
+  int Corrector(size_t n0, size_t ny);
 };
 
 class RK : public PC {
 protected:
   Array::array2<double> a,A;   // source coefficients for each stage
   Array::array1<double>::opt b,B,C; // b=error coefficients, C=time coefficients
-  const unsigned int nstages;
+  const size_t nstages;
   vector3 vSrc;
   vector2 vsource;
-  unsigned int Astages;
+  size_t Astages;
 public:
 
-  RK(int order, int nstages, bool fsal=false) :
+  RK(size_t order, size_t nstages, bool fsal=false) :
     PC(order,fsal), nstages(nstages), Astages(fsal ? nstages-1 : nstages) {}
 
-  Var getvsource(unsigned int stage, unsigned int i) {
+  Var getvsource(size_t stage, size_t i) {
     return vsource[stage][i];
   }
-  void setvsource(unsigned int stage, unsigned int i, Var value) {
+  void setvsource(size_t stage, size_t i, Var value) {
     vsource[stage][i]=value;
   }
 
-  unsigned int NStages() {return nstages;}
+  size_t NStages() {return nstages;}
 
   virtual void Source(const vector2& Src, const vector2& Y, double t) {
     Problem->Source(Src,Y,t);
   }
 
 
-  void Source(unsigned int i) {
+  void Source(size_t i) {
     Source(vSrc[i],Y,t+C[i]*dt);
   }
 
   void Allocator(const vector2& YP,
-		 DynVector<unsigned int>* NYP,
-		 const ivector& errmask0,size_t Align=0) {
+		 DynVector<size_t>* NYP,
+		 const uvector& errmask0,size_t Align=0) {
     IntegratorBase::Allocator(YP,NYP,errmask0,Align);
   }
 
   void Csum() {
-    for(unsigned int s=0; s < Astages; ++s) {
+    for(size_t s=0; s < Astages; ++s) {
       Real sum=0.0;
       rvector As=A[s];
-      for(unsigned int k=0; k <= s; ++k)
+      for(size_t k=0; k <= s; ++k)
 	sum += As[k];
       C[s]=sum;
     }
-    for(unsigned int k=0; k < nstages; k++)
+    for(size_t k=0; k < nstages; k++)
       if(B[k] != 0.0) return;
   }
 
@@ -421,7 +419,7 @@ public:
     Alloc(Y0,y0);
     vSrc.Allocate(nstages);
     vsource.Allocate(nstages);
-    for(unsigned int s=0; s < nstages; s++)
+    for(size_t s=0; s < nstages; s++)
       Alloc0(vSrc[s],vsource[s]);
     Src0.Dimension(vSrc[0]);
     new_y0=true;
@@ -438,41 +436,41 @@ public:
     return false;
   }
 
-  virtual void Stage(unsigned int s, unsigned int start, unsigned int stop) {
+  virtual void Stage(size_t s, size_t start, size_t stop) {
     rvector as=a[s];
 #pragma omp parallel for num_threads(threads)
-    for(unsigned int j=start; j < stop; j++) {
+    for(size_t j=start; j < stop; j++) {
       Var sum=y0[j];
-      for(unsigned int k=0; k <= s; k++)
+      for(size_t k=0; k <= s; k++)
 	sum += as[k]*vsource[k][j];
       y[j]=sum;
     }
   }
 
-  void Stage(unsigned int s, int start=0) {
+  void Stage(size_t s, size_t start=0) {
     Stage(s,start,ny);
   }
 
-  virtual void PStage(unsigned int s) {
+  virtual void PStage(size_t s) {
     Stage(s);
   }
 
-  void PredictorSource(unsigned int s) {
+  void PredictorSource(size_t s) {
     double cs=C[s]*dt;
     Problem->BackTransform(Y,t+cs,cs,YI);
     Source(vSrc[s+1],Y,t+cs);
     if(Array::Active(YI)) {swaparray(YI,Y); Set(y,Y[0]);}
   }
 
-  virtual void Predictor(unsigned int start, unsigned int stop) {
-    unsigned int laststage=Astages-1;
-    for(unsigned int s=0; s < laststage; ++s) {
+  virtual void Predictor(size_t start, size_t stop) {
+    size_t laststage=Astages-1;
+    for(size_t s=0; s < laststage; ++s) {
       Stage(s,start,stop);
       PredictorSource(s);
     }
   }
 
-  virtual int Corrector(unsigned int start, unsigned int stop);
+  virtual int Corrector(size_t start, size_t stop);
 
   void allocate() {
     A.Allocate(Astages,Astages);
@@ -481,20 +479,20 @@ public:
 
     Allocate(B,nstages);
     Allocate(b,nstages);
-    for(unsigned int i=0; i < nstages; ++i)
+    for(size_t i=0; i < nstages; ++i)
       B[i]=0.0;
 
     Allocate(C,Astages);
   }
 
   virtual void TimestepDependence() {
-    for(unsigned int s=0; s < Astages; ++s) {
+    for(size_t s=0; s < Astages; ++s) {
       rvector as=a[s];
       rvector As=A[s];
-      for(unsigned int k=0; k <= s; k++)
+      for(size_t k=0; k <= s; k++)
 	as[k]=dt*As[k];
     }
-    for(unsigned int k=0; k < nstages; k++)
+    for(size_t k=0; k < nstages; k++)
       b[k]=dt*B[k];
   }
 };
@@ -581,22 +579,22 @@ class RK4 : public RK {
 public:
   const char *Name() {return "Fourth-Order Runge-Kutta";}
 
-  void Predictor(unsigned int start, unsigned int stop) {
+  void Predictor(size_t start, size_t stop) {
     Real a00=a[0][0];
 #pragma omp parallel for num_threads(threads)
-    for(unsigned int j=start; j < stop; j++)
+    for(size_t j=start; j < stop; j++)
       y[j]=y0[j]+a00*vsource[0][j];
     PredictorSource(0);
 
     Real a11=a[1][1];
 #pragma omp parallel for num_threads(threads)
-    for(unsigned int j=start; j < stop; j++)
+    for(size_t j=start; j < stop; j++)
       y[j]=y0[j]+a11*vsource[1][j];
     PredictorSource(1);
 
     Real a22=a[2][2];
 #pragma omp parallel for num_threads(threads)
-    for(unsigned int j=start; j < stop; j++)
+    for(size_t j=start; j < stop; j++)
       y[j]=y0[j]+a22*vsource[2][j];
     PredictorSource(2);
 
@@ -605,17 +603,17 @@ public:
       Real a30=a3[0];
       Real a31=a3[1];
 #pragma omp parallel for num_threads(threads)
-      for(unsigned int j=start; j < stop; j++)
+      for(size_t j=start; j < stop; j++)
 	y[j]=y0[j]+a30*vsource[0][j]+a31*vsource[1][j];
       PredictorSource(3);
     }
   }
 
-  int Corrector(unsigned int start, unsigned int stop) {
+  int Corrector(size_t start, size_t stop) {
     if(dynamic) {
       rvector as=a[4];
 #pragma omp parallel for num_threads(threads)
-      for(unsigned int j=start; j < stop; j++) {
+      for(size_t j=start; j < stop; j++) {
 	Var sum0=y0[j];
 	Var sum=sum0+as[0]*vsource[0][j]+as[1]*vsource[1][j]+
 	  as[2]*vsource[2][j]+as[3]*vsource[3][j];
@@ -628,7 +626,7 @@ public:
     } else {
       rvector as=a[4];
 #pragma omp parallel for num_threads(threads)
-      for(unsigned int j=start; j < stop; j++) {
+      for(size_t j=start; j < stop; j++) {
 	y[j]=y0[j]+as[0]*vsource[0][j]+as[1]*vsource[1][j]+
 	  as[2]*vsource[2][j]+as[3]*vsource[3][j];
       }
@@ -663,11 +661,11 @@ class RK5 : public RK {
 public:
   const char *Name() {return "Fifth-Order Cash-Karp Runge-Kutta";}
 
-  int Corrector(unsigned int start, unsigned int stop) {
+  int Corrector(size_t start, size_t stop) {
     if(dynamic) {
       rvector as=a[5];
 #pragma omp parallel for num_threads(threads)
-      for(unsigned int j=start; j < stop; j++) {
+      for(size_t j=start; j < stop; j++) {
 	Var sum0=y0[j];
 	Var sum=sum0+as[0]*vsource[0][j]+as[2]*vsource[2][j]+
 	  as[3]*vsource[3][j]+as[5]*vsource[5][j];
@@ -680,7 +678,7 @@ public:
     } else {
       rvector as=a[5];
 #pragma omp parallel for num_threads(threads)
-      for(unsigned int j=start; j < stop; j++) {
+      for(size_t j=start; j < stop; j++) {
 	y[j]=y0[j]+as[0]*vsource[0][j]+as[2]*vsource[2][j]+
 	  as[3]*vsource[3][j]+as[5]*vsource[5][j];
       }
@@ -754,7 +752,7 @@ public:
 class Exact : public RK5 {
 public:
   const char *Name() {return "Exact";}
-  int Microfactor(){return 100;}
+  size_t Microfactor(){return 100;}
 };
 
 #endif

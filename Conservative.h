@@ -8,9 +8,9 @@ class C_RK : public RK {
 protected:
   T *parent;
   Array::Array2<Var> ys;
-  unsigned int start,stop;
-  unsigned int startT,stopT;
-  unsigned int startM,stopM;
+  size_t start,stop;
+  size_t startT,stopT;
+  size_t startM,stopM;
 public:
   C_RK(T *parent, int Order, int nstages, bool FSAL=false) :
     RK(Order,nstages,FSAL), parent(parent) {}
@@ -24,18 +24,18 @@ public:
   void Allocator() {
     RK::Allocator();
     parent->IndexLimits(start,stop,startT,stopT,startM,stopM);
-    unsigned int ny=stop-start;
+    size_t ny=stop-start;
     ys.Allocate(nstages-2,ny,0,start);
   }
 
-  virtual void Predictor(unsigned int, unsigned int) {
-    unsigned int laststage=Astages-1;
-    for(unsigned int s=0; s < laststage; ++s) {
+  virtual void Predictor(size_t, size_t) {
+    size_t laststage=Astages-1;
+    for(size_t s=0; s < laststage; ++s) {
       RK::Stage(s,start,stop);
       if(s < Astages-2) {
         Array::Array1<Var>::opt yss=ys[s];
 #pragma omp parallel for num_threads(threads)
-	for(unsigned int j=start; j < stop; j++)
+	for(size_t j=start; j < stop; j++)
 	  yss[j]=y[j];
       }
       RK::Stage(s,startT,stopT);
@@ -59,8 +59,8 @@ public:
     return x.re >= 0.0 && x.im >= 0.0;
   }
 
-  int Corrector(unsigned int, unsigned int) {
-    unsigned int laststage=Astages-1;
+  int Corrector(size_t, size_t) {
+    size_t laststage=Astages-1;
     if(dynamic) {
       if(FSAL) {
 	msg(ERROR,"Sorry; FSAL not yet implemented");
@@ -68,14 +68,14 @@ public:
 	rvector as=a[laststage];
         bool cont=true;
 #pragma omp parallel for num_threads(threads)
-	for(unsigned int j=start; j < stop; j++) {
+	for(size_t j=start; j < stop; j++) {
           if(cont) {
             Var y0j=y0[j];
             Var Skj=vsource[0][j];
             Var temp=y0j+as[0]*Skj;
             Var yS=product(y0j,Skj);
             Var discr=as[0]*yS;
-            unsigned int k;
+            size_t k;
             for(k=1; k < laststage; k++) {
               Var Skj=vsource[k][j];
               temp += as[k]*Skj;
@@ -106,13 +106,13 @@ public:
       rvector as=a[laststage];
         bool cont=true;
 #pragma omp parallel for num_threads(threads)
-      for(unsigned int j=start; j < stop; j++) {
+      for(size_t j=start; j < stop; j++) {
         if(cont) {
           Var y0j=y0[j];
           Var Skj=vsource[0][j];
           Var temp=y0j+as[0]*Skj;
           Var discr=as[0]*product(y0j,Skj);
-          unsigned int k;
+          size_t k;
           for(k=1; k < laststage; k++) {
             Var Skj=vsource[k][j];
             temp += as[k]*Skj;
@@ -144,7 +144,7 @@ public:
 
     if(dynamic) {
 #pragma omp parallel for num_threads(threads)
-      for(unsigned int j=startM; j < stopM; j++) {
+      for(size_t j=startM; j < stopM; j++) {
 	Var val=y0[j]+halfdt*(source0[j]+source[j]);
 	if(!Array::Active(this->errmask) || this->errmask[j])
 	  CalcError(y0[j],val,y0[j]+this->dt*source0[j],val);
@@ -152,7 +152,7 @@ public:
       }
     } else {
 #pragma omp parallel for num_threads(threads)
-      for(unsigned int j=startM; j < stopM; j++)
+      for(size_t j=startM; j < stopM; j++)
 	y[j]=y0[j]+halfdt*(source0[j]+source[j]);
     }
     return 1;
