@@ -35,7 +35,7 @@ class Ode : public ProblemBase {
 public:
   void InitialConditions();
   void Initialize();
-  void Output(int it);
+  void Output(size_t it);
   void FinalOutput();
 
   Nu LinearCoeff(size_t i) {
@@ -151,7 +151,7 @@ void Ode::Initialize()
   fout << "# " << Integrator->Name() << endl;
 }
 
-void Ode::Output(int)
+void Ode::Output(size_t)
 {
   fout << t << "\t" << abs(y[0]) << "\t" << endl;
 }
