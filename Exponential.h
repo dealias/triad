@@ -125,6 +125,7 @@ public:
 
   inline void TimestepDependence() {
     if(this->startN < this->stopN) RK::TimestepDependence();
+#pragma omp parallel for num_threads(threads)
     for(size_t j=this->start; j < this->stop; j++) {
       Nu nuk=this->parent->LinearCoeff(j);
       Nu x=-nuk*this->dt;
@@ -147,6 +148,7 @@ public:
 
   inline void TimestepDependence() {
     if(this->startN < this->stopN) RK::TimestepDependence();
+#pragma omp parallel for num_threads(threads)
     for(size_t j=this->start; j < this->stop; j++) {
       Nu nuk=this->parent->LinearCoeff(j);
       Nu ph0=exp(-nuk*this->dt);
@@ -175,6 +177,7 @@ public:
 
   inline void TimestepDependence() {
     if(this->startN < this->stopN) RK::TimestepDependence();
+#pragma omp parallel for num_threads(threads)
     for(size_t j=this->start; j < this->stop; j++) {
       Nu nuk=this->parent->LinearCoeff(j);
       Nu x=-nuk*this->dt;
@@ -205,6 +208,7 @@ public:
 
   inline void TimestepDependence() {
     if(this->startN < this->stopN) RK::TimestepDependence();
+#pragma omp parallel for num_threads(threads)
     for(size_t j=this->start; j < this->stop; j++) {
       Nu nuk=this->parent->LinearCoeff(j);
       Nu x=-nuk*this->dt;
@@ -249,6 +253,7 @@ public:
 
   inline void TimestepDependence() {
     if(this->startN < this->stopN) RK::TimestepDependence();
+#pragma omp parallel for num_threads(threads)
     for(size_t j=this->start; j < this->stop; j++) {
       Nu nuk=this->parent->LinearCoeff(j);
       Nu x=-nuk*this->dt;
@@ -327,7 +332,9 @@ public:
 
   inline void TimestepDependence() {
     const double sixth=1.0/6.0;
-    if(this->startN < this->stopN) RK::TimestepDependence();
+    if(this->startN < this->stopN)
+      RK::TimestepDependence();
+#pragma omp parallel for num_threads(threads)
     for(size_t j=this->start; j < this->stop; j++) {
       Nu nuk=this->parent->LinearCoeff(j);
       Nu x=-nuk*this->dt;

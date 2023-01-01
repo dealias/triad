@@ -1,6 +1,8 @@
 #ifndef __Integrator_h__
 #define __Integrator_h__ 1
 
+#include "parallel.h"
+
 #include <atomic>
 
 class IntegratorBase {
@@ -177,8 +179,8 @@ extern IntegratorBase *Integrator;
 template<typename T>
 void update_maximum(std::atomic<T>& max, T const& value) noexcept
 {
-    T prev=max;
-    while(prev < value && !max.compare_exchange_weak(prev,value));
+  T prev=max;
+  while(prev < value && !max.compare_exchange_weak(prev,value));
 }
 
 inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0,
@@ -211,7 +213,11 @@ public:
   const char *Name() {return "Euler";}
   Solve_RC Solve();
   virtual void Predictor(size_t n0, size_t ny) {
-    for(size_t j=n0; j < ny; j++) y[j] += dt*source[j];
+    PARALLELIF(
+      ny > threshold,
+      for(size_t j=n0; j < ny; j++)
+        y[j] += dt*source[j];
+      );
   }
 };
 
@@ -314,8 +320,11 @@ public:
     errmax=0.0;
     Set(y,Y[0]);
     Set(y0,Y0[0]);
-    for(size_t i=0; i < ny; ++i)
-      y0[i]=y[i];
+    PARALLELIF(
+      ny > threshold,
+      for(size_t i=0; i < ny; ++i)
+        y0[i]=y[i];
+      );
   }
 
   void initialize() {
@@ -351,7 +360,11 @@ public:
     if(lasthalfdt == 0.0) {
       Set(yp,YP[0]);
       Set(y,Y[0]);
-      for(size_t j=0; j < ny; j++) yp[j] = y[j];
+      PARALLELIF(
+        ny > threshold,
+        for(size_t j=0; j < ny; j++)
+          yp[j] = y[j];
+        );
     }
     halfdt=0.5*dt;
   }
@@ -438,13 +451,14 @@ public:
 
   virtual void Stage(size_t s, size_t start, size_t stop) {
     rvector as=a[s];
-#pragma omp parallel for num_threads(threads)
-    for(size_t j=start; j < stop; j++) {
-      Var sum=y0[j];
-      for(size_t k=0; k <= s; k++)
-	sum += as[k]*vsource[k][j];
-      y[j]=sum;
-    }
+    PARALLELIF(
+      (stop-start)*(s+1) > threshold,
+      for(size_t j=start; j < stop; j++) {
+        Var sum=y0[j];
+        for(size_t k=0; k <= s; k++)
+          sum += as[k]*vsource[k][j];
+        y[j]=sum;
+      });
   }
 
   void Stage(size_t s, size_t start=0) {
@@ -581,30 +595,38 @@ public:
 
   void Predictor(size_t start, size_t stop) {
     Real a00=a[0][0];
-#pragma omp parallel for num_threads(threads)
-    for(size_t j=start; j < stop; j++)
-      y[j]=y0[j]+a00*vsource[0][j];
+    PARALLELIF(
+      stop-start > threshold,
+      for(size_t j=start; j < stop; j++)
+        y[j]=y0[j]+a00*vsource[0][j];
+      );
     PredictorSource(0);
 
     Real a11=a[1][1];
-#pragma omp parallel for num_threads(threads)
-    for(size_t j=start; j < stop; j++)
-      y[j]=y0[j]+a11*vsource[1][j];
+    PARALLELIF(
+      stop-start > threshold,
+      for(size_t j=start; j < stop; j++)
+        y[j]=y0[j]+a11*vsource[1][j];
+      );
     PredictorSource(1);
 
     Real a22=a[2][2];
-#pragma omp parallel for num_threads(threads)
-    for(size_t j=start; j < stop; j++)
-      y[j]=y0[j]+a22*vsource[2][j];
+    PARALLELIF(
+      stop-start > threshold,
+      for(size_t j=start; j < stop; j++)
+        y[j]=y0[j]+a22*vsource[2][j];
+      );
     PredictorSource(2);
 
     if(dynamic) {
       rvector a3=a[3];
       Real a30=a3[0];
       Real a31=a3[1];
-#pragma omp parallel for num_threads(threads)
-      for(size_t j=start; j < stop; j++)
-	y[j]=y0[j]+a30*vsource[0][j]+a31*vsource[1][j];
+      PARALLELIF(
+        stop-start > threshold,
+        for(size_t j=start; j < stop; j++)
+          y[j]=y0[j]+a30*vsource[0][j]+a31*vsource[1][j];
+        );
       PredictorSource(3);
     }
   }
@@ -612,24 +634,26 @@ public:
   int Corrector(size_t start, size_t stop) {
     if(dynamic) {
       rvector as=a[4];
-#pragma omp parallel for num_threads(threads)
-      for(size_t j=start; j < stop; j++) {
-	Var sum0=y0[j];
-	Var sum=sum0+as[0]*vsource[0][j]+as[1]*vsource[1][j]+
+      PARALLELIF(
+        stop-start > threshold,
+        for(size_t j=start; j < stop; j++) {
+          Var sum0=y0[j];
+          Var sum=sum0+as[0]*vsource[0][j]+as[1]*vsource[1][j]+
 	  as[2]*vsource[2][j]+as[3]*vsource[3][j];
-	Var pred=sum0+b[0]*vsource[0][j]+b[1]*vsource[1][j]+
+          Var pred=sum0+b[0]*vsource[0][j]+b[1]*vsource[1][j]+
 	  b[4]*vsource[4][j];
-	if(!Array::Active(errmask) || errmask[j])
-	  CalcError(sum0,sum,pred,sum);
-	y[j]=sum;
-      }
+          if(!Array::Active(errmask) || errmask[j])
+            CalcError(sum0,sum,pred,sum);
+          y[j]=sum;
+        });
     } else {
       rvector as=a[4];
-#pragma omp parallel for num_threads(threads)
-      for(size_t j=start; j < stop; j++) {
-	y[j]=y0[j]+as[0]*vsource[0][j]+as[1]*vsource[1][j]+
-	  as[2]*vsource[2][j]+as[3]*vsource[3][j];
-      }
+      PARALLELIF(
+        stop-start > threshold,
+        for(size_t j=start; j < stop; j++)
+          y[j]=y0[j]+as[0]*vsource[0][j]+as[1]*vsource[1][j]+
+            as[2]*vsource[2][j]+as[3]*vsource[3][j];
+        );
     }
     return 1;
   };
@@ -664,24 +688,26 @@ public:
   int Corrector(size_t start, size_t stop) {
     if(dynamic) {
       rvector as=a[5];
-#pragma omp parallel for num_threads(threads)
-      for(size_t j=start; j < stop; j++) {
-	Var sum0=y0[j];
-	Var sum=sum0+as[0]*vsource[0][j]+as[2]*vsource[2][j]+
+      PARALLELIF(
+        stop-start > threshold,
+        for(size_t j=start; j < stop; j++) {
+          Var sum0=y0[j];
+          Var sum=sum0+as[0]*vsource[0][j]+as[2]*vsource[2][j]+
 	  as[3]*vsource[3][j]+as[5]*vsource[5][j];
-	Var pred=sum0+b[0]*vsource[0][j]+b[2]*vsource[2][j]+
+          Var pred=sum0+b[0]*vsource[0][j]+b[2]*vsource[2][j]+
 	  +b[3]*vsource[3][j]+b[4]*vsource[4][j]+b[5]*vsource[5][j];
-	if(!Array::Active(errmask) || errmask[j])
-	  CalcError(sum0,sum,pred,sum);
-	y[j]=sum;
-      }
+          if(!Array::Active(errmask) || errmask[j])
+            CalcError(sum0,sum,pred,sum);
+          y[j]=sum;
+        });
     } else {
       rvector as=a[5];
-#pragma omp parallel for num_threads(threads)
-      for(size_t j=start; j < stop; j++) {
-	y[j]=y0[j]+as[0]*vsource[0][j]+as[2]*vsource[2][j]+
-	  as[3]*vsource[3][j]+as[5]*vsource[5][j];
-      }
+      PARALLELIF(
+        stop-start > threshold,
+        for(size_t j=start; j < stop; j++)
+          y[j]=y0[j]+as[0]*vsource[0][j]+as[2]*vsource[2][j]+
+            as[3]*vsource[3][j]+as[5]*vsource[5][j];
+        );
     }
     return 1;
   };
