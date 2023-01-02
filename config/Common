@@ -16,6 +16,6 @@ vpath %.c $(TRI)
 include $(TRI)/config/$(shell uname -m)
 
 UTILS = utils msg strcasecmp new $(ARCH) $(POLL)
-CORE = kernel Integrator Param
+CORE = kernel Integrator Param parallel
 
 .SUFFIXES: .cc
