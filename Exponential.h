@@ -47,14 +47,15 @@ public:
   void Stage(size_t s, size_t start, size_t stop) {
     NuVector phi0s=phi0[s];
     Array::Array2<Nu> es=e[s];
-#pragma omp parallel for num_threads(threads)
-    for(size_t j=start; j < stop; j++) {
-      Var sum=phi0s[j]*y0[j];
-      NuVector esj=es[j];
-      for(size_t k=0; k <= s; k++)
-	sum += esj[k]*vsource[k][j];
-      y[j]=sum;
-    }
+    PARALLELIF(
+      stop-start > threshold,
+      for(size_t j=start; j < stop; j++) {
+        Var sum=phi0s[j]*y0[j];
+        NuVector esj=es[j];
+        for(size_t k=0; k <= s; k++)
+          sum += esj[k]*vsource[k][j];
+        y[j]=sum;
+      });
   }
 
   virtual void PStage(size_t s) {
@@ -75,34 +76,36 @@ public:
       if(FSAL) {
 	Stage(Astages-1,start,stop);
 	RK::Corrector(startN,stopN);
-#pragma omp parallel for num_threads(threads)
-	for(size_t j=start; j < stop; j++) {
-	  NuVector fj=f[j];
-	  Var sum0=y0[j];
-	  Var pred=phi0s[j]*sum0;
-	  for(size_t k=0; k < nstages; k++)
-	    pred += fj[k]*vsource[k][j];
-	  if(!Array::Active(errmask) || errmask[j])
-	    CalcError(sum0,y[j],pred,y[j]);
-	}
+        PARALLELIF(
+          stop-start > threshold,
+          for(size_t j=start; j < stop; j++) {
+            NuVector fj=f[j];
+            Var sum0=y0[j];
+            Var pred=phi0s[j]*sum0;
+            for(size_t k=0; k < nstages; k++)
+              pred += fj[k]*vsource[k][j];
+            if(!Array::Active(errmask) || errmask[j])
+              CalcError(sum0,y[j],pred,y[j]);
+          });
       } else {
 	Array::Array2<Nu> es=e[Astages-1];
-#pragma omp parallel for num_threads(threads)
-	for(size_t j=start; j < stop; j++) {
-	  NuVector esj=es[j];
-	  NuVector fj=f[j];
-	  Var sum0=y0[j];
-	  Var sum=phi0s[j]*sum0;
-	  Var pred=sum;
-	  for(size_t k=0; k < Astages; k++) {
-	    Var Skj=vsource[k][j];
-	    sum += esj[k]*Skj;
-	    pred += fj[k]*Skj;
-	  }
-	  if(!Array::Active(errmask) || errmask[j])
-	    CalcError(sum0,sum,pred,sum);
-	  y[j]=sum;
-	}
+        PARALLELIF(
+          stop-start > threshold,
+          for(size_t j=start; j < stop; j++) {
+            NuVector esj=es[j];
+            NuVector fj=f[j];
+            Var sum0=y0[j];
+            Var sum=phi0s[j]*sum0;
+            Var pred=sum;
+            for(size_t k=0; k < Astages; k++) {
+              Var Skj=vsource[k][j];
+              sum += esj[k]*Skj;
+              pred += fj[k]*Skj;
+            }
+            if(!Array::Active(errmask) || errmask[j])
+              CalcError(sum0,sum,pred,sum);
+            y[j]=sum;
+          });
 	RK::Corrector(startN,stopN);
       }
     } else {
@@ -125,14 +128,15 @@ public:
 
   inline void TimestepDependence() {
     if(this->startN < this->stopN) RK::TimestepDependence();
-#pragma omp parallel for num_threads(threads)
-    for(size_t j=this->start; j < this->stop; j++) {
-      Nu nuk=this->parent->LinearCoeff(j);
-      Nu x=-nuk*this->dt;
-      Nu ph1=phi1(x); // (e^x-1)/x
-      this->phi0[0][j]=x*ph1+1.0;
-      this->e[0][j][0]=ph1*this->dt;
-    }
+    PARALLELIF(
+      this->stop-this->start > threshold,
+      for(size_t j=this->start; j < this->stop; j++) {
+        Nu nuk=this->parent->LinearCoeff(j);
+        Nu x=-nuk*this->dt;
+        Nu ph1=phi1(x); // (e^x-1)/x
+        this->phi0[0][j]=x*ph1+1.0;
+        this->e[0][j][0]=ph1*this->dt;
+      });
   }
 };
 
@@ -148,13 +152,14 @@ public:
 
   inline void TimestepDependence() {
     if(this->startN < this->stopN) RK::TimestepDependence();
-#pragma omp parallel for num_threads(threads)
-    for(size_t j=this->start; j < this->stop; j++) {
-      Nu nuk=this->parent->LinearCoeff(j);
-      Nu ph0=exp(-nuk*this->dt);
-      this->phi0[0][j]=ph0;
-      this->e[0][j][0]=ph0*this->dt;
-    }
+    PARALLELIF(
+      this->stop-this->start > threshold,
+      for(size_t j=this->start; j < this->stop; j++) {
+        Nu nuk=this->parent->LinearCoeff(j);
+        Nu ph0=exp(-nuk*this->dt);
+        this->phi0[0][j]=ph0;
+        this->e[0][j][0]=ph0*this->dt;
+      });
   }
 };
 
@@ -177,17 +182,18 @@ public:
 
   inline void TimestepDependence() {
     if(this->startN < this->stopN) RK::TimestepDependence();
-#pragma omp parallel for num_threads(threads)
-    for(size_t j=this->start; j < this->stop; j++) {
-      Nu nuk=this->parent->LinearCoeff(j);
-      Nu x=-nuk*this->dt;
-      Nu ph1=phi1(x); // (e^x-1)/x
-      this->phi0[1][j]=this->phi0[0][j]=x*ph1+1.0;
-      ph1 *= this->dt;
-      this->e[0][j][0]=ph1;
-      this->f[j][0]=ph1;
-      this->e[1][j][1]=this->e[1][j][0]=0.5*ph1;
-    }
+    PARALLELIF(
+      this->stop-this->start > threshold,
+      for(size_t j=this->start; j < this->stop; j++) {
+        Nu nuk=this->parent->LinearCoeff(j);
+        Nu x=-nuk*this->dt;
+        Nu ph1=phi1(x); // (e^x-1)/x
+        this->phi0[1][j]=this->phi0[0][j]=x*ph1+1.0;
+        ph1 *= this->dt;
+        this->e[0][j][0]=ph1;
+        this->f[j][0]=ph1;
+        this->e[1][j][1]=this->e[1][j][0]=0.5*ph1;
+      });
   }
 };
 
@@ -208,21 +214,22 @@ public:
 
   inline void TimestepDependence() {
     if(this->startN < this->stopN) RK::TimestepDependence();
-#pragma omp parallel for num_threads(threads)
-    for(size_t j=this->start; j < this->stop; j++) {
-      Nu nuk=this->parent->LinearCoeff(j);
-      Nu x=-nuk*this->dt;
-      Nu xh=0.5*x;
-      Nu ph1H=0.5*phi1(xh)*this->dt;
-      this->phi0[0][j]=-nuk*ph1H+1.0;
-      this->e[0][j][0]=ph1H;
-      Nu ph2=phi2(x)*this->dt;
-      Nu ph1=x*ph2+this->dt;
-      this->phi0[1][j]=-nuk*ph1+1.0;
-      this->f[j][0]=ph1;
-      this->e[1][j][0]=ph1-2.0*ph2;
-      this->e[1][j][1]=2.0*ph2;
-    }
+    PARALLELIF(
+      this->stop-this->start > threshold,
+      for(size_t j=this->start; j < this->stop; j++) {
+        Nu nuk=this->parent->LinearCoeff(j);
+        Nu x=-nuk*this->dt;
+        Nu xh=0.5*x;
+        Nu ph1H=0.5*phi1(xh)*this->dt;
+        this->phi0[0][j]=-nuk*ph1H+1.0;
+        this->e[0][j][0]=ph1H;
+        Nu ph2=phi2(x)*this->dt;
+        Nu ph1=x*ph2+this->dt;
+        this->phi0[1][j]=-nuk*ph1+1.0;
+        this->f[j][0]=ph1;
+        this->e[1][j][0]=ph1-2.0*ph2;
+        this->e[1][j][1]=2.0*ph2;
+      });
   }
 };
 
@@ -253,44 +260,45 @@ public:
 
   inline void TimestepDependence() {
     if(this->startN < this->stopN) RK::TimestepDependence();
-#pragma omp parallel for num_threads(threads)
-    for(size_t j=this->start; j < this->stop; j++) {
-      Nu nuk=this->parent->LinearCoeff(j);
-      Nu x=-nuk*this->dt;
-      Nu xh=0.5*x;
-      Nu xi=0.75*x;
+    PARALLELIF(
+      this->stop-this->start > threshold,
+      for(size_t j=this->start; j < this->stop; j++) {
+        Nu nuk=this->parent->LinearCoeff(j);
+        Nu x=-nuk*this->dt;
+        Nu xh=0.5*x;
+        Nu xi=0.75*x;
 
-      Nu ph1=phi1(x)*this->dt;
-      Nu ph2=phi2(x)*this->dt;
+        Nu ph1=phi1(x)*this->dt;
+        Nu ph2=phi2(x)*this->dt;
 
-      Nu ph1h=phi1(xh)*this->dt;
-      Nu ph2h=phi2(xh)*this->dt;
+        Nu ph1h=phi1(xh)*this->dt;
+        Nu ph2h=phi2(xh)*this->dt;
 
-      Nu ph1i=phi1(xi)*this->dt;
-      Nu ph2i=phi2(xi)*this->dt;
+        Nu ph1i=phi1(xi)*this->dt;
+        Nu ph2i=phi2(xi)*this->dt;
 
-      this->phi0[0][j]=exp(xh);
-      this->phi0[1][j]=exp(xi);
-      this->phi0[2][j]=exp(x);
+        this->phi0[0][j]=exp(xh);
+        this->phi0[1][j]=exp(xi);
+        this->phi0[2][j]=exp(x);
 
-      this->e[0][j][0]=0.5*ph1h;
+        this->e[0][j][0]=0.5*ph1h;
 
-      Nu a11j=9.0/8.0*ph2i+3.0/8.0*ph2h;
-      this->e[1][j][0]=0.75*ph1i-a11j;
-      this->e[1][j][1]=a11j;
+        Nu a11j=9.0/8.0*ph2i+3.0/8.0*ph2h;
+        this->e[1][j][0]=0.75*ph1i-a11j;
+        this->e[1][j][1]=a11j;
 
-      Nu a21j=ph1/3.0;
-      Nu a22j=4.0/3.0*ph2-2.0/9.0*ph1;
+        Nu a21j=ph1/3.0;
+        Nu a22j=4.0/3.0*ph2-2.0/9.0*ph1;
 
-      this->e[2][j][0]=2.0*a21j-a22j;
-      this->e[2][j][1]=a21j;
-      this->e[2][j][2]=a22j;
+        this->e[2][j][0]=2.0*a21j-a22j;
+        this->e[2][j][1]=a21j;
+        this->e[2][j][2]=a22j;
 
-      this->f[j][0]=ph1-17.0/12.0*ph2;
-      this->f[j][1]=0.5*ph2;
-      this->f[j][2]=2.0/3.0*ph2;
-      this->f[j][3]=0.25*ph2;
-    }
+        this->f[j][0]=ph1-17.0/12.0*ph2;
+        this->f[j][1]=0.5*ph2;
+        this->f[j][2]=2.0/3.0*ph2;
+        this->f[j][3]=0.25*ph2;
+      });
   }
 };
 
@@ -334,67 +342,68 @@ public:
     const double sixth=1.0/6.0;
     if(this->startN < this->stopN)
       RK::TimestepDependence();
-#pragma omp parallel for num_threads(threads)
-    for(size_t j=this->start; j < this->stop; j++) {
-      Nu nuk=this->parent->LinearCoeff(j);
-      Nu x=-nuk*this->dt;
-      Nu x1=sixth*x;
-      Nu x2=0.5*x;
+    PARALLELIF(
+      this->stop-this->start > threshold,
+      for(size_t j=this->start; j < this->stop; j++) {
+        Nu nuk=this->parent->LinearCoeff(j);
+        Nu x=-nuk*this->dt;
+        Nu x1=sixth*x;
+        Nu x2=0.5*x;
 
-      // Automate this with expfactors?
-      this->phi0[0][j]=exp(x1);
-      Nu e2=exp(x2);
-      this->phi0[1][j]=e2;
-      this->phi0[2][j]=e2;
-      Nu e=exp(x);
-      this->phi0[3][j]=e;
-      this->phi0[4][j]=e;
+        // Automate this with expfactors?
+        this->phi0[0][j]=exp(x1);
+        Nu e2=exp(x2);
+        this->phi0[1][j]=e2;
+        this->phi0[2][j]=e2;
+        Nu e=exp(x);
+        this->phi0[3][j]=e;
+        this->phi0[4][j]=e;
 
-      Nu w1_1=phi1(x1)*this->dt;
-      Nu w2_1=phi2(x1)*this->dt;
+        Nu w1_1=phi1(x1)*this->dt;
+        Nu w2_1=phi2(x1)*this->dt;
 
-      Nu w1_2=phi1(x2)*this->dt;
-      Nu w2_2=phi2(x2)*this->dt;
-      Nu w3_2=phi3(x2)*this->dt;
+        Nu w1_2=phi1(x2)*this->dt;
+        Nu w2_2=phi2(x2)*this->dt;
+        Nu w3_2=phi3(x2)*this->dt;
 
-      Nu w1=phi1(x)*this->dt;
-      Nu w2=phi2(x)*this->dt;
-      Nu w3=phi3(x)*this->dt;
+        Nu w1=phi1(x)*this->dt;
+        Nu w2=phi2(x)*this->dt;
+        Nu w3=phi3(x)*this->dt;
 
-      this->e[0][j][0]=sixth*w1_1;
+        this->e[0][j][0]=sixth*w1_1;
 
-      Nu a1_1=1.5*w2_2+0.5*w2_1;
+        Nu a1_1=1.5*w2_2+0.5*w2_1;
 
-      this->e[1][j][0]=0.5*w1_2-a1_1;
-      this->e[1][j][1]=a1_1;
+        this->e[1][j][0]=0.5*w1_2-a1_1;
+        this->e[1][j][1]=a1_1;
 
-      Nu a2_1=19.0/60.0*w1+0.5*w1_2+0.5*w1_1+2.0*w2_2+13.0/6.0*w2_1+0.6*w3_2;
-      Nu a2_2=-19.0/180.0*w1-sixth*(w1_2+w1_1+w2_2)+1.0/9.0*w2_1-0.2*w3_2;
-      this->e[2][j][0]=0.5*w1_2-a2_1-a2_2;
-      this->e[2][j][1]=a2_1;
-      this->e[2][j][2]=a2_2;
+        Nu a2_1=19.0/60.0*w1+0.5*w1_2+0.5*w1_1+2.0*w2_2+13.0/6.0*w2_1+0.6*w3_2;
+        Nu a2_2=-19.0/180.0*w1-sixth*(w1_2+w1_1+w2_2)+1.0/9.0*w2_1-0.2*w3_2;
+        this->e[2][j][0]=0.5*w1_2-a2_1-a2_2;
+        this->e[2][j][1]=a2_1;
+        this->e[2][j][2]=a2_2;
 
-      Nu a3_3=w2+w2_2-6.0*w3-3.0*w3_2;
-      Nu a3_1=3.0*w2-4.5*w2_2-2.5*w2_1+6.0*a3_3+a2_1;
-      Nu a3_2=6.0*w3+3.0*w3_2-2.0*a3_3+a2_2;
+        Nu a3_3=w2+w2_2-6.0*w3-3.0*w3_2;
+        Nu a3_1=3.0*w2-4.5*w2_2-2.5*w2_1+6.0*a3_3+a2_1;
+        Nu a3_2=6.0*w3+3.0*w3_2-2.0*a3_3+a2_2;
 
-      // Low-order approximation
-      this->f[j][0]=w1-a3_1-a3_2-a3_3;
-      this->f[j][1]=a3_1;
-      this->f[j][2]=a3_2;
-      this->f[j][3]=a3_3;
-      this->f[j][4]=0;
+        // Low-order approximation
+        this->f[j][0]=w1-a3_1-a3_2-a3_3;
+        this->f[j][1]=a3_1;
+        this->f[j][2]=a3_2;
+        this->f[j][3]=a3_3;
+        this->f[j][4]=0;
 
-      for(size_t i=0; i < 4; ++i)
-        this->e[3][j][i]=this->f[j][i];
+        for(size_t i=0; i < 4; ++i)
+          this->e[3][j][i]=this->f[j][i];
 
-      // High-order approximation
-      this->e[4][j][0]=w1-(67.0/9.0)*w2+(52.0/3.0)*w3;
-      this->e[4][j][1]=8.0*w2-24.0*w3;
-      this->e[4][j][2]=(26.0/3.0)*w3-(11.0/9.0)*w2;
-      this->e[4][j][3]=(7.0/9.0)*w2-(10.0/3.0)*w3;
-      this->e[4][j][4]=(4.0/3.0)*w3-(1.0/9.0)*w2;
-    }
+        // High-order approximation
+        this->e[4][j][0]=w1-(67.0/9.0)*w2+(52.0/3.0)*w3;
+        this->e[4][j][1]=8.0*w2-24.0*w3;
+        this->e[4][j][2]=(26.0/3.0)*w3-(11.0/9.0)*w2;
+        this->e[4][j][3]=(7.0/9.0)*w2-(10.0/3.0)*w3;
+        this->e[4][j][4]=(4.0/3.0)*w3-(1.0/9.0)*w2;
+      });
   }
 };
 
