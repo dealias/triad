@@ -688,25 +688,49 @@ public:
   int Corrector(size_t start, size_t stop) {
     if(dynamic) {
       rvector as=a[5];
+      Real a0=as[0];
+      Real a2=as[2];
+      Real a3=as[3];
+      Real a5=as[5];
+      Real b0=b[0];
+      Real b2=b[2];
+      Real b3=b[3];
+      Real b4=b[4];
+      Real b5=b[5];
+      vector vsource0=vsource[0];
+      vector vsource2=vsource[2];
+      vector vsource3=vsource[3];
+      vector vsource4=vsource[4];
+      vector vsource5=vsource[5];
       PARALLELIF(
         stop-start > threshold,
         for(size_t j=start; j < stop; j++) {
           Var sum0=y0[j];
-          Var sum=sum0+as[0]*vsource[0][j]+as[2]*vsource[2][j]+
-	  as[3]*vsource[3][j]+as[5]*vsource[5][j];
-          Var pred=sum0+b[0]*vsource[0][j]+b[2]*vsource[2][j]+
-	  +b[3]*vsource[3][j]+b[4]*vsource[4][j]+b[5]*vsource[5][j];
+          Var v0=vsource0[j];
+          Var v2=vsource2[j];
+          Var v3=vsource3[j];
+          Var v5=vsource5[j];
+          Var sum=sum0+a0*v0+a2*v2+a3*v3+a5*v5;
+          Var pred=sum0+b0*v0+b2*v2+b3*v3+b4*vsource4[j]+b5*v5;
           if(!Array::Active(errmask) || errmask[j])
             CalcError(sum0,sum,pred,sum);
           y[j]=sum;
         });
     } else {
       rvector as=a[5];
+      Real a0=as[0];
+      Real a2=as[2];
+      Real a3=as[3];
+      Real a5=as[5];
+      vector vsource0=vsource[0];
+      vector vsource2=vsource[2];
+      vector vsource3=vsource[3];
+      vector vsource5=vsource[5];
       PARALLELIF(
         stop-start > threshold,
         for(size_t j=start; j < stop; j++)
-          y[j]=y0[j]+as[0]*vsource[0][j]+as[2]*vsource[2][j]+
-            as[3]*vsource[3][j]+as[5]*vsource[5][j];
+          y[j]=y0[j]+a0*vsource0[j]+a2*vsource2[j]+
+            a3*vsource3[j]+a5*vsource5[j];
         );
     }
     return 1;
