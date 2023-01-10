@@ -166,8 +166,9 @@ public:
   }
 
   void initError() {
-    for(size_t t=0; t < threads; ++t)
-      errMax[t]=0.0;
+    if(dynamic)
+      for(size_t t=0; t < threads; ++t)
+        errMax[t]=0.0;
   }
 
   const vector2& YVector() const {
