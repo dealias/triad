@@ -3,7 +3,7 @@
 
 #include "parallel.h"
 
-#include <atomic>
+extern size_t threads;
 
 class IntegratorBase {
 protected:
@@ -16,7 +16,8 @@ protected:
   double t;
   double dt;
   double sample;
-  std::atomic<double> errmax;
+  double *errMax;
+  double errmax;
   uvector errmask;
   double tolmax2,tolmin2;
   double stepfactor,stepinverse,stepnoninverse;
@@ -36,9 +37,13 @@ protected:
 
 public:
 
-  IntegratorBase(int order=0, bool fsal=false) : order(order), FSAL(fsal) {}
+  IntegratorBase(int order=0, bool fsal=false) : errMax(NULL), order(order),
+                                                 FSAL(fsal) {}
+  virtual ~IntegratorBase() {
+    if(errMax)
+      delete [] errMax;
+  }
 
-  virtual ~IntegratorBase() {}
   void SetAbbrev(const char *abbrev0) {abbrev=abbrev0;}
   const char *Abbrev() {return abbrev;}
   void SetParam(double tolmax, double tolmin, double stepfactor0,
@@ -58,6 +63,8 @@ public:
     microfactor=microfactor0;
     verbose=verbose0;
     dynamic=dynamic0;
+    if(dynamic)
+      errMax=new double[threads];
   }
   void SetParam(const IntegratorBase& I) {
     tolmax2=I.tolmax2;
@@ -93,7 +100,10 @@ public:
   virtual Solve_RC CheckError();
 
   double Errmax() {
-    return errmax;
+    double e=errMax[0];
+    for(size_t t=1; t < threads; ++t)
+      e=max(e,errMax[t]);
+    return e;
   }
 
   size_t Order() {
@@ -110,6 +120,7 @@ public:
 
   // Add tolgood to inhibit time step adjustment.
   virtual void ExtrapolateTimestep () {
+    errmax=Errmax();
     if(errmax < tolmin2) {
       if(errmax) growfactor=pow(tolmin2/errmax,pgrow);
     } else if(tolmin2) shrinkfactor=growfactor=pow(tolmin2/errmax,pshrink);
@@ -154,9 +165,9 @@ public:
     dt=dt0;
   }
 
-  void SetTime(double t0, double dt0, double errmax0) {
-    SetTime(t0,dt0);
-    errmax=errmax0;
+  void initError() {
+    for(size_t t=0; t < threads; ++t)
+      errMax[t]=0.0;
   }
 
   const vector2& YVector() const {
@@ -176,25 +187,18 @@ extern IntegratorBase *Integrator;
   {(void) new Entry<key,IntegratorBase>(#key,IntegratorTable);}
 
 
-template<typename T>
-void update_maximum(std::atomic<T>& max, T const& value) noexcept
-{
-  T prev=max;
-  while(prev < value && !max.compare_exchange_weak(prev,value));
-}
-
 inline void IntegratorBase::CalcError(const Var& initial, const Var& norm0,
 				      const Var& pred, const Var& corr)
 {
   Var diff=corr-pred;
+  size_t thread=get_thread_num0();
   if(isfinite(norm0) && isfinite(diff)) {
     if(initial != 0.0 && pred != initial) {
       static const double epsilon=DBL_MIN/DBL_EPSILON;
       double error=max(abs2(diff)/(max(norm2(norm0),norm2(initial))+epsilon));
-      update_maximum(errmax,error);
-
+      errMax[thread]=max(errMax[thread],error);
     }
-  } else errmax=HUGE_VAL;
+  } else errMax[thread]=HUGE_VAL;
 }
 
 inline Solve_RC IntegratorBase::CheckError()
@@ -317,7 +321,7 @@ public:
   }
 
   void initialize0() {
-    errmax=0.0;
+    initError();
     Set(y,Y[0]);
     Set(y0,Y0[0]);
     PARALLELIF(
@@ -328,7 +332,7 @@ public:
   }
 
   void initialize() {
-    errmax=0.0;
+    initError();
     if(new_y0) {
       swaparray(Y0,Y);
       Set(y,Y[0]);

@@ -327,7 +327,7 @@ int SYM2::Corrector(size_t start, size_t stop)
 Solve_RC AB2::Solve()
 {
   Solve_RC flag=UNSUCCESSFUL;
-  errmax=0.0;
+  initError();
 
   swaparray(Y0,Y);
   Set(y,Y[0]);
@@ -395,7 +395,7 @@ Solve_RC AB2::Solve()
 Solve_RC ABM3::Solve()
 {
   Solve_RC flag=UNSUCCESSFUL;
-  errmax=0.0;
+  initError();
 
   swaparray(Y0,Y);
   Set(y,Y[0]);

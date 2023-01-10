@@ -1,5 +1,6 @@
 #pragma once
 
+extern size_t threads;
 extern size_t threshold;
 
 namespace parallel {
@@ -16,7 +17,7 @@ extern size_t lastThreads;
 #include <omp.h>
 #endif
 
-inline int get_thread_num()
+inline size_t get_thread_num()
 {
 #ifdef SINGLE_THREAD
   return 0;
@@ -25,7 +26,11 @@ inline int get_thread_num()
 #endif
 }
 
-inline int get_max_threads()
+inline size_t get_thread_num0() {
+  return threads > 1 ? get_thread_num() : 0;
+}
+
+inline size_t get_max_threads()
 {
 #ifdef SINGLE_THREAD
   return 1;
