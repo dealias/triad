@@ -303,6 +303,77 @@ public:
 };
 
 template<class T>
+class E_RK32ZB : public E_RK<T> {
+protected:
+public:
+  const char *Name() {
+    return "Third-Order Exponential Runge-Kutta";
+  }
+
+  E_RK32ZB(T *parent) : E_RK<T>(parent,3,4,true) {
+    RK::allocate();
+
+    this->A[0][0]=0.5;
+
+    this->A[1][1]=0.75;
+
+    this->A[2][0]=2.0/9.0;
+    this->A[2][1]=1.0/3.0;
+    this->A[2][2]=4.0/9.0;
+
+    this->B[0]=2101.0/2520.0;
+    this->B[1]=-179.0/252.0;
+    this->B[2]=3.0/35.0;
+    this->B[3]=1993.0/2520.0;
+  }
+
+  inline void TimestepDependence() {
+    if(this->startN < this->stopN) RK::TimestepDependence();
+    PARALLELIF(
+      this->stop-this->start > threshold,
+      for(size_t j=this->start; j < this->stop; j++) {
+        Nu nuk=this->parent->LinearCoeff(j);
+        Nu x=-nuk*this->dt;
+        Nu x1=0.5*x;
+        Nu x2=0.75*x;
+
+        this->phi0[0][j]=exp(x1);
+        this->phi0[1][j]=exp(x2);
+        this->phi0[2][j]=exp(x);
+
+        Nu w1=phi1(x)*this->dt;
+        Nu w2=phi2(x)*this->dt;
+        Nu w3=phi3(x)*this->dt;
+
+        Nu w1c1=phi1(x1)*this->dt;
+        Nu w2c1=phi2(x1)*this->dt;
+        Nu w3c1=phi3(x1)*this->dt;
+
+        Nu w1c2=phi1(x2)*this->dt;
+        Nu w2c2=phi2(x2)*this->dt;
+
+        this->e[0][j][0]=0.5*w1c1;
+
+        Nu a11j=9.0/8.0*w2c2+3.0/8.0*w2c1;
+        this->e[1][j][0]=0.75*w1c2-a11j;
+        this->e[1][j][1]=a11j;
+
+        Nu a21=0.75*w2-0.25*w3;
+        Nu a22=5.0/6.0*w2+1.0/6.0*w3;
+
+        this->e[2][j][0]=w1-a21-a22;
+        this->e[2][j][1]=a21;
+        this->e[2][j][2]=a22;
+
+        this->f[j][0]=29.0/18.0*w1+7.0/6.0*w1c2+9.0/14.0*w1c1+0.75*w2+2.0/7.0*w2c2+1.0/12.0*w2c1-8083.0/420.0*w3+11.0/30.0*w3c1;
+        this->f[j][1]=-1.0/9.0*w1-1.0/6.0*w1c2-0.5*w2-1.0/7.0*w2c2-1.0/3.0*w2c1+1.0/6.0*w3+1.0/6.0*w3c1;
+        this->f[j][2]=2.0/3.0*w1-0.5*w1c2-1.0/7.0*w1c1+1.0/3.0*w2-1.0/7.0*w2c2-0.2*w3c1;
+        this->f[j][3]=-7.0/6.0*w1-0.5*w1c2-0.5*w1c1-7.0/12.0*w2+0.25*w2c1+2671.0/140.0*w3-1.0/3.0*w3c1;
+      });
+  }
+};
+
+template<class T>
 class E_RK43ZB : public E_RK<T> {
 protected:
 public:
@@ -414,6 +485,7 @@ void ExponentialIntegrators(Table<IntegratorBase> *t, T *parent) {
   new entry<E_PC<T>,IntegratorBase,T>("E_PC",t,parent);
   new entry<E_RK2<T>,IntegratorBase,T>("E_RK2",t,parent);
   new entry<E_RK3<T>,IntegratorBase,T>("E_RK3",t,parent);
+  new entry<E_RK32ZB<T>,IntegratorBase,T>("E_RK32ZB",t,parent);
   new entry<E_RK43ZB<T>,IntegratorBase,T>("E_RK43ZB",t,parent);
 }
 
