@@ -37,8 +37,8 @@ protected:
 
 public:
 
-  IntegratorBase(int order=0, bool fsal=false) : errMax(NULL), order(order),
-                                                 FSAL(fsal) {}
+  IntegratorBase(int order=0, bool fsal=false) : errMax(NULL), errmax(0.0),
+                                                 order(order), FSAL(fsal) {}
   virtual ~IntegratorBase() {
     if(errMax)
       delete [] errMax;
@@ -596,7 +596,7 @@ public:
 
 class RK4 : public RK {
 public:
-  const char *Name() {return "Fourth-Order Runge-Kutta";}
+  const char *Name() {return "Six-Stage Fourth-Order Runge-Kutta";}
 
   void Predictor(size_t start, size_t stop) {
     Real a00=a[0][0];
