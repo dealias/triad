@@ -307,7 +307,7 @@ class E_RK32ZB : public E_RK<T> {
 protected:
 public:
   const char *Name() {
-    return "Third-Order Exponential Runge-Kutta";
+    return "Robust Third-Order Exponential Runge-Kutta";
   }
 
   E_RK32ZB(T *parent) : E_RK<T>(parent,3,4,true) {
@@ -378,7 +378,7 @@ class E_RK43ZB : public E_RK<T> {
 protected:
 public:
   const char *Name() {
-    return "Fourth-Order Five-Stage Embedded Exponential Runge-Kutta";
+    return "Robust Fourth-Order Five-Stage Embedded Exponential Runge-Kutta";
   }
 
   E_RK43ZB(T *parent) : E_RK<T>(parent,4,5,false) {
