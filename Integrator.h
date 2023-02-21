@@ -397,7 +397,7 @@ protected:
 public:
 
   RK(size_t order, size_t nstages, bool fsal=false) :
-    PC(order,fsal), nstages(fstal ? nstages : nstages-1), Astages(nstages-1) {}
+    PC(order,fsal), nstages(fsal ? nstages : nstages-1), Astages(nstages-1) {}
 
   Var getvsource(size_t stage, size_t i) {
     return vsource[stage][i];
