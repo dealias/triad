@@ -121,7 +121,7 @@ class E_Euler : public E_RK<T> {
 protected:
 public:
   const char *Name() {return "Exponential Euler";}
-  E_Euler(T *parent) : E_RK<T>(parent,1,1) {
+  E_Euler(T *parent) : E_RK<T>(parent,1,2) {
     RK::allocate();
     this->A[0][0]=1.0;
   }
@@ -145,7 +145,7 @@ class I_Euler : public E_RK<T> {
 protected:
 public:
   const char *Name() {return "Integrating Factor Euler";}
-  I_Euler(T *parent) : E_RK<T>(parent,1,1) {
+  I_Euler(T *parent) : E_RK<T>(parent,1,2) {
     RK::allocate();
     this->A[0][0]=1.0;
   }
@@ -169,7 +169,7 @@ protected:
 public:
   const char *Name() {return "Exponential Predictor-Corrector";}
 
-  E_PC(T *parent) : E_RK<T>(parent,2,2) {
+  E_PC(T *parent) : E_RK<T>(parent,2,3) {
     RK::allocate();
 
     this->A[0][0]=1.0;
@@ -203,7 +203,7 @@ protected:
 public:
   const char *Name() {return "Second-Order Exponential Runge-Kutta";}
 
-  E_RK2(T *parent) : E_RK<T>(parent,2,2) {
+  E_RK2(T *parent) : E_RK<T>(parent,2,3) {
     RK::allocate();
 
     this->A[0][0]=0.5;
@@ -381,7 +381,7 @@ public:
     return "Robust Fourth-Order Five-Stage Embedded Exponential Runge-Kutta";
   }
 
-  E_RK43ZB(T *parent) : E_RK<T>(parent,4,5,false) {
+  E_RK43ZB(T *parent) : E_RK<T>(parent,4,6) {
     RK::allocate();
 
     this->A[0][0]=1.0/6.0;

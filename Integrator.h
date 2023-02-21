@@ -1,3 +1,5 @@
+// Allow for multiple B stages?
+
 #ifndef __Integrator_h__
 #define __Integrator_h__ 1
 
@@ -387,7 +389,7 @@ public:
 class RK : public PC {
 protected:
   Array::array2<double> a,A;   // source coefficients for each stage
-  Array::array1<double>::opt b,B,C; // b=error coefficients, C=time coefficients
+  Array::array1<double>::opt b,B,C; // b=error coefficients, C=step fractions
   const size_t nstages;
   vector3 vSrc;
   vector2 vsource;
@@ -395,7 +397,7 @@ protected:
 public:
 
   RK(size_t order, size_t nstages, bool fsal=false) :
-    PC(order,fsal), nstages(nstages), Astages(fsal ? nstages-1 : nstages) {}
+    PC(order,fsal), nstages(fstal ? nstages : nstages-1), Astages(nstages-1) {}
 
   Var getvsource(size_t stage, size_t i) {
     return vsource[stage][i];
@@ -519,7 +521,7 @@ public:
 class RK1 : public RK {
 public:
   const char *Name() {return "First-Order Runge-Kutta";}
-  RK1() : RK(1,1) {
+  RK1() : RK(1,2) {
     allocate();
     A[0][0]=1.0;
   }
@@ -529,7 +531,7 @@ class RK2 : public RK {
 public:
   const char *Name() {return "Second-Order Runge-Kutta";}
 
-  RK2() : RK(2,2) {
+  RK2() : RK(2,3) {
     allocate();
     A[0][0]=0.5;
 
@@ -541,9 +543,11 @@ public:
 
 class RKPC : public RK {
 public:
-  const char *Name() {return "Predictor-Corrector";}
+  const char *Name() {
+    return "Two-Stage Second-Order Heun Predictor-Corrector";
+  }
 
-  RKPC() : RK(2,2) {
+  RKPC() : RK(2,3) {
     allocate();
 
     A[0][0]=1.0;
@@ -576,11 +580,11 @@ public:
   }
 };
 
-class RK3C : public RK {
+class RK3K : public RK {
 public:
   const char *Name() {return "Third-Order Kutta";}
 
-  RK3C() : RK(3,3) {
+  RK3K() : RK(3,4) {
     allocate();
     A[0][0]=0.5;
 
@@ -663,7 +667,7 @@ public:
     return 1;
   };
 
-  RK4() : RK(4,5) {
+  RK4() : RK(4,6) {
     allocate();
     A[0][0]=0.5;
 
@@ -682,7 +686,6 @@ public:
     B[0]=1.0/6.0;
     B[1]=2.0/3.0;
     B[4]=1.0/6.0;
-
   }
 };
 
@@ -769,7 +772,7 @@ public:
     return 1;
   };
 
-  RK5() : RK(5,6) { // Change this to 7 to include B
+  RK5() : RK(5,7) {
     allocate();
 
     A[0][0]=0.2;
