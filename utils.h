@@ -84,13 +84,13 @@ inline Real dmod(Real x, Real n) {
   return x < 0 ? x-floor(x/n)*n : fmod(x,n);
 }
 
-template<class T> 
+template<class T>
 inline void set(T *to, const T *from, size_t n)
 {
   memcpy((void *) to,(void *) from,sizeof(T)*n);
 }
 
-template<class T> 
+template<class T>
 inline void set(Array::array1<T> to, const Array::array1<T> from, size_t n)
 {
   memcpy((void *) to(),(void *) from(),sizeof(T)*n);
@@ -172,7 +172,7 @@ void *bsearch2(register const void *key,
 	       int *match_type);
 
 int check_match(int match_type, const char *object, const char *s, int warn=1);
-			   
+
 inline void vform(const char *format, va_list& vargs, ostream& os=cout)
 {
   const int maxsize=256;
@@ -205,7 +205,7 @@ enum ErrorCode {WARNING_,OVERRIDE_,RETRY_,SLEEP_,ERROR_};
 
 inline void Array::ArrayExit(const char *x) {errno=0; msg(ERROR_GLOBAL,x);}
 inline void DynVectorExit(const char *x) {errno=0; msg(ERROR_GLOBAL,x);}
-	
+
 enum ExitCode {FATAL=-1,CONTINUE,COMPLETE};
 extern ExitCode exit_signal;
 
@@ -274,16 +274,6 @@ inline Complex product(const Complex& x, const Complex& y)
   return Complex(x.re*y.re,x.im*y.im);
 }
 
-inline Real realproduct(Real x, Real y)
-{
-  return x*y;
-}
-
-inline Real realproduct(const Complex& x, const Complex& y)
-{
-  return x.re*y.re+x.im*y.im;
-}
-
 inline void conjugate(Real& x, Real y)
 {
   x=y;
@@ -315,7 +305,7 @@ inline Complex exp(const Complex& z)
 {
   double cosy,siny;
   Complex w;
-	
+
   sincos(z.im,&siny,&cosy);
   w.im=exp(z.re);
   w.re=w.im*cosy;
@@ -327,7 +317,7 @@ inline Complex expm1(const Complex& z)
 {
   double cosy,siny,sinyby2;
   Complex w;
-	
+
   sincos(z.im,&siny,&cosy);
   w.im=exp(z.re);
   w.re=w.im*cosy-1.0;
@@ -347,7 +337,7 @@ inline Complex expi(Real phase)
 }
 */
 
-inline void LeastSquaresFit(unsigned n, Real *x, Real *y, Real &m, Real &b) 
+inline void LeastSquaresFit(unsigned n, Real *x, Real *y, Real &m, Real &b)
 {
   Real sumx=0.0, sumy=0.0, sumxx=0.0, sumxy=0.0;
   for(unsigned i=0; i < n; i++) {
@@ -368,7 +358,7 @@ const int default_nperline=4;
 
 const char *const outerror="Cannot write %s to output stream";
 
-template<class T>	
+template<class T>
 inline void out_curve(ofstream& os, T *f, const char *text, size_t n=1,
 		      int nperline=default_nperline)
 {
@@ -383,7 +373,7 @@ inline void out_curve(ofstream& os, T *f, const char *text, size_t n=1,
   if(!os) msg(WARNING,outerror,text);
 }
 
-template<class T>	
+template<class T>
 inline void out_curve(oxstream& os, T *f, const char *text, size_t n=1,
 		      int=default_nperline)
 {
@@ -409,7 +399,7 @@ inline void out_curve(ofstream& os, T (*f)(size_t), const char *text,
 
 template<class T>
 inline void out_curve(oxstream& os, T (*f)(size_t), const char *text,
-		      size_t n, int=default_nperline) 
+		      size_t n, int=default_nperline)
 {
   os << n;
   for(size_t i=0; i < n; i++) os << (*f)(i);
@@ -431,23 +421,23 @@ inline void out_curve(S& os, Array::array1<T> f, const char *text,
 }
 
 inline double drand()
-{			  
+{
   static const double factor=1.0/RAND_MAX;
   return random()*factor;
 }
 
 inline int rand_sign()
-{			  
+{
   return random() % 2 ? 1 : -1;
 }
 
 inline Complex rand_unityroot(int n)
-{			  
+{
   return expi(triad::twopi*(random() % n)/n);
 }
 
 inline Complex rand_phase()
-{			  
+{
   return expi(triad::twopi*drand());
 }
 
@@ -467,4 +457,3 @@ inline oxstream& operator << (oxstream& s, const Complex& y)
 }
 
 #endif
-
