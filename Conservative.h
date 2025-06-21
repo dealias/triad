@@ -173,7 +173,7 @@ protected:
 public:
   const char *Name() {return "Conservative Predictor-Corrector";}
 
-  C_PC(T *parent) : C_RK<T>(parent,2,2) {
+  C_PC(T *parent) : C_RK<T>(parent,2,3) {
     RK::allocate();
     this->A[0][0]=1.0;
 
@@ -190,7 +190,7 @@ protected:
 public:
   const char *Name() {return "Conservative Second-Order Runge-Kutta";}
 
-  C_RK2(T *parent) : C_RK<T>(parent,2,2) {
+  C_RK2(T *parent) : C_RK<T>(parent,2,3) {
     RK::allocate();
 
     this->A[0][0]=0.5;
@@ -207,7 +207,7 @@ protected:
 public:
   const char *Name() {return "Conservative Fourth-Order Runge-Kutta";}
 
-  C_RK4(T *parent) : C_RK<T>(parent,4,5) {
+  C_RK4(T *parent) : C_RK<T>(parent,4,6) {
     RK::allocate();
 
     this->A[0][0]=0.5;
@@ -236,7 +236,7 @@ protected:
 public:
   const char *Name() {return "Conservative Fifth-Order Runge-Kutta";}
 
-  C_RK5(T *parent) : C_RK<T>(parent,5,6) {
+  C_RK5(T *parent) : C_RK<T>(parent,5,7) {
     RK::allocate();
 
     this->A[0][0]=0.2;
