@@ -5,6 +5,15 @@
 
 #include "parallel.h"
 
+inline bool isfinite(const Complex& z)
+{
+#ifdef _WIN32
+  return _finite(z.re) && _finite(z.im);
+#else
+  return !(std::isinf(z.re) || std::isnan(z.re) || std::isinf(z.im) || std::isnan(z.im));
+#endif
+}
+
 extern size_t threads;
 
 class IntegratorBase {
