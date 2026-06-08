@@ -3,7 +3,7 @@ D = d
 
 LIB = -fopenmp $(LFLAGS) -L. -lm -ltirpc
 
-OPT = -g $(CFLAGS) -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+OPT = -g $(CFLAGS) -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -DHAVE_LIBTIRPC
 INCL = -fopenmp -I. -I$(TRI) -I/usr/include/tirpc
 
 vpath %.cc $(TRI)
